@@ -1,0 +1,619 @@
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;        LEFT BAR WIDGET       ;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defwidget barLeftWidget []
+        (box    :orientation "h"
+                :space-evenly false
+                :class "bar"
+                :spacing "40"
+                :halign "center"
+                :valign "center"
+        
+                (button :class "pink"
+                        :onclick "dolphin&" "")
+
+                (button :class "green"
+                        :onclick "vivaldi-stable&" "")
+                        
+                (button :class "yellow"
+                        :onclick "code&" "﬏")
+                
+                (button :class "blue"
+                        :onclick "gimp&" "")
+                                     
+                (button :class "violet"
+                        :onclick "discord&" "ﭮ")
+                        
+                (button :class "cyan"
+                        :onclick "telegram-desktop&" "")
+    )
+)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;       RIGHT BAR WIDGET       ;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defwidget barRightWidget []
+        (box    :orientation "h"
+                :space-evenly false
+                :class "bar"
+                :spacing "40"
+                :halign "center"
+                :valign "center"
+        
+                (button :class "blue"
+                        :onclick "/home/jonas/.bin/rofi-drun" "")
+
+                (button :class "green"
+                        :onclick "timeout 10s /home/jonas/.bin/rofi-music" "")
+                        
+                (button :class "pink"
+                        :onclick "/home/jonas/.bin/rofi-file" "")
+        )
+)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;          USER WIDGET         ;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defwidget userWidget []
+    (box        :class "user"
+                :orientation "v"
+                :space-evenly false
+                :spacing "20"
+                :halign "center"
+                :valign "center"
+
+                (image  :path "${imgUser}"
+                        :width "180"
+                        :height "180")
+                
+                (label  :class "pink"
+                        :text "u/jonas"
+                        :halign "center"
+                        :valign "center")
+                )
+)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;          POWER WIDGET        ;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defwidget powerWidget []
+    (box        :class "power" 
+                :orientation "v"
+                (button :class "pink"
+                        :onclick "poweroff" "")
+                (button :class "blue"
+                        :onclick "reboot" "")
+                (button :class "violet"
+                        :onclick "/home/jonas/.bin/logout" "")
+    )
+)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;         DATE WIDGET          ;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defwidget dateWidget []
+        (box    :orientation "v"
+                :space-evenly "false"
+                :valign "center"
+                :halign "center"
+                :spacing "15"
+
+                (box :orientation "h"
+                        :class "date"
+                        :space-evenly "false"
+                        :valign "center"
+                        :halign "center"
+                        :spacing "35"
+                        (label  :class "blue"
+                                :text "${hour}")
+                                
+
+                        (label  :class "yellow"
+                                :text "${minute}")
+                )
+                (label  :class "day"
+                        :text "${date}")
+                        
+        )       
+)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;       CONTROL WIDGET         ;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defwidget controlWidget []
+        (box    :orientation "v"
+                :space-evenly "true"
+                :halign "center"
+                :valign "center"
+                :spacing 35
+
+                (box    :orientation "h"
+                        :space-evenly "true"
+                        :halign "center"
+                        :valign "center"
+                        :spacing 35
+                
+                        (button :onclick "/home/jonas/.bin/volumControl toggle"
+                                (image  :path "${audio}"
+                                :width "95"
+                                :height "95"
+                                )    
+                        )
+                        (button :onclick "/home/jonas/.bin/toggleDunst"
+                                (image  :path "${notifications}"
+                                :width "95"
+                                :height "95"
+                                )
+                        )
+                )
+
+                (box    :orientation "h"
+                        :space-evenly "true"
+                        :halign "center"
+                        :valign "center"
+                        :spacing 35
+                
+
+                        (button :onclick "systemsettings5&"
+                                (image  :path "/home/jonas/.config/eww/icons/settings.png"
+                                        :width "95"
+                                        :height "95"
+                                )
+                        )
+                        (button :onclick "/home/jonas/.bin/micNotify"
+                                (image  :path "${mic}"
+                                        :width "95"
+                                        :height "95"
+                                )    
+                        )       
+                )
+        )
+)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;        TOOLS WIDGET          ;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defwidget screenshotWidget []
+        (box    :class "screenshot" 
+                :orientation "v"
+                (button :class "blue"
+                        :onclick "spectacle -f -b &" "")
+                (button :class "green"
+                        :onclick "spectacle -r -b &" "")
+                (button :class "cyan"
+                        :onclick "spectacle -u -d 1500 -b &" "")
+        )
+)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;        SYSTEM WIDGET         ;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+ 
+(defwidget systemWidget []
+        (box    :orientation "v"
+                :class "system"
+                :space-evenly false
+                :spacing 35;
+                :valign "center"
+                :halign "center"
+                (box    :orientation "h"
+                        :class "metric-ram"
+                        :space-evenly false
+                        
+                        (label  :text "" 
+                                :class "ram-lable")
+                        (scale  :min 0
+                                :max 101
+                                :active "false"
+                                :value "${ram}")
+                )
+                
+
+                (box    :orientation "h"
+                        :class "metric-vol"
+                        :space-evenly false
+                        (label  :text ""
+                                :class "vol-lable")
+                        (scale  :min 0
+                                :max 101
+                                :value "${vol}"
+                                :onchange "amixer -D pulse sset Master {}%")
+                )
+
+                (box    :orientation "h"
+                        :class "metric-bright"
+                        :space-evenly false
+
+                        (label  :text ""
+                                :class "bright-lable")
+                        (scale  :min 0
+                                :max 101
+                                :value "${bright}"
+                                :onchange "timeout 15s /home/jonas/.bin/setBright {}")
+                )
+
+                (box    :orientation "h"
+                        :class "metric-root"
+                        :space-evenly false
+                        (label  :text ""
+                                :class "root-lable")
+                        (scale  :min 0
+                                :max 101
+                                :active "false"
+                                :value {round((1 - (EWW_DISK["/"].free / EWW_DISK["/"].total)) * 100, 0)})
+                )
+
+                (box     :orientation "h"
+                        :class "metric-disk"
+                        :space-evenly false
+                        (label  :text ""
+                                :class "disk-lable")
+                        (scale  :min 0
+                                :max 101
+                                :active "false"
+                                :value {round((1 - (EWW_DISK["/ArchDisk"].free / EWW_DISK["/ArchDisk"].total)) * 100, 0)})
+                )
+        )
+)
+
+
+(defwidget centerWidget[]
+
+        (label :text " ")
+)
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;         FETCH WIDGET         ;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defwidget fetchWidget []
+        (box    :orientation "v"
+                :valign "center"
+                :halign "center"
+                :space-evenly "false"
+                :spacing "35"
+
+                (box    :orientation "h"
+                        :space-evenly "false"
+                        :spacing 25;
+
+                        (box    :orientation "v"
+                                :class "fetch"
+                                :spacing 5;
+                                (label  :class "pink" 
+                                        :halign "end"
+                                        :text "")
+                                (label :class "green" 
+                                        :halign "end"
+                                        :text "")
+                                (label  :class "yellow" 
+                                        :halign "end"
+                                        :text "缾")
+                                (label  :class "blue" 
+                                        :halign "end"
+                                        :text "")
+                                (label  :class "violet" 
+                                        :halign "end"
+                                        :text "")
+                                (label  :class "cyan" 
+                                        :halign "end"
+                                        :text "")
+                        )
+
+                        (box    :orientation "v"
+                                :class "fetch"
+                                (label  :class "pink" 
+                                        :halign "start"
+                                        :text ": arch")
+                                (label :class "green" 
+                                        :halign "start"
+                                        :text ": i3")
+                                (label  :class "yellow" 
+                                        :halign "start"
+                                        :text ": dem")
+                                (label  :class "blue" 
+                                        :halign "start"
+                                        :text ": zsh")
+                                (label  :class "violet" 
+                                        :halign "start"
+                                        :text ": ${uptime}")
+                                (label  :class "cyan" 
+                                        :halign "start"
+                                        :text ": ${packages}")
+                        )
+                )
+
+                (box    :orientation "h"
+                        :halign "center"
+                        :class "dots"
+                        :spacing 15;
+                        (label  :text ""
+                                :class "pink")
+                        (label  :text ""
+                                :class "green")
+                        (label  :text ""
+                                :class "yellow")
+                        (label  :text ""
+                                :class "blue")
+                        (label  :text ""
+                                :class "violet")
+                        (label  :text ""
+                                :class "cyan")
+                )
+        )
+)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;         PLAYER WIDGET        ;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defwidget playerWidgets []
+        (box    :orientation "v"
+                :space-evenly false
+                :halign "center"
+                :valign "center"
+                :spacing "20"
+                (image  :path "${imgCover}"
+                        :width "170"
+                        :height "170")
+
+                (box    :orientation "v"
+                        :space-evenly false
+                        :halign "center"
+                        :spacing "20"
+
+                        (box    :orientation "v"
+                                :space-evenly false
+                                :halign "center"
+                                :spacing "10"
+
+                                (label  :class "artist"
+                                        :text {artist != "" ? "${artist}" : "Artist"})
+
+                                (label  :class "song"
+                                        :text {song != "" ? "${song}" : "Not playing"}) 
+                        )
+
+                        (box    :class "control"
+                                :orientation "h"
+                                :space-evenly true
+                                :spacing 55
+                                (button :onclick "mpc perv" "丹")
+                                (button :onclick "mpc toggle" "")
+                                (button :onclick "mpc next" "")
+                        )
+                )
+            
+                (box    :orientation "h"
+                        :class "metric-player"
+    
+                        (scale  :min 0
+                                :max 101
+                                :active "false"
+                                :value {songtime != "" ? "${songtime}" : "0"}
+                        )       
+                )   
+        )
+)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;       LOCATIONS WIDGET       ;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defwidget homeWidget []
+    (button :class "cyan" 
+            :onclick "dolphin /home/jonas&" "")
+)
+
+(defwidget diskWidget []
+    (button     :class "blue"
+                :onclick "dolphin /ArchDisk&" "")
+)
+
+(defwidget downloadsWidget  []
+    (button :class "green" 
+            :onclick "dolphin /ArchDisk/Downloads&" "")
+)
+
+(defwidget picturesWidget []
+    (button :class "yellow" 
+            :onclick "dolphin /ArchDisk/Pictures&" "")
+)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;       WINDOWS       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defwindow barLeft
+        :monitor 0
+        :geometry (geometry :x "50px"
+                               :y "13px"
+                               :width "400px"
+                               :height "55px"
+                               :anchor "top left")
+        :windowtype "dock"
+        :wm-ignore true
+(barLeftWidget))
+
+(defwindow barRight
+        :monitor 0
+        :geometry (geometry :x "-50px"
+                               :y "13px"
+                               :width "250px"
+                               :height "55px"
+                               :anchor "top right")
+        :windowtype "dock"
+        :wm-ignore true
+(barRightWidget))
+
+(defwindow user
+        :monitor 0
+        :geometry (geometry :x "50px"
+                               :y "105px"
+                               :width "290px"
+                               :height "290px"
+                               :anchor "top left")
+        :windowtype "dock"
+        :wm-ignore true
+(userWidget))
+
+
+(defwindow power
+        :monitor 0
+        :geometry (geometry :x "350px"
+                               :y "105px"
+                               :width "100px"
+                               :height "290px"
+                               :anchor "top left")
+        :windowtype "dock"
+        :wm-ignore true
+(powerWidget))
+
+
+(defwindow date
+        :monitor 0
+        :geometry (geometry :x "50px"
+                               :y "405px"
+                               :width "400px"
+                               :height "215px"
+                               :anchor "top left")
+        :windowtype "dock"
+        :wm-ignore true
+(dateWidget))
+
+(defwindow control
+        :monitor 0
+        :geometry (geometry :x "160px"
+                               :y "630px"
+                               :width "290px"
+                               :height "290px"
+                               :anchor "top left")
+        :windowtype "dock"
+        :wm-ignore true
+        :focusable true 
+(controlWidget))
+
+(defwindow screenshot
+        :monitor 0
+        :geometry (geometry :x "50px"
+                               :y "630px"
+                               :width "100px"
+                               :height "290px"
+                               :anchor "top left")
+        :windowtype "dock"
+        :wm-ignore true
+(screenshotWidget))
+
+(defwindow system
+        :monitor 0
+        :geometry (geometry :x "50px"
+                               :y "930px"
+                               :width "400px"
+                               :height "360px"
+                               :anchor "top left")
+        :windowtype "dock"
+        :wm-ignore true
+(systemWidget))
+
+
+(defwindow fetch
+        :monitor 0
+        :geometry (geometry :x "50px"
+                               :y "1300px"
+                               :width "400px"
+                               :height "335px"
+                               :anchor "top left")
+        :windowtype "dock"
+        :wm-ignore true
+        :focusable true
+(fetchWidget))
+ 
+(defwindow player
+        :monitor 0
+        :geometry (geometry :x "160px"
+                               :y "1645px"
+                               :width "290px"
+                               :height "430px"
+                               :anchor "top left")
+        :windowtype "dock"
+        :wm-ignore true
+(playerWidgets))
+
+(defwindow home
+        :monitor 0
+        :geometry (geometry :x "50px"
+                               :y "1645px"
+                               :width "100px"
+                               :height "100px"
+                               :anchor "top left")
+        :windowtype "dock"
+        :wm-ignore true
+(homeWidget))
+
+(defwindow disk
+        :monitor 0
+        :geometry (geometry :x "50px"
+                               :y "1755px"
+                               :width "100px"
+                               :height "100px"
+                               :anchor "top left")
+        :windowtype "dock"
+        :wm-ignore true
+(diskWidget))
+
+(defwindow downloads
+        :monitor 0
+        :geometry (geometry :x "50px"
+                               :y "1865px"
+                               :width "100px"
+                               :height "100px"
+                               :anchor "top left")
+        :windowtype "dock"
+        :wm-ignore true
+(downloadsWidget))
+
+(defwindow pictures
+        :monitor 0
+        :geometry (geometry :x "50px"
+                               :y "1975px"
+                               :width "100px"
+                               :height "100px"
+                               :anchor "top left")
+        :windowtype "dock"
+        :wm-ignore true
+(picturesWidget))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;      variables      ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defvar imgUser "/ArchDisk/Downloads/8830/free-avatars-flat-icons/png-512/avatar-512x512-4563302.png")
+
+(defpoll hour :interval "1s" `date +%H`)
+(defpoll minute :interval "1s" `date +%M`)
+(defpoll date :interval "1s" `date "+%A, %d %B"`)
+
+(defpoll audio :interval "1s" "scripts/isMuted")
+(defpoll notifications :interval "1s" "scripts/isSilent")
+(defpoll mic :interval "1s" "scripts/isMic")
+
+(defpoll ram :interval "1s" "scripts/getram")
+(defpoll vol :interval "1s" "scripts/getvol")
+(defpoll cpu :interval "1s" "scripts/getcpu")
+(defpoll bright :interval "2s" "scripts/getBright")
+
+(defpoll uptime :interval "1s" "uptime -p | sed -e 's/up //;s/ hours,/h/;s/ minutes/m/'")
+(defpoll packages :interval "1s" "pacman -Q | wc -l")
+
+(defvar imgCover "/home/jonas/.ncmpcpp/fallback.png")
+(defpoll playpause :interval "1s" "scripts/isPlaying")
+(defpoll song :interval "1s" "mpc --format '%title%' current || true")
+(defpoll artist :interval "1s" "mpc --format '%artist%' current || true")
+(defpoll songtime :interval "1s" "scripts/getsongtime")

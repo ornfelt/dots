@@ -1,0 +1,26 @@
+#!/bin/sh
+#curl -sf "wttr.in/Nizhniy_Novgorod?format=1" | sed -r 's/^.{4}//' | tee "$HOME/.local/share/weatherreport" || exit 1 ; #this exit will only work if tee (or before my changes, sed with output redirection) returns anything other than zero, if curl ends with an error this exit will not be called
+
+case $BLOCK_BUTTON in
+	1) urxvt -e sh -c "curl -sf 'wttr.in/Uppsala'; zsh" ;;
+	2) rofi -theme "~/.config/rofi/themes/gruvbox/gruvbox-dark.rasi" -e "Weather clicked 2" ;;
+	3) pkill -RTMIN+5 dwmblocks ;;
+	4) rofi -theme "~/.config/rofi/themes/gruvbox/gruvbox-dark.rasi" -e "Weather clicked 4" ;;
+	5) rofi -theme "~/.config/rofi/themes/gruvbox/gruvbox-dark.rasi" -e "Weather clicked 5" ;;
+	6) "$TERMINAL" -e "$EDITOR" "$0" ;;
+esac
+
+#STR=$(curl -sf "wttr.in/Nizhniy_Novgorod?format=1" | sed -r 's/^.{4}//')
+STR=$(curl -sf "wttr.in/Stockholm" | grep -Eo -m 1 '(\+|\-)[0-9]+' | head -1)
+SUB='location'
+if [[ "$STR" == *"$SUB"* ]]; then
+	#echo " -1"
+	sudo cat ~/.local/share/weatherreport
+else
+	#echo " $STR"
+	# curl -sf "wttr.in/Stockholm" | grep -Eo -m 1 '(\+|\-)[0-9]+' | head -1 | tee "$HOME/.local/share/weatherreport"
+	curl -sf "wttr.in/Uppsala" | grep -Eo -m 1 '(\+|\-)[0-9]+' | head -1 | tee "$HOME/.local/share/weatherreport"
+	if [ -z "$STR" ]; then
+		python ~/.local/bin/dwmblocks/weather_py.py | tee "$HOME/.local/share/weatherreport_py"
+	fi
+fi
