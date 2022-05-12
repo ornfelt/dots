@@ -12,7 +12,8 @@ case $BLOCK_BUTTON in
 esac
 
 # [ $(pamixer --get-mute) = true ] && echo 🔇 && exit
-[ $(pamixer --get-mute) = true ] && echo 婢 && exit
+# [ $(pamixer --get-mute) = true ] && echo 婢 && exit
+[ $(pamixer --get-mute) = true ] && echo "婢 0%" && exit
 
 vol="$(pamixer --get-volume)"
 
