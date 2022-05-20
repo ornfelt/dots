@@ -43,8 +43,6 @@ case $chosen in
 			systemctl poweroff
 		elif [[ $ans == "no" || $ans == "NO" || $ans == "n" || $ans == "N" ]]; then
 			exit 0
-        else
-			msg
         fi
         ;;
     $reboot)
@@ -53,8 +51,6 @@ case $chosen in
 			systemctl reboot
 		elif [[ $ans == "no" || $ans == "NO" || $ans == "n" || $ans == "N" ]]; then
 			exit 0
-        else
-			msg
         fi
         ;;
     $lock)
@@ -72,8 +68,6 @@ case $chosen in
 			systemctl suspend
 		elif [[ $ans == "no" || $ans == "NO" || $ans == "n" || $ans == "N" ]]; then
 			exit 0
-        else
-			msg
         fi
         ;;
     $logout)
@@ -91,8 +85,6 @@ case $chosen in
 			fi
 		elif [[ $ans == "no" || $ans == "NO" || $ans == "n" || $ans == "N" ]]; then
 			exit 0
-        else
-			msg
         fi
         ;;
 esac
