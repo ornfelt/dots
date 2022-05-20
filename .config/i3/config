@@ -18,11 +18,11 @@ font pango:Linux Libertine Mono 10
 
 # xss-lock grabs a logind suspend inhibit lock and will use i3lock to lock the
 # screen before suspend. Use loginctl lock-session to lock your screen.
-#exec --no-startup-id xss-lock --transfer-sleep-lock -- i3lock --nofork
+exec --no-startup-id xss-lock --transfer-sleep-lock -- i3lock --nofork
 
 # NetworkManager is the most popular way to manage wireless networks on Linux,
 # and nm-applet is a desktop environment-independent system tray GUI for it.
-#exec --no-startup-id nm-applet
+exec --no-startup-id nm-applet
 
 # Use pactl to adjust volume in PulseAudio.
 set $refresh_i3status killall -SIGUSR1 i3status
@@ -96,7 +96,7 @@ bindsym $mod+Shift+less split h
 bindsym $mod+f fullscreen toggle
 # change container layout (stacked, tabbed, toggle split)
 bindsym $mod+Shift+z layout stacked
-bindsym $mod+Shift+t layout tabbed
+bindsym $mod+Control+t layout tabbed
 bindsym $mod+less layout toggle split
 bindsym $mod+z gaps inner current set 0; gaps outer current set 0
 bindsym $mod+x gaps inner current set 15; gaps outer current set 15
@@ -119,6 +119,7 @@ bindsym $mod+Shift+d focus child
 # open tmux
 bindsym $mod+a exec i3-sensible-terminal -e bash -c "tmux attach || tmux"
 # Open nautilus in wd
+#bindsym $mod+w exec nautilus --no-desktop
 bindsym $mod+n exec ~/.local/bin/my_scripts/nautilus_wd.sh
 # Open nautilus at home
 bindsym $mod+Shift+n exec nautilus -w --no-desktop
@@ -189,6 +190,8 @@ bindsym $mod+c exec gnome-calculator
 for_window [class="Gnome-calculator"] floating enable, move position 100 px 500 px, exec xdotool search --class Gnome-calculator getwindowpid -- windowsize %@ 250 195
 bindsym $mod+Control+c exec gnome-calendar
 for_window [class="Gnome-calendar"] floating enable, move position 1105 px 430 px, exec xdotool search --class Gnome-calculator getwindowpid -- windowsize %@ 250 195
+bindsym $mod+t exec ~/.local/bin/my_scripts/script_copy.sh
+bindsym $mod+Shift+t exec ~/.local/bin/my_scripts/script_helper.sh
 
 # reload the configuration file
 bindsym $mod+Shift+c reload

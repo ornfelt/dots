@@ -197,14 +197,16 @@ static Key keys[] = {
 	{ MODKEY,				XK_r,		spawn,		SHCMD("dmenu_run -fn 'Linux Libertine Mono'") },
 	{ MODKEY|ShiftMask,		XK_d,		spawn,		SHCMD("rofi -show run -theme ~/.config/polybar/forest/scripts/rofi/launcher.rasi") },
 	{ MODKEY|ShiftMask,		XK_r,		spawn,		SHCMD("rofi -show run -theme ~/.config/polybar/forest/scripts/rofi/launcher.rasi") },
+	{ MODKEY,				XK_t,		spawn,		SHCMD("~/.local/bin/my_scripts/script_copy.sh") },
+	{ MODKEY|ShiftMask,		XK_t,		spawn,		SHCMD("~/.local/bin/my_scripts/script_helper.sh") },
 
 	/* Layouts */
 	{ MODKEY|ShiftMask,			XK_less,		togglesticky,	{0} },
 	{ MODKEY,			XK_less,		setlayout,	{.v = &layouts[0]} }, /* Fibonacci spiral */
-	{ MODKEY,			XK_t,		setlayout,	{.v = &layouts[1]} }, /* tile */
+	{ MODKEY|ControlMask,			XK_t,		setlayout,	{.v = &layouts[1]} }, /* tile */
 	{ MODKEY,		XK_s,		setlayout,	{.v = &layouts[2]} }, /* centeredmaster */
-	{ MODKEY|ShiftMask,		XK_t,		setlayout,	{.v = &layouts[3]} }, /* bstack */
-	{ MODKEY|ShiftMask,		XK_y,		setlayout,	{.v = &layouts[4]} }, /* dwindle */
+	{ MODKEY|ShiftMask,		XK_y,		setlayout,	{.v = &layouts[3]} }, /* dwindle */
+	{ MODKEY|ControlMask,	XK_y,		setlayout,	{.v = &layouts[4]} }, /* bstack */
 	{ MODKEY|ShiftMask,		XK_u,		setlayout,	{.v = &layouts[5]} }, /* deck*/
 	{ MODKEY|ShiftMask,		XK_i,		setlayout,	{.v = &layouts[6]} }, /* monocle */
 	{ MODKEY|ShiftMask,		XK_z,		setlayout,	{.v = &layouts[7]} }, /* centeredfloatingmaster */

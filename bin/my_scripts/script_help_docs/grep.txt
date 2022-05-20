@@ -1,5 +1,34 @@
 Regex: https://www.youtube.com/watch?v=77I4ZkhuHsQ
 
+# ***** OBS! Some characters need escaping with \ depending on shell...
+# File: "rf"
+# Grep fix, fox, fax
+grep "f.x" rf
+
+# Find fox, foooox, fx: grep "fo*x" rf
+# find only fox and foooooox: grep "fo\+x" rf
+# Find lines that end with x: grep "x$" rf
+# Find lines that begin with sp: grep "^sp" rf
+# Find only words with "oomer" in them: grep "\S*oomer" rf
+
+# Find url:
+# First find only http or https: grep "https\?" rf
+# Almost good: grep "https\?://\S*" rf
+# Final: grep "https\?://\S*\.[A-Za-z]\+\S*" rf
+From stackoverflow: grep -Eo "(http|https)://[a-zA-Z0-9./?=_-]*"
+# Find mail address: grep "\S\+@\S\+\.[A-Za-Z]\+" rf
+
+# Find lines that start with capital letter: grep "^[A-Z]" rf
+# Find lines that starts and ends with capital letter: grep "^[A-Z].*[A-Z]$" rf
+
+[A-z] uppercase and lowercase
+\S any non-whitespace char
+\s any whitespace char
+
+----------------------------------------------------------------------------------
+
+Same but from a few months earlier:
+
 . Any one character
 * Match any number of previous (including 0)
 + Match any number of previous (excluding 0)

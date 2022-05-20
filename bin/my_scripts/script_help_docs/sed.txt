@@ -1,4 +1,36 @@
 Sed commands:
+# Print everything
+sed "" .bmfiles
+
+# Replace c with C
+sed "s/c/C/g" .bmfiles
+
+# Remove comments
+sed "s/#.*//g" .bmfiles
+
+# Change in the file with the -i option:
+sed -i "s/#.*//g" .bmfiles
+
+# Better version that also removes whitespace before comment...
+sed "s/\s*#.*//g" .bmfiles
+
+# Two seds, the second command finds "cf" and then removes the line:
+sed "s/\s*#.*//g; /cf/ d" .bmfiles
+
+# remove whitespaces (^ for beginning of line)
+sed "s/\s*#.*//g; /^$/ d" .bmfiles
+
+Replace recursively:
+grep -rl oldtext . | xargs sed -i 's/oldtext/newtext/g'
+Note: Do not run this command on a folder including a git repo - changes to .git could corrupt your git index.
+Compatible with git repos:
+git grep -l 'original_text' | xargs sed -i 's/original_text/new_text/g'
+
+Best?:
+find /home/www \( -type d -name .git -prune \) -o -type f -print0 | xargs -0 sed -i 's/subdomainA\.example\.com/subdomainB.example.com/g'
+
+----------------------------------------------------------------------------------
+
 sed -i 's/Pineapple/Feta/' toppings.txt
 
 find /etc -type f (find files in /etc folder)
