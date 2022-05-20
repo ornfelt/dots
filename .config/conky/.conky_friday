@@ -1,0 +1,93 @@
+use_xft yes
+xftfont 123:size=10
+xftalpha 0.1
+update_interval 5
+total_run_times 0
+
+own_window_class Conky
+own_window_type override
+own_window yes
+
+own_window_transparent yes
+own_window_hints undecorated,below,sticky,skip_taskbar,skip_pager
+own_window_colour 000000
+own_window_argb_visual no
+own_window_argb_value 0
+
+double_buffer yes
+#minimum_size 250 5
+#maximum_width 500
+draw_shades no
+draw_outline no
+draw_borders no
+draw_graph_borders no
+default_color white
+default_shade_color red
+default_outline_color green
+alignment top_left
+gap_x 1325
+gap_y 40
+no_buffers yes
+uppercase no
+cpu_avg_samples 2
+net_avg_samples 1
+override_utf8_locale yes
+use_spacer yes
+
+
+minimum_size 0 0
+
+# This is the default "Gotham" conky clock that comes with the
+# conky-manager package.
+# It has been adapted to use Gruvbox colorscheme and
+# use a slightly smaller font-size.
+#
+# (From the next line down, #WhiteSpaceMatters) ...
+TEXT
+${voffset 0}${color EBDBB2}${font GE Inspira:pixelsize=110}${offset 15}${time %I:%M}${font}${voffset -70}${offset 20}${color 98971A}${font GE Inspira:pixelsize=28}${time %d}${voffset 9}${offset 75}${color D79921}${font GE Inspira:pixelsize=28}${voffset -10}${offset -60}${time  %B} ${offset 0}${time %Y}${color CC241D}${font}${voffset 10}${offset 75}${font GE Inspira:pixelsize=53}${offset -240}${time %A}${font}
+
+#white ${color EDBBB2}
+#green ${color 98971A}
+#yllw ${color D79921}
+#red ${color CC241D}
+#purple ${color B16286}
+
+# Conkyrc2
+
+# For those who may be hacking into this, positioning is not very fun in conky.
+# or maybe I just don't get it!?
+#
+# The way this works here is every line is a line painted on the screen!
+# For example, to remove the 4 lines about disk space entirely, you would need to remove
+# only half of each of the 4 lines, because the lines are being shared
+# with the processes/CPU information!
+#
+# And ${goto <number>} is a hard 'anchor' of where to display the text
+# that follows.
+#
+# And ${offset <number>} is a relative offset from whatever comes before it.
+# And the entire thing is relative to the 'alignment top_left' setting above!
+#
+# This seems like an insane method for position things on a screen.
+# I hope there is a better way of doing this in the future or 
+# I may be unaware of it! If you use this and make any improvemenmts, 
+# please share it with me! <sch@efers.org>
+#
+# (Remember, from the next line down, #WhiteSpaceMatters) ...
+#TEXT
+
+#conky sucks
+${voffset -20}
+${goto 40}${font Hack:pixelsize=16}${color D79921}CPU${offset 30}${color EDBBB2}${cpu cpu0}%${goto 335}${color D79921}HD${offset 30}${color EDBBB2}Avail / Total
+${font Hack:pixelsize=14}${goto 40}${color EDBBB2}01. ${color 98971A}${top name 1}${goto 180}${top cpu 1}% / ${top mem_res 1}${goto 335}${font Hack:pixelsize=14}${color EDBBB2}/home${goto 385}${color 98971A}${fs_free /home} ${goto 449}/ ${fs_size /home}
+${goto 40}${color EDBBB2}02. ${color D79921}${top name 2}${goto 180}${top cpu 2}% / ${top mem_res 2}${goto 335}${font Hack:pixelsize=14}${color EDBBB2}
+${goto 40}${color EDBBB2}03. ${color CC241D}${top name 3}${goto 180}${top cpu 3}% / ${top mem_res 3}
+${goto 40}${color EDBBB2}04. ${color 458588}${top name 4}${goto 180}${top cpu 4}% / ${top mem_res 4}
+${goto 40}${color EDBBB2}05. ${color B16286}${top name 5}${goto 180}${top cpu 5}% / ${top mem_res 5}
+
+
+#green ${color 98971A}
+#yllw ${color D79921}
+#red ${color CC241D}
+#purple ${color B16286}
+#blue ${color 458588} 
