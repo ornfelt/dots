@@ -1,3 +1,14 @@
+find /home/www \( -type d -name .git -prune \) -o -type f -print0 | xargs -0 sed -i 's/subdomainA\.example\.com/subdomainB.example.com/g'
+
+docker run --rm --interactive curlimages/curl curl \ --verbose --location --fail --silent --output - \ https://example.com
+
+gcc -Wall main.c |& awk '/: warning:/{print "\x1B[01;31m" $0 "\x1B[m";next;}{print}' # Color gcc warnings in red 
+
+journalctl --no-pager --since today \
+--grep 'fail|error|fatal' --output json|jq '._EXE' | \
+sort | uniq -c | sort --numeric --reverse --key 1
+
+----------------------------------------------------------------------------------
 Cut:
 echo "This is a line of text" | cut -d ' ' -f5
 

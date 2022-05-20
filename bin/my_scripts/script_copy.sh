@@ -29,11 +29,13 @@ eighteenthOpt="${textSplit[17]}"
 nineteenthOpt="${textSplit[18]}"
 twentiethOpt="${textSplit[19]}"
 twentyfirstOpt="${textSplit[20]}"
+twentysecondOpt="${textSplit[21]}"
+twentythirdOpt="${textSplit[22]}"
 #otherOpt=$(echo $fileText | sed -n '1p')
 #otherOpt=$(echo $fileText | awk 'NR==1')
 
 # Variable passed to rofi
-options="$firstOpt\n$secondOpt\n$thirdOpt\n$fourthOpt\n$fifthOpt\n$sixthOpt\n$seventhOpt\n$eighthOpt\n$ninthOpt\n$tenthOpt\n$eleventhOpt\n$twelfthOpt\n$thirteenthOpt\n$fourteenthOpt\n$fifteenthOpt\n$sixteenthOpt\n$seventhOpt\n$eighteenthOpt\n$nineteenthOpt\n$twentiethOpt\n$twentyfirstOpt"
+options="$firstOpt\n$secondOpt\n$thirdOpt\n$fourthOpt\n$fifthOpt\n$sixthOpt\n$seventhOpt\n$eighthOpt\n$ninthOpt\n$tenthOpt\n$eleventhOpt\n$twelfthOpt\n$thirteenthOpt\n$fourteenthOpt\n$fifteenthOpt\n$sixteenthOpt\n$seventeenthOpt\n$eighteenthOpt\n$nineteenthOpt\n$twentiethOpt\n$twentyfirstOpt\n$twentysecondOpt\n$twentythirdOpt"
 
 chosen="$(echo -e "$options" | rofi -theme "/home/jonas/.config/rofi/themes/gruvbox/gruvbox-dark2.rasi" -p "Choose a command to copy" -dmenu -selected-row 0)"
 
@@ -100,5 +102,11 @@ case $chosen in
         ;;
     $twentyfirstOpt)
 		echo "$twentyfirstOpt" | xclip -sel clip
+        ;;
+    $twentysecondOpt)
+		echo "$twentysecondOpt" | xclip -sel clip
+        ;;
+    $twentythirdOpt)
+		echo "$twentythirdOpt" | xclip -sel clip
         ;;
 esac

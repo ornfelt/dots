@@ -63,5 +63,5 @@
 
 window {
 	width: 85%;
-	height: 65%;
+	height: 60%;
 }

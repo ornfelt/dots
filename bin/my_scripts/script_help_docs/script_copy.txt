@@ -1,22 +1,23 @@
-awk  -F":" '{print $2}' file.txt #Split up the lines of the file file.txt with ":" (colon) separated fields and print the second field ($2) of each line
-awk -F: '{ print $1 "-" $4 "-" $6 }' file.txt #Print selected fields from each line separated by a dash
-ip route get 1.1.1.1 | awk '{for(i=1;i<=NF;i++){if($i=="src") print $(i+1)}}' #Print the content of a field after the field that contains the string "src"
-awk  -F":" '/some regexp/{print $2}' file.txt # Print field number two ($2) only on lines matching "some regexp" (fiel separator is ":"): 
-awk  '/regexp a/{print};/regexp b/{printf $0}' file.txt # Print lines matching "regexp a" and lines matching "regexp b" but the later ones are printed without newline (note the printf)
-awk '/regexp/{print $0; print "text inserted after matching line";next}{print}' file.txt # This inserts a new line after the matching line
-awk '/regexp/{print $0 "text appended at end of the matching line";next}{print}' file.txt # This appends a string to the matching line: 
-awk 'END{print NR}' # Count lines (wc -l): 
-awk '/regexp/' # Search for matching lines (egrep regexp): 
+sed -i 's#ORIGINAL_VALLUE#NEW_VALUE#g' myfile1 myfile2 OR perl -p -i -e 's#ORIGINAL#NEW_VALUE#' myfile1 myfile2
+watch vmstat -sSM # Monitor memory
+echo "Lorem ipsum dolor sit amet, consectetuer adipiscing elit." | pv -qL 20
+perl -e '$|++; while (1) { print " ." x (rand(10) + 1), int(rand(2)) }'
+git grep -l 'original_text' | xargs sed -i 's/original_text/new_text/g'
+find / -type f -size +50M -size -10M # Find files > 5M and < 10M
+grep -R 'import' --include='*.java' --color MySourceCodeDir # Search for file
+find MySourceCodeDir/ -name '*.java' -type f -print| xargs \ grep --color 'import'
+for i in */.git; do cd $(dirname $i); git pull; cd ..; done
 awk '!/regexp/' # Print non matching lines (egrep -v regexp): 
 awk '/^[ \t]*$/{next}{print}' file.txt # This prints all lines except empty ones and lines with only space and tab: 
-awk 'length($0)>80{print FNR,$0}'  file.txt # This is useful to find all the lines longer than 80 characters (or any other length): 
-awk '{sub(/[ \t]*$/, "");print}' file.txt # Delete trailing white space (spaces, tabs)
-gcc -Wall main.c |& awk '/: warning:/{print "\x1B[01;31m" $0 "\x1B[m";next;}{print}' # Color gcc warnings in red 
-awk 'length < 80' file.txt # awk 'length < 80' file.txt
-awk 'BEGIN{print strtonum(0x20)}' # Convert hex string to decimal (this prints 32)
-xxxxxx1
-xxxxxx2
-xxxxxx3
-xxxxxx4
-xxxxxx5
-xxxxxx6
+awk 'length($0)>80{print FNR,$0}'  file.txt # Find all the lines longer than 80 characters (or any other length): 
+awk 'length < 80' file.txt # Print lines with < 80 char
+cd $mydir && python3 -m http.server 8888 # Share a file quickly using a web server
+python3 -c  "import csv,json,sys;print(json.dumps(list(csv.reader(open(sys.argv[1])))))" file.csv
+mtr google.com
+^foo^bar^ # Run the previous shell command but replace string "foo" with "bar"
+!whatever:p # Find last command beginning with whatever
+Ctrl-R <search-text>
+xxx1
+xxx2
+xxx3
+xxx4
