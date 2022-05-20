@@ -1,1 +1,67 @@
-grep commands...
+Regex: https://www.youtube.com/watch?v=77I4ZkhuHsQ
+
+. Any one character
+* Match any number of previous (including 0)
++ Match any number of previous (excluding 0)
+$ End of line
+^ Beginning of line
+\S any non-whitespace character
+\s any whitespace character
+? The character before is optional
+[a-z]\+ Only a-z lowercase characters
+[A-Z]\+ Only a-z lowercase characters
+[A-Za-z]\+ any letter
+^[0-9]*$ Only digits
+
+Find words that start with f and end with x (for example fox fix):
+grep "f.x" file.txt
+
+Or to to find fooooox, falx, fx etc:
+grep "f.*x" file.txt
+
+To exclude finding fx:
+grep "f\+x" file.txt
+
+Find lines that end with x:
+grep "x$" file.txt
+
+Find lines that start with sp:
+grep "^sp" file.txt
+
+Match boomer, zoomer, doomer:
+grep ".oomer" file.txt
+
+Match boomer, zoomer, doomer, a coomer, the consoomer (only the oomer-word):
+grep "\S*oomer" file.txt
+
+Match the consoomer and the       consoomer:
+grep "the\s\+consoomer" file.txt
+
+Match url's (Finds http and https):
+grep "https\?" file.txt
+
+Match url's (Finds http and https and then prints until whitespace):
+grep "https\?://\S*" file.txt
+
+Match url's (Finds http and https and then prints until whitespace and until dot):
+grep "https\?://\S*\." file.txt
+
+Match url's (Finds http and https and then prints until whitespace and until dot, and then print until non characters (lowercase)):
+grep "https\?://\S*\.[a-z]\+" file.txt
+
+Match url's (Finds http and https and then prints until whitespace and until dot, and then print until non characters and then include until whitespace):
+grep "https\?://\S*\.[A-Za-z]\+\S*" file.txt
+
+Example for finding mail:
+grep "\S\+@\S\+\.[A-Za-z]\+" file.txt
+The above matches: non whitespace characters, then @, then more non whitespace characters, then real dot (\.), then any letters (+) for any number of those). Only letters mean that it wont find the paranthesis in this example: jonas@jonas.se (my address).
+
+Find line that begins with capital letter:
+grep "^[A-Z]" file.txt
+
+Find line that begins AND ENDS with capital letter:
+grep "^[A-Z].*[A-Z]$" file.txt
+
+Find line that begins with capital letter:
+grep "^[A-Z]" file.txt
+

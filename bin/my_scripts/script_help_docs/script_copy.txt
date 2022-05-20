@@ -1,8 +1,22 @@
-xxx1
-xxx2
-xxxxxxxxxxxxx3
-xxxxxxxxxxxxxxxxxxxxxxxxxx4
-xxxxxxxxxxxxxx5
-xxxxxxxxxxxxx6
-yyyyyyyyy7
-yyyyyyyyyy8
+awk  -F":" '{print $2}' file.txt #Split up the lines of the file file.txt with ":" (colon) separated fields and print the second field ($2) of each line
+awk -F: '{ print $1 "-" $4 "-" $6 }' file.txt #Print selected fields from each line separated by a dash
+ip route get 1.1.1.1 | awk '{for(i=1;i<=NF;i++){if($i=="src") print $(i+1)}}' #Print the content of a field after the field that contains the string "src"
+awk  -F":" '/some regexp/{print $2}' file.txt # Print field number two ($2) only on lines matching "some regexp" (fiel separator is ":"): 
+awk  '/regexp a/{print};/regexp b/{printf $0}' file.txt # Print lines matching "regexp a" and lines matching "regexp b" but the later ones are printed without newline (note the printf)
+awk '/regexp/{print $0; print "text inserted after matching line";next}{print}' file.txt # This inserts a new line after the matching line
+awk '/regexp/{print $0 "text appended at end of the matching line";next}{print}' file.txt # This appends a string to the matching line: 
+awk 'END{print NR}' # Count lines (wc -l): 
+awk '/regexp/' # Search for matching lines (egrep regexp): 
+awk '!/regexp/' # Print non matching lines (egrep -v regexp): 
+awk '/^[ \t]*$/{next}{print}' file.txt # This prints all lines except empty ones and lines with only space and tab: 
+awk 'length($0)>80{print FNR,$0}'  file.txt # This is useful to find all the lines longer than 80 characters (or any other length): 
+awk '{sub(/[ \t]*$/, "");print}' file.txt # Delete trailing white space (spaces, tabs)
+gcc -Wall main.c |& awk '/: warning:/{print "\x1B[01;31m" $0 "\x1B[m";next;}{print}' # Color gcc warnings in red 
+awk 'length < 80' file.txt # awk 'length < 80' file.txt
+awk 'BEGIN{print strtonum(0x20)}' # Convert hex string to decimal (this prints 32)
+xxxxxx1
+xxxxxx2
+xxxxxx3
+xxxxxx4
+xxxxxx5
+xxxxxx6

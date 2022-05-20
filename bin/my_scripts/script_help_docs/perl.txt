@@ -1,1 +1,580 @@
-perl commands
+Perl
+------------------------------------------
+One-liners from: https://catonmat.net/introduction-to-perl-one-liners
+
+# This one-liner replaces all occurrences of the text you with me in the file file. (The -e argument is the best argument. It allows you to specify the Perl code to be executed right on the command line.) 
+perl -pi -e 's/you/me/g' file
+
+# Multiple files:
+perl -pi -e 's/you/me/g' file1 file2 file3
+
+# Let's do the same replacement only on lines that match we. It's as simple as this:
+perl -pi -e 's/you/me/g if /we/' file
+
+# Let's say you want to execute the substitution only on lines that have digits in them. You can then use the /\d/ regular expression that matches numbers:
+perl -pi -e 's/you/me/g if /\d/' file
+
+# Now how about finding all repeated lines in a file?
+perl -ne 'print if $a{$_}++' file
+### This one-liner records the lines seen so far in the %a hash and keeps the counter of how many times it has seen the same line. The $a{$}++ creates elements in the %a hash automagically. When it sees a repeated line, the value of that hash element is defined and greater than zero, so if $a{$} is true, and it prints the line. This one-liner also uses the -n command line argument that loops over the input but unlike -p doesn't print the lines automatically, so you have to use print explicitly.
+
+# How about numbering lines? Super simple! Perl has the $. special variable that automatically maintains the current line number. You can just print it out together with the line:
+perl -ne 'print "$. $_"'
+
+# You can also achieve the same by using -p argument and modifying the $_ variable, which contains the entire line:
+perl -pe '$_ = "$. $_"'
+
+# How about we combine the previous two one-liners and create one that numbers repeated lines? Here we go:
+perl -ne 'print "$. $_" if $a{$_}++'
+
+# Now let's do something different. Let's sum up all the numbers on each line. We'll use the sum function from the List::Util CPAN module. You can install it as easily as running perl -MCPAN -e'install List::Util'.
+perl -MList::Util=sum -alne 'print sum @F'
+
+# How about finding the date 1299 days ago? That's also solvable by a simple one-liner:
+perl -MPOSIX -le '
+  @now = localtime;
+  $now[3] -= 1299;
+  print scalar localtime mktime @now
+'
+
+# How about generating an 8 letter password? Again, solvable elegantly with a one-liner:
+perl -le 'print map { (a..z)[rand 26] } 1..8'
+
+# Here is another one. Suppose you want to quickly find the decimal number that corresponds to an IP address. You can use the unpack function and find it really quickly:
+perl -le 'print unpack("N", 127.0.0.1)'
+### This one-liner uses a vstring, which is a version literal. The IP address 127.0.0.1 is treated as a vstring, which is basically the numbers 127, 0, 0, 1 concatenated together. Next the unpack function unpacks them to a single decimal number.
+
+# Now how about calculations? Let's find the sum of the numbers in the first column:
+perl -lane '$sum += $F[0]; END { print $sum }'
+
+# Now let's find out how many packets have gone through all the iptables rules. It's this simple:
+iptables -L -nvx | perl -lane '
+  $_ = $F[0]; $pkts += $_ if /^\d/; END { print $pkts }
+'
+
+# How about getting a list of the names of all users on the system?
+perl -a -F: -lne 'print $F[4]' /etc/passwd
+### Combining -a with -F argument allows you to specify the character that lines should be split on. In this case it's the colon, which is the record separator of /etc/passwd. Next we just print the 5th field $F[4], which is the real name of the user. Really quick and easy.
+
+------------------------------------------
+One-liners from: https://learnbyexample.github.io/learn_perl_oneliners/one-liner-introduction.html
+
+$ # multiple statements can be issued separated by ;
+$ # -l option will be covered in detail later, appends \n to 'print' here
+$ perl -le '$x=25; $y=12; print $x**$y'
+59604644775390625
+$ # or, use -E and 'say' instead of -l and 'print'
+$ perl -E '$x=25; $y=12; say $x**$y'
+59604644775390625
+
+$ # sample stdin data
+$ printf 'gate\napple\nwhat\nkite\n'
+gate
+apple
+what
+kite
+
+$ # print all lines containing 'at'
+$ # same as: grep 'at' and sed -n '/at/p' and awk '/at/'
+$ printf 'gate\napple\nwhat\nkite\n' | perl -ne 'print if /at/'
+gate
+what
+
+$ # print all lines NOT containing 'e'
+$ # same as: grep -v 'e' and sed -n '/e/!p' and awk '!/e/'
+$ printf 'gate\napple\nwhat\nkite\n' | perl -ne 'print if !/e/'
+what
+
+
+$ cat table.txt
+brown bread mat hair 42
+blue cake mug shirt -7
+yellow banana window shoes 3.14
+
+$ perl -nE 'say $& if /(?<!-)\d+$/' table.txt
+42
+14
+
+$ # if the condition isn't required, capture groups can be used
+$ perl -nE 'say /(\d+)$/' table.txt
+42
+7
+14
+
+
+
+$ # for each input line, change only first ':' to '-'
+$ # same as: sed 's/:/-/' and awk '{sub(/:/, "-")} 1'
+$ printf '1:2:3:4\na:b:c:d\n' | perl -pe 's/:/-/'
+1-2:3:4
+a-b:c:d
+
+$ # for each input line, change all ':' to '-'
+$ # same as: sed 's/:/-/g' and awk '{gsub(/:/, "-")} 1'
+$ printf '1:2:3:4\na:b:c:d\n' | perl -pe 's/:/-/g'
+1-2-3-4
+a-b-c-d
+
+
+$ cat table.txt
+brown bread mat hair 42
+blue cake mug shirt -7
+yellow banana window shoes 3.14
+
+$ # print the second field of each input line
+$ # same as: awk '{print $2}' table.txt
+$ perl -lane 'print $F[1]' table.txt
+bread
+cake
+banana
+
+$ # print lines only if the last field is a negative number
+$ # same as: awk '$NF<0' table.txt
+$ perl -lane 'print if $F[-1] < 0' table.txt
+blue cake mug shirt -7
+
+$ # change 'b' to 'B' only for the first field
+$ # same as: awk '{gsub(/b/, "B", $1)} 1' table.txt
+$ perl -lane '$F[0] =~ s/b/B/g; print "@F"' table.txt
+Brown bread mat hair 42
+Blue cake mug shirt -7
+yellow banana window shoes 3.14
+
+
+
+$ # same as: awk 'BEGIN{print "---"} 1; END{print "%%%"}'
+$ seq 4 | perl -pE 'BEGIN{say "---"} END{say "%%%"}'
+---
+1
+2
+3
+4
+%%%
+
+
+$ # existing environment variable
+$ # output shown here is for my machine, would differ for you
+$ perl -E 'say $ENV{HOME}'
+/home/learnbyexample
+$ perl -E 'say $ENV{SHELL}'
+/bin/bash
+
+$ # defined along with perl command
+$ # note that the variable definition is placed before the shell command
+$ word='hello' perl -E 'say $ENV{word}'
+hello
+$ # the characters are preserved as is
+$ ip='hi\nbye' perl -E 'say $ENV{ip}'
+hi\nbye
+
+
+$ cat word_anchors.txt
+sub par
+spar
+apparent effort
+two spare computers
+cart part tart mart
+
+$ # assume 'r' is a shell variable that has to be passed to the perl command
+$ r='\Bpar\B'
+$ rgx="$r" perl -ne 'print if /$ENV{rgx}/' word_anchors.txt
+apparent effort
+two spare computers
+
+
+$ r='\Bpar\B'
+$ perl -sne 'print if /$rgx/' -- -rgx="$r" word_anchors.txt
+apparent effort
+two spare computers
+
+
+
+$ perl -e 'system("echo Hello World")'
+Hello World
+
+$ perl -e 'system("wc -w <word_anchors.txt")'
+12
+
+$ perl -e 'system("seq -s, 10 > out.txt")'
+$ cat out.txt
+1,2,3,4,5,6,7,8,9,10
+
+
+
+$ perl -E '$es=system("ls word_anchors.txt"); say $es'
+word_anchors.txt
+0
+$ perl -E 'system("ls word_anchors.txt"); say $?'
+word_anchors.txt
+0
+
+$ perl -E 'system("ls xyz.txt"); say $?'
+ls: cannot access 'xyz.txt': No such file or directory
+512
+
+
+$ perl -e '$words = `wc -w <word_anchors.txt`; print $words'
+12
+
+$ perl -e '$nums = qx/seq 3/; print $nums'
+1
+2
+3
+
+------------------------------------------
+One-liners from: https://learnbyexample.github.io/learn_perl_oneliners/line-processing.html
+
+$ cat paths.txt
+/foo/a/report.log
+/foo/y/power.log
+/foo/abc/errors.log
+
+$ perl -ne 'print if /\/foo\/a\//' paths.txt
+/foo/a/report.log
+
+$ perl -ne 'print if m{/foo/a/}' paths.txt
+/foo/a/report.log
+
+$ perl -ne 'print if !m#/foo/a/#' paths.txt
+/foo/y/power.log
+/foo/abc/errors.log
+
+
+$ cat programming_quotes.txt
+Debugging is twice as hard as writing the code in the first place.
+Therefore, if you write the code as cleverly as possible, you are,
+by definition, not smart enough to debug it by Brian W. Kernighan
+
+Some people, when confronted with a problem, think - I know, I will
+use regular expressions. Now they have two problems by Jamie Zawinski
+
+A language that does not affect the way you think about programming,
+is not worth knowing by Alan Perlis
+
+There are 2 hard problems in computer science: cache invalidation,
+naming things, and off-by-1 errors by Leon Bambrick
+
+$ # note that this will print only the first match for each input line
+$ perl -nE 'say $& if /\bt\w*[et]\b/' programming_quotes.txt
+twice
+the
+that
+
+$ perl -nE 'say join "::", @{^CAPTURE} if /not (.+)y(.+)/i' programming_quotes.txt
+smart enough to debug it b:: Brian W. Kernighan
+affect the way ::ou think about programming,
+worth knowing b:: Alan Perlis
+
+$ # sometimes capture groups are enough, you don't need special variables
+$ # @{^CAPTURE} isn't needed here, as it is assumed that every line has a match
+$ perl -nE 'say /^(\w+ ).*?(\d+)$/' table.txt
+brown 42
+blue 7
+yellow 14
+$ # or add a custom separator
+$ perl -nE 'say join ":", /^(\w+).*?(\d+)$/' table.txt
+brown:42
+blue:7
+yellow:14
+
+
+
+$ # rot13
+$ echo 'Uryyb Jbeyq' | perl -pe 'tr/a-zA-Z/n-za-mN-ZA-M/'
+Hello World
+
+$ # use 'c' option to complement specified characters
+$ echo 'foo:123:baz' | perl -pe 'tr/0-9\n/-/c'
+----123----
+
+$ # use 'd' option to delete specified characters
+$ echo 'foo:123:baz' | perl -pe 'tr/0-9\n//cd'
+123
+
+$ # use 's' option to squeeze repeated characters
+$ echo 'APPLE gobbledygook' | perl -pe 'tr|A-Za-z||s'
+APLE gobledygok
+$ # transliterate as well as squeeze
+$ echo 'APPLE gobbledygook' | perl -pe 'tr|A-Z|a-z|s'
+aple gobbledygook
+
+
+
+$ # match lines containing 'b' 2 times
+$ perl -ne 'print if tr/b// == 2' table.txt
+brown bread mat hair 42
+
+$ s='orange apple appleseed'
+$ echo "$s" | perl -pe 's#\bapple\b(*SKIP)(*F)|\w+#$&=~tr/a-z/A-Z/r#ge'
+ORANGE apple APPLESEED
+
+
+$ # change commas to hyphens if the input line does NOT contain '2'
+$ # prints all input lines even if substitution fails
+$ printf '1,2,3,4\na,b,c,d\n' | perl -pe 's/,/-/g if !/2/'
+1,2,3,4
+a-b-c-d
+
+$ # prints filtered input lines, even if substitution fails
+$ perl -ne 'print s/by/**/rg if /not/' programming_quotes.txt
+** definition, not smart enough to debug it ** Brian W. Kernighan
+A language that does not affect the way you think about programming,
+is not worth knowing ** Alan Perlis
+
+$ # print only if substitution succeeded
+$ perl -ne 'print if s/1/one/g' programming_quotes.txt
+naming things, and off-by-one errors by Leon Bambrick
+
+
+$ perl -ne 'print if /not/ && !/it/' programming_quotes.txt
+A language that does not affect the way you think about programming,
+is not worth knowing by Alan Perlis
+
+$ perl -ane 'print if /twice/ || $#F > 11' programming_quotes.txt
+Debugging is twice as hard as writing the code in the first place.
+Some people, when confronted with a problem, think - I know, I will
+
+$ perl -ne 'print if /s/ xor /m/' table.txt
+brown bread mat hair 42
+yellow banana window shoes 3.14
+
+
+$ perl -nE 'if(/\bpar/){print "%% $_"; next}
+            say /s/ ? "X" : "Y"' word_anchors.txt
+%% sub par
+X
+Y
+X
+%% cart part tart mart
+
+
+$ # quits after an input line containing 'you' is found
+$ perl -ne 'print; exit if /you/' programming_quotes.txt
+Debugging is twice as hard as writing the code in the first place.
+Therefore, if you write the code as cleverly as possible, you are,
+$ # matching line won't be printed in this case
+$ perl -pe 'exit if /you/' programming_quotes.txt
+Debugging is twice as hard as writing the code in the first place.
+
+
+$ tac programming_quotes.txt | perl -ne 'print; exit if /not/' | tac
+is not worth knowing by Alan Perlis
+
+There are 2 hard problems in computer science: cache invalidation,
+naming things, and off-by-1 errors by Leon Bambrick
+
+
+$ printf 'sea\neat\ndrop\n' | perl -ne 'print; exit(2) if /at/'
+sea
+eat
+$ echo $?
+2
+
+
+$ perl -pE 'exit if /cake/' table.txt
+brown bread mat hair 42
+
+$ perl -pE 'exit if /cake/; END{say "bye"}' table.txt
+brown bread mat hair 42
+bye
+
+$ perl -pE 'BEGIN{say "hi"; exit; say "hello"} END{say "bye"}' table.txt
+hi
+
+
+
+$ # print only the 3rd line
+$ perl -ne 'print if $. == 3' programming_quotes.txt
+by definition, not smart enough to debug it by Brian W. Kernighan
+
+$ # print 2nd and 5th line
+$ perl -ne 'print if $. == 2 || $. == 5' programming_quotes.txt
+Therefore, if you write the code as cleverly as possible, you are,
+Some people, when confronted with a problem, think - I know, I will
+
+$ # transliterate only 2nd line
+$ printf 'gates\nnot\nused\n' | perl -pe 'tr/a-z/*/ if $. == 2'
+gates
+***
+used
+
+$ # print from particular line number to the end of input
+$ seq 14 25 | perl -ne 'print if $. >= 10'
+23
+24
+25
+
+$ # same as: tail -n1 programming_quotes.txt
+$ perl -ne 'print if eof' programming_quotes.txt
+naming things, and off-by-1 errors by Leon Bambrick
+
+$ perl -ne 'print "$.:$_" if eof' programming_quotes.txt
+12:naming things, and off-by-1 errors by Leon Bambrick
+
+$ # multiple file example
+$ # same as: tail -q -n1 programming_quotes.txt table.txt
+$ perl -ne 'print if eof' programming_quotes.txt table.txt
+naming things, and off-by-1 errors by Leon Bambrick
+yellow banana window shoes 3.14
+
+
+$ seq 3542 4623452 | perl -ne 'if($. == 2452){print; exit}'
+5993
+$ seq 3542 4623452 | perl -ne 'print if $. == 250; if($. == 2452){print; exit}'
+3791
+5993
+
+$ # here is a sample time comparison
+$ time seq 3542 4623452 | perl -ne 'if($. == 2452){print; exit}' > f1
+real    0m0.004s
+$ time seq 3542 4623452 | perl -ne 'print if $. == 2452' > f2
+real    0m0.740s
+
+
+$ # the range is automatically compared against $. in this context
+$ # same as: perl -ne 'print if 3 <= $. <= 5'
+$ seq 14 25 | perl -ne 'print if 3..5'
+16
+17
+18
+
+$ # the range is automatically compared against $_ in this context
+$ # note that all the matching ranges are printed
+$ perl -ne 'print if /are/ .. /by/' programming_quotes.txt
+Therefore, if you write the code as cleverly as possible, you are,
+by definition, not smart enough to debug it by Brian W. Kernighan
+There are 2 hard problems in computer science: cache invalidation,
+naming things, and off-by-1 errors by Leon Bambrick
+
+
+$ perl -ne 'print if 5 .. /use/' programming_quotes.txt
+Some people, when confronted with a problem, think - I know, I will
+use regular expressions. Now they have two problems by Jamie Zawinski
+
+$ # same logic as: perl -pe 'exit if /ll/'
+$ # inefficient, but this will work for multiple file inputs
+$ perl -ne 'print if !(/ll/ .. eof)' programming_quotes.txt table.txt
+Debugging is twice as hard as writing the code in the first place.
+Therefore, if you write the code as cleverly as possible, you are,
+by definition, not smart enough to debug it by Brian W. Kernighan
+
+brown bread mat hair 42
+blue cake mug shirt -7
+
+
+
+$ # 'worth' matches the 9th line
+$ perl -ne 'print if 9 .. /worth/' programming_quotes.txt
+is not worth knowing by Alan Perlis
+
+$ # there's a line containing 'affect' but doesn't have matching pair
+$ # so, all lines till the end of input is printed
+$ perl -ne 'print if /affect/ .. /XYZ/' programming_quotes.txt
+A language that does not affect the way you think about programming,
+is not worth knowing by Alan Perlis
+
+There are 2 hard problems in computer science: cache invalidation,
+naming things, and off-by-1 errors by Leon Bambrick
+
+
+
+$ # no match, since [] are character class metacharacters
+$ echo 'int a[5]' | perl -ne 'print if /a[5]/'
+
+$ perl -E 'say "\Qa[5]"'
+a\[5\]
+$ echo 'int a[5]' | perl -ne 'print if /\Qa[5]/'
+int a[5]
+$ echo 'int a[5]' | perl -pe 's/\Qa[5]/b[12]/'
+int b[12]
+
+$ # $y and $z will be treated as variables here (default value empty string)
+$ echo '$x = $y + $z' | perl -pe 's/\Q$y + $z/100/'
+$x = $y100$z
+$ echo '$x = $y + $z' | fs='$y + $z' perl -pe 's/\Q$ENV{fs}/100/'
+$x = 100
+$ # ENV is preferred since \\ is special in single quoted strings
+$ perl -E '$x = q(x\y\\0z); say $x'
+x\y\0z
+$ x='x\y\\0z' perl -E 'say $ENV{x}'
+x\y\\0z
+
+
+
+$ echo 'int a[5]' | perl -ne 'print if index($_, "a[5]") != -1'
+int a[5]
+
+
+$ # double quotes allow escape sequences and interpolation
+$ perl -E '$x=5; say "value of x:\t$x"'
+value of x:     5
+
+$ # use 'q' operator as an alternate to specify single quoted string
+$ s='$a = 2 * ($b + $c)'
+$ echo "$s" | perl -ne 'print if index($_, q/($b + $c)/) != -1'
+$a = 2 * ($b + $c)
+
+$ # or pass the string as environment variable
+$ echo "$s" | fs='($b + $c)' perl -ne 'print if index($_, $ENV{fs}) != -1'
+$a = 2 * ($b + $c)
+
+
+$ cat eqns.txt
+a=b,a-b=c,c*d
+a+b,pi=3.14,5e12
+i*(t+9-g)/8,4-a+b
+
+$ # start of line
+$ s='a+b' perl -ne 'print if index($_, $ENV{s})==0' eqns.txt
+a+b,pi=3.14,5e12
+
+$ # end of line
+$ # same as: s='a+b' perl -ne 'print if /\Q$ENV{s}\E$/' eqns.txt
+$ # length function returns number of characters, by default acts on $_
+$ # -l option is needed here to remove \n from $_
+$ s='a+b' perl -lne '$pos = length() - length($ENV{s});
+                     print if index($_, $ENV{s}) == $pos' eqns.txt
+i*(t+9-g)/8,4-a+b
+
+
+$ # since 'index' returns '-1' if there's no match,
+$ # you need to add >=0 check as well for < or <= comparison
+$ perl -ne '$i = index($_, "="); print if 0 <= $i <= 5' eqns.txt
+a=b,a-b=c,c*d
+
+$ # > or >= comparison is easy to specify
+$ # if you use 3rd argument to 'index', you'll still have to check != -1
+$ s='a+b' perl -ne 'print if index($_, $ENV{s})>=1' eqns.txt
+i*(t+9-g)/8,4-a+b
+
+
+$ printf 'a.b\na+b\n' | perl -lne 'print if /^a.b$/'
+a.b
+a+b
+$ printf 'a.b\na+b\n' | perl -lne 'print if $_ eq q/a.b/'
+a.b
+$ printf '1 a.b\n2 a+b\n' | perl -lane 'print if $F[1] ne q/a.b/'
+2 a+b
+
+
+$ # characters like $ and @ are special in replacement section
+$ echo 'x+y' | perl -pe 's/\Qx+y/$x+@y/'
++
+
+$ # provide replacement string as environment variable
+$ echo 'x+y' | r='$x+@y' perl -pe 's/\Qx+y/$ENV{r}/'
+$x+@y
+
+$ # or, use 'e' flag to provide single quoted value as Perl code
+$ echo 'x+y' | perl -pe 's/\Qx+y/q($x+@y)/e'
+$x+@y
+
+$ # need to workaround delimiters and \\ with 'q' operator based solution
+$ echo 'x+y' | perl -pe 's/\Qx+y/q($x\/@y)/e'
+$x/@y
+$ echo 'x+y' | perl -pe 's|\Qx+y|q($x/@y)|e'
+$x/@y
+$ echo 'x+y' | perl -pe 's|\Qx+y|q($x/@y\\\z)|e'
+$x/@y\\z
+
+

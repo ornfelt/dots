@@ -1,1 +1,68 @@
-sed commands...
+Sed commands:
+sed -i 's/Pineapple/Feta/' toppings.txt
+
+find /etc -type f (find files in /etc folder)
+Then you can use sed to remove /etc for example
+
+/g is for all occurences not just once per line
+
+Luke smith replace comments in a file with sed:
+sed "s/#.*//g" .bmfiles
+
+. means any character 
+* means whatever character you just typed - any number of those
+So the above will find the # sign and then replace every character after that
+
+Also remove space before # 
+sed "s/\s*#.*//g" .bmfiles
+You can combine several find and replace, below will also replace lower case c with C:
+sed "s/\s*#.*//g";s/c/C/g" .bmfiles
+
+find lines that has "cf" and delete them:
+sed "s/\s*#.*//g"; /cf/ d" .bmfiles
+
+Or print out lines that has "cf":
+sed "s/\s*#.*//g"; /cf/ p" .bmfiles
+
+Or quit the file when line has "cf":
+sed "s/\s*#.*//g"; /cf/ q" .bmfiles
+
+Do command and when u find 11th line, quit:
+sed "s/\s*#.*//g"; 11 q" .bmfiles
+
+Remove blank lines:
+sed "s/\s*#.*//g"; /^$/ d" .bmfiles
+
+You can also apply several find-replace expressiosn with:
+sed -e 's/find/replace/' -e 's/find/replace/' filename
+
+^ means beginning of line
+$ means ends of line
+A blank line is essentially a beginning of a line, followed by the end of a line.
+
+torrent script that uses sed and awk in the end of: https://www.youtube.com/watch?v=QaGhpqRll_k
+
+sed examples from: https://www.youtube.com/watch?v=EACe7aiGczw
+cat /etc/shells | sed 's/usr/u/g'
+cat /etc/shells | sed -e 's/usr/u/g' -e 's/bin/b/g'
+Print the lines that has "usr"
+cat /etc/shells | sed -n '/usr/p'
+
+sed can delete extra whitespaces:
+sed -i 's/ *$//' test.txt
+Or tabs:
+sed -i 's/[[:space:]]*$//' test.txt
+Delete empty lines
+sed -i '/^$/d'
+
+Change lowercase characters to uppercase:
+sed 's/[a-z]/\U&/g' test.txt
+Or to lowercase:
+sed 's/[A-Z]/\L&/g' test.txt
+
+Other than using sed for substituion it is common to use it for head replacement (head only gets 10 lines):
+sed 11q .bashrc
+Gets 11 lines from .bashrc
+
+Use awk for the same purpose:
+awk 'NR < 13' .bashrc

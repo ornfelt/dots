@@ -1,1 +1,170 @@
-awk commands...
+Awk cat:
+awk '{print $0}' new.sh
+
+Awk grep:
+awk '/#/' new.sh
+
+Search for first field, if it contains #, then print the second column:
+awk '$1 == "#" { print $2 }' new.sh
+
+Check for contain with:
+awk '$1 ~ "elif" { print $2 }' new.sh
+
+Check for DOES NOT contain with:
+awk '$1 !~ "elif" { print $2 }' new.sh
+
+Case insensitive search:
+grep -i 'dir' new.sh
+sed '/[Dd]ir/!d' new.sh
+awk 'tolower($0) ~/dir/' new.sh
+
+From: https://www.youtube.com/watch?v=9YOZmI-zWok
+ps gives columns so we will use it for awk. To print the first column:
+ps | awk '{print $1}
+
+Print everything
+ps | awk '{print $0}
+
+awk is common for etc/passwd, but it uses : as field separator, so we use the -F flag, cause awk is otherwise using spaces (tabs?). Below gets every user on the linux system:
+awk -F ":" '{print $1}' /etc/passwd
+
+Print several columns:
+awk -F ":" '{print $1 $6 $7}' /etc/passwd
+Separate print with tabs:
+awk -F ":" '{print $1"\t"$6"\t"$7}' /etc/passwd
+
+Separate print with dash (another way of doing it):
+awk 'BEGIN{FS=":"; OFS="-"} {print $1, $6, $7}' /etc/passwd
+
+To print the last column, for example get only shells without full path from cat /etc/shells:
+awk -F "/" '/^\// {print $NF]'
+The above will separate by slash and then find beginning of every line that begins with a slash (have to scape slash between outer search-slashes), then print the last field with NF.
+
+Remove duplicates, if any and sort: 
+awk -F "/" '/^\// {print $NF]' | uniq | sort
+
+awk is often used on df also, in this example print lines that include /dev/loop
+df | awk '/\/dev\/loop/ {print $1}'
+
+More columns:
+df | awk '/\/dev\/loop/ {print $1"\t"$2"\t"$3}'
+
+Arithmetic:
+df | awk '/\/dev\/loop/ {print $1"\t"$2 + $3}'
+
+filter results by length of line, this will return lines that are more than 7 chars:
+awk 'length($0) > 7' /etc/shells
+
+ps -ef (list of all processes that are running on machine)
+You can use if statements, below will check if the last field equals /bin/fish, then print the lines:
+ps -ef | awk '{ if($NF == "/bin/fish") print $0}'
+
+For loop:
+awk 'BEGIN { for(i=1; i<=10; i++) print "The square root of", i, "is", i*i;}'
+
+print every line that begins with a certain char or string, below will print lines that begin with b or c:
+awk '$1 ~ /^[b,c]/ {print $0}' .bashrc
+
+With a space separated text file, for example: 1 Xmonad\n2 Qtile etc...: Print out every line, but not until fourth character (second column):
+awk '{print substr($0, 4)}' numbered.txt
+
+Find every line that has an 'o' in the name (every window manager that has the letter o in the name):
+awk 'match($0, /o/) {print $0 " has \"o\" character at " RSTART}' numbered.txt
+(RSTART is index location where the letter o appeared)
+
+Print range of line (NR = number of records):
+df | awk 'NR==7, NR==11 {print NR, $0}'
+
+Get line count with awk:
+awk 'END {print NR}' /etc/shells
+
+line count of several:
+awk 'END {print NR}' /etc/shells /etc/passwd
+
+----------------------------------------------------------------------------------
+*Awk supress whitespace by default
+*You can use awk with any "field separator" fs.
+
+----------------------------------------------------------------------------------
+More awk:
+ls /usr/bin
+
+Count number of lines:
+wc -l ls_usr_bin.txt
+
+Print out file:
+awk '{print}' ls_usr_bin.txt
+
+Print out only binary name:
+awk '{print $1}' ls_usr_bin.txt
+
+Get file sizes:
+awk '{print $2}' ls_usr_bin.txt
+
+Search for all gcc:
+awk '/gcc/ {print $1}' ls_usr_bin.txt
+
+This will start at the beginning, skip any non-digits, and match the first sequence of digits it finds
+/^[^\d]*(\d+)/
+
+Lines that begin with 'w':
+awk '/^w/ {print $1}' ls_usr_bin.txt
+
+Search and print both fields:
+awk '/path/ {print $1,$2}' ls_usr_bin.txt
+
+Arithmetic on file size field (divide by 1024 to get kilobytes):
+awk '/path/ {print $1,$2/1024"K"}' ls_usr_bin.txt
+
+Math path and with file size bigger than 15000 bytes:
+awk '/path/ && $2 > 15000 {print $1,$2/1024"K"}' ls_usr_bin.txt
+
+vim path15k.awk
+/path/ && $2 > 15000 {print $1,$2/1024"K"}
+then: awk -f path15k.awk ls_usr_bin.txt
+
+vim path15k.awk
+/path/ && $2 > 15000 {print $1,$2/1024"K"}
+/^a/ && $2 > 25000 {print $1,$2/1024"K"}
+then: awk -f path15k.awk ls_usr_bin.txt
+
+Use int to truncate floating into int:
+/^w/ && $2 > 9000 {print $1,int($2/1024)"K"}
+OR print real and truncated:
+/^w/ && $2 > 9000 {print $1,$2, int($2/1024)"K"}
+
+Better rounding script:
+func round (n) {
+	n = n + 0.5
+	n = int(n)
+	return n
+}
+/^w/ && $2 > 9000 {print $1,$2, round($2/1024)"K"}
+
+vim loop.awk
+Function for printing list:
+func printlist(n) {
+	for(i=1;i<=n;i++){
+		printf("%d ", i)
+	}
+	printf("\n")
+}
+
+{printlist($1)}
+
+then: awk -f loop.awk numbers.txt
+
+cat numbers.txt
+3
+7
+12
+15
+16
+31
+
+Run two awk commands:
+awk -F, '{print $4}' x.CSV | awk -F\  '{print $1}' |sort|uniq
+or, as Avinash Raj suggested,
+
+awk -F, '{print $4}' x.CSV | awk -F\  '{print $1}' | sort -u
+
