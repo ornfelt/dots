@@ -1,11 +1,11 @@
 sed -i 's#ORIGINAL_VALLUE#NEW_VALUE#g' myfile1 myfile2 OR perl -p -i -e 's#ORIGINAL#NEW_VALUE#' myfile1 myfile2
 watch vmstat -sSM # Monitor memory
+watch grep \"cpu MHz\" /proc/cpuinfo # Monitor CPU speed
+ps aux | awk '{if ($5 != 0 ) print $2,$5,$6,$11}' | sort -k2n # check process usage
 echo "Lorem ipsum dolor sit amet, consectetuer adipiscing elit." | pv -qL 20
 perl -e '$|++; while (1) { print " ." x (rand(10) + 1), int(rand(2)) }'
+w3m https://www.archlinux.org/ | sed -n "/Latest News/,/Older News/p" | head -n -1 
 git grep -l 'original_text' | xargs sed -i 's/original_text/new_text/g'
-find / -type f -size +50M -size -10M # Find files > 5M and < 10M
-grep -R 'import' --include='*.java' --color MySourceCodeDir # Search for file
-find MySourceCodeDir/ -name '*.java' -type f -print| xargs \ grep --color 'import'
 for i in */.git; do cd $(dirname $i); git pull; cd ..; done
 awk '!/regexp/' # Print non matching lines (egrep -v regexp): 
 awk '/^[ \t]*$/{next}{print}' file.txt # This prints all lines except empty ones and lines with only space and tab: 
@@ -13,11 +13,17 @@ awk 'length($0)>80{print FNR,$0}'  file.txt # Find all the lines longer than 80 
 awk 'length < 80' file.txt # Print lines with < 80 char
 cd $mydir && python3 -m http.server 8888 # Share a file quickly using a web server
 python3 -c  "import csv,json,sys;print(json.dumps(list(csv.reader(open(sys.argv[1])))))" file.csv
+cat ~/.bash_history | tr "\|\;" "\n" | sed -e "s/^ //g" | cut -d " " -f 1 | sort | uniq -c | sort -n | tail -n 15
 mtr google.com
 ^foo^bar^ # Run the previous shell command but replace string "foo" with "bar"
 !whatever:p # Find last command beginning with whatever
 Ctrl-R <search-text>
-xxx1
-xxx2
-xxx3
-xxx4
+journalctl --disk-usage
+sudo journalctl --vacuum-size=500M
+du -sh -- *  | sort -rh  # Files and directories, or
+du -sh -- */ | sort -rh  # Directories only
+find / -type f -size +50M -size -10M # Find files > 5M and < 10M
+du -sk /var/log/* | sort -r -n | head -10 # Top 10 Largest File / Dirs
+grep -R 'import' --include='*.java' --color MySourceCodeDir # Search for file
+find MySourceCodeDir/ -name '*.java' -type f -print| xargs \ grep --color 'import'
+find . -name '*.pdf' | xargs rm -v # Find and delete specific type of files

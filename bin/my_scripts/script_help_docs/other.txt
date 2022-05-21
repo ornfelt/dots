@@ -280,6 +280,94 @@ cd LCD-show/
 sudo ./LCD-hdmi
 
 ----------------------------------------------------------------------------------
+sed '$!N; /^\(.*\)\n\1$/!P; D' ostechnix.txt # Delete duplicate lines in files
+
+# Display Arch Linux news on Terminal
+w3m https://www.archlinux.org/ | sed -n "/Latest News/,/Older News/p" | head -n -1 
+
+find . -name '*.pdf' | xargs rm -v # Find and delete specific type of files
+
+watch grep \"cpu MHz\" /proc/cpuinfo # Monitor CPU speed
+
+cut -d ':' -f 1,3 /etc/passwd | sort -t ':' -k2n - | tr ':' '\t' # Display Username and UID
+
+tr -c a-zA-Z '\n' < Readme1.txt  | sed '/^$/d' | sort | uniq -i -c # List unique words
+
+sort m1.txt | join - m2.txt # Join unsorted file with a sorted file
+
+ps aux | awk '{if ($5 != 0 ) print $2,$5,$6,$11}' | sort -k2n # check process usage
+
+du -sk /var/log/* | sort -r -n | head -10 # Top 10 Largest File / Dirs
+
+# Find out Top 10 Most Used Commands
+cat ~/.bash_history | tr "\|\;" "\n" | sed -e "s/^ //g" | cut -d " " -f 1 | sort | uniq -c | sort -n | tail -n 15
+
+
+cd - (Change to the previous working directory)
+Run the previous shell command but replace string "foo" with "bar"
+$ ^foo^bar^
+
+sed -i 's#ORIGINAL_VALLUE#NEW_VALUE#g' myfile1 myfile2
+perl -p -i -e 's#ORIGINAL#NEW_VALUE#' myfile1 myfile2
+
+cd $mydir && python3 -m http.server 8888 # Share a file quickly using a web server
+
+#Find failures with journalctl
+journalctl --no-pager --since today \
+--grep 'fail|error|fatal' --output json|jq '._EXE' | \
+sort | uniq -c | sort --numeric --reverse --key 1
+
+Search for a file
+grep -R 'import' --include='*.java' --color MySourceCodeDir
+find MySourceCodeDir/ -name '*.java' -type f -print| xargs \
+grep --color 'import
+
+Update all Git repositories on a directory
+for i in */.git; do cd $(dirname $i); git pull; cd ..; done
+
+Convert a CSV to JSON
+python3 -c \
+"import csv,json,sys;print(json.dumps(list(csv.reader(open(sys.argv[1])))))" \
+covid19-vaccinations-town-age-grp.csv
+
+Install and run commands with Docker
+docker run --rm --interactive curlimages/curl curl \
+--verbose --location --fail --silent --output - \
+https://example.com
+
+mtr - traceroute and ping combined
+$ mtr google.com
+
+Find the last command that begins with "whatever," but avoid running it
+$ !whatever:p
+
+Search for a matching command previously typed in BASH
+$Ctrl-R <search-text>
+
+Find all files larger than 5M and less than 10M
+Useful, for example, to search for a log file of a specific size.
+$find / -type f -size +50M -size -10M
+
+You can simulate typing on the screen and look like a hacker by controlling the speed at which you type.
+$echo "Lorem ipsum dolor sit amet, consectetuer adipiscing elit." | pv -qL 20
+
+Note: you need to have installed the< pv> utility used to monitor data progress through a pipe.
+$sudo apt install pv
+
+Show working directory of a process
+$pwdx pid
+(find pid via: $ ps ax | grep firefox / $ pidof firefox)
+
+Set password protection to a file using vim
+$vim -x file.txt
+
+Monitor memory usage in a human-readable way
+watch vmstat -sSM
+
+Enter the matrix
+$perl -e '$|++; while (1) { print " ." x (rand(10) + 1), int(rand(2)) }'
+
+----------------------------------------------------------------------------------
 WINDOWS:
 cmd as admin
 sfc /scannow

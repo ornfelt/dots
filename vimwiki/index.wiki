@@ -1,0 +1,68 @@
+= Header1 =
+== Header2 ==
+=== Header3 ===
+
+*bold text*
+_italic text_
+
+[[wiki link]]
+[[wiki link|description]]
+
+* bullet list item 1
+* bullet list item 2
+    a) numbered list item 1
+    b) numbered list item 2
+
+{{{python
+def greet(s):
+    print("Hello, " + s)
+}}}
+
+| a table |  |
+|---------|--|
+|         |  |
+
+* bullet list item 1
+    - bullet list item 2
+    - bullet list item 3
+        * bullet list item 4
+        * bullet list item 5
+* bullet list item 6
+* bullet list item 7
+    - bullet list item 8
+    - bullet list item 9
+
+1. numbered list item 1
+2. numbered list item 2
+    a) numbered list item 3
+    b) numbered list item 4
+
+<Leader>ww -- Open default wiki index file.
+<Leader>wt -- Open default wiki index file in a new tab.
+<Leader>ws -- Select and open wiki index file.
+<Leader>wd -- Delete wiki file you are in.
+<Leader>wr -- Rename wiki file you are in.
+<Enter> -- Follow/Create wiki link.
+<Shift-Enter> -- Split and follow/create wiki link.
+<Ctrl-Enter> -- Vertical split and follow/create wiki link.
+<Backspace> -- Go back to parent(previous) wiki link.
+<Tab> -- Find next wiki link.
+<Shift-Tab> -- Find previous wiki link.
+
+<b test>
+<bl test >
+<r test >
+<y test>
+<g test>
+<p test>
+<o test>
+<y test>
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+<-- 2021-08-17 Tue -->
+**
+##
+!
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
