@@ -78,7 +78,7 @@ case $chosen in
 		echo "$tenthOpt" | sed "s/\s*#.*//g" | xclip -sel clip
         ;;
     $eleventhOpt)
-		echo "$eleventhOpt" | sed "s/\s*#.*//g" | xclip -sel clip
+		python3 ~/.local/bin/my_scripts/script_help_docs/command_copy3.py
         ;;
     $twelfthOpt)
 		echo "$twelfthOpt" | sed "s/\s*#.*//g" | xclip -sel clip
@@ -90,10 +90,10 @@ case $chosen in
 		echo "$fourteenthOpt" | sed "s/\s*#.*//g" | xclip -sel clip
         ;;
     $fifteenthOpt)
-		echo "$fifteenthOpt" | sed "s/\s*#.*//g" | xclip -sel clip
+		python3 ~/.local/bin/my_scripts/script_help_docs/command_copy1.py
         ;;
     $sixteenthOpt)
-		echo "$sixteenthOpt" | sed "s/\s*#.*//g" | xclip -sel clip
+		python3 ~/.local/bin/my_scripts/script_help_docs/command_copy2.py
         ;;
     $seventeenthOpt)
 		echo "$seventeenthOpt" | sed "s/\s*#.*//g" | xclip -sel clip
@@ -129,7 +129,7 @@ case $chosen in
 		echo "$twentyseventhOpt" | sed "s/\s*#.*//g" | xclip -sel clip
         ;;
     $twentyeighthOpt)
-		echo "$twentyeighthOpt" | sed "s/\s*#.*//g" | xclip -sel clip
+		python3 ~/.local/bin/my_scripts/script_help_docs/command_copy4.py
         ;;
     $twentyninthOpt)
 		echo "$twentyninthOpt" | sed "s/\s*#.*//g" | xclip -sel clip
