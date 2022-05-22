@@ -1,4 +1,4 @@
-sed -i 's#ORIGINAL_VALLUE#NEW_VALUE#g' myfile1 myfile2 OR perl -p -i -e 's#ORIGINAL#NEW_VALUE#' myfile1 myfile2
+sed -i 's/ORIGINAL_VALLUE/NEW_VALUE/g' myfile1 myfile2 OR perl -p -i -e 's/ORIGINAL/NEW_VALUE/' myfile1 myfile2
 watch vmstat -sSM # Monitor memory
 watch grep \"cpu MHz\" /proc/cpuinfo # Monitor CPU speed
 ps aux | awk '{if ($5 != 0 ) print $2,$5,$6,$11}' | sort -k2n # check process usage
@@ -12,8 +12,8 @@ awk '/^[ \t]*$/{next}{print}' file.txt # This prints all lines except empty ones
 awk 'length($0)>80{print FNR,$0}'  file.txt # Find all the lines longer than 80 characters (or any other length): 
 awk 'length < 80' file.txt # Print lines with < 80 char
 cd $mydir && python3 -m http.server 8888 # Share a file quickly using a web server
-python3 -c  "import csv,json,sys;print(json.dumps(list(csv.reader(open(sys.argv[1])))))" file.csv
-cat ~/.bash_history | tr "\|\;" "\n" | sed -e "s/^ //g" | cut -d " " -f 1 | sort | uniq -c | sort -n | tail -n 15
+python3 -c  'import csv,json,sys;print(json.dumps(list(csv.reader(open(sys.argv[1])))))' file.csv
+cat ~/.bash_history | tr "\|\;" "n" | sed -e "s/^ //g" | cut -d " " -f 1 | sort | uniq -c | sort -n | tail -n 15
 mtr google.com
 ^foo^bar^ # Run the previous shell command but replace string "foo" with "bar"
 !whatever:p # Find last command beginning with whatever

@@ -47,90 +47,91 @@ chosen="$(echo -e "$options" | rofi -theme "/home/jonas/.config/rofi/themes/gruv
 
 case $chosen in
     $firstOpt)
-		echo "$firstOpt" | xclip -sel clip
+		#echo "$firstOpt" | xclip -sel clip
+		echo "$firstOpt" | sed "s/\s*#.*//g" | xclip -sel clip
         ;;
     $secondOpt)
-		echo "$secondOpt" | xclip -sel clip
+		echo "$secondOpt" | sed "s/\s*#.*//g" | xclip -sel clip
         ;;
     $thirdOpt)
-		echo "$thirdOpt" | xclip -sel clip
+		echo "$thirdOpt" | sed "s/\s*#.*//g" | xclip -sel clip
         ;;
     $fourthOpt)
-		echo "$fourthOpt" | xclip -sel clip
+		echo "$fourthOpt" | sed "s/\s*#.*//g" | xclip -sel clip
         ;;
     $fifthOpt)
-		echo "$fifthOpt" | xclip -sel clip
+		echo "$fifthOpt" | sed "s/\s*#.*//g" | xclip -sel clip
         ;;
     $sixthOpt)
-		echo "$sixthOpt" | xclip -sel clip
+		echo "$sixthOpt" | sed "s/\s*#.*//g" | xclip -sel clip
         ;;
     $seventhOpt)
-		echo "$seventhOpt" | xclip -sel clip
+		echo "$seventhOpt" | sed "s/\s*#.*//g" | xclip -sel clip
         ;;
     $eighthOpt)
-		echo "$eighthOpt" | xclip -sel clip
+		echo "$eighthOpt" | sed "s/\s*#.*//g" | xclip -sel clip
         ;;
     $ninthOpt)
-		echo "$ninthOpt" | xclip -sel clip
+		echo "$ninthOpt" | sed "s/\s*#.*//g" | xclip -sel clip
         ;;
     $tenthOpt)
-		echo "$tenthOpt" | xclip -sel clip
+		echo "$tenthOpt" | sed "s/\s*#.*//g" | xclip -sel clip
         ;;
     $eleventhOpt)
-		echo "$eleventhOpt" | xclip -sel clip
+		echo "$eleventhOpt" | sed "s/\s*#.*//g" | xclip -sel clip
         ;;
     $twelfthOpt)
-		echo "$twelfthOpt" | xclip -sel clip
+		echo "$twelfthOpt" | sed "s/\s*#.*//g" | xclip -sel clip
         ;;
     $thirteenthOpt)
-		echo "$thirteenthOpt" | xclip -sel clip
+		echo "$thirteenthOpt" | sed "s/\s*#.*//g" | xclip -sel clip
         ;;
     $fourteenthOpt)
-		echo "$fourteenthOpt" | xclip -sel clip
+		echo "$fourteenthOpt" | sed "s/\s*#.*//g" | xclip -sel clip
         ;;
     $fifteenthOpt)
-		echo "$fifteenthOpt" | xclip -sel clip
+		echo "$fifteenthOpt" | sed "s/\s*#.*//g" | xclip -sel clip
         ;;
     $sixteenthOpt)
-		echo "$sixteenthOpt" | xclip -sel clip
+		echo "$sixteenthOpt" | sed "s/\s*#.*//g" | xclip -sel clip
         ;;
     $seventeenthOpt)
-		echo "$seventeenthOpt" | xclip -sel clip
+		echo "$seventeenthOpt" | sed "s/\s*#.*//g" | xclip -sel clip
         ;;
     $eighteenthOpt)
-		echo "$eighteenthOpt" | xclip -sel clip
+		echo "$eighteenthOpt" | sed "s/\s*#.*//g" | xclip -sel clip
         ;;
     $nineteenthOpt)
-		echo "$nineteenthOpt" | xclip -sel clip
+		echo "$nineteenthOpt" | sed "s/\s*#.*//g" | xclip -sel clip
         ;;
     $twentiethOpt)
-		echo "$twentiethOpt" | xclip -sel clip
+		echo "$twentiethOpt" | sed "s/\s*#.*//g" | xclip -sel clip
         ;;
     $twentyfirstOpt)
-		echo "$twentyfirstOpt" | xclip -sel clip
+		echo "$twentyfirstOpt" | sed "s/\s*#.*//g" | xclip -sel clip
         ;;
     $twentysecondOpt)
-		echo "$twentysecondOpt" | xclip -sel clip
+		echo "$twentysecondOpt" | sed "s/\s*#.*//g" | xclip -sel clip
         ;;
     $twentythirdOpt)
-		echo "$twentythirdOpt" | xclip -sel clip
+		echo "$twentythirdOpt" | sed "s/\s*#.*//g" | xclip -sel clip
         ;;
     $twentyfourthOpt)
-		echo "$twentyfourthOpt" | xclip -sel clip
+		echo "$twentyfourthOpt" | sed "s/\s*#.*//g" | xclip -sel clip
         ;;
     $twentyfifthOpt)
-		echo "$twentyfifthOpt" | xclip -sel clip
+		echo "$twentyfifthOpt" | sed "s/\s*#.*//g" | xclip -sel clip
         ;;
     $twentysixthOpt)
-		echo "$twentysixthOpt" | xclip -sel clip
+		echo "$twentysixthOpt" | sed "s/\s*#.*//g" | xclip -sel clip
         ;;
     $twentyseventhOpt)
-		echo "$twentyseventhOpt" | xclip -sel clip
+		echo "$twentyseventhOpt" | sed "s/\s*#.*//g" | xclip -sel clip
         ;;
     $twentyeighthOpt)
-		echo "$twentyeighthOpt" | xclip -sel clip
+		echo "$twentyeighthOpt" | sed "s/\s*#.*//g" | xclip -sel clip
         ;;
     $twentyninthOpt)
-		echo "$twentyninthOpt" | xclip -sel clip
+		echo "$twentyninthOpt" | sed "s/\s*#.*//g" | xclip -sel clip
         ;;
 esac

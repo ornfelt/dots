@@ -10,16 +10,15 @@ case $BLOCK_BUTTON in
 	6) "$TERMINAL" -e "$EDITOR" "$0" ;;
 esac
 
-#STR=$(curl -sf "wttr.in/Nizhniy_Novgorod?format=1" | sed -r 's/^.{4}//')
-STR=$(curl -sf "wttr.in/Stockholm" | grep -Eo -m 1 '(\+|\-)[0-9]+' | head -1)
+STR=$(curl -sf "wttr.in/Uppsala?format=1" | sed -r 's/^.{4}//')
+#STR=$(curl -sf "wttr.in/Uppsala" | grep -Eo -m 1 '(\+|\-)[0-9]+' | head -1)
 SUB='location'
 if [[ "$STR" == *"$SUB"* ]]; then
 	#echo " -1"
 	sudo cat ~/.local/share/weatherreport
 else
-	#echo " $STR"
-	# curl -sf "wttr.in/Stockholm" | grep -Eo -m 1 '(\+|\-)[0-9]+' | head -1 | tee "$HOME/.local/share/weatherreport"
-	curl -sf "wttr.in/Uppsala" | grep -Eo -m 1 '(\+|\-)[0-9]+' | head -1 | tee "$HOME/.local/share/weatherreport"
+	#curl -sf "wttr.in/Uppsala" | grep -Eo -m 1 '(\+|\-|[0-9])[0-9]+' | head -1 | tee "$HOME/.local/share/weatherreport"
+	curl -sf "wttr.in/Uppsala?format=1" | sed -r 's/^.{4}//;s/^ *//g;s/C//g' | tee "$HOME/.local/share/weatherreport"
 	if [ -z "$STR" ]; then
 		python ~/.local/bin/dwmblocks/weather_py.py | tee "$HOME/.local/share/weatherreport_py"
 	fi
