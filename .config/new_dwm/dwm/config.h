@@ -42,8 +42,9 @@ typedef struct {
 	const char *name;
 	const void *cmd;
 } Sp;
-const char *spcmd1[] = {TERMINAL, "-n", "spterm", "-g", "120x34", NULL };
-const char *spcmd2[] = {TERMINAL, "-n", "spcalc", "-f", "monospace:size=16", "-g", "50x20", "-e", "bc", "-lq", NULL };
+const char *spcmd1[] = {"st", "-n", "spterm", "-g", "120x34", NULL };
+const char *spcmd2[] = {"st", "-n", "spcalc", "-g", "320x34", "-e", "python3", NULL };
+/* const char *spcmd2[] = {"st", "-n", "spcalc", "-f", "monospace:size=16", "-g", "50x20", "-e", "bc", "-lq", NULL }; */
 static Sp scratchpads[] = {
 	/* name          cmd  */
 	{"spterm",      spcmd1},
@@ -63,7 +64,8 @@ static const Rule rules[] = {
 	{ "Gimp",     NULL,       NULL,       	    1 << 8,       0,           0,         0,        -1 },
 	{ TERMCLASS,  NULL,       NULL,       	    0,            0,           1,         0,        -1 },
 	{ NULL,       NULL,       "Event Tester",   0,            0,           0,         1,        -1 },
-	{ NULL,      "spterm",    NULL,       	    SPTAG(0),     1,           1,         0,        -1 },
+	{ NULL,      "spterm",    NULL,       	    SPTAG(0),     1,           1,         1,        -1 },
+	{ NULL,      "spcalc",    NULL,       	    SPTAG(1),     1,           1,         0,        -1 },
 	{ NULL,      "gnome-calculator",    NULL,       0,     1,           0,         0,        -1 },
 	{ NULL,      "gnome-calendar",    NULL,       0,     1,           0,         0,        -1 },
 };
@@ -97,8 +99,8 @@ static const Layout layouts[] = {
 	{ MODKEY|ShiftMask,             KEY,      tag,            {.ui = 1 << TAG} }, \
 	{ MODKEY|ControlMask|ShiftMask, KEY,      toggletag,      {.ui = 1 << TAG} },
 #define STACKKEYS(MOD,ACTION) \
-	{ MOD,	XK_j,	ACTION##stack,	{.i = INC(+1) } }, \
-	{ MOD,	XK_k,	ACTION##stack,	{.i = INC(-1) } }, \
+	{ MOD,	XK_j,	ACTION##stack,	{.i = INC(+2) } }, \
+	{ MOD,	XK_k,	ACTION##stack,	{.i = INC(-2) } }, \
 	{ MOD,	XK_h,	ACTION##stack,	{.i = INC(+1) } }, \
 	{ MOD,	XK_l,	ACTION##stack,	{.i = INC(-1) } }, \
 
@@ -218,9 +220,12 @@ static Key keys[] = {
 
 	{ MODKEY,			XK_semicolon,	shiftview,	{ .i = 1 } },
 	{ MODKEY|ShiftMask,		XK_semicolon,	shifttag,	{ .i = 1 } },
-	{ MODKEY,			XK_apostrophe,	togglescratch,	{.ui = 1} },
-	{ MODKEY,			XK_Return,	spawn,		{.v = termcmd } },
-	{ MODKEY|ShiftMask,		XK_Return,	togglescratch,	{.ui = 0} },
+	{ MODKEY,			XK_apostrophe,	togglescratch,	{.ui = 0} },
+	{ MODKEY|ShiftMask,		XK_apostrophe,	togglescratch,	{.ui = 1} },
+	{ MODKEY,			XK_BackSpace,	spawn,		SHCMD("sysact") },
+	{ MODKEY|ShiftMask,		XK_BackSpace,	spawn,		SHCMD("sysact") },
+	{ MODKEY,			XK_Return,	spawn,		SHCMD("~/.local/bin/my_scripts/term_wd.sh") },
+	{ MODKEY|ShiftMask,			XK_Return,	spawn,		{.v = termcmd } },
 
 	{ MODKEY,			XK_c,		spawn,		SHCMD("GTK_THEME=Adwaita:dark gnome-calculator") },
 	{ MODKEY|ControlMask,		XK_c,		spawn,		SHCMD("GTK_THEME=Adwaita:dark gnome-calendar") },
