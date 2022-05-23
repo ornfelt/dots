@@ -183,6 +183,8 @@ static Key keys[] = {
 	{ MODKEY,			XK_o,		setmfact,	{.f = +0.05} },
 	{ MODKEY|ShiftMask,		XK_u,		incnmaster,     {.i = +1 } },
 	{ MODKEY|ShiftMask,		XK_i,		incnmaster,     {.i = -1 } },
+	{ MODKEY|ShiftMask,		XK_y,	shifttag,	{ .i = +1 } },
+	{ MODKEY|ShiftMask,		XK_o,	shifttag,	{ .i = -1 } },
 
 	{ MODKEY,			XK_bracketleft,		spawn,		SHCMD("mpc seek -10") },
 	{ MODKEY|ShiftMask,		XK_bracketleft,		spawn,		SHCMD("mpc seek -60") },
@@ -205,21 +207,19 @@ static Key keys[] = {
 	/* Layouts */
 	{ MODKEY|ShiftMask,			XK_less,		togglesticky,	{0} },
 	{ MODKEY,			XK_less,		setlayout,	{.v = &layouts[0]} }, /* Fibonacci spiral */
-	{ MODKEY|ControlMask,			XK_t,		setlayout,	{.v = &layouts[1]} }, /* tile */
 	{ MODKEY,		XK_s,		setlayout,	{.v = &layouts[2]} }, /* centeredmaster */
-	{ MODKEY|ShiftMask,		XK_y,		setlayout,	{.v = &layouts[3]} }, /* dwindle */
-	{ MODKEY|ControlMask,	XK_y,		setlayout,	{.v = &layouts[4]} }, /* bstack */
-	{ MODKEY|ShiftMask,		XK_u,		setlayout,	{.v = &layouts[5]} }, /* deck*/
-	{ MODKEY|ShiftMask,		XK_i,		setlayout,	{.v = &layouts[6]} }, /* monocle */
-	{ MODKEY|ShiftMask,		XK_z,		setlayout,	{.v = &layouts[7]} }, /* centeredfloatingmaster */
-	{ MODKEY|ShiftMask,		XK_f,		setlayout,	{.v = &layouts[8]} },
-	{ MODKEY,			XK_f,		togglefullscr,	{0} },
-	/* { MODKEY,			XK_g,		spawn,	{ .i = -1 } }, */
-	/* { MODKEY,			XK_g,		shiftview,	{ .i = -1 } }, */
-	{ MODKEY,			XK_g,		spawn,		SHCMD("~/.local/bin/my_scripts/fzf_open.sh")},
+	{ MODKEY|ControlMask,		XK_t,		setlayout,	{.v = &layouts[1]} }, /* tile */
+	{ MODKEY|ControlMask,		XK_y,		setlayout,	{.v = &layouts[3]} }, /* dwindle */
+	{ MODKEY|ControlMask,		XK_u,		setlayout,	{.v = &layouts[4]} }, /* bstack */
+	{ MODKEY|ControlMask,		XK_i,		setlayout,	{.v = &layouts[5]} }, /* deck*/
+	{ MODKEY|ControlMask,		XK_o,		setlayout,	{.v = &layouts[6]} }, /* monocle */
+	{ MODKEY|ControlMask,		XK_p,		setlayout,	{.v = &layouts[7]} }, /* centeredfloatingmaster */
+	{ MODKEY|ControlMask,		XK_aring,		setlayout,	{.v = &layouts[8]} },
+	{ MODKEY,					XK_f,		togglefullscr,	{0} },
+	{ MODKEY,					XK_g,		spawn,		SHCMD("~/.local/bin/my_scripts/fzf_open.sh")},
 
-	{ MODKEY,			XK_semicolon,	shiftview,	{ .i = 1 } },
-	{ MODKEY|ShiftMask,		XK_semicolon,	shifttag,	{ .i = 1 } },
+	/* { MODKEY,			XK_semicolon,	shiftview,	{ .i = 1 } }, */
+	/* { MODKEY|ShiftMask,		XK_semicolon,	shifttag,	{ .i = 1 } }, */
 	{ MODKEY,			XK_apostrophe,	togglescratch,	{.ui = 0} },
 	{ MODKEY|ShiftMask,		XK_apostrophe,	togglescratch,	{.ui = 1} },
 	{ MODKEY,			XK_BackSpace,	spawn,		SHCMD("sysact") },
@@ -233,14 +233,11 @@ static Key keys[] = {
 	{ MODKEY|ShiftMask,			XK_b,		spawn,		 SHCMD("urxvt -e bashtop") },
 	{ MODKEY|ControlMask,			XK_b,		spawn,		 SHCMD("urxvt -e ytop") },
 	
-	/* V is automatically bound above in STACKKEYS */
 	/* { MODKEY,		XK_p,		spawn,		SHCMD("") }, */
-	{ MODKEY|ShiftMask,		XK_p,			spawn,		SHCMD("mpc pause ; pauseallmpv") },
 	{ MODKEY|ShiftMask,			XK_p,		togglebar,	{0} },
 	{ MODKEY,			XK_n,		spawn,		SHCMD("~/.local/bin/my_scripts/nautilus_wd.sh") },
 	{ MODKEY|ShiftMask,		XK_n,		spawn,		SHCMD("nautilus -w --no-desktop") },
 	{ MODKEY,			XK_m,		spawn,		SHCMD("spotify") },
-	/* { MODKEY|ShiftMask,		XK_m,		spawn,		SHCMD("pamixer -t; kill -44 $(pidof dwmblocks)") }, */
 	{ MODKEY|ShiftMask,			XK_m,		spawn,		 SHCMD("flatpak run org.jamovi.jamovi") },
 	{ MODKEY|ControlMask,			XK_m,		spawn,		 SHCMD("~/.local/bin/my_scripts/tstock.sh") },
 	{ MODKEY,			XK_comma,	spawn,		SHCMD("mpc prev") },
@@ -261,7 +258,6 @@ static Key keys[] = {
 	{ MODKEY|ShiftMask,		XK_Page_Up,	shifttag,	{ .i = -1 } },
 	{ MODKEY,			XK_Page_Down,	shiftview,	{ .i = +1 } },
 	{ MODKEY|ShiftMask,		XK_Page_Down,	shifttag,	{ .i = +1 } },
-	{ MODKEY,			XK_Insert,	spawn,		SHCMD("xdotool type $(grep -v '^#' ~/.local/share/larbs/snippets | dmenu -i -l 50 | cut -d' ' -f1)") },
 
 	{ MODKEY,			XK_F1,		spawn,		SHCMD("groff -mom /usr/local/share/dwm/larbs.mom -Tpdf | zathura -") },
 	{ MODKEY,			XK_F2,		spawn,		SHCMD("tutorialvids") },
@@ -281,9 +277,12 @@ static Key keys[] = {
 	{ ShiftMask,			XK_Print,	spawn,		SHCMD("~/.local/bin/my_scripts/screenshot.sh") },
 	{ MODKEY,			XK_Print,	spawn,		SHCMD("~/.local/bin/my_scripts/screenshot_ocr.sh") },
 
+	/* { MODKEY,			XK_Insert,	spawn,		SHCMD("xdotool type $(grep -v '^#' ~/.local/share/larbs/snippets | dmenu -i -l 50 | cut -d' ' -f1)") }, */
 	{ 0, XF86XK_AudioMute,		spawn,		SHCMD("pactl set-sink-mute @DEFAULT_SINK@ toggle ; kill -44 $(pidof dwmblocks)") },
 	{ 0, XF86XK_AudioRaiseVolume,	spawn,		SHCMD("pactl set-sink-volume @DEFAULT_SINK@ +5%; kill -44 $(pidof dwmblocks)") },
 	{ 0, XF86XK_AudioLowerVolume,	spawn,		SHCMD("pactl set-sink-volume @DEFAULT_SINK@ -5%; kill -44 $(pidof dwmblocks)") },
+	{ 0, XF86XK_MonBrightnessUp,	spawn,		SHCMD("~/.local/bin/my_scripts/brightness.sh +10") },
+	{ 0, XF86XK_MonBrightnessDown,	spawn,		SHCMD("~/.local/bin/my_scripts/brightness.sh -10") },
 	/* { 0, XF86XK_AudioPrev,		spawn,		SHCMD("mpc prev") }, */
 	/* { 0, XF86XK_AudioNext,		spawn,		SHCMD("mpc next") }, */
 	/* { 0, XF86XK_AudioPause,		spawn,		SHCMD("mpc pause") }, */
@@ -307,8 +306,6 @@ static Key keys[] = {
 	/* { 0, XF86XK_TouchpadToggle,	spawn,		SHCMD("(synclient | grep 'TouchpadOff.*1' && synclient TouchpadOff=0) || synclient TouchpadOff=1") }, */
 	/* { 0, XF86XK_TouchpadOff,	spawn,		SHCMD("synclient TouchpadOff=1") }, */
 	/* { 0, XF86XK_TouchpadOn,		spawn,		SHCMD("synclient TouchpadOff=0") }, */
-	{ 0, XF86XK_MonBrightnessUp,	spawn,		SHCMD("~/.local/bin/my_scripts/brightness.sh +10") },
-	{ 0, XF86XK_MonBrightnessDown,	spawn,		SHCMD("~/.local/bin/my_scripts/brightness.sh -10") },
 
 };
 
