@@ -44,8 +44,6 @@ modules-right          = date
 
 font-0 = mononoki Nerd Font:weight=bold:fontformat=truetype:size=16:antialias=true;4
 font-1 = Noto Sans:fontformat=truetype:size=14:antialias=true;4
-#font-0 = font-0 = NotoSans-Regular:size=8;2
-#font-1 = MaterialIcons:size=10
 
 [bar/middle]
 inherit = bar/right
@@ -57,7 +55,8 @@ height                = 30
 #background            = #e0020202
 background        = #282828
 modules-left        = 
-modules-center        = i3
+#modules-center        = i3
+modules-center        = workspaces
 modules-right        = 
 ;    _          _   _                
 ;   | |__  __ _| |_| |_ ___ _ _ _  _ 
@@ -136,7 +135,7 @@ type                        = internal/date
 [module/i3]
 format                      = <label-state> <label-mode>
 index-sort                  = true
-pin-workspaces              = false
+pin-workspaces              = true
 #type                        = internal/i3
 type                        = internal/xworkspaces
 wrapping-scroll             = false
@@ -169,6 +168,31 @@ label-urgent-padding        = 1
 label-visible               = 
 label-visible-foreground    = #ffffff
 label-visible-padding       = 1
+
+[module/workspaces]
+type = internal/xworkspaces
+
+pin-workspaces = true
+enable-click = true
+enable-scroll = true
+icon-default               = 
+format = <label-state>
+format-font = 6
+label-monitor = %name%
+label-active = %icon%
+label-active-foreground = ${color.pink}
+#label-occupied = %icon%
+label-occupied = 
+label-occupied-foreground = ${color.cyan}
+label-urgent = %icon%
+label-urgent-foreground = ${color.red}
+label-empty = %icon%
+label-empty-foreground = ${color.foreground}
+
+label-active-padding = 1
+label-urgent-padding = 1
+label-occupied-padding = 1
+label-empty-padding = 1
 
 ;              _         
 ;    _ __ _  _| |___ ___ 
