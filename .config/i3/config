@@ -339,3 +339,6 @@ bindsym $mod+Control+adiaeresis floating enable, resize set 43 ppt 32 ppt, move 
 bindsym $mod+aring floating enable, resize set 50 ppt 95 ppt, move position 13 px 13 px
 bindsym $mod+Shift+aring floating enable, resize set 50 ppt 95 ppt, move position 950 px 13 px
 bindsym $mod+Control+aring floating enable, resize set 30 ppt 30 ppt, move position 1330 px 720 px
+
+bindsym $mod+Shift+diaeresis exec --no-startup-id compton-trans -c +10
+bindsym $mod+Control+diaeresis exec --no-startup-id compton-trans -c -10
