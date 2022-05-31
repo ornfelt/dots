@@ -4,7 +4,7 @@
 # to charge status (🔌 for plugged up, 🔋 for discharging on battery, etc.).
 
 case $BLOCK_BUTTON in
-	1) rofi -theme "~/.config/rofi/themes/gruvbox/gruvbox-dark.rasi" -e "Battery clicked" ;;
+	1) notify-send 'Battery clicked' 'This is an example notification.' --icon=dialog-information ;;
 	3) pkill -RTMIN+3 dwmblocks ;;
 	4) rofi -theme "~/.config/rofi/themes/gruvbox/gruvbox-dark.rasi" -e "Battery clicked 4" ;;
 	5) rofi -theme "~/.config/rofi/themes/gruvbox/gruvbox-dark.rasi" -e "Battery clicked 5" ;;

@@ -15,9 +15,9 @@ helpmenu() {
 }
 
 # Get helper script
-#shellcheck disable=SC1090,SC1091
-#if [ -f "$SHELPER" ]; then . "$SHELPER"; else
-    #printf '%s: error: %s\n' "${0##*/}" "Cannot source helper script!"; exit 1; fi
+# shellcheck disable=SC1090,SC1091
+if [ -f "$SHELPER" ]; then . "$SHELPER"; else
+    printf '%s: error: %s\n' "${0##*/}" "Cannot source helper script!"; exit 1; fi
 
 CLEAN="cleanup"
 getkeys() { grep -oP '^\s*\{\s*[a-zA-Z0].*\}\,' "$1" | grep -v 'NULL\|Clk\| KEY,' > "$2" ; }

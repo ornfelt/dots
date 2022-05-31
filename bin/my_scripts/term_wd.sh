@@ -1,3 +1,9 @@
-#!/bin/bash
+#! /bin/sh
 WHEREAMI=$(cat /tmp/whereami)
-urxvt -cd "$WHEREAMI"
+
+case $1 in
+	# "st") /bin/sh -c 'cd "$WHEREAMI" ; "st"' ;;
+	"st") st -d $WHEREAMI ;;
+	"urxvt") urxvt -cd "$WHEREAMI" ;;
+esac
+
