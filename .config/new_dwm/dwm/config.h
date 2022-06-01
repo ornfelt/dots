@@ -246,6 +246,8 @@ static Key keys[] = {
 	{ MODKEY|ShiftMask,		XK_v,	spawn,		SHCMD("~/.local/bin/my_scripts/qr_clip.sh") },
 	{ MODKEY,			XK_period,	spawn,		SHCMD("~/.local/bin/my_scripts/emojipick/emojipick") },
 	{ MODKEY,						XK_a,			spawn,				SHCMD(TERMINAL " -e bash -c 'tmux attach || tmux'") },
+	{ MODKEY|ShiftMask,             XK_a,     spawn,               SHCMD("picom-trans -c +5")},
+	{ MODKEY|ControlMask,             XK_a,     spawn,               SHCMD("picom-trans -c -5")},
 	{ MODKEY,						XK_section,			spawn,				SHCMD("~/.local/bin/my_scripts/loadEww.sh") },
 	{ MODKEY|ShiftMask,			XK_section,		toggleviewontag,	{0} },
 	
