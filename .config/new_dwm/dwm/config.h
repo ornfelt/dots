@@ -1,11 +1,11 @@
 /* See LICENSE file for copyright and license details. */
 
 /* Constants */
-#define TERMINAL "st"
-/* #define TERMINAL "urxvt" */
+/* #define TERMINAL "st" */
+#define TERMINAL "urxvt"
 
-#define TERMCLASS "St"
-/* #define TERMCLASS "Urxvt" */
+/* #define TERMCLASS "St" */
+#define TERMCLASS "Urxvt"
 
 /* appearance */
 static unsigned int borderpx  = 3;        /* border pixel of windows */
@@ -40,7 +40,7 @@ typedef struct {
 	const char *name;
 	const void *cmd;
 } Sp;
-const char *spcmd1[] = {TERMINAL, "-n", "spterm", "-g", "120x34", "-e", "python3", NULL };
+const char *spcmd1[] = {"st", "-n", "spterm", "-g", "120x34", "-e", "python3", NULL };
 const char *spcmd2[] = {"st", "-n", "spcalc", "-g", "220x14", NULL };
 /* const char *spcmd2[] = {"st", "-n", "spcalc", "-f", "monospace:size=16", "-g", "50x20", "-e", "bc", "-lq", NULL }; */
 static Sp scratchpads[] = {
