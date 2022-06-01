@@ -41,33 +41,33 @@
 
 !! Colorscheme gruvbox !!
 ! hard contrast: *background: #1d2021
-*background: #282828
+*.background: #282828
 ! soft contrast: *background: #32302f
-*foreground: #ebdbb2
+*.foreground: #ebdbb2
 ! Black + DarkGrey
-*color0:  #282828
-*color8:  #928374
+*.color0:  #282828
+*.color8:  #928374
 ! DarkRed + Red
-*color1:  #cc241d
-*color9:  #fb4934
+*.color1:  #cc241d
+*.color9:  #fb4934
 ! DarkGreen + Green
-*color2:  #98971a
-*color10: #b8bb26
+*.color2:  #98971a
+*.color10: #b8bb26
 ! DarkYellow + Yellow
-*color3:  #d79921
-*color11: #fabd2f
+*.color3:  #d79921
+*.color11: #fabd2f
 ! DarkBlue + Blue
-*color4:  #458588
-*color12: #83a598
+*.color4:  #458588
+*.color12: #83a598
 ! DarkMagenta + Magenta
-*color5:  #b16286
-*color13: #d3869b
+*.color5:  #b16286
+*.color13: #d3869b
 ! DarkCyan + Cyan
-*color6:  #689d6a
-*color14: #8ec07c
+*.color6:  #689d6a
+*.color14: #8ec07c
 ! LightGrey + White
-*color7:  #a89984
-*color15: #ebdbb2
+*.color7:  #a89984
+*.color15: #ebdbb2
 
 
 !! URxvt Appearance
@@ -95,7 +95,7 @@ URxvt.urgentOnBell: true
 URxvt.depth: 32
 URxvt.iso14755: false
 URxvt.transparent: false
-URxvt.shading: 45
+Rxvt.shading: 45
 !URxvt.shading: 30
 
 !! Common Keybinds for Navigations
@@ -112,3 +112,6 @@ URxvt.perl-ext-common: ...,resize-font,...
 
 xterm*font:		xft:JetBrainsMono Nerd Font:size=11:style=regular:autohint=true
 xterm*boldFont: xft:JetBrainsMono Nerd Font:size=11:style=bold:autohint=true
+
+*.alpha: 1.0
+*.alphaOffset: 0
