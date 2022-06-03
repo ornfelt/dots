@@ -30,15 +30,15 @@
 
 static const Block blocks[] = {
 	/*Icon*/	/*Command*/		/*Update Interval*/	/*Update Signal*/
-	{"",	"~/.local/bin/my_scripts/spotify_dwmblocks.sh",	5,	12},
+	{"^c#8ec07c^",	"~/.local/bin/my_scripts/spotify_dwmblocks.sh",	5,	12},
 	/* {"",	"~/.local/bin/statusbar/sb-internet",	5,	6}, */
 	/* {"",	"~/.local/bin/statusbar/sb-forecast",	18000,	20}, */
 	/* {"",	"~/.local/bin/statusbar/sb-volumetwo.sh",	0,	11}, */
-	{"   ^c#00FF00^",  "~/.local/bin/dwmblocks/weather", 	 1800, 				 5},
-	{"  ",  "~/.local/bin/dwmblocks/cputemp", 	5, 					4},
-	{" ",	"~/.local/bin/statusbar/sb-volume",	0,	10},
-	{" ",	"~/.local/bin/statusbar/sb-battery_col",	5,	3},
-	{"  ",	"~/.local/bin/statusbar/sb-clock",	60,	1},
+	{"^c#83a598^   ",  "~/.local/bin/dwmblocks/weather", 	 1800, 				 5},
+	{"^c#fabd2f^  ",  "~/.local/bin/dwmblocks/cputemp", 	5, 					4},
+	{"^c#fb4934^ ",	"~/.local/bin/statusbar/sb-volume",	0,	10},
+	{"^c#d3869b^ ",	"~/.local/bin/statusbar/sb-battery",	5,	3},
+	{"^c#689d6a^  ",	"~/.local/bin/statusbar/sb-clock",	60,	1},
 };
 
 /*Icons:       婢墳  */
