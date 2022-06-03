@@ -2683,6 +2683,8 @@ main(int argc, char *argv[])
 	scan();
 	runAutostart();
 	/* runautostart(); */
+	enablegaps = 0;
+	arrange(NULL);
 	run();
 	if(restart) execvp(argv[0], argv);
 	cleanup();
