@@ -3,9 +3,11 @@
 /* Constants */
 /* #define TERMINAL "st" */
 #define TERMINAL "urxvt"
+/* #define TERMINAL "kitty" */
 
 /* #define TERMCLASS "St" */
 #define TERMCLASS "Urxvt"
+/* #define TERMCLASS "kitty" */
 
 /* appearance */
 static unsigned int borderpx  = 3;        /* border pixel of windows */
@@ -30,30 +32,18 @@ static char normfgcolor[]           = "#bbbbbb";
 static char selfgcolor[]            = "#eeeeee";
 static char selbordercolor[]        = "#770000";
 static char selbgcolor[]            = "#005577";
-static const char col_gray1[]       = "#bbbbbb";
-static const char col_gray2[]       = "#eeeeee";
-static const char col_cyan[]        = "#005577";
-static const char col_black[]       = "#000000";
-static const char col_red[]         = "#ff0000";
-static const char col_yellow[]      = "#ffff00";
-static const char col_white[]       = "#ffffff";
 static char *colors[][3] = {
        /*               fg           bg           border   */
-       /* [SchemeNorm] = { normfgcolor, normbgcolor, normbordercolor }, */
-       /* [SchemeSel]  = { selfgcolor,  selbgcolor,  selbordercolor  }, */
-		[SchemeNorm] =	 { normfgcolor, normbgcolor,  normbordercolor },
-		[SchemeSel]  =	 { selfgcolor, selbgcolor,   selbordercolor },
-		[SchemeWarn] =	 { col_black, col_yellow, col_red },
-		[SchemeUrgent]=	 { col_white, col_red,    col_red },
+       [SchemeNorm] = { normfgcolor, normbgcolor, normbordercolor },
+       [SchemeSel]  = { selfgcolor,  selbgcolor,  selbordercolor  },
 };
 
 typedef struct {
 	const char *name;
 	const void *cmd;
 } Sp;
-const char *spcmd1[] = {"st", "-n", "spterm", "-g", "120x34", "-e", "python3", NULL };
-const char *spcmd2[] = {"st", "-n", "spcalc", "-g", "220x14", NULL };
-/* const char *spcmd2[] = {"st", "-n", "spcalc", "-f", "monospace:size=16", "-g", "50x20", "-e", "bc", "-lq", NULL }; */
+const char *spcmd1[] = {TERMINAL, "-n", "spterm", "-g", "120x34", NULL };
+const char *spcmd2[] = {TERMINAL, "-n", "spcalc", "-f", "monospace:size=16", "-g", "50x20", "-e", "bc", "-lq", NULL };
 static Sp scratchpads[] = {
 	/* name          cmd  */
 	{"spterm",      spcmd1},
@@ -73,8 +63,7 @@ static const Rule rules[] = {
 	{ "Gimp",     NULL,       NULL,       	    1 << 8,       0,           0,         0,        -1 },
 	{ TERMCLASS,  NULL,       NULL,       	    0,            0,           1,         0,        -1 },
 	{ NULL,       NULL,       "Event Tester",   0,            0,           0,         1,        -1 },
-	{ NULL,      "spterm",    NULL,       	    SPTAG(0),     1,           1,         1,        -1 },
-	{ NULL,      "spcalc",    NULL,       	    SPTAG(1),     1,           1,         0,        -1 },
+	{ NULL,      "spterm",    NULL,       	    SPTAG(0),     1,           1,         0,        -1 },
 	{ NULL,      "gnome-calculator",    NULL,       0,     1,           0,         0,        -1 },
 	{ NULL,      "gnome-calendar",    NULL,       0,     1,           0,         0,        -1 },
 };
@@ -101,15 +90,14 @@ static const Layout layouts[] = {
 
 /* key definitions */
 #define MODKEY Mod4Mask
-#define MODKEY1 Mod1Mask
 #define TAGKEYS(KEY,TAG) \
 	{ MODKEY,                       KEY,      view,           {.ui = 1 << TAG} }, \
 	{ MODKEY|ControlMask,           KEY,      toggleview,     {.ui = 1 << TAG} }, \
 	{ MODKEY|ShiftMask,             KEY,      tag,            {.ui = 1 << TAG} }, \
 	{ MODKEY|ControlMask|ShiftMask, KEY,      toggletag,      {.ui = 1 << TAG} },
 #define STACKKEYS(MOD,ACTION) \
-	{ MOD,	XK_j,	ACTION##stack,	{.i = INC(+2) } }, \
-	{ MOD,	XK_k,	ACTION##stack,	{.i = INC(-2) } }, \
+	{ MOD,	XK_j,	ACTION##stack,	{.i = INC(+1) } }, \
+	{ MOD,	XK_k,	ACTION##stack,	{.i = INC(-1) } }, \
 	{ MOD,	XK_h,	ACTION##stack,	{.i = INC(+1) } }, \
 	{ MOD,	XK_l,	ACTION##stack,	{.i = INC(-1) } }, \
 
@@ -175,26 +163,20 @@ static Key keys[] = {
 	{ MODKEY|ShiftMask,		XK_plus,	spawn,		SHCMD("") },
 	{ MODKEY|ShiftMask,		XK_minus,	spawn,		SHCMD("") },
 
-	{ MODKEY1,			XK_Tab,	shiftview,	{ .i = +1 } },
-	{ MODKEY1|ShiftMask,			XK_Tab,	shiftview,	{ .i = -1 } },
-	{ MODKEY,			XK_Tab,		view,		{0} },
 	{ MODKEY,			XK_Tab,		view,		{0} },
 	{ MODKEY,			XK_q,		killclient,	{0} },
 	/* { MODKEY|ShiftMask,             XK_q,      	quit,           {0} }, */
 	{ MODKEY|ShiftMask,			XK_x,		spawn,		SHCMD("i3lock-fancy") },
 	{ MODKEY|ControlMask,       XK_x,       spawn,      SHCMD("i3lock -i ~/Downloads/lock-wallpaper.png")},
 	
-	{ MODKEY,			XK_w,		spawn,		SHCMD(TERMINAL " -e ranger ~/") },
-	/* { MODKEY,			XK_e,		spawn,		SHCMD("~/.local/bin/my_scripts/ranger_wd.sh") }, */
-	{ MODKEY,			XK_e,		spawn,		SHCMD("~/.local/bin/my_scripts/ranger_wd.sh " TERMINAL) },
+	{ MODKEY,			XK_w,		spawn,		SHCMD("urxvt -e ranger ~/") },
+	{ MODKEY,			XK_e,		spawn,		SHCMD("~/.local/bin/my_scripts/ranger_wd.sh") },
 	{ MODKEY|ShiftMask,			XK_e,		spawn,		SHCMD("~/.local/bin/my_scripts/alert_exit.sh && ~/.config/polybar/forest/scripts/powermenu.sh") },
 	
 	{ MODKEY,			XK_y,		setmfact,	{.f = -0.05} },
 	{ MODKEY,			XK_o,		setmfact,	{.f = +0.05} },
 	{ MODKEY|ShiftMask,		XK_u,		incnmaster,     {.i = +1 } },
 	{ MODKEY|ShiftMask,		XK_i,		incnmaster,     {.i = -1 } },
-	{ MODKEY|ShiftMask,		XK_y,	shifttag,	{ .i = +1 } },
-	{ MODKEY|ShiftMask,		XK_o,	shifttag,	{ .i = -1 } },
 
 	{ MODKEY,			XK_bracketleft,		spawn,		SHCMD("mpc seek -10") },
 	{ MODKEY|ShiftMask,		XK_bracketleft,		spawn,		SHCMD("mpc seek -60") },
@@ -211,43 +193,43 @@ static Key keys[] = {
 	{ MODKEY,				XK_r,		spawn,		SHCMD("dmenu_run -fn 'Linux Libertine Mono'") },
 	{ MODKEY|ShiftMask,		XK_d,		spawn,		SHCMD("rofi -show run -theme ~/.config/polybar/forest/scripts/rofi/launcher.rasi") },
 	{ MODKEY|ShiftMask,		XK_r,		spawn,		SHCMD("rofi -show run -theme ~/.config/polybar/forest/scripts/rofi/launcher.rasi") },
-	{ MODKEY,				XK_t,		spawn,		SHCMD("~/.local/bin/my_scripts/script_copy.sh") },
-	{ MODKEY|ShiftMask,		XK_t,		spawn,		SHCMD("~/.local/bin/my_scripts/script_helper.sh") },
 
 	/* Layouts */
 	{ MODKEY|ShiftMask,			XK_less,		togglesticky,	{0} },
 	{ MODKEY,			XK_less,		setlayout,	{.v = &layouts[0]} }, /* Fibonacci spiral */
+	{ MODKEY,			XK_t,		setlayout,	{.v = &layouts[1]} }, /* tile */
 	{ MODKEY,		XK_s,		setlayout,	{.v = &layouts[2]} }, /* centeredmaster */
-	{ MODKEY|ControlMask,		XK_t,		setlayout,	{.v = &layouts[1]} }, /* tile */
-	{ MODKEY|ControlMask,		XK_y,		setlayout,	{.v = &layouts[3]} }, /* dwindle */
-	{ MODKEY|ControlMask,		XK_u,		setlayout,	{.v = &layouts[4]} }, /* bstack */
-	{ MODKEY|ControlMask,		XK_i,		setlayout,	{.v = &layouts[5]} }, /* deck*/
-	{ MODKEY|ControlMask,		XK_o,		setlayout,	{.v = &layouts[6]} }, /* monocle */
-	{ MODKEY|ControlMask,		XK_p,		setlayout,	{.v = &layouts[7]} }, /* centeredfloatingmaster */
-	{ MODKEY|ControlMask,		XK_aring,		setlayout,	{.v = &layouts[8]} },
-	{ MODKEY,					XK_f,		togglefullscr,	{0} },
-	{ MODKEY,					XK_g,		spawn,		SHCMD("~/.local/bin/my_scripts/fzf_open.sh " TERMINAL)},
+	{ MODKEY|ShiftMask,		XK_t,		setlayout,	{.v = &layouts[3]} }, /* bstack */
+	{ MODKEY|ShiftMask,		XK_y,		setlayout,	{.v = &layouts[4]} }, /* dwindle */
+	{ MODKEY|ShiftMask,		XK_u,		setlayout,	{.v = &layouts[5]} }, /* deck*/
+	{ MODKEY|ShiftMask,		XK_i,		setlayout,	{.v = &layouts[6]} }, /* monocle */
+	{ MODKEY|ShiftMask,		XK_z,		setlayout,	{.v = &layouts[7]} }, /* centeredfloatingmaster */
+	{ MODKEY|ShiftMask,		XK_f,		setlayout,	{.v = &layouts[8]} },
+	{ MODKEY,			XK_f,		togglefullscr,	{0} },
+	/* { MODKEY,			XK_g,		spawn,	{ .i = -1 } }, */
+	/* { MODKEY,			XK_g,		shiftview,	{ .i = -1 } }, */
+	{ MODKEY,			XK_g,		spawn,		SHCMD("~/.local/bin/my_scripts/fzf_open.sh")},
 
-	/* { MODKEY,			XK_semicolon,	shiftview,	{ .i = 1 } }, */
-	/* { MODKEY|ShiftMask,		XK_semicolon,	shifttag,	{ .i = 1 } }, */
-	{ MODKEY,			XK_apostrophe,	togglescratch,	{.ui = 0} },
-	{ MODKEY|ShiftMask,		XK_apostrophe,	togglescratch,	{.ui = 1} },
-	{ MODKEY,			XK_BackSpace,	spawn,		SHCMD("sysact") },
-	{ MODKEY|ShiftMask,		XK_BackSpace,	spawn,		SHCMD("sysact") },
-	{ MODKEY,			XK_Return,	spawn,		SHCMD("~/.local/bin/my_scripts/term_wd.sh " TERMINAL) },
-	{ MODKEY|ShiftMask,			XK_Return,	spawn,		{.v = termcmd } },
+	{ MODKEY,			XK_semicolon,	shiftview,	{ .i = 1 } },
+	{ MODKEY|ShiftMask,		XK_semicolon,	shifttag,	{ .i = 1 } },
+	{ MODKEY,			XK_apostrophe,	togglescratch,	{.ui = 1} },
+	{ MODKEY,			XK_Return,	spawn,		{.v = termcmd } },
+	{ MODKEY|ShiftMask,		XK_Return,	togglescratch,	{.ui = 0} },
 
 	{ MODKEY,			XK_c,		spawn,		SHCMD("GTK_THEME=Adwaita:dark gnome-calculator") },
 	{ MODKEY|ControlMask,		XK_c,		spawn,		SHCMD("GTK_THEME=Adwaita:dark gnome-calendar") },
-	{ MODKEY,			XK_b,		spawn,		SHCMD(TERMINAL " -e htop") },
-	{ MODKEY|ShiftMask,			XK_b,		spawn,		 SHCMD(TERMINAL " -e bashtop") },
-	{ MODKEY|ControlMask,			XK_b,		spawn,		 SHCMD(TERMINAL " -e ytop") },
+	{ MODKEY,			XK_b,		spawn,		SHCMD("urxvt -e htop") },
+	{ MODKEY|ShiftMask,			XK_b,		spawn,		 SHCMD("urxvt -e bashtop") },
+	{ MODKEY|ControlMask,			XK_b,		spawn,		 SHCMD("urxvt -e ytop") },
 	
+	/* V is automatically bound above in STACKKEYS */
 	/* { MODKEY,		XK_p,		spawn,		SHCMD("") }, */
+	{ MODKEY|ShiftMask,		XK_p,			spawn,		SHCMD("mpc pause ; pauseallmpv") },
 	{ MODKEY|ShiftMask,			XK_p,		togglebar,	{0} },
 	{ MODKEY,			XK_n,		spawn,		SHCMD("~/.local/bin/my_scripts/nautilus_wd.sh") },
 	{ MODKEY|ShiftMask,		XK_n,		spawn,		SHCMD("nautilus -w --no-desktop") },
 	{ MODKEY,			XK_m,		spawn,		SHCMD("spotify") },
+	/* { MODKEY|ShiftMask,		XK_m,		spawn,		SHCMD("pamixer -t; kill -44 $(pidof dwmblocks)") }, */
 	{ MODKEY|ShiftMask,			XK_m,		spawn,		 SHCMD("flatpak run org.jamovi.jamovi") },
 	{ MODKEY|ControlMask,			XK_m,		spawn,		 SHCMD("~/.local/bin/my_scripts/tstock.sh") },
 	{ MODKEY,			XK_comma,	spawn,		SHCMD("mpc prev") },
@@ -256,9 +238,7 @@ static Key keys[] = {
 	{ MODKEY,			XK_v,	spawn,		SHCMD("~/.local/bin/my_scripts/clip_history.sh") },
 	{ MODKEY|ShiftMask,		XK_v,	spawn,		SHCMD("~/.local/bin/my_scripts/qr_clip.sh") },
 	{ MODKEY,			XK_period,	spawn,		SHCMD("~/.local/bin/my_scripts/emojipick/emojipick") },
-	{ MODKEY,						XK_a,			spawn,				SHCMD(TERMINAL " -e bash -c 'tmux attach || tmux'") },
-	{ MODKEY|ShiftMask,             XK_a,     spawn,               SHCMD("picom-trans -c -5")},
-	{ MODKEY|ControlMask,             XK_a,     spawn,               SHCMD("picom-trans -c +5")},
+	{ MODKEY,						XK_a,			spawn,				SHCMD("urxvt -e bash -c 'tmux attach || tmux'") },
 	{ MODKEY,						XK_section,			spawn,				SHCMD("~/.local/bin/my_scripts/loadEww.sh") },
 	{ MODKEY|ShiftMask,			XK_section,		toggleviewontag,	{0} },
 	
@@ -270,9 +250,9 @@ static Key keys[] = {
 	{ MODKEY|ShiftMask,		XK_Page_Up,	shifttag,	{ .i = -1 } },
 	{ MODKEY,			XK_Page_Down,	shiftview,	{ .i = +1 } },
 	{ MODKEY|ShiftMask,		XK_Page_Down,	shifttag,	{ .i = +1 } },
+	{ MODKEY,			XK_Insert,	spawn,		SHCMD("xdotool type $(grep -v '^#' ~/.local/share/larbs/snippets | dmenu -i -l 50 | cut -d' ' -f1)") },
 
-	/* { MODKEY,			XK_F1,		spawn,		SHCMD("groff -mom /usr/local/share/dwm/larbs.mom -Tpdf | zathura -") }, */
-	{ MODKEY,			XK_F1,		spawn,		SHCMD(TERMINAL " -e nvim") },
+	{ MODKEY,			XK_F1,		spawn,		SHCMD("groff -mom /usr/local/share/dwm/larbs.mom -Tpdf | zathura -") },
 	{ MODKEY,			XK_F2,		spawn,		SHCMD("tutorialvids") },
 	{ MODKEY,			XK_F3,		spawn,		SHCMD("displayselect") },
 	{ MODKEY,			XK_F4,		spawn,		SHCMD(TERMINAL " -e pulsemixer; kill -44 $(pidof dwmblocks)") },
@@ -290,12 +270,9 @@ static Key keys[] = {
 	{ ShiftMask,			XK_Print,	spawn,		SHCMD("~/.local/bin/my_scripts/screenshot.sh") },
 	{ MODKEY,			XK_Print,	spawn,		SHCMD("~/.local/bin/my_scripts/screenshot_ocr.sh") },
 
-	/* { MODKEY,			XK_Insert,	spawn,		SHCMD("xdotool type $(grep -v '^#' ~/.local/share/larbs/snippets | dmenu -i -l 50 | cut -d' ' -f1)") }, */
 	{ 0, XF86XK_AudioMute,		spawn,		SHCMD("pactl set-sink-mute @DEFAULT_SINK@ toggle ; kill -44 $(pidof dwmblocks)") },
 	{ 0, XF86XK_AudioRaiseVolume,	spawn,		SHCMD("pactl set-sink-volume @DEFAULT_SINK@ +5%; kill -44 $(pidof dwmblocks)") },
 	{ 0, XF86XK_AudioLowerVolume,	spawn,		SHCMD("pactl set-sink-volume @DEFAULT_SINK@ -5%; kill -44 $(pidof dwmblocks)") },
-	{ 0, XF86XK_MonBrightnessUp,	spawn,		SHCMD("~/.local/bin/my_scripts/brightness.sh +10") },
-	{ 0, XF86XK_MonBrightnessDown,	spawn,		SHCMD("~/.local/bin/my_scripts/brightness.sh -10") },
 	/* { 0, XF86XK_AudioPrev,		spawn,		SHCMD("mpc prev") }, */
 	/* { 0, XF86XK_AudioNext,		spawn,		SHCMD("mpc next") }, */
 	/* { 0, XF86XK_AudioPause,		spawn,		SHCMD("mpc pause") }, */
@@ -319,6 +296,8 @@ static Key keys[] = {
 	/* { 0, XF86XK_TouchpadToggle,	spawn,		SHCMD("(synclient | grep 'TouchpadOff.*1' && synclient TouchpadOff=0) || synclient TouchpadOff=1") }, */
 	/* { 0, XF86XK_TouchpadOff,	spawn,		SHCMD("synclient TouchpadOff=1") }, */
 	/* { 0, XF86XK_TouchpadOn,		spawn,		SHCMD("synclient TouchpadOff=0") }, */
+	{ 0, XF86XK_MonBrightnessUp,	spawn,		SHCMD("~/.local/bin/my_scripts/brightness.sh +10") },
+	{ 0, XF86XK_MonBrightnessDown,	spawn,		SHCMD("~/.local/bin/my_scripts/brightness.sh -10") },
 
 };
 
