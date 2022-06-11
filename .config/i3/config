@@ -45,7 +45,7 @@ bindsym $mod+Shift+dead_acute exec --no-startup-id pactl set-sink-volume @DEFAUL
 floating_modifier $mod
 
 # start a terminal in wd
-bindsym $mod+Return exec --no-startup-id ~/.local/bin/my_scripts/term_wd.sh urxvt
+bindsym $mod+Return exec --no-startup-id ~/.local/bin/my_scripts/term_wd.sh st
 # start a terminal
 bindsym $mod+Shift+Return exec --no-startup-id urxvt -cd ~/
 
@@ -118,7 +118,8 @@ bindsym $mod+Shift+d focus child
 bindsym $mod+Control+d focus parent
 
 # open tmux
-bindsym $mod+a exec i3-sensible-terminal -e bash -c "tmux attach || tmux"
+#bindsym $mod+a exec i3-sensible-terminal -e bash -c "tmux attach || tmux"
+bindsym $mod+a exec st -e bash -c "tmux attach || tmux"
 # Open nautilus in wd
 #bindsym $mod+w exec nautilus --no-desktop
 bindsym $mod+n exec ~/.local/bin/my_scripts/nautilus_wd.sh
@@ -126,9 +127,9 @@ bindsym $mod+n exec ~/.local/bin/my_scripts/nautilus_wd.sh
 bindsym $mod+Shift+n exec nautilus -w --no-desktop
 
 # open ranger
-bindsym $mod+w exec urxvt -e ranger ~/
+bindsym $mod+w exec st -e ranger ~/
 # open ranger from wd
-bindsym $mod+e exec ~/.local/bin/my_scripts/ranger_wd.sh urxvt
+bindsym $mod+e exec ~/.local/bin/my_scripts/ranger_wd.sh st
 
 # Define names for default workspaces for which we configure key bindings later on.
 # We use variables to avoid repeating the names in multiple places.
@@ -269,9 +270,9 @@ bindsym $mod+v exec ~/.local/bin/my_scripts/clip_history.sh
 bindsym $mod+Shift+v exec --no-startup-id ~/.local/bin/my_scripts/qr_clip.sh
 bindsym $mod+period exec --no-startup-id ~/.local/bin/my_scripts/emojipick/emojipick
 # Program shortcuts
-bindsym $mod+b exec urxvt -e sudo htop
-bindsym $mod+Shift+b exec --no-startup-id urxvt -e sudo bashtop
-bindsym $mod+Control+b exec --no-startup-id urxvt -e sudo ytop
+bindsym $mod+b exec st -e sudo htop
+bindsym $mod+Shift+b exec --no-startup-id st -e sudo bashtop
+bindsym $mod+Control+b exec --no-startup-id st -e sudo ytop
 bindsym $mod+m exec --no-startup-id spotify
 bindsym $mod+Shift+m exec --no-startup-id flatpak run org.jamovi.jamovi
 #bindsym $mod+Control+m exec --no-startup-id ~/.local/bin/my_scripts/tstock.sh
@@ -290,7 +291,7 @@ bindsym $mod+Control+x exec --no-startup-id i3lock -i ~/Downloads/lock-wallpaper
 bindsym $mod+Shift+comma exec --no-startup-id ~/.local/bin/my_scripts/alert_exit.sh; exec --no-startup-id ~/.local/bin/my_scripts/suspend.sh
 bindsym $mod+Shift+period exec --no-startup-id i3lock-fancy; exec ~/.local/bin/my_scripts/alert_exit.sh; exec --no-startup-id systemctl suspend
 # Open FZF in neovim
-bindsym $mod+g exec urxvt -e bash -c 'nvim -c "FZF ~"'
+bindsym $mod+g exec st -e bash -c 'nvim -c "FZF ~"'
 
 # Settings
 focus_follows_mouse no
