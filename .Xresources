@@ -1,64 +1,32 @@
 !! Colorscheme gruvbox !!
 ! hard contrast: *background: #1d2021
-*background: #282828
+*.background: #282828
 ! soft contrast: *background: #32302f
-*foreground: #ebdbb2
+*.foreground: #ebdbb2
 ! Black + DarkGrey
-*color0:  #282828
-*color8:  #928374
+*.color0:  #282828
+*.color8:  #928374
 ! DarkRed + Red
-*color1:  #cc241d
-*color9:  #fb4934
+*.color1:  #cc241d
+*.color9:  #fb4934
 ! DarkGreen + Green
-*color2:  #98971a
-*color10: #b8bb26
+*.color2:  #98971a
+*.color10: #b8bb26
 ! DarkYellow + Yellow
-*color3:  #d79921
-*color11: #fabd2f
+*.color3:  #d79921
+*.color11: #fabd2f
 ! DarkBlue + Blue
-*color4:  #458588
-*color12: #83a598
+*.color4:  #458588
+*.color12: #83a598
 ! DarkMagenta + Magenta
-*color5:  #b16286
-*color13: #d3869b
+*.color5:  #b16286
+*.color13: #d3869b
 ! DarkCyan + Cyan
-*color6:  #689d6a
-*color14: #8ec07c
+*.color6:  #689d6a
+*.color14: #8ec07c
 ! LightGrey + White
-*color7:  #a89984
-*color15: #ebdbb2
-
-
-!! Colorscheme hybrid !!
-! FROM: https://gist.githubusercontent.com/w0ng/3278077/raw/4c9e1510a7ade25b787efed0ad435234c0af1ba5/.Xresources-hybrid
-! vim: ft=xdefaults
-
-*background: #1D1F21
-*foreground: #C5C8C6
-! black
-*color0: #282A2E
-*color8: #373B41
-! red
-*color1: #A54242
-*color9: #CC6666
-! green
-*color2: #8C9440
-*color10: #B5BD68
-! yellow
-*color3: #DE935F
-*color11: #F0C674
-! blue
-*color4: #5F819D
-*color12: #81A2BE
-! magenta
-*color5: #85678F
-*color13: #B294BB
-! cyan
-*color6: #5E8D87
-*color14: #8ABEB7
-! white
-*color7: #707880
-*color15: #C5C8C6
+*.color7:  #a89984
+*.color15: #ebdbb2
 
 
 !! URxvt Appearance
@@ -66,9 +34,11 @@
 !! URxvt*font: xft:Inconsolata Nerd Font Mono:size=15, xft:DejaVu Sans:size=12
 !! URxvt.font:     xft:bitstream vera sans mono:size=12:antialias=true
 !! URxvt.boldFont: xft:bitstream vera sans mono:bold:size=12:antialias=true
-URxvt.font:		xft:JetBrainsMono Nerd Font:size=11:style=regular:autohint=true
-URxvt.boldFont: xft:JetBrainsMono Nerd Font:size=11:style=bold:autohint=true
+!!URxvt.font:		xft:JetBrainsMono Nerd Font:size=11:style=regular:autohint=true
+!!URxvt.boldFont: xft:JetBrainsMono Nerd Font:size=11:style=bold:autohint=true
 
+URxvt.font:		xft:JetBrainsMono Nerd Font:size=11:style=regular:antialias=true:autohint=true
+URxvt.boldFont: xft:JetBrainsMono Nerd Font:size=11:style=bold:antialias=true:autohint=true
 URxvt.letterSpace: 0
 URxvt.lineSpace: 0
 URxvt.geometry: 92x24
@@ -79,10 +49,11 @@ URxvt.saveline: 2048
 URxvt.scrollBar: false
 URxvt.scrollBar_right: false
 URxvt.urgentOnBell: true
-URxvt.depth: 24
+!! URxvt.depth: 24
+URxvt.depth: 32
 URxvt.iso14755: false
-URxvt.transparent: true
-URxvt.shading: 45
+URxvt.transparent: false
+Rxvt.shading: 45
 !URxvt.shading: 30
 
 !! Common Keybinds for Navigations
@@ -100,5 +71,5 @@ URxvt.perl-ext-common: ...,resize-font,...
 xterm*font:		xft:JetBrainsMono Nerd Font:size=11:style=regular:autohint=true
 xterm*boldFont: xft:JetBrainsMono Nerd Font:size=11:style=bold:autohint=true
 
-*.alpha: 1.0
-*.alphaOffset: 0
+st.alpha: 1.0
+st.alphaOffset: 0

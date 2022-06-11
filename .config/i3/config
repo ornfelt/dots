@@ -47,7 +47,7 @@ floating_modifier $mod
 # start a terminal in wd
 bindsym $mod+Return exec --no-startup-id ~/.local/bin/my_scripts/term_wd.sh st
 # start a terminal
-bindsym $mod+Shift+Return exec --no-startup-id urxvt -cd ~/
+bindsym $mod+Shift+Return exec --no-startup-id st
 
 # kill focused window
 bindsym $mod+q kill
@@ -289,7 +289,7 @@ bindsym $mod+Shift+x exec --no-startup-id i3lock-fancy
 bindsym $mod+Control+x exec --no-startup-id i3lock -i ~/Downloads/lock-wallpaper.png 
 #Suspend 
 bindsym $mod+Shift+comma exec --no-startup-id ~/.local/bin/my_scripts/alert_exit.sh; exec --no-startup-id ~/.local/bin/my_scripts/suspend.sh
-bindsym $mod+Shift+period exec --no-startup-id i3lock-fancy; exec ~/.local/bin/my_scripts/alert_exit.sh; exec --no-startup-id systemctl suspend
+bindsym $mod+Shift+period exec --no-startup-id i3lock-fancy; exec --no-startup-id ~/.local/bin/my_scripts/alert_exit.sh; exec --no-startup-id systemctl suspend
 # Open FZF in neovim
 bindsym $mod+g exec st -e bash -c 'nvim -c "FZF ~"'
 
