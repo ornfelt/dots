@@ -1,0 +1,154 @@
+┌───────────────────────┬──────────┬───────────────────────────────────────────────────────────┐
+│ Keybind               │ Modifier │ Command                                                   │
+├───────────────────────┼──────────┼───────────────────────────────────────────────────────────┤
+│ 0                     │ Mod4     │ workspace number $ws10                                    │
+│ 1                     │ Mod4     │ workspace number $ws1                                     │
+│ 2                     │ Mod4     │ workspace number $ws2                                     │
+│ 3                     │ Mod4     │ workspace number $ws3                                     │
+│ 4                     │ Mod4     │ workspace number $ws4                                     │
+│ 5                     │ Mod4     │ workspace number $ws5                                     │
+│ 6                     │ Mod4     │ workspace number $ws6                                     │
+│ 7                     │ Mod4     │ workspace number $ws7                                     │
+│ 8                     │ Mod4     │ workspace number $ws8                                     │
+│ 9                     │ Mod4     │ workspace number $ws9                                     │
+│ Control+0             │ Mod4     │ move container to workspace number $ws10                  │
+│ Control+1             │ Mod4     │ move container to workspace number $ws1                   │
+│ Control+2             │ Mod4     │ move container to workspace number $ws2                   │
+│ Control+3             │ Mod4     │ move container to workspace number $ws3                   │
+│ Control+4             │ Mod4     │ move container to workspace number $ws4                   │
+│ Control+5             │ Mod4     │ move container to workspace number $ws5                   │
+│ Control+6             │ Mod4     │ move container to workspace number $ws6                   │
+│ Control+7             │ Mod4     │ move container to workspace number $ws7                   │
+│ Control+8             │ Mod4     │ move container to workspace number $ws8                   │
+│ Control+9             │ Mod4     │ move container to workspace number $ws9                   │
+│ Control+adiaeresis    │ Mod4     │ floating enable, resize set 43 ppt 32 ppt, move position  │
+│                       │          │ 1090 px 700 px                                            │
+│ Control+aring         │ Mod4     │ floating enable, resize set 30 ppt 30 ppt, move position  │
+│                       │          │ 1330 px 720 px                                            │
+│ Control+b             │ Mod4     │ exec urxvt -e sudo ytop                                   │
+│ Control+c             │ Mod4     │ exec gnome-calendar                                       │
+│ Control+m             │ Mod4     │ exec ~/.local/bin/my_scripts/tstock.sh                    │
+│ Control+odiaeresis    │ Mod4     │ floating enable, resize set 43 ppt 32 ppt, move position  │
+│                       │          │ 10 px 700 px                                              │
+│ Control+s             │ Mod4     │ --release exec ~/.local/bin/my_scripts/tesseract_ocr.sh   │
+│ Control+t             │ Mod4     │ layout tabbed                                             │
+│ Control+x             │ Mod4     │ exec i3lock -i ~/Downloads/lock-wallpaper.png             │
+│ Down                  │ Mod4     │ focus down                                                │
+│ Left                  │ Mod4     │ focus left                                                │
+│ Mod1+Shift+Tab        │ Mod4     │ workspace prev                                            │
+│ Mod1+Tab              │ Mod4     │ workspace next                                            │
+│ Print                 │ Mod4     │ --release exec ~/.local/bin/my_scripts/screenshot_ocr.sh  │
+│ Print                 │ Mod4     │ --release exec ~/.local/bin/my_scripts/screenshot_select. │
+│                       │          │ sh                                                        │
+│ Return                │ Mod4     │ exec --no-startup-id ~/.local/bin/my_scripts/term_wd.sh   │
+│ Right                 │ Mod4     │ focus right                                               │
+│ Shift+0               │ Mod4     │ move container to workspace number $ws10; workspace $ws10 │
+│ Shift+1               │ Mod4     │ move container to workspace number $ws1; workspace $ws1   │
+│ Shift+2               │ Mod4     │ move container to workspace number $ws2; workspace $ws2   │
+│ Shift+3               │ Mod4     │ move container to workspace number $ws3; workspace $ws3   │
+│ Shift+4               │ Mod4     │ move container to workspace number $ws4; workspace $ws4   │
+│ Shift+5               │ Mod4     │ move container to workspace number $ws5; workspace $ws5   │
+│ Shift+6               │ Mod4     │ move container to workspace number $ws6; workspace $ws6   │
+│ Shift+7               │ Mod4     │ move container to workspace number $ws7; workspace $ws7   │
+│ Shift+8               │ Mod4     │ move container to workspace number $ws8; workspace $ws8   │
+│ Shift+9               │ Mod4     │ move container to workspace number $ws9; workspace $ws9   │
+│ Shift+Down            │ Mod4     │ move down                                                 │
+│ Shift+Left            │ Mod4     │ move left                                                 │
+│ Shift+Return          │ Mod4     │ exec --no-startup-id urxvt -cd ~/                         │
+│ Shift+Right           │ Mod4     │ move right                                                │
+│ Shift+Up              │ Mod4     │ move up                                                   │
+│ Shift+a               │ Mod4     │ focus parent                                              │
+│ Shift+adiaeresis      │ Mod4     │ floating enable, resize set 50 ppt 50 ppt, move position  │
+│                       │          │ 950 px 493 px                                             │
+│ Shift+aring           │ Mod4     │ floating enable, resize set 50 ppt 95 ppt, move position  │
+│                       │          │ 950 px 13 px                                              │
+│ Shift+b               │ Mod4     │ exec urxvt -e sudo bashtop                                │
+│ Shift+c               │ Mod4     │ reload                                                    │
+│ Shift+comma           │ Mod4     │ exec ~/.local/bin/my_scripts/alert_exit.sh; exec ~/.local │
+│                       │          │ /bin/my_scripts/suspend.sh                                │
+│ Shift+d               │ Mod4     │ focus child                                               │
+│ Shift+dead_acute      │ Mod4     │ exec --no-startup-id pactl set-sink-volume @DEFAULT_SINK@ │
+│                       │          │  -10% && $refresh_i3status                                │
+│ Shift+e               │ Mod4     │ exec ~/.local/bin/my_scripts/alert_exit.sh; exec ~/.confi │
+│                       │          │ g/polybar/forest/scripts/powermenu.sh                     │
+│ Shift+h               │ Mod4     │ move left                                                 │
+│ Shift+j               │ Mod4     │ move down                                                 │
+│ Shift+k               │ Mod4     │ move up                                                   │
+│ Shift+l               │ Mod4     │ move right                                                │
+│ Shift+less            │ Mod4     │ split h                                                   │
+│ Shift+m               │ Mod4     │ exec flatpak run org.jamovi.jamovi                        │
+│ Shift+minus           │ Mod4     │ gaps outer current minus 5                                │
+│ Shift+n               │ Mod4     │ exec nautilus -w --no-desktop                             │
+│ Shift+odiaeresis      │ Mod4     │ floating enable, resize set 50 ppt 50 ppt, move position  │
+│                       │          │ 10 px 490 px                                              │
+│ Shift+p               │ Mod4     │ exec ~/.local/bin/my_scripts/toggle_polybar.sh            │
+│ Shift+period          │ Mod4     │ exec i3lock-fancy; exec ~/.local/bin/my_scripts/alert_exi │
+│                       │          │ t.sh; exec systemctl suspend                              │
+│ Shift+plus            │ Mod4     │ gaps outer current plus 5                                 │
+│ Shift+r               │ Mod4     │ restart                                                   │
+│ Shift+s               │ Mod4     │ --release exec import png:- | xclip -selection clipboard  │
+│                       │          │ -t image/png                                              │
+│ Shift+space           │ Mod4     │ focus mode_toggle                                         │
+│ Shift+t               │ Mod4     │ exec ~/.local/bin/my_scripts/script_helper.sh             │
+│ Shift+v               │ Mod4     │ exec ~/.local/bin/my_scripts/qr_clip.sh                   │
+│ Shift+x               │ Mod4     │ exec i3lock-fancy                                         │
+│ Shift+z               │ Mod4     │ layout stacked                                            │
+│ Up                    │ Mod4     │ focus up                                                  │
+│ XF86AudioLowerVolume  │ Mod4     │ exec --no-startup-id pactl set-sink-volume @DEFAULT_SINK@ │
+│                       │          │  -5% && $refresh_i3status                                 │
+│ XF86AudioMicMute      │ Mod4     │ exec --no-startup-id pactl set-source-mute @DEFAULT_SOURC │
+│                       │          │ E@ toggle && $refresh_i3status                            │
+│ XF86AudioMute         │ Mod4     │ exec --no-startup-id pactl set-sink-mute @DEFAULT_SINK@ t │
+│                       │          │ oggle && $refresh_i3status                                │
+│ XF86AudioNext         │ Mod4     │ exec playerctl next                                       │
+│ XF86AudioPause        │ Mod4     │ exec playerctl play-pause                                 │
+│ XF86AudioPrev         │ Mod4     │ exec playerctl previous                                   │
+│ XF86AudioRaiseVolume  │ Mod4     │ exec --no-startup-id pactl set-sink-volume @DEFAULT_SINK@ │
+│                       │          │  +5% && $refresh_i3status                                 │
+│ XF86MonBrightnessDown │ Mod4     │ exec --no-startup-id ~/.local/bin/my_scripts/brightness.s │
+│                       │          │ h -10                                                     │
+│ XF86MonBrightnessUp   │ Mod4     │ exec --no-startup-id ~/.local/bin/my_scripts/brightness.s │
+│                       │          │ h +10                                                     │
+│ a                     │ Mod4     │ exec i3-sensible-terminal -e bash -c "tmux attach || tmux │
+│                       │          │ "                                                         │
+│ adiaeresis            │ Mod4     │ floating enable, resize set 50 ppt 50 ppt, move position  │
+│                       │          │ 950 px 10 px                                              │
+│ aring                 │ Mod4     │ floating enable, resize set 50 ppt 95 ppt, move position  │
+│                       │          │ 13 px 13 px                                               │
+│ b                     │ Mod4     │ exec urxvt -e sudo htop                                   │
+│ c                     │ Mod4     │ exec gnome-calculator                                     │
+│ d                     │ Mod4     │ exec --no-startup-id rofi -show run -theme ~/.config/rofi │
+│                       │          │ /themes/gruvbox/gruvbox-dark.rasi                         │
+│ dead_acute            │ Mod4     │ exec --no-startup-id pactl set-sink-volume @DEFAULT_SINK@ │
+│                       │          │  +20% && $refresh_i3status                                │
+│ e                     │ Mod4     │ exec ~/.local/bin/my_scripts/ranger_wd.sh                 │
+│ f                     │ Mod4     │ fullscreen toggle                                         │
+│ g                     │ Mod4     │ exec urxvt -e bash -c 'nvim -c "FZF ~"'                   │
+│ h                     │ Mod4     │ focus left                                                │
+│ i                     │ Mod4     │ resize shrink height 10 px or 1 ppt                       │
+│ j                     │ Mod4     │ focus down                                                │
+│ k                     │ Mod4     │ focus up                                                  │
+│ l                     │ Mod4     │ focus right                                               │
+│ less                  │ Mod4     │ layout toggle split                                       │
+│ m                     │ Mod4     │ exec spotify                                              │
+│ minus                 │ Mod4     │ gaps inner current minus 5                                │
+│ n                     │ Mod4     │ exec ~/.local/bin/my_scripts/nautilus_wd.sh               │
+│ o                     │ Mod4     │ resize grow width 10 px or 1 ppt                          │
+│ odiaeresis            │ Mod4     │ floating enable, resize set 50 ppt 50 ppt, move position  │
+│                       │          │ 10 px 10 px                                               │
+│ period                │ Mod4     │ exec ~/.local/bin/my_scripts/emojipick/emojipick          │
+│ plus                  │ Mod4     │ gaps inner current plus 5                                 │
+│ q                     │ Mod4     │ kill                                                      │
+│ r                     │ Mod4     │ exec --no-startup-id dmenu_run -fn 'Linux Libertine Mono' │
+│ s                     │ Mod4     │ split v                                                   │
+│ section               │ Mod4     │ exec --no-startup-id ~/.local/bin/my_scripts/loadEww.sh   │
+│ shift+Print           │ Mod4     │ exec ~/.local/bin/my_scripts/screenshot.sh                │
+│ space                 │ Mod4     │ floating toggle                                           │
+│ t                     │ Mod4     │ exec ~/.local/bin/my_scripts/script_copy.sh               │
+│ u                     │ Mod4     │ resize grow height 10 px or 1 ppt                         │
+│ v                     │ Mod4     │ exec ~/.local/bin/my_scripts/clip_history.sh              │
+│ w                     │ Mod4     │ exec urxvt -e ranger ~/                                   │
+│ x                     │ Mod4     │ gaps inner current set 30; gaps outer current set 30      │
+│ y                     │ Mod4     │ resize shrink width 10 px or 1 ppt                        │
+│ z                     │ Mod4     │ gaps inner current set 0; gaps outer current set 0        │
+└───────────────────────┴──────────┴───────────────────────────────────────────────────────────┘
