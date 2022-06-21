@@ -45,7 +45,8 @@ static void
 togglegaps(const Arg *arg)
 {
 	enablegaps = !enablegaps;
-	arrange(NULL);
+	/* arrange(NULL); */
+	arrange(selmon);
 }
 
 static void

@@ -28,6 +28,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <assert.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/wait.h>
@@ -72,7 +73,7 @@
 
 /* enums */
 enum { CurNormal, CurResize, CurMove, CurLast }; /* cursor */
-enum { SchemeNorm, SchemeSel }; /* color schemes */
+enum { SchemeNorm, SchemeSel, SchemeWarn, SchemeUrgent }; /* color schemes */
 enum { NetSupported, NetWMName, NetWMState, NetWMCheck,
        NetWMFullscreen, NetActiveWindow, NetWMWindowType,
        NetWMWindowTypeDialog, NetClientList, NetLast }; /* EWMH atoms */
@@ -178,6 +179,7 @@ typedef struct {
 } ResourcePref;
 
 /* function declarations */
+static int colorincr;
 static void applyrules(Client *c);
 static int applysizehints(Client *c, int *x, int *y, int *w, int *h, int interact);
 static void arrange(Monitor *m);
@@ -200,6 +202,7 @@ static void detachstack(Client *c);
 static Monitor *dirtomon(int dir);
 static void drawbar(Monitor *m);
 static void drawbars(void);
+static int drawstatusbar(Monitor *m, int bh, char* text);
 static void enternotify(XEvent *e);
 static void expose(XEvent *e);
 static void focus(Client *c);
@@ -254,6 +257,7 @@ static void sigterm(int unused);
 static void spawn(const Arg *arg);
 static int stackpos(const Arg *arg);
 static void tag(const Arg *arg);
+static void noviewontag(const Arg *arg);
 static void tagmon(const Arg *arg);
 static void togglebar(const Arg *arg);
 static void togglefloating(const Arg *arg);
@@ -262,7 +266,6 @@ static void togglesticky(const Arg *arg);
 static void togglefullscr(const Arg *arg);
 static void toggletag(const Arg *arg);
 static void toggleview(const Arg *arg);
-static void toggleviewontag(const Arg *arg);
 static void unfocus(Client *c, int setfocus);
 static void unmanage(Client *c, int destroyed);
 static void unmapnotify(XEvent *e);
@@ -292,12 +295,12 @@ static Client *swallowingclient(Window w);
 static Client *termforwin(const Client *c);
 static pid_t winpid(Window w);
 
-
 /* variables */
 static const char broken[] = "broken";
 static const char dwmdir[] = "dwm";
 static const char localshare[] = ".local/share";
-static char stext[256];
+/* static char stext[256]; */
+static char stext[1024];
 static char rawstext[256];
 static int dwmblockssig;
 pid_t dwmblockspid = 0;
@@ -639,7 +642,8 @@ cleanup(void)
 		cleanupmon(mons);
 	for (i = 0; i < CurLast; i++)
 		drw_cur_free(drw, cursor[i]);
-	for (i = 0; i < LENGTH(colors); i++)
+	/* for (i = 0; i < LENGTH(colors); i++) */
+	for (i = 0; i < LENGTH(colors) + 1; i++)
 		free(scheme[i]);
 	XDestroyWindow(dpy, wmcheckwin);
 	drw_free(drw);
@@ -867,6 +871,188 @@ dirtomon(int dir)
 	return m;
 }
 
+
+char** str_split(char* a_str, const char a_delim)
+{
+    char** result    = 0;
+    size_t count     = 0;
+    char* tmp        = a_str;
+    char* last_comma = 0;
+    char delim[2];
+    delim[0] = a_delim;
+    delim[1] = 0;
+
+    /* Count how many elements will be extracted. */
+    while (*tmp)
+    {
+        if (a_delim == *tmp)
+        {
+            count++;
+            last_comma = tmp;
+        }
+        tmp++;
+    }
+
+    /* Add space for trailing token. */
+    count += last_comma < (a_str + strlen(a_str) - 1);
+
+    /* Add space for terminating null string so caller
+       knows where the list of returned strings ends. */
+    count++;
+
+    result = malloc(sizeof(char*) * count);
+
+    if (result)
+    {
+        size_t idx  = 0;
+        char* token = strtok(a_str, delim);
+
+        while (token)
+        {
+            assert(idx < count);
+            *(result + idx++) = strdup(token);
+            token = strtok(0, delim);
+        }
+        assert(idx == count - 1);
+        *(result + idx) = 0;
+    }
+
+    return result;
+}
+
+
+int
+drawstatusbar(Monitor *m, int bh, char* stext) {
+	int ret, i, w, x, len;
+	short isCode = 0;
+	char *text;
+	char *p;
+	colorincr = 0;
+
+	len = strlen(stext) + 1 ;
+	if (!(text = (char*) malloc(sizeof(char)*len)))
+		die("malloc");
+	p = text;
+	memcpy(text, stext, len);
+
+	/* compute width of the status text */
+	w = 0;
+	i = -1;
+	while (text[++i]) {
+		if (text[i] == '^') {
+			if (!isCode) {
+				isCode = 1;
+				text[i] = '\0';
+				w += TEXTW(text) - lrpad;
+				text[i] = '^';
+				if (text[++i] == 'f')
+					w += atoi(text + ++i);
+			} else {
+				isCode = 0;
+				text = text + i + 1;
+				i = -1;
+			}
+		}
+	}
+	if (!isCode)
+		w += TEXTW(text) - lrpad;
+	else
+		isCode = 0;
+	text = p;
+
+	w += 2; /* 1px padding on both sides */
+	ret = x = m->ww - w;
+
+	drw_setscheme(drw, scheme[LENGTH(colors)]);
+	drw->scheme[ColFg] = scheme[SchemeNorm][ColFg];
+	drw->scheme[ColBg] = scheme[SchemeNorm][ColBg];
+	drw_rect(drw, x, 0, w, bh, 1, 1);
+	x++;
+
+	/* process status text */
+	i = -1;
+
+	while (text[++i]) {
+		if (text[i] == '^' && !isCode) {
+			isCode = 1;
+
+			text[i] = '\0';
+			w = TEXTW(text) - lrpad;
+			drw_text(drw, x, 0, w, bh, 0, text, 0);
+			x += w;
+
+			while (text[++i] != '^') {
+				if (text[i] == '1') {
+					char col1[] = "#98971a";
+					drw_clr_create(drw, &drw->scheme[ColFg], col1);
+				} else if (text[i] == '2') {
+					// Check if weather is hot or not
+					FILE *ptr;
+					char ch;
+					ptr = fopen("/home/jonas/.local/share/weatherreport", "r");
+					int hotbool = 0;
+					if (ptr == NULL) printf("Fail to read wr...");
+					do{
+						ch = fgetc(ptr);
+						// Check if contains + and 2 (= hot)
+						if (hotbool){
+							if (ch == '2' || ch == '3'){
+								char col2[] = "#fb4934";
+								drw_clr_create(drw, &drw->scheme[ColFg], col2);
+								break;
+							}else{
+								char col2[] = "#ebdbb2";
+								drw_clr_create(drw, &drw->scheme[ColFg], col2);
+								break;
+							}
+						}
+
+						if (ch == '+'){
+							hotbool = 1;
+						}else if (ch == '-') {
+							char col2[] = "#458588";
+							drw_clr_create(drw, &drw->scheme[ColFg], col2);
+							break;
+						}
+						else{
+							char col2[] = "#ebdbb2";
+							drw_clr_create(drw, &drw->scheme[ColFg], col2);
+							break;
+						}
+					} while (ch != EOF);
+					fclose(ptr);
+				} else if (text[i] == '3') {
+					char col3[] = "#fabd2f";
+					drw_clr_create(drw, &drw->scheme[ColFg], col3);
+				} else if (text[i] == '4') {
+					char col4[] = "#83a598";
+					drw_clr_create(drw, &drw->scheme[ColFg], col4);
+				} else if (text[i] == '5') {
+					char col5[] = "#d3869b";
+					drw_clr_create(drw, &drw->scheme[ColFg], col5);
+				} else if (text[i] == '6') {
+					char col6[] = "#8ec07c";
+					drw_clr_create(drw, &drw->scheme[ColFg], col6);
+				}
+			}
+
+			text = text + i + 1;
+			i=-1;
+			isCode = 0;
+		}
+	}
+
+	if (!isCode) {
+		w = TEXTW(text) - lrpad;
+		drw_text(drw, x, 0, w, bh, 0, text, 0);
+	}
+
+	drw_setscheme(drw, scheme[SchemeNorm]);
+	free(p);
+
+	return ret;
+}
+
 void
 drawbar(Monitor *m)
 {
@@ -874,13 +1060,21 @@ drawbar(Monitor *m)
 	int boxs = drw->fonts->h / 9;
 	int boxw = drw->fonts->h / 6 + 2;
 	unsigned int i, occ = 0, urg = 0;
+	char *ts = stext;
+	char *tp = stext;
+	int tx = 0;
+	char ctmp;
 	Client *c;
 
 	/* draw status first so it can be overdrawn by tags later */
-	if (m == selmon) { /* status is only drawn on selected monitor */
-		drw_setscheme(drw, scheme[SchemeNorm]);
-		tw = TEXTW(stext) - lrpad + 2; /* 2px right padding */
-		drw_text(drw, m->ww - tw, 0, tw, bh, 0, stext, 0);
+	/* if (m == selmon) { /1* status is only drawn on selected monitor *1/ */
+	if (m == selmon || 1) { /* status is only drawn on selected monitor */
+		tw = m->ww - drawstatusbar(m, bh, stext);
+		/* FILE *fp; */
+		/* fp = fopen("/home/jonas/test.txt", "w"); */
+		/* /1* fprintf(fp, stext); *1/ */
+		/* fprintf(fp, stext); */
+		/* fclose(fp); */
 	}
 
 	for (c = m->clients; c; c = c->next) {
@@ -995,6 +1189,7 @@ focusmon(const Arg *arg)
 		return;
 	unfocus(selmon->sel, 0);
 	selmon = m;
+	enablegaps = 1;
 	focus(NULL);
 }
 
@@ -1831,7 +2026,9 @@ setup(void)
 	cursor[CurResize] = drw_cur_create(drw, XC_sizing);
 	cursor[CurMove] = drw_cur_create(drw, XC_fleur);
 	/* init appearance */
-	scheme = ecalloc(LENGTH(colors), sizeof(Clr *));
+	/* scheme = ecalloc(LENGTH(colors), sizeof(Clr *)); */
+	scheme = ecalloc(LENGTH(colors) + 1, sizeof(Clr *));
+	scheme[LENGTH(colors)] = drw_scm_create(drw, colors[0], 3);
 	for (i = 0; i < LENGTH(colors); i++)
 		scheme[i] = drw_scm_create(drw, colors[i], 3);
 	/* init bars */
@@ -1958,8 +2155,17 @@ tag(const Arg *arg)
 		selmon->sel->tags = arg->ui & TAGMASK;
 		focus(NULL);
 		arrange(selmon);
-		if(viewontag == 1)
-			view(arg);
+		view(arg);
+	}
+}
+
+void
+noviewontag(const Arg *arg)
+{
+	if (selmon->sel && arg->ui & TAGMASK) {
+		selmon->sel->tags = arg->ui & TAGMASK;
+		focus(NULL);
+		arrange(selmon);
 	}
 }
 
@@ -2087,11 +2293,6 @@ toggleview(const Arg *arg)
 		focus(NULL);
 		arrange(selmon);
 	}
-}
-
-static void toggleviewontag(const Arg *arg)
-{
-	viewontag = !viewontag;
 }
 
 void
@@ -2352,11 +2553,14 @@ updatesizehints(Client *c)
 void
 updatestatus(void)
 {
+	Monitor* m;
 	if (!gettextprop(root, XA_WM_NAME, rawstext, sizeof(rawstext)))
 		strcpy(stext, "dwm-"VERSION);
 	else
 		copyvalidchars(stext, rawstext);
-	drawbar(selmon);
+	/* drawbar(selmon); */
+	for(m = mons; m; m = m->next)
+		drawbar(m);
 }
 
 void
@@ -2406,12 +2610,10 @@ view(const Arg *arg)
 		return;
 
 	/* if ((arg->ui & TAGMASK) == ( 1 << 8)){ */
-	if ((arg->ui & TAGMASK) == (000000001)){
+	if ((arg->ui & TAGMASK) == (000000001) && selmon == mons){
 		enablegaps = 0;
-		arrange(NULL);
 	}else{
 		enablegaps = 1;
-		arrange(NULL);
 	}
 
 	selmon->seltags ^= 1; /* toggle sel tagset */
@@ -2683,6 +2885,8 @@ main(int argc, char *argv[])
 	scan();
 	runAutostart();
 	/* runautostart(); */
+	enablegaps = 0;
+	arrange(NULL);
 	run();
 	if(restart) execvp(argv[0], argv);
 	cleanup();
