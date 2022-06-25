@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 
 # Color files
-PFILE="$HOME/.config/polybar/colorblocks/colors.ini"
-RFILE="$HOME/.config/polybar/colorblocks/scripts/rofi/colors.rasi"
+PFILE="/home/jonas/.config/polybar/colorblocks/colors.ini"
+RFILE="/home/jonas/.config/polybar/colorblocks/scripts/rofi/colors.rasi"
 export DISPLAY=:0
 
 # Change colors
@@ -20,7 +20,11 @@ change_color() {
 	sed -i -e "s/shade7 = #.*/shade7 = $SH7/g" $PFILE
 	sed -i -e "s/shade8 = #.*/shade8 = $SH8/g" $PFILE
 	
-	polybar-msg cmd restart
+	DISPLAY=:0 DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/1000/bus polybar-msg cmd restart
+	#polybar-msg cmd restart
+	#killall -q polybar &
+	#DISPLAY=:0 DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/1000/bus /home/jonas/.config/polybar/colorblocks/launch.sh
+	#/bin/bash /home/jonas/.config/polybar/colorblocks/launch.sh
 }
 
 get_random_number() {
@@ -161,5 +165,5 @@ FGA='#ebdbb2'
 
 get_random_bg
 # CHANGE BG TO PIC:
-feh --bg-fill $PIC $SPIC
+sudo feh --bg-fill $PIC $SPIC
 change_color

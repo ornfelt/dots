@@ -257,6 +257,7 @@ static void sigterm(int unused);
 static void spawn(const Arg *arg);
 static int stackpos(const Arg *arg);
 static void tag(const Arg *arg);
+static void noviewontag(const Arg *arg);
 static void tagmon(const Arg *arg);
 static void togglebar(const Arg *arg);
 static void togglefloating(const Arg *arg);
@@ -265,7 +266,6 @@ static void togglesticky(const Arg *arg);
 static void togglefullscr(const Arg *arg);
 static void toggletag(const Arg *arg);
 static void toggleview(const Arg *arg);
-static void toggleviewontag(const Arg *arg);
 static void unfocus(Client *c, int setfocus);
 static void unmanage(Client *c, int destroyed);
 static void unmapnotify(XEvent *e);
@@ -1067,7 +1067,8 @@ drawbar(Monitor *m)
 	Client *c;
 
 	/* draw status first so it can be overdrawn by tags later */
-	if (m == selmon) { /* status is only drawn on selected monitor */
+	/* if (m == selmon) { /1* status is only drawn on selected monitor *1/ */
+	if (m == selmon || 1) { /* status is only drawn on selected monitor */
 		tw = m->ww - drawstatusbar(m, bh, stext);
 		/* FILE *fp; */
 		/* fp = fopen("/home/jonas/test.txt", "w"); */
@@ -1188,6 +1189,7 @@ focusmon(const Arg *arg)
 		return;
 	unfocus(selmon->sel, 0);
 	selmon = m;
+	enablegaps = 1;
 	focus(NULL);
 }
 
@@ -2153,8 +2155,17 @@ tag(const Arg *arg)
 		selmon->sel->tags = arg->ui & TAGMASK;
 		focus(NULL);
 		arrange(selmon);
-		if(viewontag == 1)
-			view(arg);
+		view(arg);
+	}
+}
+
+void
+noviewontag(const Arg *arg)
+{
+	if (selmon->sel && arg->ui & TAGMASK) {
+		selmon->sel->tags = arg->ui & TAGMASK;
+		focus(NULL);
+		arrange(selmon);
 	}
 }
 
@@ -2282,11 +2293,6 @@ toggleview(const Arg *arg)
 		focus(NULL);
 		arrange(selmon);
 	}
-}
-
-static void toggleviewontag(const Arg *arg)
-{
-	viewontag = !viewontag;
 }
 
 void
@@ -2547,11 +2553,14 @@ updatesizehints(Client *c)
 void
 updatestatus(void)
 {
+	Monitor* m;
 	if (!gettextprop(root, XA_WM_NAME, rawstext, sizeof(rawstext)))
 		strcpy(stext, "dwm-"VERSION);
 	else
 		copyvalidchars(stext, rawstext);
-	drawbar(selmon);
+	/* drawbar(selmon); */
+	for(m = mons; m; m = m->next)
+		drawbar(m);
 }
 
 void
@@ -2601,12 +2610,10 @@ view(const Arg *arg)
 		return;
 
 	/* if ((arg->ui & TAGMASK) == ( 1 << 8)){ */
-	if ((arg->ui & TAGMASK) == (000000001)){
+	if ((arg->ui & TAGMASK) == (000000001) && selmon == mons){
 		enablegaps = 0;
-		arrange(NULL);
 	}else{
 		enablegaps = 1;
-		arrange(NULL);
 	}
 
 	selmon->seltags ^= 1; /* toggle sel tagset */
