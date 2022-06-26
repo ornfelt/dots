@@ -41,6 +41,7 @@ setxkbmap -option caps:escape
 xrandr --output DP-3 --mode 1920x1080 --rate 240.00 --output DP-1 --primary --mode 1920x1080 --rate 144.00 --right-of DP-3
 
 xrdb ~/.Xresources
+xhost si:localuser:root
 #exec awesome
 exec i3
 exec dwm &
