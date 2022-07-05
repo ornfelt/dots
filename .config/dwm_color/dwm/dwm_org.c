@@ -28,7 +28,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <assert.h>
 #include <sys/types.h>
+#include <sys/stat.h>
 #include <sys/wait.h>
 #include <X11/cursorfont.h>
 #include <X11/keysym.h>
@@ -71,7 +73,7 @@
 
 /* enums */
 enum { CurNormal, CurResize, CurMove, CurLast }; /* cursor */
-enum { SchemeNorm, SchemeSel }; /* color schemes */
+enum { SchemeNorm, SchemeSel, SchemeWarn, SchemeUrgent }; /* color schemes */
 enum { NetSupported, NetWMName, NetWMState, NetWMCheck,
        NetWMFullscreen, NetActiveWindow, NetWMWindowType,
        NetWMWindowTypeDialog, NetClientList, NetLast }; /* EWMH atoms */
@@ -138,6 +140,7 @@ struct Monitor {
 	int gappiv;           /* vertical gap between windows */
 	int gappoh;           /* horizontal outer gaps */
 	int gappov;           /* vertical outer gaps */
+	int gappx;			/* gaps between windows */
 	unsigned int seltags;
 	unsigned int sellt;
 	unsigned int tagset[2];
@@ -176,6 +179,7 @@ typedef struct {
 } ResourcePref;
 
 /* function declarations */
+static int colorincr;
 static void applyrules(Client *c);
 static int applysizehints(Client *c, int *x, int *y, int *w, int *h, int interact);
 static void arrange(Monitor *m);
@@ -293,6 +297,8 @@ static pid_t winpid(Window w);
 
 /* variables */
 static const char broken[] = "broken";
+static const char dwmdir[] = "dwm";
+static const char localshare[] = ".local/share";
 /* static char stext[256]; */
 static char stext[1024];
 static char rawstext[256];
@@ -574,7 +580,7 @@ buttonpress(XEvent *e)
 		} else if (ev->x < x + blw)
 			click = ClkLtSymbol;
 		else if (ev->x > (x = selmon->ww - TEXTW(stext) + lrpad)) {
-			click = ClkStatusText;
+			click = ClkStatusText; 
 
 			char *text = rawstext;
 			int i = -1;
@@ -594,6 +600,7 @@ buttonpress(XEvent *e)
 			}
 		} else
 			click = ClkWinTitle;
+			/* click = ClkStatusText; */
 	} else if ((c = wintoclient(ev->window))) {
 		focus(c);
 		restack(selmon);
@@ -864,15 +871,63 @@ dirtomon(int dir)
 	return m;
 }
 
+
+char** str_split(char* a_str, const char a_delim)
+{
+    char** result    = 0;
+    size_t count     = 0;
+    char* tmp        = a_str;
+    char* last_comma = 0;
+    char delim[2];
+    delim[0] = a_delim;
+    delim[1] = 0;
+
+    /* Count how many elements will be extracted. */
+    while (*tmp)
+    {
+        if (a_delim == *tmp)
+        {
+            count++;
+            last_comma = tmp;
+        }
+        tmp++;
+    }
+
+    /* Add space for trailing token. */
+    count += last_comma < (a_str + strlen(a_str) - 1);
+
+    /* Add space for terminating null string so caller
+       knows where the list of returned strings ends. */
+    count++;
+
+    result = malloc(sizeof(char*) * count);
+
+    if (result)
+    {
+        size_t idx  = 0;
+        char* token = strtok(a_str, delim);
+
+        while (token)
+        {
+            assert(idx < count);
+            *(result + idx++) = strdup(token);
+            token = strtok(0, delim);
+        }
+        assert(idx == count - 1);
+        *(result + idx) = 0;
+    }
+
+    return result;
+}
+
+
 int
 drawstatusbar(Monitor *m, int bh, char* stext) {
 	int ret, i, w, x, len;
 	short isCode = 0;
 	char *text;
 	char *p;
-	FILE *ptr;
-	char ch;
-	int hotbool = 0;
+	colorincr = 0;
 
 	len = strlen(stext) + 1 ;
 	if (!(text = (char*) malloc(sizeof(char)*len)))
@@ -916,7 +971,6 @@ drawstatusbar(Monitor *m, int bh, char* stext) {
 
 	/* process status text */
 	i = -1;
-	drw_clr_create(drw, &drw->scheme[ColFg], col1);
 
 	while (text[++i]) {
 		if (text[i] == '^' && !isCode) {
@@ -928,19 +982,27 @@ drawstatusbar(Monitor *m, int bh, char* stext) {
 			x += w;
 
 			while (text[++i] != '^') {
-				if (text[i] == '2') {
+				if (text[i] == '1') {
+					char col1[] = "#98971a";
+					drw_clr_create(drw, &drw->scheme[ColFg], col1);
+				} else if (text[i] == '2') {
 					// Check if weather is hot or not
+					FILE *ptr;
+					char ch;
 					ptr = fopen("/home/jonas/.local/share/weatherreport", "r");
+					int hotbool = 0;
 					if (ptr == NULL) printf("Fail to read wr...");
 					do{
 						ch = fgetc(ptr);
 						// Check if contains + and 2 (= hot)
 						if (hotbool){
 							if (ch == '2' || ch == '3'){
-								drw_clr_create(drw, &drw->scheme[ColFg], col21);
+								char col2[] = "#fb4934";
+								drw_clr_create(drw, &drw->scheme[ColFg], col2);
 								break;
 							}else{
-								drw_clr_create(drw, &drw->scheme[ColFg], col22);
+								char col2[] = "#ebdbb2";
+								drw_clr_create(drw, &drw->scheme[ColFg], col2);
 								break;
 							}
 						}
@@ -948,22 +1010,28 @@ drawstatusbar(Monitor *m, int bh, char* stext) {
 						if (ch == '+'){
 							hotbool = 1;
 						}else if (ch == '-') {
-							drw_clr_create(drw, &drw->scheme[ColFg], col23);
+							char col2[] = "#458588";
+							drw_clr_create(drw, &drw->scheme[ColFg], col2);
 							break;
 						}
 						else{
-							drw_clr_create(drw, &drw->scheme[ColFg], col24);
+							char col2[] = "#ebdbb2";
+							drw_clr_create(drw, &drw->scheme[ColFg], col2);
 							break;
 						}
 					} while (ch != EOF);
 					fclose(ptr);
 				} else if (text[i] == '3') {
+					char col3[] = "#fabd2f";
 					drw_clr_create(drw, &drw->scheme[ColFg], col3);
 				} else if (text[i] == '4') {
+					char col4[] = "#83a598";
 					drw_clr_create(drw, &drw->scheme[ColFg], col4);
 				} else if (text[i] == '5') {
+					char col5[] = "#d3869b";
 					drw_clr_create(drw, &drw->scheme[ColFg], col5);
 				} else if (text[i] == '6') {
+					char col6[] = "#8ec07c";
 					drw_clr_create(drw, &drw->scheme[ColFg], col6);
 				}
 			}
@@ -992,12 +1060,20 @@ drawbar(Monitor *m)
 	int boxs = drw->fonts->h / 9;
 	int boxw = drw->fonts->h / 6 + 2;
 	unsigned int i, occ = 0, urg = 0;
+	char *ts = stext;
+	char *tp = stext;
+	int tx = 0;
+	char ctmp;
 	Client *c;
 
 	/* draw status first so it can be overdrawn by tags later */
-	/* if (m == selmon) { /1* status is only drawn on selected monitor *1/ */
-	if (m == selmon || 1) { 
+	if (m == selmon) { /* status is only drawn on selected monitor */
 		tw = m->ww - drawstatusbar(m, bh, stext);
+		/* FILE *fp; */
+		/* fp = fopen("/home/jonas/test.txt", "w"); */
+		/* /1* fprintf(fp, stext); *1/ */
+		/* fprintf(fp, stext); */
+		/* fclose(fp); */
 	}
 
 	for (c = m->clients; c; c = c->next) {
@@ -1112,7 +1188,6 @@ focusmon(const Arg *arg)
 		return;
 	unfocus(selmon->sel, 0);
 	selmon = m;
-	enablegaps = 1;
 	focus(NULL);
 }
 
@@ -1572,12 +1647,8 @@ propertynotify(XEvent *e)
 			drawbars();
 			break;
 		}
-		if (ev->atom == XA_WM_NAME || ev->atom == netatom[NetWMName]){
+		if (ev->atom == XA_WM_NAME || ev->atom == netatom[NetWMName])
 			updatetitle(c);
-			if (c == c->mon->sel)
-				drawbar(c->mon);
-		}
-
 		if (ev->atom == netatom[NetWMWindowType])
 			updatewindowtype(c);
 	}
@@ -1621,7 +1692,6 @@ resizeclient(Client *c, int x, int y, int w, int h)
 	c->oldw = c->w; c->w = wc.width = w;
 	c->oldh = c->h; c->h = wc.height = h;
 	wc.border_width = c->bw;
-	// Don't show border if floating or if only 1 client
 	if (((nexttiled(c->mon->clients) == c && !nexttiled(c->next))
 	    || &monocle == c->mon->lt[c->mon->sellt]->arrange)
 	    && !c->isfullscreen && !c->isfloating) {
@@ -1957,7 +2027,6 @@ setup(void)
 	/* scheme = ecalloc(LENGTH(colors), sizeof(Clr *)); */
 	scheme = ecalloc(LENGTH(colors) + 1, sizeof(Clr *));
 	scheme[LENGTH(colors)] = drw_scm_create(drw, colors[0], 3);
-
 	for (i = 0; i < LENGTH(colors); i++)
 		scheme[i] = drw_scm_create(drw, colors[i], 3);
 	/* init bars */
@@ -2482,14 +2551,11 @@ updatesizehints(Client *c)
 void
 updatestatus(void)
 {
-	Monitor* m;
 	if (!gettextprop(root, XA_WM_NAME, rawstext, sizeof(rawstext)))
 		strcpy(stext, "dwm-"VERSION);
 	else
 		copyvalidchars(stext, rawstext);
-	/* drawbar(selmon); */
-	for(m = mons; m; m = m->next)
-		drawbar(m);
+	drawbar(selmon);
 }
 
 void
@@ -2539,10 +2605,12 @@ view(const Arg *arg)
 		return;
 
 	/* if ((arg->ui & TAGMASK) == ( 1 << 8)){ */
-	if ((arg->ui & TAGMASK) == (000000001) && selmon == mons){
+	if ((arg->ui & TAGMASK) == (000000001)){
 		enablegaps = 0;
+		/* arrange(NULL); */
 	}else{
 		enablegaps = 1;
+		/* arrange(NULL); */
 	}
 
 	selmon->seltags ^= 1; /* toggle sel tagset */
@@ -2815,7 +2883,7 @@ main(int argc, char *argv[])
 	runAutostart();
 	/* runautostart(); */
 	enablegaps = 0;
-	arrange(selmon);
+	arrange(NULL);
 	run();
 	if(restart) execvp(argv[0], argv);
 	cleanup();
