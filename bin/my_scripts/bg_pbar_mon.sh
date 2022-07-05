@@ -20,7 +20,7 @@ change_color() {
 	sed -i -e "s/shade7 = #.*/shade7 = $SH7/g" $PFILE
 	sed -i -e "s/shade8 = #.*/shade8 = $SH8/g" $PFILE
 	
-	DISPLAY=:0 DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/1000/bus polybar-msg cmd restart
+	DISPLAY=:0 DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/1000/bus polybar-msg cmd restart & 
 	#polybar-msg cmd restart
 	#killall -q polybar &
 	#DISPLAY=:0 DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/1000/bus /home/jonas/.config/polybar/colorblocks/launch.sh
