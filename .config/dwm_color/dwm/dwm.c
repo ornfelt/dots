@@ -255,6 +255,7 @@ static int stackpos(const Arg *arg);
 static void tag(const Arg *arg);
 static void noviewontag(const Arg *arg);
 static void tagmon(const Arg *arg);
+static void tagmonview(const Arg *arg);
 static void togglebar(const Arg *arg);
 static void togglefloating(const Arg *arg);
 static void togglescratch(const Arg *arg);
@@ -2104,6 +2105,15 @@ tagmon(const Arg *arg)
 	if (!selmon->sel || !mons->next)
 		return;
 	sendmon(selmon->sel, dirtomon(arg->i));
+}
+
+void
+tagmonview(const Arg *arg)
+{
+	if (!selmon->sel || !mons->next)
+		return;
+	sendmon(selmon->sel, dirtomon(arg->i));
+	focusmon(arg);
 }
 
 void
