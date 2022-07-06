@@ -43,7 +43,8 @@ static const Block blocks[] = {
 	/* {"^4^ ",	"~/.local/bin/statusbar/sb-volume",	0,	10}, */
 	{"^4^ ",	"~/.local/bin/statusbar/sb-volume_col",	0,	10},
 	/* {" ",	"~/.local/bin/statusbar/sb-volume",	0,	10}, */
-	{"^5^ ",	"~/.local/bin/statusbar/sb-battery_col",	5,	3},
+	{"^5^ ",	"~/.local/bin/statusbar/sb-internet",	5,	3},
+	/* {"^5^ ",	"~/.local/bin/statusbar/sb-battery_col",	5,	3}, */
 	/* {" ",	"~/.local/bin/statusbar/sb-battery",	5,	3}, */
 	{"^6^  ",	"~/.local/bin/statusbar/sb-clock",	60,	1},
 	/* {"  ",	"~/.local/bin/statusbar/sb-clock",	60,	1}, */
