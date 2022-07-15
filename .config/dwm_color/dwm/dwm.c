@@ -1070,7 +1070,6 @@ expose(XEvent *e)
 void
 focus(Client *c)
 {
-
 	if (!c || !ISVISIBLE(c))
 		for (c = selmon->stack; c && !ISVISIBLE(c); c = c->snext);
 	if (selmon->sel && selmon->sel != c)
@@ -1115,7 +1114,7 @@ focusmon(const Arg *arg)
 	unfocus(selmon->sel, 0);
 	XWarpPointer(dpy, None, m->barwin, 0, 0, 0, 0, m->mw / 2, m->mh / 2);
 	selmon = m;
-	enablegaps = 1;
+	/* enablegaps = 1; */
 	focus(NULL);
 }
 
@@ -1363,7 +1362,7 @@ manage(Window w, XWindowAttributes *wa)
 	/* c->sfy = 730; */
 	/* c->sfw = 700; */
 	/* c->sfh = 350; */
-	//
+
 	XSelectInput(dpy, w, EnterWindowMask|FocusChangeMask|PropertyChangeMask|StructureNotifyMask);
 	grabbuttons(c, 0);
 	if (!c->isfloating)
@@ -1376,6 +1375,7 @@ manage(Window w, XWindowAttributes *wa)
 		c->w = 500;
 		c->h = 350;
 		c->bw = 0;
+		wc.border_width = 0;
 	}
 	attach(c);
 	attachstack(c);
@@ -1631,9 +1631,9 @@ resizeclient(Client *c, int x, int y, int w, int h)
 		c->w = wc.width += c->bw * 2;
 		c->h = wc.height += c->bw * 2;
 		wc.border_width = 0;
-	} else if (c->isfloating){
-		wc.border_width = 0;
 	}
+	if (c->isfloating) wc.border_width = 0;
+
 	XConfigureWindow(dpy, c->win, CWX|CWY|CWWidth|CWHeight|CWBorderWidth, &wc);
 	configure(c);
 	XSync(dpy, False);
@@ -2571,15 +2571,17 @@ view(const Arg *arg)
 	/* if ((arg->ui & TAGMASK) == ( 1 << 8)){ */
 	if ((arg->ui & TAGMASK) == (000000001) && selmon == mons){
 		enablegaps = 0;
-	}else{
-		enablegaps = 1;
 	}
+	/* else{ */
+	/* 	enablegaps = 1; */
+	/* } */
 
 	selmon->seltags ^= 1; /* toggle sel tagset */
 	if (arg->ui & TAGMASK)
 		selmon->tagset[selmon->seltags] = arg->ui & TAGMASK;
 	focus(NULL);
 	arrange(selmon);
+	enablegaps = 1;
 }
 
 pid_t
