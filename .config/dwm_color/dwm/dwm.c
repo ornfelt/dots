@@ -1113,6 +1113,7 @@ focusmon(const Arg *arg)
 	if ((m = dirtomon(arg->i)) == selmon)
 		return;
 	unfocus(selmon->sel, 0);
+	XWarpPointer(dpy, None, m->barwin, 0, 0, 0, 0, m->mw / 2, m->mh / 2);
 	selmon = m;
 	enablegaps = 1;
 	focus(NULL);
@@ -1792,6 +1793,7 @@ sendmonview(Client *c, Monitor *m)
 	c->tags = m->tagset[m->seltags]; /* assign tags of target monitor */
 	attach(c);
 	attachstack(c);
+	XWarpPointer(dpy, None, m->barwin, 0, 0, 0, 0, m->mw / 2, m->mh / 2);
 	arrange(m);
 	focus(c);
 	restack(m);
@@ -2842,7 +2844,7 @@ main(int argc, char *argv[])
 	scan();
 	runAutostart();
 	/* runautostart(); */
-	enablegaps = 0;
+	enablegaps = 1;
 	arrange(selmon);
 	run();
 	if(restart) execvp(argv[0], argv);
