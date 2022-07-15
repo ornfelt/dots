@@ -1375,7 +1375,6 @@ manage(Window w, XWindowAttributes *wa)
 		c->w = 500;
 		c->h = 350;
 		c->bw = 0;
-		wc.border_width = 0;
 	}
 	attach(c);
 	attachstack(c);
