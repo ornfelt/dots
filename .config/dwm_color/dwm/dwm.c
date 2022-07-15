@@ -1787,11 +1787,12 @@ sendmonview(Client *c, Monitor *m)
 	unfocus(c, 1);
 	detach(c);
 	detachstack(c);
+	arrange(c->mon);
 	c->mon = m;
 	c->tags = m->tagset[m->seltags]; /* assign tags of target monitor */
 	attach(c);
 	attachstack(c);
-	arrange(NULL);
+	arrange(m);
 	focus(c);
 	restack(m);
 }
