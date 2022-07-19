@@ -1082,7 +1082,7 @@ focus(Client *c)
 		detachstack(c);
 		attachstack(c);
 		grabbuttons(c, 1);
-		if (!c->isfloating) XSetWindowBorder(dpy, c->win, scheme[SchemeSel][ColBorder].pixel);
+		XSetWindowBorder(dpy, c->win, scheme[SchemeSel][ColBorder].pixel);
 		setfocus(c);
 	} else {
 		XSetInputFocus(dpy, root, RevertToPointerRoot, CurrentTime);
@@ -1342,6 +1342,7 @@ manage(Window w, XWindowAttributes *wa)
 	c->y = MAX(c->y, ((c->mon->by == c->mon->my) && (c->x + (c->w / 2) >= c->mon->wx)
 		&& (c->x + (c->w / 2) < c->mon->wx + c->mon->ww)) ? bh : c->mon->my);
 	c->bw = borderpx;
+	if (c->isfloating) c->bw = 0;
 
 	wc.border_width = c->bw;
 	XConfigureWindow(dpy, w, CWBorderWidth, &wc);
@@ -1358,23 +1359,21 @@ manage(Window w, XWindowAttributes *wa)
 	c->sfw = c->w;
 	c->sfh = c->h;
 
-	/* c->sfx = 1200; */
-	/* c->sfy = 730; */
-	/* c->sfw = 700; */
-	/* c->sfh = 350; */
-
 	XSelectInput(dpy, w, EnterWindowMask|FocusChangeMask|PropertyChangeMask|StructureNotifyMask);
 	grabbuttons(c, 0);
 	if (!c->isfloating)
 		c->isfloating = c->oldstate = trans != None || c->isfixed;
 	if (c->isfloating){
 		XRaiseWindow(dpy, c->win);
-		// TODO (my own implementation of moving floats from rules)
-		c->x = 1280;
+		c->x = 1500;
 		c->y = 33;
-		c->w = 500;
-		c->h = 350;
-		c->bw = 0;
+		c->w = 405;
+		c->h = 280;
+		if (strcmp(c->name, "Calendar") == 0) {
+			c->x = 1155;
+			c->w = 750;
+			c->h = 350;
+		}
 	}
 	attach(c);
 	attachstack(c);
@@ -1626,12 +1625,11 @@ resizeclient(Client *c, int x, int y, int w, int h)
 	// Don't show border if floating or if only 1 client
 	if (((nexttiled(c->mon->clients) == c && !nexttiled(c->next))
 	    || &monocle == c->mon->lt[c->mon->sellt]->arrange)
-	    && !c->isfullscreen && !c->isfloating) {
+	    && !c->isfullscreen) {
 		c->w = wc.width += c->bw * 2;
 		c->h = wc.height += c->bw * 2;
 		wc.border_width = 0;
 	}
-	/* if (c->isfloating) wc.border_width = 0; */
 
 	XConfigureWindow(dpy, c->win, CWX|CWY|CWWidth|CWHeight|CWBorderWidth, &wc);
 	configure(c);
