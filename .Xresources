@@ -28,17 +28,13 @@
 *.color7:  #a89984
 *.color15: #ebdbb2
 
-
 !! URxvt Appearance
 !! URxvt*font: xft:Linux Libertine Mono:size=11:antialias=true
 !! URxvt*font: xft:Inconsolata Nerd Font Mono:size=15, xft:DejaVu Sans:size=12
 !! URxvt.font:     xft:bitstream vera sans mono:size=12:antialias=true
 !! URxvt.boldFont: xft:bitstream vera sans mono:bold:size=12:antialias=true
-!!URxvt.font:		xft:JetBrainsMono Nerd Font:size=11:style=regular:autohint=true
-!!URxvt.boldFont: xft:JetBrainsMono Nerd Font:size=11:style=bold:autohint=true
-
-URxvt.font:		xft:JetBrainsMono Nerd Font:size=11:style=regular:antialias=true:autohint=true
-URxvt.boldFont: xft:JetBrainsMono Nerd Font:size=11:style=bold:antialias=true:autohint=true
+URxvt.font:		xft:JetBrainsMono Nerd Font:size=11:style=regular:autohint=true
+URxvt.boldFont: xft:JetBrainsMono Nerd Font:size=11:style=bold:autohint=true
 URxvt.letterSpace: 0
 URxvt.lineSpace: 0
 URxvt.geometry: 92x24
