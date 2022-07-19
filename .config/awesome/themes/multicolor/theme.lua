@@ -16,8 +16,10 @@ local my_table = awful.util.table or gears.table -- 4.{0,1} compatibility
 local theme                                     = {}
 theme.confdir                                   = os.getenv("HOME") .. "/.config/awesome/themes/multicolor"
 theme.wallpaper                                 = theme.confdir .. "/wall.jpg"
-theme.font                                      = "Noto Sans Regular 11"
-theme.taglist_font                              = "Noto Sans Regular 13"
+-- theme.font                                      = "Noto Sans Regular 11"
+-- theme.taglist_font                              = "Noto Sans Regular 13"
+theme.font                                      = "JetBrainsMono Nerd Font:size=11:style=bold:autohint=true"
+theme.taglist_font                              = "JetBrainsMono Nerd Font:size=11:style=bold:autohint=true"
 theme.menu_bg_normal                            = "#282828"
 theme.menu_bg_focus                             = "#282828"
 theme.bg_normal                                 = "#282828"
@@ -98,7 +100,8 @@ local markup = lain.util.markup
 -- Textclock
 os.setlocale(os.getenv("LANG")) -- to localize the clock
 local clockicon = wibox.widget.imagebox(theme.widget_clock)
-local mytextclock = wibox.widget.textclock(markup("#7788af", "%A %d %B ") .. markup("#535f7a", ">") .. markup("#de5e1e", "  %H:%M "))
+-- local mytextclock = wibox.widget.textclock(markup("#7788af", "%A %d %B ") .. markup("#535f7a", ">") .. markup("#de5e1e", " %H:%M "))
+local mytextclock = wibox.widget.textclock(markup("#7788af", "%A %d %B ") .. markup("#de5e1e", "  %H:%M "))
 mytextclock.font = theme.font
 
 -- Calendar
@@ -324,10 +327,10 @@ function theme.at_screen_connect(s)
             cpu.widget,
             weathericon,
             theme.weather.widget,
-            tempicon,
-            temp.widget,
-            baticon,
-            bat.widget,
+            -- tempicon,
+            -- temp.widget,
+            -- baticon,
+            -- bat.widget,
             clockicon,
             mytextclock,
 

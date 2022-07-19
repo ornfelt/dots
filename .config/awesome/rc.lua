@@ -76,9 +76,8 @@ local soundplayer = "ffplay -nodisp -autoexit " -- The program that will play sy
 
 -- awesome variables
 awful.util.terminal = terminal
---awful.util.tagnames = {  " ", " ", " ", " ", " ", " ", " ", " ", " ", " "  }
--- awful.util.tagnames = { " DEV ", " WWW ", " SYS ", " DOC ", " VBOX ", " CHAT ", " MUS ", " VID ", " GFX " }
 awful.util.tagnames = { "1", "2", "3", "4", "5", "6", "7", "8", "9" }
+-- awful.util.tagnames = { "", "", "", "", "", "", "", "", "" }
 awful.layout.suit.tile.left.mirror = true
 awful.layout.layouts = {
     awful.layout.suit.tile,
@@ -842,7 +841,7 @@ client.connect_signal("focus", border_adjust)
 client.connect_signal("property::maximized", border_adjust)
 client.connect_signal("unfocus", function(c) c.border_color = beautiful.border_normal end)
 
-awful.spawn.with_shell(soundplayer .. startupSound)
+-- awful.spawn.with_shell(soundplayer .. startupSound)
 -- awful.spawn.with_shell("lxsession")
 awful.spawn.with_shell("picom")
 -- awful.spawn.with_shell("nm-applet")

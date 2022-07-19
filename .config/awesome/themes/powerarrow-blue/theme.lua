@@ -15,14 +15,17 @@ local my_table = awful.util.table or gears.table -- 4.{0,1} compatibility
 
 local theme                                     = {}
 theme.dir                                       = os.getenv("HOME") .. "/.config/awesome/themes/powerarrow-blue"
---theme.wallpaper                                 = theme.dir .. "/starwars.jpg"
-theme.font                                      = "Mononoki Nerd Font 9"
-theme.taglist_font                              = "Droid Sans Bold 7"
+theme.wallpaper                                 = theme.dir .. "/starwars.jpg"
+-- theme.font                                      = "Mononoki Nerd Font 9"
+-- theme.taglist_font                              = "Droid Sans Bold 7"
+theme.font                                      = "JetBrainsMono Nerd Font:size=10:style=regular:autohint=true"
+theme.taglist_font                              = "JetBrainsMono Nerd Font:size=11:style=regular:autohint=true"
 theme.fg_normal                                 = "#ffffff"
 theme.fg_focus                                  = "#8ec07c"
 theme.fg_urgent                                 = "#b74822"
-theme.bg_normal                                 = "#282a36"
-theme.bg_focus                                  = "#FF79C6"
+-- theme.bg_normal                                 = "#282a36"
+theme.bg_normal                                 = "#282828"
+theme.bg_focus                                  = "#ebdbb2"
 theme.bg_urgent                                 = "#3F3F3F"
 theme.taglist_fg_focus                          = "#282a36"
 theme.tasklist_bg_focus                         = "#000000"
@@ -244,7 +247,8 @@ theme.weather = lain.widget.weather({
     settings = function()
         descr = weather_now["weather"][1]["description"]:lower()
         units = math.floor(weather_now["main"]["temp"])
-        widget:set_markup(markup.fontfg(theme.font, "#ffffff", descr .. " @ " .. units .. "°C "))
+        -- widget:set_markup(markup.fontfg(theme.font, "#ffffff", descr .. " @ " .. units .. "°C "))
+        widget:set_markup(markup.fontfg(theme.font, "#ffffff", units .. "°C "))
     end
 })
 
@@ -400,7 +404,8 @@ function theme.at_screen_connect(s)
             -- using separators
             --arrow(theme.bg_normal, "#343434"),
            -- wibox.container.background(wibox.container.margin(wibox.widget { mailicon, mail and mail.widget, layout = wibox.layout.align.horizontal }, 4, 7), "#343434"),
-            arrow("alpha", "#458588"),
+
+			arrow("alpha", "#458588"),
             wibox.container.background(wibox.container.margin(wibox.widget { mpdicon, theme.mpd.widget, layout = wibox.layout.align.horizontal }, 3, 6), "#458588"),
             arrow("#458588", "#8ec07c"),
             wibox.container.background(wibox.container.margin(wibox.widget { volicon, theme.volume.widget, layout = wibox.layout.align.horizontal }, 2, 3), "#8ec07c"),

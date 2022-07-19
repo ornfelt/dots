@@ -317,7 +317,7 @@ exec_always --no-startup-id feh --bg-fill --randomize ~/Pictures/Wallpapers/*
 # Alternating layout
 exec_always --no-startup-id ~/.local/bin/my_scripts/i3-alternating-layout/alternating_layouts.py
 #run polybar
-#exec_always --no-startup-id ~/.config/polybar/forest/launch.sh
+# exec_always --no-startup-id ~/.config/polybar/forest/launch.sh
 exec_always --no-startup-id ~/.config/polybar/colorblocks/launch.sh
 
 # client.focused #458588 #458588 #000088 #458588
