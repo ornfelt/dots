@@ -2565,13 +2565,9 @@ view(const Arg *arg)
 	if ((arg->ui & TAGMASK) == selmon->tagset[selmon->seltags])
 		return;
 
-	/* if ((arg->ui & TAGMASK) == ( 1 << 8)){ */
-	if ((arg->ui & TAGMASK) == (000000001) && selmon == mons){
+	if ((arg->ui & TAGMASK) == (000000001) && selmon != mons){
 		enablegaps = 0;
 	}
-	/* else{ */
-	/* 	enablegaps = 1; */
-	/* } */
 
 	selmon->seltags ^= 1; /* toggle sel tagset */
 	if (arg->ui & TAGMASK)
