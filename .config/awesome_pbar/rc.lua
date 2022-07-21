@@ -236,14 +236,6 @@ globalkeys = gears.table.join(
     awful.spawn.with_shell("sh ~/.local/bin/powermenu")                                                       end,
               {description = "power options", group = "awesome"}),
 
-    awful.key({ modkey },            "n",     function ()
-    awful.util.spawn("sh /home/jonas/.local/bin/my_scripts/nautilus_wd.sh")                                            end,
-              {description = "run nautilus in wd", group = "launcher"}),
-
-    awful.key({ modkey, "Shift"    },            "n",     function ()
-    awful.util.spawn("nautilus -w --no-desktop")                                            end,
-              {description = "run nautilus", group = "launcher"}),
-
     awful.key({},            "F4",        function ()
     awful.spawn.with_shell("flameshot gui")                                                       end,
               {description = "run flameshot", group = "launcher"}),
@@ -256,26 +248,89 @@ globalkeys = gears.table.join(
     awful.spawn.with_shell("/home/jonas/.local/bin/my_scripts/tesseract_ocr.sh")                                                       end,
               {description = "Screenshot ocr", group = "launcher"}),
 
--- bindsym Print --release exec ~/.local/bin/my_scripts/screenshot_select.sh
--- bindsym shift+Print exec ~/.local/bin/my_scripts/screenshot.sh
--- bindsym $mod+Print --release exec ~/.local/bin/my_scripts/screenshot_ocr.sh
--- bindsym $mod+section exec --no-startup-id ~/.local/bin/my_scripts/loadEww.sh
--- # Lock screen 
--- bindsym $mod+Shift+x exec i3lock-fancy
--- bindsym $mod+Control+x exec i3lock -i ~/Downloads/lock-wallpaper.png 
--- #Suspend 
--- bindsym $mod+Shift+comma exec ~/.local/bin/my_scripts/alert_exit.sh; exec ~/.local/bin/my_scripts/suspend.sh
--- bindsym $mod+Shift+period exec i3lock-fancy; exec ~/.local/bin/my_scripts/alert_exit.sh; exec systemctl suspend
--- bindsym $mod+v exec ~/.local/bin/my_scripts/clip_history.sh
--- bindsym $mod+Shift+v exec ~/.local/bin/my_scripts/qr_clip.sh
--- bindsym $mod+period exec ~/.local/bin/my_scripts/emojipick/emojipick
--- # Program shortcuts
--- bindsym $mod+b exec urxvt -e sudo htop
--- bindsym $mod+Shift+b exec urxvt -e sudo bashtop
--- bindsym $mod+Control+b exec urxvt -e sudo ytop
--- bindsym $mod+m exec spotify
--- bindsym $mod+Shift+m exec flatpak run org.jamovi.jamovi
--- bindsym $mod+Control+m exec ~/.local/bin/my_scripts/tstock.sh
+	-- Lock screen 
+    awful.key({ modkey, "Shift"    },            "x",     function ()
+    awful.util.spawn("sh i3lock-fancy")                                            end,
+              {description = "i3lock", group = "launcher"}),
+
+    awful.key({ modkey, "Control"     },            "x",        function ()
+    awful.spawn.with_shell("i3lock -i ~/Downloads/lock-wallpaper.png")                                                       end,
+              {description = "i3lock pic", group = "launcher"}),
+	-- Suspend 
+    awful.key({ modkey, "Shift"    },            "comma",     function ()
+    awful.util.spawn("/home/jonas/.local/bin/my_scripts/alert_exit.sh; /home/jonas/.local/bin/my_scripts/suspend.sh")                                            end,
+              {description = "Suspend", group = "launcher"}),
+
+    awful.key({ modkey, "Shift"    },            "period",     function ()
+    awful.util.spawn("i3lock-fancy; /home/jonas/.local/bin/my_scripts/alert_exit.sh; systemctl suspend")                                            end,
+              {description = "Suspend", group = "launcher"}),
+
+	-- Nice things
+    awful.key({ modkey, "Shift"    },            "period",     function ()
+    awful.util.spawn("i3lock-fancy; /home/jonas/.local/bin/my_scripts/alert_exit.sh; systemctl suspend")                                            end,
+              {description = "Suspend", group = "launcher"}),
+
+    awful.key({modkey},            "v",        function ()
+    awful.util.spawn("/home/jonas/.local/bin/my_scripts/clip_history.sh")                                                       end,
+              {description = "diodon", group = "launcher"}),
+
+    awful.key({modkey},            "period",     function ()
+    awful.util.spawn("/home/jonas/.local/bin/my_scripts/emojipick/emojipick")                                            end,
+              {description = "Emojipick", group = "launcher"}),
+
+	-- Program shortcuts
+    awful.key({modkey},            "b",     function ()
+    awful.util.spawn(terminal.. " -e sudo htop")                                            end,
+              {description = "Htop", group = "launcher"}),
+
+    awful.key({ modkey, "Shift"    },            "b",     function ()
+    awful.util.spawn(terminal.. " -e sudo bashtop")                                            end,
+              {description = "Bashtop", group = "launcher"}),
+
+    awful.key({ modkey, "Control"    },            "b",     function ()
+    awful.util.spawn(terminal.. " -e sudo ytop")                                            end,
+              {description = "Ytop", group = "launcher"}),
+
+    awful.key({ modkey },            "n",     function ()
+    awful.util.spawn("sh /home/jonas/.local/bin/my_scripts/nautilus_wd.sh")                                            end,
+              {description = "run nautilus in wd", group = "launcher"}),
+
+    awful.key({ modkey, "Shift"    },            "n",     function ()
+    awful.util.spawn("nautilus -w --no-desktop")                                            end,
+              {description = "run nautilus", group = "launcher"}),
+
+    awful.key({modkey},            "m",     function ()
+    awful.util.spawn("spotify")                                            end,
+              {description = "Spotify", group = "launcher"}),
+
+    awful.key({ modkey, "Shift"    },            "m",     function ()
+    awful.util.spawn("Jamovi")                                            end,
+              {description = "Jamovi", group = "launcher"}),
+
+    awful.key({ modkey, "Control"    },            "m",     function ()
+    awful.util.spawn(terminal.. " -e sh /home/jonas/.local/bin/my_scripts/tstock.sh")                                            end,
+              {description = "Ytop", group = "launcher"}),
+
+    awful.key({modkey },            "section",     function ()
+    awful.util.spawn("sh /home/jonas/.local/bin/my_scripts/loadEww.sh")  end,
+              {description = "Load Eww", group = "launcher"}),
+
+    awful.key({modkey, "Shift" },            "section",     function ()
+    awful.util.spawn.with_shell("/home/jonas/.local/bin/my_scripts/ranger_wd.sh urxvt; /home/jonas/.local/bin/my_scripts/ranger_wd.sh urxvt")  end,
+              {description = "Screenshot", group = "launcher"}),
+
+	-- Print
+    awful.key({ },            "print",     function ()
+    awful.util.spawn("sh /home/jonas/.local/bin/my_scripts/screenshot_select.sh")                                            end,
+              {description = "Screenshot", group = "launcher"}),
+
+    awful.key({ modkey   },            "print",     function ()
+    awful.util.spawn("/home/jonas/.local/bin/my_scripts/screenshot_ocr.sh")                                            end,
+              {description = "Screenshot", group = "launcher"}),
+
+    awful.key({ modkey, "Shift"    },            "print",     function ()
+    awful.util.spawn("/home/jonas/.local/bin/my_scripts/screenshot.sh")                                            end,
+              {description = "Screenshot", group = "launcher"}),
 
     awful.key({ modkey, "Shift"    },            "p",     function ()
     awful.util.spawn("/home/jonas/.local/bin/my_scripts/toggle_polybar.sh")                                            end,
@@ -454,7 +509,7 @@ awful.rules.rules = {
 
     -- Set Firefox to always map on the tag named "2" on screen 1.
     { rule = { instance = "Firefox" },
-    properties = { tag = "1" } },
+    properties = { tag = "0" } },
 
     { rule = { instance = "discord" },
     properties = { tag = "2" } },
@@ -503,13 +558,14 @@ naughty.config.spacing = 5
 
 -- awful.spawn.with_shell("picom --experimental-backends")
 awful.spawn.with_shell("picom")
+awful.spawn.with_shell("diodon")
 -- awful.spawn.with_shell('xinput disable "ETPS/2 Elantech Touchpad"')
 -- awful.spawn.with_shell('xinput set-prop "MOSART Semi. MI Mouse A1w Mouse" "Coordinate Transformation Matrix" 2.4 0 0 0 2.4 0 0 0 1')
 -- awful.spawn.with_shell("redshift -l 26.449923:80.331871")
 -- awful.spawn.with_shell("polybar left")
 -- awful.spawn.with_shell("polybar right")
 -- awful.spawn.with_shell("polybar middle")
-awful.spawn.with_shell("~/.config/polybar/launch.sh --forest")
+awful.spawn.with_shell("~/.config/polybar/colorblocks/launch.sh")
 -- awful.spawn.with_shell("unclutter")
 -- awful.spawn.with_shell("firefox")
 -- awful.spawn.with_shell("discord")

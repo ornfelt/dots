@@ -16,32 +16,41 @@ end
 local globalKeys = awful.util.table.join( -- Hotkeys
 awful.key({modkey}, 'F1', hotkeys_popup.show_help,
           {description = 'show help', group = 'awesome'}), -- Tag browsing
-awful.key({modkey}, 'w', awful.tag.viewprev,
-          {description = 'view previous', group = 'tag'}),
-awful.key({modkey}, 's', awful.tag.viewnext,
-          {description = 'view next', group = 'tag'}),
+-- awful.key({modkey}, 'w', awful.tag.viewprev,
+--           {description = 'view previous', group = 'tag'}),
+-- awful.key({modkey}, 's', awful.tag.viewnext,
+--           {description = 'view next', group = 'tag'}),
 awful.key({altkey, 'Control'}, 'Left', awful.tag.viewprev,
           {description = 'view previous', group = 'tag'}),
 awful.key({altkey, 'Control'}, 'Right', awful.tag.viewnext,
           {description = 'view next', group = 'tag'}),
 awful.key({modkey}, 'Escape', awful.tag.history.restore,
           {description = 'go back', group = 'tag'}), -- Default client focus
-awful.key({modkey}, 'd', function() awful.client.focus.byidx(1) end,
+awful.key({modkey}, 'j', function() awful.client.focus.byidx(1) end,
           {description = 'focus next by index', group = 'client'}),
-awful.key({modkey}, 'a', function() awful.client.focus.byidx(-1) end,
+awful.key({modkey}, 'l', function() awful.client.focus.byidx(-1) end,
           {description = 'focus previous by index', group = 'client'}),
+awful.key({modkey}, 'h', function() awful.client.focus.byidx(1) end,
+          {description = 'focus previous by index', group = 'client'}),
+
 awful.key({modkey}, 'r', function() _G.awesome.spawn(apps.default.rofi) end,
           {description = 'show rofi menu', group = 'awesome'}),
-awful.key({modkey}, 'd', function()
-    local flag = false
-    for _, c in ipairs(mouse.screen.selected_tag:clients()) do
-        if c.minimized == true then flag = true end
-        c.minimized = true
-    end
-    for _, c in ipairs(mouse.screen.selected_tag:clients()) do
-        if flag == true then c.minimized = false end
-    end
-end, {description = 'minimize all clients', group = 'awesome'}),
+awful.key({modkey}, 'e', function() _G.awesome.spawn(apps.default.ranger_wd) end, 
+		{description = 'Launch ranger in wd', group = 'awesome'}),
+awful.key({modkey}, 'w', function() _G.awesome.spawn(apps.default.ranger) end,
+		{description = 'Launch ranger', group = 'awesome'}),
+
+-- awful.key({modkey}, 'd', function()
+--     local flag = false
+--     for _, c in ipairs(mouse.screen.selected_tag:clients()) do
+--         if c.minimized == true then flag = true end
+--         c.minimized = true
+--     end
+--     for _, c in ipairs(mouse.screen.selected_tag:clients()) do
+--         if flag == true then c.minimized = false end
+--     end
+-- end, {description = 'minimize all clients', group = 'awesome'}),
+
 awful.key({modkey}, 'u', awful.client.urgent.jumpto,
           {description = 'jump to urgent client', group = 'client'}),
 awful.key({altkey}, 'Tab', function()
@@ -55,8 +64,8 @@ awful.key({altkey, 'Shift'}, 'Tab', function()
     if _G.client.focus then _G.client.focus:raise() end
 end, {description = 'Switch to previous window', group = 'client'}),
 -- Programms
-awful.key({modkey}, 'l', function() awful.spawn(apps.default.lock) end,
-          {description = 'Lock the screen', group = 'awesome'}),
+-- awful.key({modkey}, 'l', function() awful.spawn(apps.default.lock) end,
+          -- {description = 'Lock the screen', group = 'awesome'}),
 awful.key({'Control', 'Shift'}, 'Print', function()
     awful.util.spawn_with_shell(apps.default.delayed_screenshot)
 end, {
@@ -73,6 +82,7 @@ end, {
     description = 'Mark an area and screenshot it to your clipboard',
     group = 'screenshots (clipboard)'
 }),
+
 awful.key({modkey}, 'c', function() awful.util.spawn(apps.default.editor) end,
           {description = 'open a text/code editor', group = 'launcher'}),
 awful.key({modkey}, 'b', function() awful.util.spawn(apps.default.browser) end,
@@ -82,7 +92,7 @@ awful.key({modkey}, 'p',
           function() awful.util.spawn_with_shell('brave-browser') end,
           {description = 'Open Brave', group = 'launcher'}),
 -- Standard program
-awful.key({modkey}, 't',
+awful.key({modkey}, 'Return',
           function() awful.util.spawn_with_shell(apps.default.terminal) end,
           {description = 'open a terminal', group = 'launcher'}),
 awful.key({modkey, 'Control'}, 'r', _G.awesome.restart,
@@ -195,7 +205,7 @@ end, {description = 'open default program for tag/workspace', group = 'tag'}),
 -- Custom hotkeys
 -- vfio integration
 awful.key({'Control', altkey}, 'space',
-          function() awful.util.spawn_with_shell('vm-attach attach') end),
+          function() awful.util.spawn_with_shell('vm-attach attach') end)
 -- Emoji typing
 -- setup info at https://gist.github.com/HikariKnight/8562837d28dec3674dba027c7892e6a5
 awful.key({modkey}, 'e',

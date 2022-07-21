@@ -48,6 +48,7 @@ floating_modifier $mod
 bindsym $mod+Return exec --no-startup-id ~/.local/bin/my_scripts/term_wd.sh urxvt
 # start a terminal
 bindsym $mod+Shift+Return exec --no-startup-id urxvt
+bindsym $mod+Control+Return exec --no-startup-id ~/.local/bin/my_scripts/term_wd.sh st
 
 # kill focused window
 bindsym $mod+q kill
@@ -286,7 +287,7 @@ bindsym $mod+Print --release exec --no-startup-id ~/.local/bin/my_scripts/screen
 bindsym $mod+section exec --no-startup-id ~/.local/bin/my_scripts/loadEww.sh
 # Lock screen 
 bindsym $mod+Shift+x exec --no-startup-id i3lock-fancy
-bindsym $mod+Control+x exec --no-startup-id i3lock -i ~/Downloads/lock-wallpaper.png 
+bindsym $mod+Control+x exec --no-startup-id i3lock -t -i ~/Downloads/lock-wallpaper.png 
 #Suspend 
 bindsym $mod+Shift+comma exec --no-startup-id ~/.local/bin/my_scripts/alert_exit.sh; exec --no-startup-id ~/.local/bin/my_scripts/suspend.sh
 bindsym $mod+Shift+period exec --no-startup-id i3lock-fancy; exec --no-startup-id ~/.local/bin/my_scripts/alert_exit.sh; exec --no-startup-id systemctl suspend

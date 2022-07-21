@@ -21,6 +21,8 @@ return {
         social = 'env discord',
         game = rofi_command,
         files = 'nautilus',
+		ranger = 'ranger',
+		ranger_wd = "~/.local/bin/my_scripts/ranger_wd.sh",
         music = rofi_command
     },
     -- List of apps to start once on start-up
@@ -28,8 +30,8 @@ return {
         -- Add applications that need to be killed between reloads
         -- to avoid multipled instances, inside the autostart script
         '~/.config/awesome/configuration/autostart', -- Spawn "dirty" apps that can linger between sessions
-        'compton',
-        'nitrogen --restore',
+        'picom',
+        'feh --bg-fill --randomize ~/Pictures/Wallpapers/*',
         'nm-applet --indicator', -- wifi
         'xfce4-power-manager', -- Power manager
         'ibus-daemon --xim --daemonize', -- Ibus daemon for keyboard
