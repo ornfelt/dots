@@ -1114,7 +1114,6 @@ focusmon(const Arg *arg)
 	unfocus(selmon->sel, 0);
 	XWarpPointer(dpy, None, m->barwin, 0, 0, 0, 0, m->mw / 2, m->mh / 2);
 	selmon = m;
-	/* enablegaps = 1; */
 	focus(NULL);
 }
 
@@ -2562,19 +2561,21 @@ updatewmhints(Client *c)
 void
 view(const Arg *arg)
 {
-	if ((arg->ui & TAGMASK) == selmon->tagset[selmon->seltags])
+	if ((arg->ui & TAGMASK) == selmon->tagset[selmon->seltags]) {
+		view(&((Arg) { .ui = 0 }));
 		return;
-
-	if ((arg->ui & TAGMASK) == (000000001) && selmon != mons){
-		enablegaps = 0;
 	}
+
+	/* if ((arg->ui & TAGMASK) == (000000001) && selmon != mons){ */
+	/* 	enablegaps = 0; */
+	/* } */
 
 	selmon->seltags ^= 1; /* toggle sel tagset */
 	if (arg->ui & TAGMASK)
 		selmon->tagset[selmon->seltags] = arg->ui & TAGMASK;
 	focus(NULL);
 	arrange(selmon);
-	enablegaps = 1;
+	/* enablegaps = 1; */
 }
 
 pid_t

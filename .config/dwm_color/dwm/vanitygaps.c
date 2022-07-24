@@ -8,6 +8,7 @@ static void incrgaps(const Arg *arg);
 /* static void incrihgaps(const Arg *arg); */
 /* static void incrivgaps(const Arg *arg); */
 static void togglegaps(const Arg *arg);
+static void togglebgaps(const Arg *arg);
 
 /* Layouts */
 static void bstack(Monitor *m);
@@ -47,6 +48,13 @@ togglegaps(const Arg *arg)
 	enablegaps = !enablegaps;
 	/* arrange(NULL); */
 	arrange(selmon);
+}
+
+static void
+togglebgaps(const Arg *arg)
+{
+	browsergaps = !browsergaps;
+	arrange(NULL);
 }
 
 static void
@@ -140,14 +148,13 @@ getgaps(Monitor *m, int *oh, int *ov, int *ih, int *iv, unsigned int *nc)
 	Client *c;
 
 	for (n = 0, c = nexttiled(m->clients); c; c = nexttiled(c->next), n++);
-	if (smartgaps && n == 1) {
-		oe = 0; // outer gaps disabled when only one client
+	/* if (smartgaps && n == 1) { */
+	if (n == 1 && strstr(nexttiled(m->clients)->name, "Mozilla Firefox") != NULL && !browsergaps) {
+		oe = 0; // outer gaps disabled when only one client (and it's Firefox)
 	}
 
 	if (TAGMASK == (1 << 8)){
 		setgaps(gappoh, gappov, gappih, gappiv);
-		//oe = 0;
-		//togglegaps();
 	}
 
 	*oh = m->gappoh*oe; // outer horizontal gap
