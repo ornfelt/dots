@@ -1,0 +1,168 @@
+######################################################################################################################
+### WM
+######################################################################################################################
+{ 0,				    XK_F1,				spawn,			SHCMD("~/.local/bin/my_scripts/show_keys.sh dwm") },
+{ ShiftMask,			XK_F1,				spawn,			SHCMD("~/.local/bin/my_scripts/show_keys.sh vim") },
+{ MODKEY|ShiftMask,		XK_p,			togglebar,		{0} },
+
+######################################################################################################################
+### Client
+######################################################################################################################
+{ MODKEY,					XK_q,			killclient,		{0} },
+{ MODKEY,					XK_h,			focusmon,		{ .i = -1 } },
+{ MODKEY|ShiftMask,			XK_h,			tagmonview,		{ .i = -1 } },
+{ MODKEY|ControlMask,		XK_h,			tagmon,			{ .i = -1 } },
+{ MODKEY,					XK_l,			focusmon,		{ .i = +1 } },
+{ MODKEY|ShiftMask,			XK_l,			tagmonview,		{ .i = +1 } },
+{ MODKEY|ControlMask,		XK_l,			tagmon,			{ .i = +1 } },
+
+######################################################################################################################
+### XF86
+######################################################################################################################
+/* { MODKEY,			XK_F1,				spawn,			SHCMD("groff -mom /usr/local/share/dwm/larbs.mom -Tpdf | zathura -") }, */
+{ MODKEY,				XK_F1,				spawn,			SHCMD(TERMINAL " -e nvim") },
+{ MODKEY,				XK_F2,				spawn,			SHCMD("tutorialvids") },
+{ MODKEY,				XK_F3,				spawn,			SHCMD("displayselect") },
+{ MODKEY,				XK_F4,				spawn,			SHCMD(TERMINAL " -e pulsemixer; kill -44 $(pidof dwmblocks)") },
+/* { MODKEY,			XK_F5,				xrdb,			{.v = NULL } }, */
+{ MODKEY,				XK_F6,				spawn,			SHCMD("torwrap") },
+{ MODKEY,				XK_F7,				spawn,			SHCMD("td-toggle") },
+{ MODKEY,				XK_F8,				spawn,			SHCMD("mw -Y") },
+{ MODKEY,				XK_F9,				spawn,			SHCMD("dmenumount") },
+{ MODKEY,				XK_F10,				spawn,			SHCMD("dmenuumount") },
+{ MODKEY,				XK_F11,				spawn,			SHCMD("mpv --no-cache --no-osc --no-input-default-bindings --profile=low-latency --input-conf=/dev/null --title=webcam $(ls /dev/video[0,2,4,6,8] | tail -n 1)") },
+{ MODKEY,				XK_F12,				spawn,			SHCMD("remaps & notify-send \\\"⌨️ Keyboard remapping...\\\" \\\"Re-running keyboard defaults for any newly plugged-in keyboards.\\\"") },
+/* { MODKEY, XK_Insert,						spawn,			SHCMD("xdotool type $(grep -v '^#' ~/.local/share/larbs/snippets | dmenu -i -l 50 | cut -d' ' -f1)") }, */
+{ 0, XF86XK_AudioMute,						spawn,			SHCMD("pactl set-sink-mute @DEFAULT_SINK@ toggle ; kill -44 $(pidof dwmblocks)") },
+{ 0, XF86XK_AudioRaiseVolume,				spawn,			SHCMD("pactl set-sink-volume @DEFAULT_SINK@ +5%; kill -44 $(pidof dwmblocks)") },
+{ 0, XF86XK_AudioLowerVolume,				spawn,			SHCMD("pactl set-sink-volume @DEFAULT_SINK@ -5%; kill -44 $(pidof dwmblocks)") },
+{ 0, XF86XK_MonBrightnessUp,				spawn,			SHCMD("~/.local/bin/my_scripts/brightness.sh +10") },
+{ 0, XF86XK_MonBrightnessDown,				spawn,			SHCMD("~/.local/bin/my_scripts/brightness.sh -10") },
+/* { 0, XF86XK_AudioPrev,					spawn,			SHCMD("mpc prev") }, */
+/* { 0, XF86XK_AudioNext,					spawn,			SHCMD("mpc next") }, */
+/* { 0, XF86XK_AudioPause,					spawn,			SHCMD("mpc pause") }, */
+/* { 0, XF86XK_AudioPlay,					spawn,			SHCMD("mpc play") }, */
+/* { 0, XF86XK_AudioStop,					spawn,			SHCMD("mpc stop") }, */
+/* { 0, XF86XK_AudioRewind,					spawn,			SHCMD("mpc seek -10") }, */
+/* { 0, XF86XK_AudioForward,				spawn,			SHCMD("mpc seek +10") }, */
+/* { 0, XF86XK_AudioMedia,					spawn,			SHCMD(TERMINAL " -e ncmpcpp") }, */
+/* { 0, XF86XK_AudioMicMute,				spawn,			SHCMD("pactl set-source-mute @DEFAULT_SOURCE@ toggle") }, */
+/* { 0, XF86XK_PowerOff,					spawn,			SHCMD("sysact") }, */
+/* { 0, XF86XK_Calculator,					spawn,			SHCMD(TERMINAL " -e bc -l") }, */
+/* { 0, XF86XK_Sleep,						spawn,			SHCMD("sudo -A zzz") }, */
+/* { 0, XF86XK_WWW,							spawn,			SHCMD("$BROWSER") }, */
+/* { 0, XF86XK_DOS,							spawn,			SHCMD(TERMINAL) }, */
+/* { 0, XF86XK_ScreenSaver,					spawn,			SHCMD("slock & xset dpms force off; mpc pause; pauseallmpv") }, */
+/* { 0, XF86XK_TaskPane,					spawn,			SHCMD(TERMINAL " -e htop") }, */
+/* { 0, XF86XK_Mail,						spawn,			SHCMD(TERMINAL " -e neomutt ; pkill -RTMIN+12 dwmblocks") }, */
+/* { 0, XF86XK_MyComputer,					spawn,			SHCMD(TERMINAL " -e lf /") }, */
+/* /1* { 0, XF86XK_Battery,					spawn,			SHCMD("") }, *1/ */
+/* { 0, XF86XK_Launch1,						spawn,			SHCMD("xset dpms force off") }, */
+/* { 0, XF86XK_TouchpadToggle,				spawn,			SHCMD("(synclient | grep 'TouchpadOff.*1' && synclient TouchpadOff=0) || synclient TouchpadOff=1") }, */
+/* { 0, XF86XK_TouchpadOff,					spawn,			SHCMD("synclient TouchpadOff=1") }, */
+/* { 0, XF86XK_TouchpadOn,					spawn,			SHCMD("synclient TouchpadOff=0") }, */
+
+######################################################################################################################
+### layout
+######################################################################################################################
+{ MODKEY,					XK_s,			setlayout,		{.v = &layouts[2]} }, /* centeredmaster */
+{ MODKEY,					XK_less,		setlayout,		{.v = &layouts[0]} }, /* Fibonacci spiral */
+{ MODKEY|ShiftMask,			XK_less,		togglesticky,	{0} },
+{ MODKEY,					XK_f,			togglefullscr,	{0} },
+{ MODKEY|ControlMask,		XK_t,			setlayout,		{.v = &layouts[1]} }, /* tile */
+{ MODKEY|ControlMask,		XK_y,			setlayout,		{.v = &layouts[3]} }, /* dwindle */
+{ MODKEY|ControlMask,		XK_u,			setlayout,		{.v = &layouts[4]} }, /* bstack */
+{ MODKEY|ControlMask,		XK_i,			setlayout,		{.v = &layouts[5]} }, /* deck*/
+{ MODKEY|ControlMask,		XK_o,			setlayout,		{.v = &layouts[6]} }, /* monocle */
+{ MODKEY|ControlMask,		XK_p,			setlayout,		{.v = &layouts[7]} }, /* centeredfloatingmaster */
+{ MODKEY|ControlMask,		XK_aring,		setlayout,		{.v = &layouts[8]} },
+{ MODKEY,			        XK_space,		togglefloating,	{0} },
+{ MODKEY|ShiftMask,			XK_space,		zoom,			{0} },
+
+{ MODKEY,					XK_y,			setmfact,		{.f = -0.05} },
+{ MODKEY,					XK_o,			setmfact,		{.f = +0.05} },
+{ MODKEY|ShiftMask,			XK_u,			incnmaster,		{.i = +1 } },
+{ MODKEY|ShiftMask,			XK_i,			incnmaster, 	{.i = -1 } },
+{ MODKEY|ShiftMask,			XK_y,			shifttag,		{ .i = +1 } },
+{ MODKEY|ShiftMask,			XK_o,			shifttag,		{ .i = -1 } },
+{ MODKEY,					XK_x,			defaultgaps,	{0} },
+{ MODKEY,					XK_z,			togglegaps,		{0} },
+{ MODKEY|ControlMask,		XK_z,			togglebgaps,	{0} },
+{ MODKEY,					XK_plus,		incrgaps,		{.i = +3 } },
+{ MODKEY,					XK_minus,		incrgaps,		{.i = -3 } },
+{ MODKEY|ShiftMask,			XK_plus,		incrgaps,		{.i = +1 } },
+{ MODKEY|ShiftMask,			XK_minus,		incrgaps,		{.i = -1 } },
+
+######################################################################################################################
+### launcher
+######################################################################################################################
+{ MODKEY,					XK_grave,		spawn,			SHCMD("dmenu_run -fn 'Linux Libertine Mono'") },
+{ MODKEY,					XK_apostrophe,	togglescratch,	{ .ui = 0 } },
+{ MODKEY|ShiftMask,			XK_apostrophe,	togglescratch,	{ .ui = 1 } },
+{ MODKEY,					XK_w,			spawn,		SHCMD(TERMINAL " -e ranger ~/") },
+{ MODKEY,					XK_e,			spawn,		SHCMD("~/.local/bin/my_scripts/ranger_wd.sh " TERMINAL) },
+{ MODKEY|ShiftMask,			XK_e,			spawn,		SHCMD("~/.local/bin/my_scripts/alert_exit.sh && ~/.config/polybar/forest/scripts/powermenu.sh") },
+{ MODKEY|ShiftMask,			XK_s,			spawn,		SHCMD("import png:- | xclip -selection clipboard -t image/png") },
+{ MODKEY|ControlMask,		XK_s,			spawn,		SHCMD("~/.local/bin/my_scripts/tesseract_ocr.sh") },
+{ MODKEY,					XK_d,			spawn,		SHCMD("rofi -show run -theme ~/.config/rofi/themes/gruvbox/gruvbox-dark.rasi") },
+{ MODKEY,					XK_r,			spawn,		SHCMD("dmenu_run -fn 'Linux Libertine Mono'") },
+{ MODKEY|ShiftMask,			XK_r,			spawn,		SHCMD("rofi -show run -theme ~/.config/polybar/forest/scripts/rofi/launcher.rasi") },
+{ MODKEY,					XK_t,			spawn,		SHCMD("~/.local/bin/my_scripts/script_copy.sh") },
+{ MODKEY|ShiftMask,			XK_t,			spawn,		SHCMD("~/.local/bin/my_scripts/script_helper.sh") },
+{ MODKEY|ShiftMask,			XK_c,			spawn,		SHCMD("~/.local/bin/my_scripts/code_helper.sh new") },
+{ MODKEY|ShiftMask,			XK_d,			spawn,		SHCMD("~/.local/bin/my_scripts/code_helper.sh old") },
+{ MODKEY,					XK_g,			spawn,		SHCMD("~/.local/bin/my_scripts/fzf_open.sh " TERMINAL)},
+{ MODKEY,					XK_c,			spawn,		SHCMD("GTK_THEME=Adwaita:dark gnome-calculator") },
+{ MODKEY|ControlMask,		XK_c,			spawn,		SHCMD("GTK_THEME=Adwaita:dark gnome-calendar") },
+{ MODKEY,					XK_b,			spawn,		SHCMD(TERMINAL " -e htop") },
+{ MODKEY|ShiftMask,			XK_b,			spawn,		SHCMD(TERMINAL " -e bashtop") },
+{ MODKEY|ControlMask,		XK_b,			spawn,		SHCMD(TERMINAL " -e ytop") },
+/* { MODKEY,				XK_p,			spawn,		SHCMD("") }, */
+{ MODKEY,					XK_n,			spawn,		SHCMD("~/.local/bin/my_scripts/nautilus_wd.sh") },
+{ MODKEY|ShiftMask,			XK_n,			spawn,		SHCMD("nautilus -w --no-desktop") },
+{ MODKEY|ControlMask,		XK_n,			spawn,		SHCMD("~/.local/bin/my_scripts/open_notes.sh 1") },
+{ MODKEY,			        XK_m,			spawn,		SHCMD("~/.local/bin/my_scripts/tstock.sh") },
+{ MODKEY|ShiftMask,			XK_m,			spawn,		SHCMD("spotify") },
+{ MODKEY|ControlMask,		XK_m,			spawn,		SHCMD("~/.local/bin/my_scripts/open_notes.sh 2") },
+{ MODKEY,					XK_v,			spawn,		SHCMD("~/.local/bin/my_scripts/clip_history.sh") },
+{ MODKEY|ShiftMask,			XK_v,			spawn,		SHCMD("~/.local/bin/my_scripts/qr_clip.sh") },
+{ MODKEY,					XK_period,		spawn,		SHCMD("~/.local/bin/my_scripts/emojipick/emojipick") },
+{ MODKEY,					XK_a,			spawn,		SHCMD(TERMINAL " -e bash -c 'tmux attach || tmux'") },
+{ MODKEY|ShiftMask,         XK_a,			spawn,      SHCMD("picom-trans -c -5")},
+{ MODKEY|ControlMask,       XK_a,			spawn,      SHCMD("picom-trans -c +5")},
+{ MODKEY,					XK_section,		spawn,		SHCMD("~/.local/bin/my_scripts/loadEww.sh") },
+{ MODKEY,					XK_BackSpace,	spawn,		SHCMD("sysact") },
+{ MODKEY|ShiftMask,			XK_BackSpace,	spawn,		SHCMD("sysact") },
+{ MODKEY,					XK_Return,		spawn,		SHCMD("~/.local/bin/my_scripts/term_wd.sh " TERMINAL) },
+{ MODKEY|ShiftMask,			XK_Return,		spawn,		{.v = termcmd } },
+{ MODKEY|ControlMask,		XK_Return,		spawn,		SHCMD("~/.local/bin/my_scripts/term_wd.sh st") },
+
+# Print screen keybinds
+{ 0,					XK_Print,			spawn,			SHCMD("~/.local/bin/my_scripts/screenshot_select.sh") },
+{ ShiftMask,			XK_Print,			spawn,			SHCMD("~/.local/bin/my_scripts/screenshot.sh") },
+{ ControlMask,			XK_Print,			spawn,			SHCMD("~/.local/bin/my_scripts/screenshot_ocr.sh") },
+# Lock screen 
+{ MODKEY|ShiftMask,         XK_comma,   	spawn,      SHCMD("~/.local/bin/my_scripts/alert_exit.sh && ~/.local/bin/my_scripts/suspend.sh")},
+{ MODKEY|ShiftMask,         XK_period,  	spawn,      SHCMD("i3lock-fancy && ~/.local/bin/my_scripts/alert_exit.sh && systemctl suspend")},
+{ MODKEY|ShiftMask,			XK_x,			spawn,		SHCMD("i3lock-fancy") },
+{ MODKEY|ControlMask,       XK_x,       	spawn,      SHCMD("i3lock -i ~/Downloads/lock-wallpaper.png")},
+
+######################################################################################################################
+### Tag
+######################################################################################################################
+{ MODKEY1,					XK_Tab,			shiftview,		{ .i = +1 } },
+{ MODKEY1|ShiftMask,		XK_Tab,			shiftview,		{ .i = -1 } },
+/* { MODKEY,					XK_Tab,			view,			{0} }, */
+/* { MODKEY,					XK_Tab,			view,			{0} }, */
+TAGKEYS(					XK_1,			0)
+TAGKEYS(					XK_2,			1)
+TAGKEYS(					XK_3,			2)
+TAGKEYS(					XK_4,			3)
+TAGKEYS(					XK_5,			4)
+TAGKEYS(					XK_6,			5)
+TAGKEYS(					XK_7,			6)
+TAGKEYS(					XK_8,			7)
+TAGKEYS(					XK_9,			8)
+{ MODKEY,					XK_0,			view,			{.ui = ~0 } },
+{ MODKEY|ShiftMask,			XK_0,			tag,			{.ui = ~0 } },
+

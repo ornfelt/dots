@@ -35,8 +35,8 @@ esac
 
 case $BLOCK_BUTTON in
 	#1) notify-send "This Month" "$(cal --color=always | sed "s/..7m/<b><span color=\"red\">/;s/..27m/<\/span><\/b>/")" && notify-send "Appointments" "$(calcurse -d3)" ;;
-	# 1) rofi -theme "~/.config/rofi/themes/gruvbox/gruvbox-dark.rasi" -e "Clock clicked..." ;;
-	1) GTK_THEME=Adwaita:dark gnome-calendar ;;
+	# 1) GTK_THEME=Adwaita:dark gnome-calendar ;;
+	1) yad --calendar --no-buttons ;;
 	2) zenity --question --text="Arg2" ;;
 	# 3) zenity --question --text="Arg3" ;;
 	3) pkill -RTMIN+1 dwmblocks ;;
@@ -51,4 +51,6 @@ esac
 
 #date "+%Y %b %d (%a) $icon%I:%M%p"
 #date "+%b %d (%a) $icon%I:%M%p "
-date "+%b %d (%a) %I:%M%p "
+
+#date "+%a %d %b %I:%M%p (%V)"
+date "+%a %d %b %I:%M%p (%V) "

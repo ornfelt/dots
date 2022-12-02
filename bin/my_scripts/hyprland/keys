@@ -1,0 +1,239 @@
+monitor=,preferred,auto,1
+
+exec-once=$HOME/.config/hypr/autostart
+#exec_always import-gsettings
+#exec-once import-gsettings
+
+input {
+    kb_layout=se
+    kb_options=caps:escape
+    #kb_variant=ffffff
+    #kb_model=
+    #kb_rules=
+
+    follow_mouse=1
+
+    touchpad {
+        natural_scroll=no
+    }
+}
+
+misc{
+    
+}
+
+general {
+    sensitivity=1.0 # for mouse cursor
+    main_mod=SUPER
+    
+    gaps_in=8
+    gaps_out=15
+    border_size=5
+    col.active_border=0xfff5c2e7
+    col.inactive_border=0xff45475a
+    apply_sens_to_raw=0 # whether to apply the sensitivity to raw input (e.g. used by games where you aim using your mouse)
+}
+
+decoration {
+    blur_new_optimizations = true
+    drop_shadow = true
+    shadow_range=100
+    shadow_render_power=5
+    col.shadow= 0x33000000
+    col.shadow_inactive=0x22000000
+    rounding=15
+    blur=0
+    blur_size=1 # minimum 1
+    blur_passes=1 # minimum 1, more passes = more resource intensive.
+    # Your blur "amount" is blur_size * blur_passes, but high blur_size (over around 5-ish) will produce artifacts.
+    # if you want heavy blur, you need to up the blur_passes.
+    # the more passes, the more you can up the blur_size without noticing artifacts.
+}
+
+animations {
+    enabled=1
+    # bezier=overshot,0.05,0.9,0.1,1.1
+    bezier=overshot,0.13,0.99,0.29,1.1
+    animation=windows,1,4,overshot,slide
+    animation=border,1,10,default
+    animation=fade,1,10,default
+    animation=workspaces,1,6,overshot,slidevert
+}
+
+#dwindle {
+#    pseudotile=1 # enable pseudotiling on dwindle
+#    force_split=0
+#    col.group_border=0xff89dceb
+#    col.group_border_active=0xfff9e2af
+#}
+
+master{
+    
+}
+
+gestures {
+    #workspace_swipe=yes
+    #workspace_swipe_fingers=4
+}
+
+# example window rules
+# for windows named/classed as abc and xyz
+#windowrule=move 69 420,abc
+#windowrule=move center,title:^(fly_is_kitty)$
+#windowrule=size 800 500,title:^(fly_is_kitty)$
+#windowrule=animation slide,title:^(all_is_kitty)$
+#windowrule=float,title:^(all_is_kitty)$
+##windowrule=tile,xy
+#windowrule=tile,title:^(kitty)$
+#windowrule=float,title:^(fly_is_kitty)$
+#windowrule=float,title:^(clock_is_kitty)$
+#windowrule=size 418 234,title:^(clock_is_kitty)$
+#windowrule=pseudo,abc
+#windowrule=monitor 0,xyz}
+
+#-- Window Rules ----------------------------------------------------
+windowrule=float,foot-float
+windowrule=float,yad|nm-connection-editor|pavucontrolk
+windowrule=float,xfce-polkit|kvantummanager|qt5ct
+windowrule=float,feh|Viewnior|Gpicview|Gimp|nomacs
+windowrule=float,VirtualBox Manager|qemu|Qemu-system-x86_64
+windowrule=float,xfce4-appfinder
+windowrule=float,Rofi
+
+# example binds
+bindm=SUPER,mouse:272,movewindow
+bindm=SUPER,mouse:273,resizewindow
+
+$term = urxvt
+$menu1 = xfce4-appfinder --collapsed
+$menu2 = ~/.config/hypr/scripts/menu
+$menu3 = xfce4-appfinder
+$powermenu = ~/.config/hypr/scripts/powermenu
+$volume = ~/.config/hypr/scripts/volume
+$backlight = ~/.config/hypr/scripts/brightness
+$screenshot = ~/.config/hypr/scripts/screenshot
+$lockscreen = ~/.config/hypr/scripts/lockscreen
+$wlogout = ~/.config/hypr/scripts/wlogout
+$colorpicker = ~/.config/hypr/scripts/colorpicker
+#$files = nautilus
+$files = GTK_THEME=gruvbox-dark-gtk nautilus
+$editor = nvim
+$browser = firefox
+
+#bind=SUPER,t,exec,kitty --start-as=fullscreen -o 'font_size=25' --title all_is_kitty
+#bind=ALT,RETURN,exec,kitty --single-instance
+# bind=SUPER,RETURN,exec,alacritty
+#bind=SUPER,P,pseudo,
+
+bind=SUPER,RETURN,exec,~/.local/bin/my_scripts/term_wd.sh $term
+bind=SUPERSHIFT,RETURN,exec,$term -cd ~/
+bind=SUPERCTRL,RETURN,exec,st
+bind=SUPER,Q,killactive,
+bind=SUPERSHIFTCTRL,Q,exit,
+bind=SUPER,N,exec, ~/.local/bin/my_scripts/nautilus_wd.sh
+bind=SUPERSHIFT,N,exec, $files
+bind=SUPERCTRL,N,exec, ~/.local/bin/my_scripts/open_notes.sh 1
+bind=SUPERCTRL,M,exec, ~/.local/bin/my_scripts/open_notes.sh 2
+bind=SUPER,W,exec, $term -e ranger
+bind=SUPER,E,exec, ~/.local/bin/my_scripts/ranger_wd.sh $term
+bind=SUPER,space,togglefloating
+bind=SUPER,F,fullscreen
+bind=SUPER,R,exec,wofi --show drun
+#bind=SUPER,R,exec,dmenu_run -fn 'Linux Libertine Mono'
+bind=SUPER,D,exec,rofi -show run -theme ~/.config/rofi/themes/gruvbox/gruvbox-dark.rasi
+bind=SUPERSHIFT,C,exec, ~/.local/bin/my_scripts/code_helper.sh new
+bind=SUPERSHIFT,D,exec, ~/.local/bin/my_scripts/code_helper.sh old
+bind=SUPER,A,exec, ~/.local/bin/my_scripts/tmux_attach.sh
+
+bind=SUPER,C,exec, gnome-calculator
+bind=SUPERCTRL,C,exec, yad --calendar --no-buttons
+bind=SUPER,T,exec, ~/.local/bin/my_scripts/script_copy.sh
+bind=SUPERSHIFT,T,exec, ~/.local/bin/my_scripts/script_helper.sh
+bind=SUPERSHIFT,E,exec, ~/.local/bin/my_scripts/sysmenu_awsm.sh
+
+#bind=SUPER,section,exec, ~/.local/bin/my_scripts/loadEww.sh
+bind=SUPER,P,exec, ~/.local/bin/my_scripts/xrandr_helper.sh
+bind=SUPERSHIFT,P,exec, ~/.config/hypr/scripts/toggle_waybar
+bind=SUPERCTRL,P,exec,$colorpicker
+bind=SUPER,M,exec,nm-connection-editor
+bind=SUPERSHIFT,M,exec,spotify
+
+bind=SUPER,V,exec, ~/.local/bin/my_scripts/clip_history.sh
+bind=SUPERSHIFT,V,exec, ~/.local/bin/my_scripts/qr_clip.sh
+bind=SUPER,period,exec, ~/.local/bin/my_scripts/emojipick/emojipick
+bind=SUPER,B,exec, $term -e sudo htop
+bind=SUPERSHIFT,B,exec, $term -e sudo bashtop
+bind=SUPERCTRL,B,exec, $term -e sudo ytop
+bind=SUPER,G,exec, fzf_open.sh $term
+
+bind=SUPERSHIFT,S,exec, ~/.local/bin/my_scripts/hyprland/hypr_win_screenshot_awsm.sh
+bind=SUPERCTRL,S,exec, ~/.local/bin/my_scripts/hyprland/hypr_tesseract_ocr.sh
+# bind=,Print,exec,~/.config/hypr/scripts/screenshot
+bind=,Print,exec, ~/.local/bin/my_scripts/hyprland/hypr_screenshot_select.sh
+bind=SHIFT,Print,exec, ~/.local/bin/my_scripts/hyprland/hypr_screenshot.sh
+bind=CTRL,Print,exec, ~/.local/bin/my_scripts/hyprland/hypr_screenshot_ocr.sh
+bind=,F1,exec, ~/.local/bin/my_scripts/show_keys.sh hyprland
+bind=SHIFT,F1,exec, ~/.local/bin/my_scripts/show_keys.sh vim
+
+bind=SUPERSHIFT,comma,exec, ~/.local/bin/my_scripts/suspend_awsm.sh
+bind=SUPERSHIFT,period,exec, ~/.local/bin/my_scripts/suspend_awsm_lock.sh
+bind=SUPERSHIFT,X,exec, i3lock -i /home/jonas/Downloads/lock-wallpaper.png
+bind=SUPERCTRL,X,exec,~/.config/hypr/scripts/lock
+
+bind=,XF86MonBrightnessUp,exec,$backlight --inc
+bind=,XF86MonBrightnessDown,exec,$backlight --dec
+bind=,XF86AudioRaiseVolume,exec,$volume --inc
+bind=,XF86AudioLowerVolume,exec,$volume --dec
+bind=,XF86AudioMute,exec,$volume --toggle
+bind=,XF86AudioMicMute,exec,$volume --toggle-mic
+
+bind=SUPER,H,movefocus,l
+bind=SUPER,L,movefocus,r
+bind=SUPER,K,movefocus,u
+bind=SUPER,J,movefocus,d
+
+# Move
+bind=SUPERSHIFT,H,movewindow,l
+bind=SUPERSHIFT,L,movewindow,r
+bind=SUPERSHIFT,K,movewindow,u
+bind=SUPERSHIFT,J,movewindow,d
+
+# Resize
+bind=SUPER,Y,resizeactive,-20 0
+bind=SUPER,O,resizeactive,20 0
+bind=SUPER,I,resizeactive,0 -20
+bind=SUPER,U,resizeactive,0 20
+
+bind=SUPER,1,workspace,1
+bind=SUPER,2,workspace,2
+bind=SUPER,3,workspace,3
+bind=SUPER,4,workspace,4
+bind=SUPER,5,workspace,5
+bind=SUPER,6,workspace,6
+bind=SUPER,7,workspace,7
+bind=SUPER,8,workspace,8
+bind=SUPER,9,workspace,9
+bind=SUPER,0,workspace,10
+
+bind=SUPERSHIFT,1,movetoworkspace,1
+bind=SUPERSHIFT,2,movetoworkspace,2
+bind=SUPERSHIFT,3,movetoworkspace,3
+bind=SUPERSHIFT,4,movetoworkspace,4
+bind=SUPERSHIFT,5,movetoworkspace,5
+bind=SUPERSHIFT,6,movetoworkspace,6
+bind=SUPERSHIFT,7,movetoworkspace,7
+bind=SUPERSHIFT,8,movetoworkspace,8
+bind=SUPERSHIFT,9,movetoworkspace,9
+bind=SUPERSHIFT,0,movetoworkspace,10
+
+#bind=SUPER,mouse_down,workspace,e+1
+#bind=SUPER,mouse_up,workspace,e-1
+
+#bind=SUPERCTRL,g,togglegroup
+#bind=SUPERCTRL,tab,changegroupactive
+
+# rec
+#bind=CTRL,1,exec,kitty --title fly_is_kitty --hold cava
+#bind=CTRL,2,exec,code-insiders
+#bind=CTRL,3,exec,kitty --single-instance --hold donut.c
+#bind=CTRL,4,exec,kitty --title clock_is_kitty --hold tty-clock -C5

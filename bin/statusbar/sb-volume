@@ -2,14 +2,14 @@
 
 # Prints the current volume or 🔇 if muted.
 
-case $BLOCK_BUTTON in
-	1) pamixer -t; kill -44 $(pidof dwmblocks) ;;
-	2) rofi -theme "~/.config/rofi/themes/gruvbox/gruvbox-dark.rasi" -e "Audio clicked 2" ;;
-	3) rofi -theme "~/.config/rofi/themes/gruvbox/gruvbox-dark.rasi" -e "Audio clicked 3" ;;
-	4) pamixer --allow-boost -i 1; kill -44 $(pidof dwmblocks) ;;
-	5) pamixer --allow-boost -d 1; kill -44 $(pidof dwmblocks) ;;
-	6) "$TERMINAL" -e "$EDITOR" "$0" ;;
-esac
+# case $BLOCK_BUTTON in
+# 	1) pamixer -t; kill -44 $(pidof dwmblocks) ;;
+# 	2) rofi -theme "~/.config/rofi/themes/gruvbox/gruvbox-dark.rasi" -e "Audio clicked 2" ;;
+# 	3) rofi -theme "~/.config/rofi/themes/gruvbox/gruvbox-dark.rasi" -e "Audio clicked 3" ;;
+# 	4) pamixer --allow-boost -i 1; kill -44 $(pidof dwmblocks) ;;
+# 	5) pamixer --allow-boost -d 1; kill -44 $(pidof dwmblocks) ;;
+# 	6) "$TERMINAL" -e "$EDITOR" "$0" ;;
+# esac
 
 # [ $(pamixer --get-mute) = true ] && echo 🔇 && exit
 # [ $(pamixer --get-mute) = true ] && echo 婢 && exit

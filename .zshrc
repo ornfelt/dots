@@ -5,6 +5,7 @@
 export ZSH="/home/jonas/.oh-my-zsh"
 export VISUAL=nvim
 export EDITOR=nvim
+export TESSDATA_PREFIX=/usr/local/share/tessdata
 
 # Set name of the theme to load --- if set to "random", it will
 # load a random theme each time oh-my-zsh is loaded, in which case,
@@ -89,8 +90,6 @@ source $ZSH/oh-my-zsh.sh
 
 # export MANPATH="/usr/local/man:$MANPATH"
 
-# You may need to manually set your language environment
-# export LANG=en_US.UTF-8
 
 # Preferred editor for local and remote sessions
 # if [[ -n $SSH_CONNECTION ]]; then
@@ -112,7 +111,7 @@ source $ZSH/oh-my-zsh.sh
 # alias ohmyzsh="mate ~/.oh-my-zsh"
 
 #dotfiles
-alias config='/usr/bin/git --git-dir=$HOME/.cfg/ --work-tree=$HOME'
+#alias config='/usr/bin/git --git-dir=$HOME/.cfg/ --work-tree=$HOME'
 
 #Config aliases
 alias zshconf='nvim ~/.zshrc'
@@ -120,14 +119,12 @@ alias i3conf='nvim ~/.config/i3/config'
 
 #General Aliases
 alias jnb='jupyter notebook ~/Dev/Notebooks'
-alias down='cd ~/Downloads'
 alias dev='cd ~/Dev'
-alias docs='cd ~/Documents'
-alias pics='cd ~/Pictures'
 #alias cat='bat'
 #alias emacs='emacsclient -nw'
 alias neofetch='neofetch --color_blocks off'
 alias grootfetch='neofetch --w3m /home/jonas/.config/neofetch/groot.jpg'
+alias tuxfetch='neofetch --ascii_distro tux'
 alias diskspace='ncdu'
 alias cb='clipboard'
 alias tb='nc termbin.com 9999'
@@ -137,6 +134,18 @@ alias xup='xrdb ~/.Xresources'
 # alias grep='grep -rin --color'
 alias vd='python -m visidata'
 alias scripts='cd ~/.local/bin/my_scripts; ls'
+alias .cnf='cd ~/.config; ls'
+alias .cnfa='cd ~/.config/awesome; ls'
+alias .cnfd='cd ~/.config/dwm; ls'
+alias .cnfdb='cd ~/.config/dwmblocks; ls'
+alias .cnfp='cd ~/.config/polybar; ls'
+alias .cnfh='cd ~/.config/hypr; ls'
+alias .pics='cd ~/Pictures; ls'
+alias .docs='cd ~/Documents; ls'
+alias .down='cd ~/Downloads; ls'
+alias .dots='cd ~/Downloads/dotfiles; ls'
+alias .ioq3='/home/jonas/Code/C/ioq3/build/release-linux-x86_64/ioquake3.x86_64 +set sv_pure 0 +set vm_game 0 +set vm_cgame 0 +set vm_ui 0'
+alias .ioq32='/home/jonas/Code/C/ioq3/build/release-linux-x86_64_golden/ioquake3.x86_64 +set sv_pure 0 +set vm_game 0 +set vm_cgame 0 +set vm_ui 0'
 
 # use the vi navigation keys in menu completion
 #bindkey -M menuselect 'h' vi-backward-char
@@ -181,7 +190,9 @@ npx() {
 
 export LANG=en_US.UTF-8
 export LANGUAGE=en
-export LC_ALL=en_US.UTF-8
+export LC_ALL=en_US.UTF-8 
+#export ALPHAVANTAGE_API_KEY=X5JHFXWJ4OTINV2B
+export ALPHAVANTAGE_API_KEY=AOUX3DK05GCWDMZ9
 
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 export FZF_DEFAULT_COMMAND='ag --hidden --ignore .git -g ""'
@@ -203,3 +214,4 @@ fuzzyfind(){
 }
 
 alias f='fuzzyfind'
+LS_COLORS+=':ow=01;33'

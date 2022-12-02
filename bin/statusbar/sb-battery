@@ -4,10 +4,11 @@
 # to charge status (🔌 for plugged up, 🔋 for discharging on battery, etc.).
 
 case $BLOCK_BUTTON in
-	1) notify-send 'Battery clicked' 'This is an example notification.' --icon=dialog-information ;;
-	3) pkill -RTMIN+3 dwmblocks ;;
-	4) rofi -theme "~/.config/rofi/themes/gruvbox/gruvbox-dark.rasi" -e "Battery clicked 4" ;;
-	5) rofi -theme "~/.config/rofi/themes/gruvbox/gruvbox-dark.rasi" -e "Battery clicked 5" ;;
+	1) pamixer -t; kill -44 $(pidof dwmblocks) ;;
+	2) rofi -theme "~/.config/rofi/themes/gruvbox/gruvbox-dark.rasi" -e "Audio clicked 2" ;;
+	3) rofi -theme "~/.config/rofi/themes/gruvbox/gruvbox-dark.rasi" -e "Audio clicked 3" ;;
+	4) pamixer --allow-boost -i 1; kill -44 $(pidof dwmblocks) ;;
+	5) pamixer --allow-boost -d 1; kill -44 $(pidof dwmblocks) ;;
 	6) "$TERMINAL" -e "$EDITOR" "$0" ;;
 esac
 
@@ -36,7 +37,7 @@ for battery in /sys/class/power_supply/BAT?*; do
 	[ -n "${capacity+x}" ] && printf " "
 	# Sets up the status and capacity
 	case "$(cat "$battery/status")" in
-		"Full") status="" ;;
+		"Full") status=" " ;;
 		"Discharging") status="" ;;
 		"Charging") status="" ;;
 		#"Charging") status="ﮣ⚡ " ;;
@@ -48,8 +49,8 @@ for battery in /sys/class/power_supply/BAT?*; do
 	#[ "$status" = "🔋" ] && [ "$capacity" -le 25 ] && warn="❗"
 
 	# Prints the info
-	if [[ $status = "" ]]; then
-		printf "%s  %s%d%%" "$status" "$warn" "$capacity"; unset warn
+	if [[ $status = " " ]]; then
+		printf "%s %s%d%%" "$status" "$warn" "$capacity"; unset warn
 	elif [[ $status = "" ]]; then
 		printf "%s %s%d%%" "$status" "$warn" "$capacity"; unset warn
 	elif (( $capacity > 85)); then

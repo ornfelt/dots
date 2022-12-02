@@ -1,0 +1,34 @@
+find . \( -type d -name .git -prune \) -o -type f -print0 | xargs -0 sed -i 's/x/y/g'
+sed -i 's/x/y/g' myfile1 myfile2 OR perl -p -i -e 's/x/y/' myfile1 myfile2
+sed -i 's/foo/bar/g' *
+find ./ -type f -exec sed -i 's/x/y/g' {} +
+find ./ -type f -exec sed -i 's/x/y/gI' {} +
+ps ajxf | awk
+ps aux | awk '{if ($5 != 0 ) print $2,$5,$6,$11}' | sort -k2n
+watch vmstat -sSM
+watch -n 5 -d '/bin/free -m'
+watch grep \"cpu MHz\" /proc/cpuinfo
+echo "Lorem ipsum dolor sit amet, consectetuer adipiscing elit." | pv -qL 20
+perl -e '$|++; while (1) { print " ." x (rand(10) + 1), int(rand(2)) }'
+awk '/^[ \t]*$/{next}{print}' file.txt
+awk 'length($0)>80{print FNR,$0}'  file.txt
+for i in */.git; do cd $(dirname $i); git pull; cd ..; done
+cd $mydir && python3 -m http.server 8888 # Share files using a web server
+w3m https://www.archlinux.org/ | sed -n "/Latest News/,/Older News/p" | head -n -1
+du -sh -- *  | sort -rh
+du -sh -- */ | sort -rh
+find . -type f -size +5M -size -4G
+du -sk /var/log/* | sort -r -n | head -10
+grep -R 'import' --include='*.java' --color MySourceCodeDir
+find ./ -name '*.java' -type f -print| xargs grep --color 'import'
+chmod --reference file2 file1
+for code in {0..255}; do echo -e "\e[38;05;${code}m $code: Test"; done
+history |  awk '{a[$2]++}END{for(i in a){print a[i] " " i}}' |  sort -rn |  head > /tmp/cmds |  gnuplot -persist <(echo 'plot "/tmp/cmds" using 1:xticlabels(2) with boxes')
+cat ~/.bash_history | tr ...
+python3 -c "import csv, ...
+echo "22.67892" | python3 -c "print(f'{round(float(input()))}')"
+date +%s | sha256sum | base64 | head -c 8; echo
+journalctl --no-pager --since today --grep 'fail|error|fatal' --output json|jq '._EXE' | sort | uniq -c | sort --numeric --reverse --key 1
+cat /var/log/nginx/access.log | cut -f 1 -d ' ' | sort | uniq -c | sort -hr | head -n 10
+ping -i 120 -a IP_address
+mtr google.com

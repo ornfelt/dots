@@ -1,2 +1,2 @@
-[21 : 56 :18]
+open _ helping _ notes . sh
 

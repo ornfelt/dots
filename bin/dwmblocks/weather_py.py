@@ -18,7 +18,6 @@ x = response.json()
 #print(x)
 
 if x["cod"] != "404":
- 
     # store the value of "main"
     # key in variable y
     y = x["main"]
@@ -50,10 +49,8 @@ if x["cod"] != "404":
 
     temp = int(kelvinToCelsius(current_temperature))
     if '-' in str(temp):
-        print(temp)
+        print(str(temp) + '°')
     else:
-        print('+'+str(temp))
-
- 
+        print('+'+str(temp) + '°')
 else:
     print(" City Not Found ")

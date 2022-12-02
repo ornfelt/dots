@@ -21,8 +21,6 @@ if [ -f "$usermodmap" ]; then
     xmodmap "$usermodmap"
 fi
 
-# start some nice programs
-
 if [ -d /etc/X11/xinit/xinitrc.d ] ; then
  for f in /etc/X11/xinit/xinitrc.d/?*.sh ; do
   [ -x "$f" ] && . "$f"
@@ -30,13 +28,11 @@ if [ -d /etc/X11/xinit/xinitrc.d ] ; then
  unset f
 fi
 
-# twm &
-# xclock -geometry 50x50-1+1 &
-# xterm -geometry 80x50+494+51 &
-# xterm -geometry 80x20+494-0 &
-# exec xterm -geometry 80x66+0+0 -name login &
 setxkbmap -option caps:escape
+xrandr --output DP-3 --primary --mode 1920x1080 --rate 240.00 --output DP-1 --mode 1920x1080 --rate 144.00 --right-of DP-3
+
 xrdb ~/.Xresources
+xhost si:localuser:root
 #exec awesome
 #exec i3
 exec dwm &

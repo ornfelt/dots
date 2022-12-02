@@ -1,0 +1,117 @@
+vim ~/Documents/vimtutor.txt
+----------------------------------------------------------------------------------
+Add new line after entries:
+%s,^},}\r,g
+
+In visual mode, to run norm command: 
+:norm Ithis comes to the left --- 
+
+global command, do something at every line that starts with @:
+# For example move to line 50
+:g/^@/m50
+# Move to end of document
+:g/^@/m$
+# Reverse document (move every line to beginning of document, effectively reverses document):
+:g/^/m0
+# Copy lines that have "import" to end of file
+:g/import/t$
+# Delete lines that DOESN'T INCLUDE IMPORT
+:g!/import/d
+# Put new line on every line
+:g/^/pu = \"\n\"
+# Get rid of empty lines:
+:g/^\s*$/d
+
+:earlier 1m
+:earlier 10s
+:earlier 1h
+:later 10m
+
+:r file.txt
+:r !date
+# Print date on line 13 (after 12)
+:12r !date
+:#r !date
+
+# From this line and rest of file
+:.,$ command...
+:.,.+5 command...
+
+You can repeat the last command entered with : by typing @: and the subsequent repeats can be done with @@
+You can use <c-x><c-l> for line completion.
+Use // to run your last search
+
+gC-a for incrementing several lines when visual block...
+
+The Vim fzf plug-in has a native feature to open the selected item in a new tab. 
+If you type Ctrl + T inside the fzf selection window,
+
+Ctrl + K then p*, f*, -> <- etc...
+
+KEYBINDS:
+
+map('n', '<leader>p', 'viw"_dP') -- Replace from void
+map('n', '<leader>d', '"_d') -- Delete to void
+
+map('n', '<M-d>', ':FZF<CR>')
+map('n', '<M-a>', ':FZF ~/<CR>')
+map('n', '<M-A>', ':FZF /<CR>')
+
+-- Vimgrep and QuickFix Lists
+map('n', '<M-f>', ':vimgrep //g **/*.txt<C-f><Esc>11hi')
+map('n', '<M-g>', ':vimgrep //g **/*.*<C-f><Esc>9hi') -- Search all
+map('n', '<M-G>', ':vimgrep //g **/.*<C-f><Esc>8hi') -- Search dotfiles
+map('n', '<M-v>', ':cdo s///gc | update<C-f><Esc>13hi')
+-- map('n', '<M-v>', ':cfdo s//x/gc<left><left><left><left><left><C-f>i')
+map('n', '<M-c>', ':cnext<CR>')
+map('n', '<M-p>', ':cprev<CR>')
+map('n', '<M-P>', ':clast<CR>')
+map('n', '<M-b>', ':copen<CR>')
+
+-- Window management and movement
+map('n', '<M-u>', ':resize +2<CR>')
+map('n', '<M-i>', ':resize -2<CR>')
+map('n', '<M-o>', ':vertical resize +2<CR>')
+map('n', '<M-y>', ':vertical resize -2<CR>')
+map('n', '<M-h>', '<Plug>WinMoveLeft')
+map('n', '<M-j>', '<Plug>WinMoveDown')
+map('n', '<M-k>', '<Plug>WinMoveUp')
+map('n', '<M-l>', '<Plug>WinMoveRight')
+
+-- Moving text and indentation
+map('x', 'K', ":move '<-2<CR>gv-gv")
+map('x', 'J', ":move '>+1<CR>gv-gv")
+map('n', '<leader>j', ':join<CR>')
+map('n', '<leader>J', ':join!<CR>')
+map('n', '<leader>z', '<Plug>Zoom')
+
+-- Indentation
+map('v', '<leader><', ':le<CR>')
+map('n', '<leader><', ':le<CR>')
+map('v', '<', '<gv')
+map('v', '>', '>gv')
+
+-- Tab keybinds
+map('n', '<M-t>', ':tabe<CR>')
+map('n', '<M-s>', ':split<CR>')
+map('n', '<M-Enter>', ':vsp<CR>')
+map('n', '<M-<>', ':vsp<CR>')
+
+-- Session management
+map('n', '<leader>o', '<C-^>')
+map('n', '<leader>m', ':mks! ~/.vim/sessions/s.vim<CR>')
+map('n', '<leader>,', ':mks! ~/.vim/sessions/s2.vim<CR>')
+map('n', '<leader>.', ':so ~/.vim/sessions/s.vim<CR>')
+map('n', '<leader>-', ':so ~/.vim/sessions/s2.vim<CR>')
+
+map('n', '<leader>s', "/\\s\\+$/<CR>") -- Show extra whitespace
+map('n', '<leader>ws', ':%s/\\s\\+$<CR>') -- Remove all extra whitespace
+map('n', '<leader>wu', ':%s/\\%u200b//g<CR>') -- Remove all extra unicode chars
+map('n', '<leader>wb', ':%s/[[:cntrl:]]//g<CR>') -- Remove all hidden characters
+map('n', '<leader>r', 'gqG<C-o>zz') -- Format rest of the text with vim formatting, go back and center screen
+map('v', '<leader>gu', ':s/\\<./\\u&/g<CR>:noh<CR>') -- Capitalize first letter of each word on visually selected line
+map('v', '<leader>/', '"3y/<C-R>3<CR>') -- Search for highlighted text
+map('v', '<leader>%', '/\\%V') -- Search in highlighted text
+
+----------------------------------------------------------------------------------
+vim ~/Documents/vimtutor.txt

@@ -5,23 +5,23 @@
 # Show 🔒 if a vpn connection is active
 
 case $BLOCK_BUTTON in
-	1) urxvt -e sh -c "nmcli device show; zsh" ;;
-	2) rofi -theme "~/.config/rofi/themes/gruvbox/gruvbox-dark.rasi" -e "Internet clicked 2" ;;
-	3) pkill -RTMIN+6 dwmblocks ;;
-	4) rofi -theme "~/.config/rofi/themes/gruvbox/gruvbox-dark.rasi" -e "Internet clicked 4" ;;
-	5) rofi -theme "~/.config/rofi/themes/gruvbox/gruvbox-dark.rasi" -e "Internet clicked 5" ;;
+	1) pamixer -t; kill -44 $(pidof dwmblocks) ;;
+	2) rofi -theme "~/.config/rofi/themes/gruvbox/gruvbox-dark.rasi" -e "Audio clicked 2" ;;
+	3) rofi -theme "~/.config/rofi/themes/gruvbox/gruvbox-dark.rasi" -e "Audio clicked 3" ;;
+	4) pamixer --allow-boost -i 1; kill -44 $(pidof dwmblocks) ;;
+	5) pamixer --allow-boost -d 1; kill -44 $(pidof dwmblocks) ;;
 	6) "$TERMINAL" -e "$EDITOR" "$0" ;;
 esac
 
-# case "$(cat /sys/class/net/w*/operstate 2>/dev/null)" in
+#case "$(cat /sys/class/net/w*/operstate 2>/dev/null)" in
 case "$(cat /sys/class/net/e*/operstate 2>/dev/null)" in
 	# down) wifiicon="睊 " ;;
 	down) printf "睊 " ;;
-	#up) wifiicon="$(awk '/^\s*w/ { print "📶", int($3 * 100 / 70) "% " }' /proc/net/wireless)" ;;
+	# up) wifiicon="$(awk '/^\s*w/ { print "📶", int($3 * 100 / 70) "% " }' /proc/net/wireless)" ;;
 	up) wifiicon=" " ;;
 esac
 
 # printf "%s%s%s\n" "$wifiicon" "$(sed "s/down/❎/;s/up/🌐/" /sys/class/net/e*/operstate 2>/dev/null)" "$(sed "s/.*/🔒/" /sys/class/net/tun*/operstate 2>/dev/null)"
 # printf "%s%s%s\n" "$wifiicon" "$(sed "s/down//;s/up/ /" /sys/class/net/e*/operstate 2>/dev/null)" "$(sed "s/.*/🔒/" /sys/class/net/tun*/operstate 2>/dev/null)"
 
-
+echo "$wifiicon"

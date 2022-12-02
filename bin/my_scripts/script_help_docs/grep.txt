@@ -94,3 +94,5 @@ grep "^[A-Z].*[A-Z]$" file.txt
 Find line that begins with capital letter:
 grep "^[A-Z]" file.txt
 
+# Get everything after ssid= (to fetch network name)
+sudo wpa_cli status | sed -n -e 's/^ssid=//p'

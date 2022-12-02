@@ -18,7 +18,11 @@ if [[ "$STR" == *"$SUB"* ]]; then
 	sudo cat ~/.local/share/weatherreport
 else
 	#curl -sf "wttr.in/Uppsala" | grep -Eo -m 1 '(\+|\-|[0-9])[0-9]+' | head -1 | tee "$HOME/.local/share/weatherreport"
-	curl -sf "wttr.in/Uppsala?format=1" | sed -r 's/^.{4}//;s/^ *//g;s/C//g' | tee "$HOME/.local/share/weatherreport"
+
+	curl -sf "wttr.in/Uppsala?format=1" | sed -r 's/^.{3}//;s/^ *//g;s/C//g' | tee "$HOME/.local/share/weatherreport"
+	# curl -sf "wttr.in/Uppsala?format=1" | sed -r 's/^.{4}//;s/^ *//g;s/C//g' | tee "$HOME/.local/share/weatherreport"
+	#echo "+20°" | tee "$HOME/.local/share/weatherreport"
+
 	if [ -z "$STR" ]; then
 		python ~/.local/bin/dwmblocks/weather_py.py | tee "$HOME/.local/share/weatherreport_py"
 	fi

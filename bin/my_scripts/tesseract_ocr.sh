@@ -1,4 +1,5 @@
 #! /bin/bash
+export TESSDATA_PREFIX=/usr/local/share/tessdata
 import /home/jonas/Pictures/Screenshots/ocr.png && python3 /home/jonas/.local/bin/my_scripts/pytess.py
 #sed -i 's/^M//g'  ocr.txt
 #sed -i 's/[[:space:]]*$//' ocr.txt

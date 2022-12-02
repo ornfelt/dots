@@ -1,0 +1,155 @@
+######################################################################################################################
+### WM
+######################################################################################################################
+F1 exec --no-startup-id ~/.local/bin/my_scripts/show_keys.sh i3
+Shift+F1 exec --no-startup-id ~/.local/bin/my_scripts/show_keys.sh vim
+mod+Control+r reload
+mod+Shift+r restart
+mod+shift+p exec --no-startup-id ~/.local/bin/my_scripts/toggle_polybar.sh
+
+######################################################################################################################
+### Client
+######################################################################################################################
+mod+q kill
+mod+h focus left
+mod+j focus down
+mod+k focus up
+mod+l focus right
+mod+Shift+h move left
+mod+Shift+j move down
+mod+Shift+k move up
+mod+Shift+l move right
+mod+Shift+d focus child
+mod+Control+d focus parent
+mod+y resize shrink width 10 px or 1 ppt
+mod+u resize grow height 10 px or 1 ppt
+mod+i resize shrink height 10 px or 1 ppt
+mod+o resize grow width 10 px or 1 ppt
+
+######################################################################################################################
+### XF86
+######################################################################################################################
+XF86AudioPause exec playerctl play-pause
+XF86AudioNext exec playerctl next
+XF86AudioPrev exec playerctl previous
+XF86AudioRaiseVolume exec --no-startup-id pactl set-sink-volume @DEFAULT_SINK@ +5% && $refresh_i3status
+XF86AudioLowerVolume exec --no-startup-id pactl set-sink-volume @DEFAULT_SINK@ -5% && $refresh_i3status
+XF86AudioMute exec --no-startup-id pactl set-sink-mute @DEFAULT_SINK@ toggle && $refresh_i3status
+XF86AudioMicMute exec --no-startup-id pactl set-source-mute @DEFAULT_SOURCE@ toggle && $refresh_i3status
+XF86MonBrightnessUp exec --no-startup-id ~/.local/bin/my_scripts/brightness.sh +10
+XF86MonBrightnessDown exec --no-startup-id ~/.local/bin/my_scripts/brightness.sh -10
+
+######################################################################################################################
+### layout
+######################################################################################################################
+mod+s split v # Split vertically
+mod+less layout toggle split
+mod+Shift+less split h
+mod+f fullscreen toggle
+mod+Shift+z layout stacked
+mod+Control+t layout tabbed
+mod+space floating toggle
+mod+Shift+space focus mode_toggle
+
+mod+z gaps inner current set 0; gaps outer current set 0
+mod+x gaps inner current set 15; gaps outer current set 15
+mod+plus gaps inner current plus 5
+mod+minus gaps inner current minus 5
+mod+Shift+plus	gaps outer current plus 5
+mod+Shift+minus gaps outer current minus 5
+
+mod+odiaeresis floating enable, resize set 50 ppt 50 ppt, move position 10 px 44 px
+mod+Shift+odiaeresis floating enable, resize set 50 ppt 50 ppt, move position 10 px 527 px
+mod+Control+odiaeresis floating enable, resize set 43 ppt 32 ppt, move position 10 px 738 px
+mod+adiaeresis floating enable, resize set 50 ppt 50 ppt, move position 950 px 46 px
+mod+Shift+adiaeresis floating enable, resize set 50 ppt 50 ppt, move position 950 px 527 px
+mod+Control+adiaeresis floating enable, resize set 43 ppt 32 ppt, move position 1090 px 738 px
+mod+aring floating enable, resize set 50 ppt 95 ppt, move position 13 px 44 px
+mod+Shift+aring floating enable, resize set 50 ppt 95 ppt, move position 950 px 44 px
+mod+Control+aring floating enable, resize set 30 ppt 30 ppt, move position 1330 px 746 px
+
+######################################################################################################################
+### launcher
+######################################################################################################################
+mod+Return exec --no-startup-id ~/.local/bin/my_scripts/term_wd.sh urxvt
+mod+Shift+Return exec --no-startup-id urxvt
+mod+Control+Return exec --no-startup-id ~/.local/bin/my_scripts/term_wd.sh st
+mod+r exec --no-startup-id dmenu_run -fn 'Linux Libertine Mono'
+mod+d exec --no-startup-id rofi -show run -theme ~/.config/rofi/themes/gruvbox/gruvbox-dark.rasi
+mod+a exec urxvt -e bash -c "tmux attach || tmux"
+mod+n exec ~/.local/bin/my_scripts/nautilus_wd.sh
+mod+Shift+n exec nautilus -w --no-desktop
+mod+Control+n exec --no-startup-id ~/.local/bin/my_scripts/open_notes.sh 1
+mod+w exec urxvt -e ranger ~/
+mod+e exec ~/.local/bin/my_scripts/ranger_wd.sh urxvt
+mod+c exec --no-startup-id gnome-calculator
+mod+Control+c exec --no-startup-id gnome-calendar
+mod+t exec ~/.local/bin/my_scripts/script_copy.sh
+mod+Shift+t exec ~/.local/bin/my_scripts/script_helper.sh 
+mod+Shift+e exec --no-startup-id ~/.local/bin/my_scripts/alert_exit.sh; exec ~/.config/polybar/forest/scripts/powermenu.sh
+mod+Shift+c exec ~/.local/bin/my_scripts/code_helper.sh new 
+mod+Shift+d exec ~/.local/bin/my_scripts/code_helper.sh old 
+mod+p exec --no-startup-id ~/.local/bin/my_scripts/xrandr_helper.sh
+mod+v exec ~/.local/bin/my_scripts/clip_history.sh
+mod+Shift+v exec --no-startup-id ~/.local/bin/my_scripts/qr_clip.sh
+mod+period exec --no-startup-id ~/.local/bin/my_scripts/emojipick/emojipick
+mod+b exec urxvt -e sudo htop
+mod+Shift+b exec --no-startup-id urxvt -e sudo bashtop
+mod+Control+b exec --no-startup-id urxvt -e sudo ytop
+mod+m exec --no-startup-id ~/.local/bin/my_scripts/tstock.sh
+mod+Shift+m exec --no-startup-id spotify
+mod+Control+m exec --no-startup-id ~/.local/bin/my_scripts/open_notes.sh 2
+mod+g exec urxvt -e bash -c 'nvim -c "FZF ~"'
+mod+apostrophe exec --no-startup-id ~/.local/bin/my_scripts/i3_scratchpad.sh
+mod+Shift+a exec --no-startup-id picom-trans -c -5
+mod+Control+a exec --no-startup-id picom-trans -c +5
+
+# Print screen keybinds
+mod+Shift+s --release exec --no-startup-id import png:- | xclip -selection clipboard -t image/png
+mod+Control+s --release exec --no-startup-id ~/.local/bin/my_scripts/tesseract_ocr.sh
+Print --release exec --no-startup-id ~/.local/bin/my_scripts/screenshot_select.sh
+Shift+Print --release exec --no-startup-id ~/.local/bin/my_scripts/screenshot.sh
+Control+Print --release exec --no-startup-id ~/.local/bin/my_scripts/screenshot_ocr.sh
+mod+section exec --no-startup-id ~/.local/bin/my_scripts/loadEww.sh
+# Lock screen 
+mod+Shift+x exec --no-startup-id i3lock-fancy
+mod+Control+x exec --no-startup-id i3lock -t -i ~/Downloads/lock-wallpaper.png 
+#Suspend 
+mod+Shift+comma exec --no-startup-id ~/.local/bin/my_scripts/alert_exit.sh; exec --no-startup-id ~/.local/bin/my_scripts/suspend.sh
+mod+Shift+period exec --no-startup-id i3lock-fancy; exec --no-startup-id ~/.local/bin/my_scripts/alert_exit.sh; exec --no-startup-id systemctl suspend
+
+######################################################################################################################
+### Tag
+######################################################################################################################
+Alt+Tab workspace next
+Alt+Shift+Tab workspace prev
+mod+1 workspace number $ws1
+mod+2 workspace number $ws2
+mod+3 workspace number $ws3
+mod+4 workspace number $ws4
+mod+5 workspace number $ws5
+mod+6 workspace number $ws6
+mod+7 workspace number $ws7
+mod+8 workspace number $ws8
+mod+9 workspace number $ws9
+mod+0 workspace number $ws10
+mod+Shift+1 move container to workspace number $ws1; workspace $ws1
+mod+Shift+2 move container to workspace number $ws2; workspace $ws2
+mod+Shift+3 move container to workspace number $ws3; workspace $ws3
+mod+Shift+4 move container to workspace number $ws4; workspace $ws4
+mod+Shift+5 move container to workspace number $ws5; workspace $ws5
+mod+Shift+6 move container to workspace number $ws6; workspace $ws6
+mod+Shift+7 move container to workspace number $ws7; workspace $ws7
+mod+Shift+8 move container to workspace number $ws8; workspace $ws8
+mod+Shift+9 move container to workspace number $ws9; workspace $ws9
+mod+Shift+0 move container to workspace number $ws10; workspace $ws10
+mod+Control+1 move container to workspace number $ws1
+mod+Control+2 move container to workspace number $ws2
+mod+Control+3 move container to workspace number $ws3
+mod+Control+4 move container to workspace number $ws4
+mod+Control+5 move container to workspace number $ws5
+mod+Control+6 move container to workspace number $ws6
+mod+Control+7 move container to workspace number $ws7
+mod+Control+8 move container to workspace number $ws8
+mod+Control+9 move container to workspace number $ws9
+mod+Control+0 move container to workspace number $ws10
