@@ -5,10 +5,13 @@
  *
  * font: see http://freedesktop.org/software/fontconfig/fontconfig-user.html
  */
-static char *font = "JetBrainsMono Nerd Font:size=11:style=bold:antialias=true:autohint=true";
 /* static char *font = "mono:pixelsize=12:antialias=true:autohint=true"; */
-static char *font2[] = { "JoyPixels:pixelsize=10:antialias=true:autohint=true" };
-static int borderpx = 2;
+/* static char *font2[] = { "NotoColorEmoji:pixelsize=10:antialias=true:autohint=true" }; */
+static char *font = "JetBrainsMono Nerd Font:size=11:style=regular:antialias=true:autohint=true";
+/* static char *font2[] = { "JoyPixels:pixelsize=10:antialias=true:autohint=true" }; */
+static char *font2[] = { "JetBrainsMono Nerd Font:size=11:style=regular:antialias=true:autohint=true" };
+/* static int borderpx = 16; */
+static int borderpx = 18;
 
 /*
  * What program is execed by st depends of these precedence rules:
@@ -108,7 +111,7 @@ char *termname = "st-256color";
 unsigned int tabspaces = 8;
 
 /* bg opacity */
-float alpha = 0.0;
+float alpha = 1.0;
 float alphaOffset = 0.0;
 float alphaUnfocus;
 
@@ -138,7 +141,6 @@ static const char *colorname[] = {
 	"#ebdbb2", /* 259 -> fg */
 	"black", /* 260 -> alphaBg */
 };
-
 
 /*
  * Default colors (colorname index)
@@ -250,7 +252,6 @@ static char *openurlcmd[] = { "/bin/sh", "-c", "st-urlhandler -o", "externalpipe
 static char *copyurlcmd[] = { "/bin/sh", "-c", "st-urlhandler -c", "externalpipe", NULL };
 static char *copyoutput[] = { "/bin/sh", "-c", "st-copyout", "externalpipe", NULL };
 
-
 static Shortcut shortcuts[] = {
 	/* mask                 keysym          function        argument */
 	{ XK_ANY_MOD,           XK_Break,       sendbreak,      {.i =  0} },
@@ -261,8 +262,8 @@ static Shortcut shortcuts[] = {
 	{ TERMMOD,              XK_Next,        zoom,           {.f = -1} },
 	{ TERMMOD,              XK_Home,        zoomreset,      {.f =  0} },
 	{ TERMMOD,              XK_C,           clipcopy,       {.i =  0} },
+	{ MODKEY|ControlMask,   XK_c,           clipcopy,       {.i =  0} },
 	{ TERMMOD,              XK_V,           clippaste,      {.i =  0} },
-	{ MODKEY,               XK_c,           clipcopy,       {.i =  0} },
 	{ ShiftMask,            XK_Insert,      clippaste,      {.i =  0} },
 	{ MODKEY,               XK_v,           clippaste,      {.i =  0} },
 	{ ShiftMask,            XK_Insert,      selpaste,       {.i =  0} },
@@ -271,23 +272,21 @@ static Shortcut shortcuts[] = {
 	{ ShiftMask,            XK_Page_Down,   kscrolldown,    {.i = -1} },
 	{ MODKEY,               XK_Page_Up,     kscrollup,      {.i = -1} },
 	{ MODKEY,               XK_Page_Down,   kscrolldown,    {.i = -1} },
-	{ MODKEY,               XK_k,           kscrollup,      {.i =  1} },
-	{ MODKEY,               XK_j,           kscrolldown,    {.i =  1} },
 	{ MODKEY,               XK_Up,          kscrollup,      {.i =  1} },
 	{ MODKEY,               XK_Down,        kscrolldown,    {.i =  1} },
-	{ MODKEY,               XK_u,           kscrollup,      {.i = -1} },
-	{ MODKEY,               XK_d,           kscrolldown,    {.i = -1} },
-	{ MODKEY,		XK_s,		changealpha,	{.f = -0.05} },
-	{ MODKEY,		XK_a,		changealpha,	{.f = +0.05} },
+	{ MODKEY,				XK_k,           kscrollup,      {.i =  1} },
+	{ MODKEY,				XK_j,           kscrolldown,    {.i =  1} },
+	{ MODKEY,				XK_s,			changealpha,	{.f = -0.05} },
+	{ MODKEY,				XK_a,			changealpha,	{.f = +0.05} },
 	{ TERMMOD,              XK_Up,          zoom,           {.f = +1} },
 	{ TERMMOD,              XK_Down,        zoom,           {.f = -1} },
-	{ TERMMOD,              XK_K,           zoom,           {.f = +1} },
-	{ TERMMOD,              XK_J,           zoom,           {.f = -1} },
-	{ TERMMOD,              XK_U,           zoom,           {.f = +2} },
-	{ TERMMOD,              XK_D,           zoom,           {.f = -2} },
-	{ MODKEY,               XK_l,           externalpipe,   {.v = openurlcmd } },
-	{ MODKEY,               XK_y,           externalpipe,   {.v = copyurlcmd } },
-	{ MODKEY,               XK_o,           externalpipe,   {.v = copyoutput } },
+	{ ControlMask,			XK_plus,        zoom,           {.f = +1} },
+	{ ControlMask,			XK_minus,       zoom,           {.f = -1} },
+	{ MODKEY,				XK_plus,        zoom,           {.f = +2} },
+	{ MODKEY,				XK_minus,       zoom,           {.f = -2} },
+	{ TERMMOD,              XK_L,           externalpipe,   {.v = openurlcmd } },
+	{ TERMMOD,              XK_Y,           externalpipe,   {.v = copyurlcmd } },
+	{ TERMMOD,              XK_O,           externalpipe,   {.v = copyoutput } },
 };
 
 /*
@@ -559,3 +558,4 @@ static char ascii_printable[] =
 	" !\"#$%&'()*+,-./0123456789:;<=>?"
 	"@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_"
 	"`abcdefghijklmnopqrstuvwxyz{|}~";
+

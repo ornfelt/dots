@@ -27,39 +27,39 @@ options="$csharpOpt\n$cplplOpt\n$cOpt\n$goOpt\n$javaOpt\n$jsOpt\n$latexOpt\n$lua
 chosen="$(echo -e "$options" | $rofi_command -p "Choose a command" -dmenu -selected-row 0)"
 case $chosen in
     $csharpOpt)
-		urxvt -e bash -c 'cd ~/'"$codeDir"'/C#;ls --color=auto; zsh;'
+		$2 -e bash -c 'cd ~/'"$codeDir"'/C#;ls --color=auto; zsh;'
         ;;
     $cplplOpt)
-		urxvt -e bash -c 'cd ~/'"$codeDir"'/C++;ls --color=auto; zsh'
+		$2 -e bash -c 'cd ~/'"$codeDir"'/C++;ls --color=auto; zsh'
         ;;
     $cOpt)
-		urxvt -e bash -c 'cd ~/'"$codeDir"'/C;ls --color=auto; zsh'
+		$2 -e bash -c 'cd ~/'"$codeDir"'/C;ls --color=auto; zsh'
         ;;
     $goOpt)
-		urxvt -e bash -c 'cd ~/'"$codeDir"'/Go;ls --color=auto; zsh'
+		$2 -e bash -c 'cd ~/'"$codeDir"'/Go;ls --color=auto; zsh'
         ;;
     $javaOpt)
-		urxvt -e bash -c 'cd ~/'"$codeDir"'/Java;ls --color=auto; zsh'
+		$2 -e bash -c 'cd ~/'"$codeDir"'/Java;ls --color=auto; zsh'
         ;;
     $jsOpt)
-		urxvt -e bash -c 'cd ~/'"$codeDir"'/Javascript;ls --color=auto; zsh'
+		$2 -e bash -c 'cd ~/'"$codeDir"'/Javascript;ls --color=auto; zsh'
         ;;
     $latexOpt)
-		urxvt -e bash -c 'cd ~/'"$codeDir"'/Latex;ls --color=auto; zsh'
+		$2 -e bash -c 'cd ~/'"$codeDir"'/Latex;ls --color=auto; zsh'
         ;;
     $luaOpt)
-		urxvt -e bash -c 'cd ~/'"$codeDir"'/Lua;ls --color=auto; zsh'
+		$2 -e bash -c 'cd ~/'"$codeDir"'/Lua;ls --color=auto; zsh'
         ;;
     $sqlOpt)
-		urxvt -e bash -c 'cd ~/'"$codeDir"'/SQL_CODE;ls --color=auto; zsh'
+		$2 -e bash -c 'cd ~/'"$codeDir"'/SQL_CODE;ls --color=auto; zsh'
         ;;
     $pythonOpt)
-		urxvt -e bash -c 'cd ~/'"$codeDir"'/Python;ls --color=auto; zsh'
+		$2 -e bash -c 'cd ~/'"$codeDir"'/Python;ls --color=auto; zsh'
         ;;
     $rOpt)
-		urxvt -e bash -c 'cd ~/'"$codeDir"'/R;ls --color=auto; zsh'
+		$2 -e bash -c 'cd ~/'"$codeDir"'/R;ls --color=auto; zsh'
         ;;
     $rustOpt)
-		urxvt -e bash -c 'cd ~/'"$codeDir"'/Rust;ls --color=auto; zsh'
+		$2 -e bash -c 'cd ~/'"$codeDir"'/Rust;ls --color=auto; zsh'
         ;;
 esac

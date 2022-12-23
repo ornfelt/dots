@@ -49,6 +49,7 @@ for battery in /sys/class/power_supply/BAT?*; do
 	#[ "$status" = "🔋" ] && [ "$capacity" -le 25 ] && warn="❗"
 
 	# Prints the info
+	# For debian change env to /usr/bin/bash and remove whitespaces from prints...
 	if [[ $status = " " ]]; then
 		printf "%s %s%d%%" "$status" "$warn" "$capacity"; unset warn
 	elif [[ $status = "" ]]; then

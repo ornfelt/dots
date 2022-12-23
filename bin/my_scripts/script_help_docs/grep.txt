@@ -96,3 +96,14 @@ grep "^[A-Z]" file.txt
 
 # Get everything after ssid= (to fetch network name)
 sudo wpa_cli status | sed -n -e 's/^ssid=//p'
+
+----------------------------------------------------------------------------------
+
+Grep two words:
+grep -in -C 10 "hello" 1.txt | grep -in -C 3 "tensor"
+
+# Highlight both words:
+grep -in -C 10 "hello" 1.txt | grep -in -E -C 3 "tensor|hello"
+
+# OR:
+grep -in -C 10 "hello" 1.txt | grep -in -E "tensor|hello"

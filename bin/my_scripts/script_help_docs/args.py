@@ -26,5 +26,5 @@ else:
         
     for i in range (len(lines)):
         if i == chosen_command:
-            print(lines[i])
+            #print(lines[i])
             pyperclip.copy(lines[i])

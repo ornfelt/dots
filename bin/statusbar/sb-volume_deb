@@ -1,0 +1,40 @@
+#!/bin/sh
+export DISPLAY=:0
+
+# Prints the current volume or 🔇 if muted.
+
+# case $BLOCK_BUTTON in
+# 	1) pamixer -t; kill -44 $(pidof dwmblocks) ;;
+# 	2) rofi -theme "~/.config/rofi/themes/gruvbox/gruvbox-dark.rasi" -e "Audio clicked 2" ;;
+# 	3) rofi -theme "~/.config/rofi/themes/gruvbox/gruvbox-dark.rasi" -e "Audio clicked 3" ;;
+# 	4) pamixer --allow-boost -i 1; kill -44 $(pidof dwmblocks) ;;
+# 	5) pamixer --allow-boost -d 1; kill -44 $(pidof dwmblocks) ;;
+# 	6) "$TERMINAL" -e "$EDITOR" "$0" ;;
+# esac
+
+# get muted status
+# [ $(pamixer --get-mute) = true ] && echo "婢 0%" && exit
+[ $(pacmd list-sinks | awk '/muted/ { print $2 }') = 'yes' ] && echo "婢 0%" && exit
+
+# Toggle mute / unmute
+#amixer -D pulse set Master 1+ toggle
+#{ 0, XF86XK_AudioMute,						spawn,			SHCMD("amixer -D pulse set Master 1+ toggle ; kill -44 $(pidof dwmblocks)") },
+#{ 0, XF86XK_AudioRaiseVolume,				spawn,			SHCMD("amixer -q sset Master 3%+; kill -44 $(pidof dwmblocks)") },
+#{ 0, XF86XK_AudioLowerVolume,				spawn,			SHCMD("amixer -q sset Master 3%-; kill -44 $(pidof dwmblocks)") },
+
+# Get volume
+#vol="$(awk -F"[][]" '/Left:/ { print $2 }' <(/usr/bin/amixer sget Master) | sed 's/%//g')"
+vol="$(amixer get Master |grep % |awk '{print $5}'|sed -e 's/\[//' -e 's/\]//')"
+
+if [ "$vol" -gt "70" ]; then
+	# icon="🔊"
+	icon="墳 "
+elif [ "$vol" -lt "30" ]; then
+	# icon="🔈"
+	icon="墳 "
+else
+	# icon="🔉"
+	icon="墳 "
+fi
+
+echo "$icon$vol%"

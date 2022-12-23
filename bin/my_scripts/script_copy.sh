@@ -15,7 +15,10 @@ chosen=$(cut -d ';' -f1 /home/jonas/.local/bin/my_scripts/script_help_docs/raw_o
 if [ -n "$1" ]; then
 	xdotool type "$chosen"
 else
+	# For debian change to /usr/bin/bash at top and /usr/bin/python3 in args.py and make executable
     if [ "$chosen" == "ps ajxf | awk" ]; then
+		# Debian:
+		#~/.local/bin/my_scripts/script_help_docs/args.py 100
 		python3 ~/.local/bin/my_scripts/script_help_docs/args.py 100
     elif [ "$chosen" == "for i in */.git" ]; then
 		python3 ~/.local/bin/my_scripts/script_help_docs/args.py 101
