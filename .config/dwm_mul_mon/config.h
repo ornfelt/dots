@@ -73,6 +73,7 @@ static const Rule rules[] = {
 	{ NULL,      "gnome-calculator",    NULL,               0,              1,           0,         0,        -1 },
 	{ NULL,      "gnome-calendar",      NULL,               0,              1,           0,         0,        -1 },
 	{ NULL,      "yad",                 NULL,               0,              1,           0,         0,        -1 },
+	{ NULL,      "nm-connection-editor",NULL,               0,              1,           0,         0,        -1 },
 };
 
 /* layout(s) */
@@ -277,9 +278,9 @@ static const Key keys[] = {
 	/* { MODKEY,				XK_F7,				spawn,			SHCMD("td-toggle") }, */
 	/* { MODKEY,				XK_F8,				spawn,			SHCMD("mw -Y") }, */
 	/* { MODKEY,				XK_F9,				spawn,			SHCMD("dmenumount") }, */
-	{ MODKEY,				XK_F10,				spawn,			SHCMD("pactl set-sink-mute @DEFAULT_SINK@ toggle ; kill -44 $(pidof dwmblocks)") },
-	{ MODKEY,				XK_F11,				spawn,			SHCMD("pactl set-sink-volume @DEFAULT_SINK@ -5%; kill -44 $(pidof dwmblocks)") },
-	{ MODKEY,				XK_F12,				spawn,			SHCMD("pactl set-sink-mute @DEFAULT_SINK@ toggle ; kill -44 $(pidof dwmblocks)") },
+	{ 0,				XK_F10,				spawn,			SHCMD("pactl set-sink-mute @DEFAULT_SINK@ toggle ; kill -44 $(pidof dwmblocks)") },
+	{ 0,				XK_F11,				spawn,			SHCMD("pactl set-sink-volume @DEFAULT_SINK@ -5%; kill -44 $(pidof dwmblocks)") },
+	{ 0,				XK_F12,				spawn,			SHCMD("pactl set-sink-volume @DEFAULT_SINK@ +5%; kill -44 $(pidof dwmblocks)") },
 	{ 0,					XK_Print,			spawn,			SHCMD("~/.local/bin/my_scripts/screenshot_select.sh") },
 	{ ShiftMask,			XK_Print,			spawn,			SHCMD("~/.local/bin/my_scripts/screenshot.sh") },
 	{ ControlMask,			XK_Print,			spawn,			SHCMD("~/.local/bin/my_scripts/screenshot_ocr.sh") },
