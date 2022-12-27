@@ -1,10 +1,10 @@
 /* See LICENSE file for copyright and license details. */
 
 /* Constants */
-/* #define TERMINAL "st" */
-/* #define TERMCLASS "St" */
-#define TERMINAL "urxvt"
-#define TERMCLASS "Urxvt"
+#define TERMINAL "st"
+#define TERMCLASS "St"
+/* #define TERMINAL "urxvt" */
+/* #define TERMCLASS "Urxvt" */
 
 /* appearance */
 static unsigned int borderpx  = 3;        /* border pixel of windows */
@@ -223,9 +223,9 @@ static const Key keys[] = {
 	{ MODKEY,					XK_r,			spawn,		SHCMD("dmenu_run -fn 'Linux Libertine Mono'") },
 	{ MODKEY|ShiftMask,			XK_r,			spawn,		SHCMD("rofi -show run -theme ~/.config/polybar/forest/scripts/rofi/launcher.rasi") },
 	{ MODKEY,					XK_t,			spawn,		SHCMD("~/.local/bin/my_scripts/script_copy.sh") },
-	{ MODKEY|ShiftMask,			XK_t,			spawn,		SHCMD("~/.local/bin/my_scripts/script_helper.sh") },
-	{ MODKEY|ShiftMask,			XK_c,			spawn,		SHCMD("~/.local/bin/my_scripts/code_helper.sh new") },
-	{ MODKEY|ShiftMask,			XK_d,			spawn,		SHCMD("~/.local/bin/my_scripts/code_helper.sh old") },
+	{ MODKEY|ShiftMask,			XK_t,			spawn,		SHCMD("~/.local/bin/my_scripts/script_helper.sh " TERMINAL) },
+	{ MODKEY|ShiftMask,			XK_c,			spawn,		SHCMD("~/.local/bin/my_scripts/code_helper.sh new " TERMINAL) },
+	{ MODKEY|ShiftMask,			XK_d,			spawn,		SHCMD("~/.local/bin/my_scripts/code_helper.sh old " TERMINAL) },
 	{ MODKEY,					XK_g,			spawn,		SHCMD("~/.local/bin/my_scripts/fzf_open.sh " TERMINAL)},
 	{ MODKEY,					XK_c,			spawn,		SHCMD("~/.local/bin/my_scripts/term_calc.sh " TERMINAL) },
 	/* { MODKEY,					XK_c,			spawn,		SHCMD("GTK_THEME=Adwaita:dark gnome-calculator") }, */
@@ -237,10 +237,10 @@ static const Key keys[] = {
 	{ MODKEY,				    XK_p,			spawn,		SHCMD("~/.local/bin/my_scripts/xrandr_helper.sh") },
 	{ MODKEY,					XK_n,			spawn,		SHCMD("~/.local/bin/my_scripts/nautilus_wd.sh") },
 	{ MODKEY|ShiftMask,			XK_n,			spawn,		SHCMD("nautilus -w --no-desktop") },
-	{ MODKEY|ControlMask,		XK_n,			spawn,		SHCMD("~/.local/bin/my_scripts/open_notes.sh 1") },
-	{ MODKEY,			        XK_m,			spawn,		SHCMD("~/.local/bin/my_scripts/tstock.sh") },
+	{ MODKEY|ControlMask,		XK_n,			spawn,		SHCMD("~/.local/bin/my_scripts/open_notes.sh 1 " TERMINAL) },
+	{ MODKEY,			        XK_m,			spawn,		SHCMD("nm-connection-editor") },
 	{ MODKEY|ShiftMask,			XK_m,			spawn,		SHCMD("spotify") },
-	{ MODKEY|ControlMask,		XK_m,			spawn,		SHCMD("~/.local/bin/my_scripts/open_notes.sh 2") },
+	{ MODKEY|ControlMask,		XK_m,			spawn,		SHCMD("~/.local/bin/my_scripts/open_notes.sh 2 " TERMINAL) },
 	{ MODKEY|ShiftMask,         XK_comma,   	spawn,      SHCMD("~/.local/bin/my_scripts/alert_exit.sh && ~/.local/bin/my_scripts/suspend.sh")},
 	{ MODKEY|ShiftMask,         XK_period,  	spawn,      SHCMD("i3lock-fancy && ~/.local/bin/my_scripts/alert_exit.sh && systemctl suspend")},
 	{ MODKEY,					XK_v,			spawn,		SHCMD("~/.local/bin/my_scripts/clip_history.sh") },
@@ -254,7 +254,7 @@ static const Key keys[] = {
 	/* { MODKEY|ShiftMask,			XK_BackSpace,	spawn,		SHCMD("sysact") }, */
 	{ MODKEY,					XK_Return,		spawn,		SHCMD("~/.local/bin/my_scripts/term_wd.sh " TERMINAL) },
 	{ MODKEY|ShiftMask,			XK_Return,		spawn,		{.v = termcmd } },
-	{ MODKEY|ControlMask,		XK_Return,		spawn,		SHCMD("~/.local/bin/my_scripts/term_wd.sh st") },
+	{ MODKEY|ControlMask,		XK_Return,		spawn,		SHCMD("~/.local/bin/my_scripts/term_wd.sh urxvt") },
 
 	/* { MODKEY,				XK_bracketleft,		spawn,		SHCMD("mpc seek -10") }, */
 	/* { MODKEY|ShiftMask,		XK_bracketleft,		spawn,		SHCMD("mpc seek -60") }, */
@@ -266,8 +266,8 @@ static const Key keys[] = {
 	/* { MODKEY|ShiftMask,		XK_Page_Down,		shifttag,	{ .i = +1 } }, */
 	/* { MODKEY,				XK_backslash,		view,		{0} }, */
 	/* { MODKEY,					XK_F1,				spawn,			SHCMD("groff -mom /usr/local/share/dwm/larbs.mom -Tpdf | zathura -") }, */
-	{ 0,						XK_F1,				spawn,			SHCMD("~/.local/bin/my_scripts/show_keys.sh dwm") },
-	{ ShiftMask,				XK_F1,				spawn,			SHCMD("~/.local/bin/my_scripts/show_keys.sh vim") },
+	{ 0,						XK_F1,				spawn,			SHCMD("~/.local/bin/my_scripts/show_keys.sh dwm " TERMINAL) },
+	{ ShiftMask,				XK_F1,				spawn,			SHCMD("~/.local/bin/my_scripts/show_keys.sh vim " TERMINAL) },
 	/* { MODKEY,				XK_F1,				spawn,			SHCMD(TERMINAL " -e nvim") }, */
 	/* { MODKEY,				XK_F2,				spawn,			SHCMD("tutorialvids") }, */
 	/* { MODKEY,				XK_F3,				spawn,			SHCMD("displayselect") }, */
@@ -277,9 +277,9 @@ static const Key keys[] = {
 	/* { MODKEY,				XK_F7,				spawn,			SHCMD("td-toggle") }, */
 	/* { MODKEY,				XK_F8,				spawn,			SHCMD("mw -Y") }, */
 	/* { MODKEY,				XK_F9,				spawn,			SHCMD("dmenumount") }, */
-	/* { MODKEY,				XK_F10,				spawn,			SHCMD("dmenuumount") }, */
-	/* { MODKEY,				XK_F11,				spawn,			SHCMD("mpv --no-cache --no-osc --no-input-default-bindings --profile=low-latency --input-conf=/dev/null --title=webcam $(ls /dev/video[0,2,4,6,8] | tail -n 1)") }, */
-	/* { MODKEY,				XK_F12,				spawn,			SHCMD("remaps & notify-send \\\"⌨️ Keyboard remapping...\\\" \\\"Re-running keyboard defaults for any newly plugged-in keyboards.\\\"") }, */
+	{ MODKEY,				XK_F10,				spawn,			SHCMD("pactl set-sink-mute @DEFAULT_SINK@ toggle ; kill -44 $(pidof dwmblocks)") },
+	{ MODKEY,				XK_F11,				spawn,			SHCMD("pactl set-sink-volume @DEFAULT_SINK@ -5%; kill -44 $(pidof dwmblocks)") },
+	{ MODKEY,				XK_F12,				spawn,			SHCMD("pactl set-sink-mute @DEFAULT_SINK@ toggle ; kill -44 $(pidof dwmblocks)") },
 	{ 0,					XK_Print,			spawn,			SHCMD("~/.local/bin/my_scripts/screenshot_select.sh") },
 	{ ShiftMask,			XK_Print,			spawn,			SHCMD("~/.local/bin/my_scripts/screenshot.sh") },
 	{ ControlMask,			XK_Print,			spawn,			SHCMD("~/.local/bin/my_scripts/screenshot_ocr.sh") },
@@ -328,18 +328,18 @@ static const Button buttons[] = {
 	{ ClkStatusText,        0,              Button5,        sigdwmblocks,   {.i = 5} },
 	{ ClkStatusText,        ShiftMask,      Button1,        sigdwmblocks,   {.i = 6} },
 #endif
-	{ ClkStatusText,        ShiftMask,      Button3,        spawn,          SHCMD(TERMINAL " -e nvim ~/dwm/dwm/dwmblocks/config.h") },
+	{ ClkStatusText,        ShiftMask,      Button3,        spawn,          SHCMD(TERMINAL " -e nvim ~/.config/dwm_mul_mon/dwmblocks/config.h") },
 	{ ClkClientWin,         MODKEY,         Button1,        movemouse,      {0} },
 	{ ClkClientWin,         MODKEY,         Button2,        defaultgaps,	{0} },
 	{ ClkClientWin,         MODKEY,         Button3,        resizemouse,    {0} },
-	{ ClkClientWin,		MODKEY,		Button4,	incrgaps,	{.i = +1} },
-	{ ClkClientWin,		MODKEY,		Button5,	incrgaps,	{.i = -1} },
+	{ ClkClientWin,			MODKEY,			Button4,		incrgaps,	{.i = +1} },
+	{ ClkClientWin,			MODKEY,			Button5,		incrgaps,	{.i = -1} },
 	{ ClkTagBar,            0,              Button1,        view,           {0} },
 	{ ClkTagBar,            0,              Button3,        toggleview,     {0} },
 	{ ClkTagBar,            MODKEY,         Button1,        tag,            {0} },
 	{ ClkTagBar,            MODKEY,         Button3,        toggletag,      {0} },
-	{ ClkTagBar,		0,		Button4,	shiftview,	{.i = -1} },
-	{ ClkTagBar,		0,		Button5,	shiftview,	{.i = 1} },
-	{ ClkRootWin,		0,		Button2,	togglebar,	{0} },
+	{ ClkTagBar,			0,				Button4,		shiftview,	{.i = -1} },
+	{ ClkTagBar,			0,				Button5,		shiftview,	{.i = 1} },
+	{ ClkRootWin,			0,				Button2,		togglebar,	{0} },
 };
 
