@@ -1406,8 +1406,8 @@ manage(Window w, XWindowAttributes *wa)
 		XRaiseWindow(dpy, c->win);
 		/* c->x = 1500; */
 		/* c->y = 33; */
-		c->x = 1495;
-		c->y = 40;
+		c->x = 1489;
+		c->y = 42;
 		c->w = 405;
 		c->h = 280;
 		if (strcmp(c->name, "Calendar") == 0) {
