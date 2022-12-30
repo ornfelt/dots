@@ -6,7 +6,7 @@ local icons = require('theme.icons')
 local mat_list_item = require('widget.material.list-item')
 local mat_icon = require('widget.material.icon')
 local clickable_container = require('widget.material.clickable-container')
-local apps = require('configuration.apps')
+-- local apps = require('configuration.apps')
 local dpi = require('beautiful').xresources.apply_dpi
 
 local icon_size = beautiful.dashboard_icon_size or dpi(140)
@@ -19,7 +19,7 @@ local buildButton = function(icon, name)
         font = beautiful.font,
         align = 'center',
         valign = 'center',
-        bg = beautiful.primary.hue_900,
+        bg = "#282a36",
         fg = beautiful.fg_normal,
         widget = wibox.widget.textbox
     }
@@ -66,7 +66,7 @@ local buildLabel = function(name)
             font = 'Roboto 11',
             align = 'center',
             valign = 'center',
-            bg = beautiful.primary.hue_900,
+            bg = '#282a36',
             fg = beautiful.fg_normal,
             widget = wibox.widget.textbox
         },
@@ -88,12 +88,12 @@ end
 
 function suspend_command()
     dashboard_hide()
-    awful.spawn.with_shell(apps.default.lock .. ' & systemctl suspend')
+    -- awful.spawn.with_shell(apps.default.lock .. ' & systemctl suspend')
 end
 function exit_command() _G.awesome.quit() end
 function lock_command()
     dashboard_hide()
-    awful.spawn.with_shell('sleep 1 && ' .. apps.default.lock)
+    -- awful.spawn.with_shell('sleep 1 && ' .. apps.default.lock)
 end
 function poweroff_command()
     awful.spawn.with_shell('poweroff')
@@ -123,7 +123,7 @@ local search = buildButton(icons.search, 'Search')
 search:connect_signal('button::release', function()
     -- rofi_command()
     dashboard_hide()
-    _G.awesome.spawn(apps.default.rofi)
+    -- _G.awesome.spawn(apps.default.rofi)
 end)
 
 local close = buildButton(icons.close_dark, 'Close')
@@ -139,7 +139,7 @@ dashboard = wibox({
     visible = false,
     ontop = true,
     type = 'splash',
-    bg = beautiful.primary.hue_800 .. '66',
+    bg = '#44475a' .. '66',
     height = screen_geometry.height,
     width = screen_geometry.width
 })
@@ -209,7 +209,7 @@ local profile = wibox.widget {
                 bottom = dpi(8),
                 widget = wibox.container.margin
             },
-            fg = beautiful.primary.hue_500,
+            fg = '#6272a4',
             widget = wibox.container.background
         },
         layout = wibox.layout.fixed.vertical
@@ -230,7 +230,7 @@ local power_options = wibox.widget {
         layout = wibox.layout.flex.horizontal
     },
     visible = true,
-    bg = beautiful.primary.hue_900,
+    bg = '#44475a',
     shape = panel_style,
     widget = wibox.container.background
 }
@@ -238,11 +238,11 @@ local power_options = wibox.widget {
 local search_button = wibox.widget {
     {
         search,
-        bg = beautiful.primary.hue_600,
+        bg = '#ff79c6',
         layout = wibox.layout.fixed.vertical
     },
     visible = true,
-    bg = beautiful.primary.hue_200,
+    bg = '#50fa7b',
     shape = panel_style,
     widget = wibox.container.background
 }
@@ -250,11 +250,11 @@ local search_button = wibox.widget {
 local close_button = wibox.widget {
     {
         close,
-        bg = beautiful.primary.hue_600,
+        bg = '#ff79c6',
         layout = wibox.layout.fixed.vertical
     },
     visible = true,
-    bg = beautiful.primary.hue_350,
+    bg = '#ff5555',
     shape = panel_style,
     widget = wibox.container.background
 }
@@ -339,8 +339,8 @@ local fortune_widget = wibox.widget {
         margins = dpi(16),
         widget = wibox.container.margin
     },
-    bg = beautiful.primary.hue_700,
-    fg = beautiful.primary.hue_900,
+    bg = '#bd93f9',
+    fg = '#282a36',
     shape = panel_style,
     forced_height = dpi(112),
     widget = wibox.container.background
@@ -380,37 +380,37 @@ local uptime_widget = wibox.widget {
 -- Bookmarks
 function reddit_command()
     dashboard_hide()
-    awful.spawn(apps.default.browser .. " " .. "reddit.com")
+    -- awful.spawn(apps.default.browser .. " " .. "reddit.com")
 end
 
 function youtube_command()
     dashboard_hide()
-    awful.spawn(apps.default.browser .. " " .. "youtube.com")
+    -- awful.spawn(apps.default.browser .. " " .. "youtube.com")
 end
 
 function linkedin_command()
     dashboard_hide()
-    awful.spawn(apps.default.browser .. " " .. "linkedin.com")
+    -- awful.spawn(apps.default.browser .. " " .. "linkedin.com")
 end
 
 function github_command()
     dashboard_hide()
-    awful.spawn(apps.default.browser .. " " .. "github.com")
+    -- awful.spawn(apps.default.browser .. " " .. "github.com")
 end
 
 function deviantart_command()
     dashboard_hide()
-    awful.spawn(apps.default.browser .. " " .. "deviantart.com")
+    -- awful.spawn(apps.default.browser .. " " .. "deviantart.com")
 end
 
 function codeforces_command()
     dashboard_hide()
-    awful.spawn(apps.default.browser .. " " .. "codeforces.com")
+    -- awful.spawn(apps.default.browser .. " " .. "codeforces.com")
 end
 
 function files_command(directory)
     dashboard_hide()
-    awful.spawn(apps.default.files .. " " .. directory)
+    -- awful.spawn(apps.default.files .. " " .. directory)
 end
 
 local reddit = buildButton(icons.reddit, 'Reddit')

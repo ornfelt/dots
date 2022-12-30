@@ -26,4 +26,4 @@ $scripts/wall $config/wallpapers/gruv4.png &
 xrdb ~/.Xresources
 #gsettings set org.gnome.desktop.interface gtk-theme "gruvbox-dark-gtk"
 rm -f $HOME/.config/hypr/component/waybar/config_is_detailed
-diodon
+greenclip daemon
