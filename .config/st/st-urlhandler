@@ -1,5 +1,9 @@
 #!/bin/sh
 
+# See ~/.config/mimeapps.list if the wrong browser is used
+# See link below:
+# https://unix.stackexchange.com/questions/307641/cant-change-the-xdg-open-url-handler-to-firefox
+
 urlregex="(((http|https|gopher|gemini|ftp|ftps|git)://|www\\.)[a-zA-Z0-9.]*[:;a-zA-Z0-9./+@$&%?$\#=_~-]*)|((magnet:\\?xt=urn:btih:)[a-zA-Z0-9]*)"
 
 urls="$(sed 's/.*│//g' | tr -d '\n' | # First remove linebreaks and mutt sidebars:

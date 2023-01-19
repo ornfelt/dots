@@ -17,6 +17,8 @@ elif chosen_command == 103:
     pyperclip.copy('cat ~/.bash_history | tr "\|\;" "\n" | sed -e "s/^ //g" | cut -d " " -f 1 | sort | uniq -c | sort -n | tail -n 10')
 elif chosen_command == 104:
     pyperclip.copy('python3 -c "import csv,json,sys;print(json.dumps(list(csv.reader(open(sys.argv[1])))))" test.csv')
+elif chosen_command == 105:
+    pyperclip.copy("""perl -e '$|++; while (1) { print " ." x (rand(10) + 1), int(rand(2)) }'""")
 
 else:
     #with open('raw_oneliners.txt') as f:

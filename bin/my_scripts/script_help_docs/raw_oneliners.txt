@@ -1,6 +1,6 @@
-find . \( -type d -name .git -prune \) -o -type f -print0 | xargs -0 sed -i 's/x/y/g'
 sed -i 's/x/y/g' myfile1 myfile2 OR perl -p -i -e 's/x/y/' myfile1 myfile2
 sed -i 's/foo/bar/g' *
+find . \( -type d -name .git -prune \) -o -type f -print0 | xargs -0 sed -i 's/x/y/g'
 find ./ -type f -exec sed -i 's/x/y/g' {} +
 find ./ -type f -exec sed -i 's/x/y/gI' {} +
 ps ajxf | awk

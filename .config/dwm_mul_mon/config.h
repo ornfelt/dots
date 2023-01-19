@@ -73,7 +73,7 @@ static const Rule rules[] = {
 	{ NULL,      "gnome-calculator",    NULL,               0,              1,           0,         0,        -1 },
 	{ NULL,      "gnome-calendar",      NULL,               0,              1,           0,         0,        -1 },
 	{ NULL,      "yad",                 NULL,               0,              1,           0,         0,        -1 },
-	{ NULL,      "nm-connection-editor",NULL,               0,              1,           0,         0,        -1 },
+	{ NULL,      "Nm-connection-editor",NULL,               0,              1,           0,         0,        -1 },
 };
 
 /* layout(s) */
@@ -237,15 +237,16 @@ static const Key keys[] = {
 	{ MODKEY|ControlMask,		XK_b,			spawn,		SHCMD(TERMINAL " -e ytop") },
 	{ MODKEY,				    XK_p,			spawn,		SHCMD("~/.local/bin/my_scripts/xrandr_helper.sh") },
 	{ MODKEY,					XK_n,			spawn,		SHCMD("~/.local/bin/my_scripts/nautilus_wd.sh") },
-	{ MODKEY|ShiftMask,			XK_n,			spawn,		SHCMD("nautilus -w --no-desktop") },
+	{ MODKEY|ShiftMask,			XK_n,			spawn,		SHCMD("thunar") },
 	{ MODKEY|ControlMask,		XK_n,			spawn,		SHCMD("~/.local/bin/my_scripts/open_notes.sh 1 " TERMINAL) },
 	{ MODKEY,			        XK_m,			spawn,		SHCMD("nm-connection-editor") },
 	{ MODKEY|ShiftMask,			XK_m,			spawn,		SHCMD("spotify") },
 	{ MODKEY|ControlMask,		XK_m,			spawn,		SHCMD("~/.local/bin/my_scripts/open_notes.sh 2 " TERMINAL) },
 	{ MODKEY|ShiftMask,         XK_comma,   	spawn,      SHCMD("~/.local/bin/my_scripts/alert_exit.sh && ~/.local/bin/my_scripts/suspend.sh")},
 	{ MODKEY|ShiftMask,         XK_period,  	spawn,      SHCMD("i3lock-fancy && ~/.local/bin/my_scripts/alert_exit.sh && systemctl suspend")},
-	{ MODKEY,					XK_v,			spawn,		SHCMD("~/.local/bin/my_scripts/clip_history.sh") },
+	{ MODKEY,					XK_v,			spawn,		SHCMD("~/.local/bin/my_scripts/clip_history.sh greenclip") },
 	{ MODKEY|ShiftMask,			XK_v,			spawn,		SHCMD("~/.local/bin/my_scripts/qr_clip.sh") },
+	{ MODKEY,					XK_comma,		spawn,		SHCMD("~/.local/bin/my_scripts/progrm_helper.sh " TERMINAL) },
 	{ MODKEY,					XK_period,		spawn,		SHCMD("~/.local/bin/my_scripts/emojipick/emojipick") },
 	{ MODKEY,					XK_a,			spawn,		SHCMD("~/.local/bin/my_scripts/tmux_attach.sh " TERMINAL) },
 	{ MODKEY|ShiftMask,         XK_a,			spawn,      SHCMD("picom-trans -c -5")},
@@ -278,12 +279,12 @@ static const Key keys[] = {
 	/* { MODKEY,				XK_F7,				spawn,			SHCMD("td-toggle") }, */
 	/* { MODKEY,				XK_F8,				spawn,			SHCMD("mw -Y") }, */
 	/* { MODKEY,				XK_F9,				spawn,			SHCMD("dmenumount") }, */
-	{ 0,				XK_F10,				spawn,			SHCMD("pactl set-sink-mute @DEFAULT_SINK@ toggle ; kill -44 $(pidof dwmblocks)") },
-	{ 0,				XK_F11,				spawn,			SHCMD("pactl set-sink-volume @DEFAULT_SINK@ -5%; kill -44 $(pidof dwmblocks)") },
-	{ 0,				XK_F12,				spawn,			SHCMD("pactl set-sink-volume @DEFAULT_SINK@ +5%; kill -44 $(pidof dwmblocks)") },
-	{ 0,					XK_Print,			spawn,			SHCMD("~/.local/bin/my_scripts/screenshot_select.sh") },
-	{ ShiftMask,			XK_Print,			spawn,			SHCMD("~/.local/bin/my_scripts/screenshot.sh") },
-	{ ControlMask,			XK_Print,			spawn,			SHCMD("~/.local/bin/my_scripts/screenshot_ocr.sh") },
+	{ 0,						XK_F10,				spawn,			SHCMD("pactl set-sink-mute @DEFAULT_SINK@ toggle ; kill -44 $(pidof dwmblocks)") },
+	{ 0,						XK_F11,				spawn,			SHCMD("pactl set-sink-volume @DEFAULT_SINK@ -5%; kill -44 $(pidof dwmblocks)") },
+	{ 0,						XK_F12,				spawn,			SHCMD("pactl set-sink-volume @DEFAULT_SINK@ +5%; kill -44 $(pidof dwmblocks)") },
+	{ 0,						XK_Print,			spawn,			SHCMD("~/.local/bin/my_scripts/screenshot_select.sh") },
+	{ ShiftMask,				XK_Print,			spawn,			SHCMD("~/.local/bin/my_scripts/screenshot.sh") },
+	{ ControlMask,				XK_Print,			spawn,			SHCMD("~/.local/bin/my_scripts/screenshot_ocr.sh") },
 
 	/* { MODKEY, XK_Insert,						spawn,			SHCMD("xdotool type $(grep -v '^#' ~/.local/share/larbs/snippets | dmenu -i -l 50 | cut -d' ' -f1)") }, */
 	{ 0, XF86XK_AudioMute,						spawn,			SHCMD("pactl set-sink-mute @DEFAULT_SINK@ toggle ; kill -44 $(pidof dwmblocks)") },

@@ -28,6 +28,8 @@ else
 		python3 ~/.local/bin/my_scripts/script_help_docs/args.py 103
     elif [ "$chosen" == "python3 -c \"import csv, ..." ]; then
 		python3 ~/.local/bin/my_scripts/script_help_docs/args.py 104
+    elif [ "$chosen" == "perl -e '$|++" ]; then
+		python3 ~/.local/bin/my_scripts/script_help_docs/args.py 105
     else
         printf "$chosen" | xclip -selection clipboard
     fi

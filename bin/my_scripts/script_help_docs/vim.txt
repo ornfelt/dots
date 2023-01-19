@@ -48,11 +48,39 @@ If you type Ctrl + T inside the fzf selection window,
 
 Ctrl + K then p*, f*, -> <- etc...
 
+# Window splitting:
+:bot term ++rows=8 (vim)
+:bot 8sp | term (neovim)
+
+----------------------------------------------------------------------------------
 KEYBINDS:
+(some keys are mapped in vimscript instead)
+
+map('n', '<leader>b', togglebar) -- Toggle lualine
+map('n', '<M-q>', ':q<CR>') -- Quit neovim
+map('n', '<M-z>', ':noh<CR>')
+map <M-x> :call CompileRun()<CR>
+map('n', 'Y', 'y$') -- Yank till end of line
+map <F4> <Esc>:set cursorline!<CR>
+map <F5> <Esc>:setlocal spell! spelllang=en_us<CR>
+map <F6> <Esc>:setlocal spell! spelllang=sv<CR>
 
 map('n', '<leader>p', 'viw"_dP') -- Replace from void
 map('n', '<leader>d', '"_d') -- Delete to void
+map('v', '<leader>d', '"_d') -- Delete to void
 
+-- Paste from previous registers
+map('n', '<leader>1', '"1p')
+map('n', '<leader>2', '"2p')
+map('n', '<leader>3', '"3p')
+map('n', '<leader>4', '"4p')
+map('n', '<leader>5', '"5p')
+
+-- map('n', '<M-w>', ':NERDTreeToggle ~/<CR>')
+-- map('n', '<M-e>', ':NERDTreeToggle %:p<CR>')
+map('n', '<M-w>', ':silent! NERDTreeToggle ~/<CR>')
+map('n', '<M-e>', ':silent! NERDTreeToggle %:p<CR>')
+-- map('n', '<C-b>', ':NERDTreeToggle<CR>')
 map('n', '<M-d>', ':FZF<CR>')
 map('n', '<M-a>', ':FZF ~/<CR>')
 map('n', '<M-A>', ':FZF /<CR>')
@@ -74,8 +102,8 @@ map('n', '<M-i>', ':resize -2<CR>')
 map('n', '<M-o>', ':vertical resize +2<CR>')
 map('n', '<M-y>', ':vertical resize -2<CR>')
 map('n', '<M-h>', '<Plug>WinMoveLeft')
-map('n', '<M-j>', '<Plug>WinMoveDown')
-map('n', '<M-k>', '<Plug>WinMoveUp')
+map('n', '<M-J>', '<Plug>WinMoveDown')
+map('n', '<M-K>', '<Plug>WinMoveUp')
 map('n', '<M-l>', '<Plug>WinMoveRight')
 
 -- Moving text and indentation
@@ -96,6 +124,11 @@ map('n', '<M-t>', ':tabe<CR>')
 map('n', '<M-s>', ':split<CR>')
 map('n', '<M-Enter>', ':vsp<CR>')
 map('n', '<M-<>', ':vsp<CR>')
+-- Go to tab by number
+map('n', '<M-1>', '1gt')
+map('n', '<M-2>', '2gt')
+map('n', '<M-3>', '3gt')
+...
 
 -- Session management
 map('n', '<leader>o', '<C-^>')
@@ -104,14 +137,24 @@ map('n', '<leader>,', ':mks! ~/.vim/sessions/s2.vim<CR>')
 map('n', '<leader>.', ':so ~/.vim/sessions/s.vim<CR>')
 map('n', '<leader>-', ':so ~/.vim/sessions/s2.vim<CR>')
 
+-- Open vim config in new tab
+map('n', '<M-m>', ':tabe ~/.config/nvim/init.lua<CR>')
+map('n', '<M-,>', ':tabe ~/.config/i3/config<CR>')
+map('n', '<M-.>', ':tabe ~/.zshrc<CR>')
+map('n', '<C-c>', 'y')
+-- map('v', '<C-c>', 'y')
+
 map('n', '<leader>s', "/\\s\\+$/<CR>") -- Show extra whitespace
 map('n', '<leader>ws', ':%s/\\s\\+$<CR>') -- Remove all extra whitespace
 map('n', '<leader>wu', ':%s/\\%u200b//g<CR>') -- Remove all extra unicode chars
 map('n', '<leader>wb', ':%s/[[:cntrl:]]//g<CR>') -- Remove all hidden characters
-map('n', '<leader>r', 'gqG<C-o>zz') -- Format rest of the text with vim formatting, go back and center screen
+map('n', '<leader>wf', 'gqG<C-o>zz') -- Format rest of the text with vim formatting, go back and center screen
 map('v', '<leader>gu', ':s/\\<./\\u&/g<CR>:noh<CR>') -- Capitalize first letter of each word on visually selected line
 map('v', '<leader>/', '"3y/<C-R>3<CR>') -- Search for highlighted text
 map('v', '<leader>%', '/\\%V') -- Search in highlighted text
+map("n", "Q", "<nop>") -- Remove Ex Mode
+vim.keymap.set("n", "<leader>r", [[:%s/\<<C-r><C-w>\>/<C-r><C-w>/gI<Left><Left><Left>]]) -- Replace word under cursor
+vim.keymap.set("n", "<leader>t", "<cmd>silent !tmux neww tmux-sessionizer<CR>") -- Start tmux-sessionizer
 
 ----------------------------------------------------------------------------------
 vim ~/Documents/vimtutor.txt

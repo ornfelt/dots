@@ -1,2 +1,0 @@
-open _ helping _ notes . sh
-

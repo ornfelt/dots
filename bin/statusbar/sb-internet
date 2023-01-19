@@ -13,7 +13,7 @@ case $BLOCK_BUTTON in
 	6) "$TERMINAL" -e "$EDITOR" "$0" ;;
 esac
 
-# case "$(cat /sys/class/net/w*/operstate 2>/dev/null)" in
+#case "$(cat /sys/class/net/w*/operstate 2>/dev/null)" in
 case "$(cat /sys/class/net/e*/operstate 2>/dev/null)" in
 	# down) wifiicon="睊 " ;;
 	down) printf "睊 " ;;

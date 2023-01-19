@@ -4,15 +4,15 @@
 rofi_command="rofi -theme ~/.config/rofi/themes/gruvbox/gruvbox-dark.rasi"
 
 # Options
-awkOpt="Awk"
-bashOpt="Bash"
-grepOpt="Grep"
-perlOpt="Perl"
-prgrmOpt="Prgrm"
-sedOpt="Sed"
-otherOpt="Other"
-vimOpt="Vim"
-visidataOpt="Visidata"
+awkOpt="awk"
+bashOpt="bash"
+grepOpt="grep"
+perlOpt="perl"
+prgrmOpt="progrm"
+sedOpt="sed"
+otherOpt="other"
+vimOpt="vim"
+visidataOpt="visidata"
 
 # Variable passed to rofi
 options="$awkOpt\n$bashOpt\n$grepOpt\n$perlOpt\n$prgrmOpt\n$sedOpt\n$otherOpt\n$vimOpt\n$visidataOpt"
@@ -32,7 +32,8 @@ case $chosen in
 		$1 -e bash -c 'nvim ~/.local/bin/my_scripts/script_help_docs/perl.txt; zsh'
         ;;
     $prgrmOpt)
-		$1 -e bash -c 'nvim ~/.local/bin/my_scripts/script_help_docs/prgrm.txt; zsh'
+		#$1 -e bash -c 'nvim ~/.local/bin/my_scripts/script_help_docs/prgrm.txt; zsh'
+		~/.local/bin/my_scripts/progrm_helper.sh $1
         ;;
     $sedOpt)
 		$1 -e bash -c 'nvim ~/.local/bin/my_scripts/script_help_docs/sed.txt; zsh'

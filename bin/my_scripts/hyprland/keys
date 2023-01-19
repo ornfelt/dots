@@ -31,8 +31,9 @@ bind=SUPERCTRL,P,exec,$colorpicker
 bind=SUPER,M,exec,nm-connection-editor
 bind=SUPERSHIFT,M,exec,spotify
 
-bind=SUPER,V,exec, ~/.local/bin/my_scripts/clip_history.sh
+bind=SUPER,V,exec, ~/.local/bin/my_scripts/clip_history.sh greenclip
 bind=SUPERSHIFT,V,exec, ~/.local/bin/my_scripts/qr_clip.sh
+bind=SUPER,comma,exec, ~/.local/bin/my_scripts/progrm_helper.sh $term
 bind=SUPER,period,exec, ~/.local/bin/my_scripts/emojipick/emojipick
 bind=SUPER,B,exec, $term -e sudo htop
 bind=SUPERSHIFT,B,exec, $term -e sudo bashtop
@@ -47,54 +48,11 @@ bind=SHIFT,Print,exec, ~/.local/bin/my_scripts/hyprland/hypr_screenshot.sh
 bind=CTRL,Print,exec, ~/.local/bin/my_scripts/hyprland/hypr_screenshot_ocr.sh
 bind=,F1,exec, ~/.local/bin/my_scripts/show_keys.sh hyprland $term
 bind=SHIFT,F1,exec, ~/.local/bin/my_scripts/show_keys.sh vim $term
+bind=,F10,exec, $volume --toggle
+bind=,F11,exec, $volume --dec
+bind=,F12,exec, $volume --inc
 
 bind=SUPERSHIFT,comma,exec, ~/.local/bin/my_scripts/suspend_awsm.sh
 bind=SUPERSHIFT,period,exec, ~/.local/bin/my_scripts/suspend_awsm_lock.sh
 #bind=SUPERSHIFT,X,exec, i3lock -i /home/jonas/Downloads/lock-wallpaper.png
 bind=SUPERCTRL,X,exec,~/.config/hypr/scripts/lock
-
-bind=,XF86MonBrightnessUp,exec,$backlight --inc
-bind=,XF86MonBrightnessDown,exec,$backlight --dec
-bind=,XF86AudioRaiseVolume,exec,$volume --inc
-bind=,XF86AudioLowerVolume,exec,$volume --dec
-bind=,XF86AudioMute,exec,$volume --toggle
-bind=,XF86AudioMicMute,exec,$volume --toggle-mic
-
-bind=SUPER,H,movefocus,l
-bind=SUPER,L,movefocus,r
-bind=SUPER,K,movefocus,u
-bind=SUPER,J,movefocus,d
-
-# Move
-bind=SUPERSHIFT,H,movewindow,l
-bind=SUPERSHIFT,L,movewindow,r
-bind=SUPERSHIFT,K,movewindow,u
-bind=SUPERSHIFT,J,movewindow,d
-
-# Resize
-bind=SUPER,Y,resizeactive,-20 0
-bind=SUPER,O,resizeactive,20 0
-bind=SUPER,I,resizeactive,0 -20
-bind=SUPER,U,resizeactive,0 20
-
-bind=SUPER,1,workspace,1
-bind=SUPER,2,workspace,2
-bind=SUPER,3,workspace,3
-bind=SUPER,4,workspace,4
-bind=SUPER,5,workspace,5
-bind=SUPER,6,workspace,6
-bind=SUPER,7,workspace,7
-bind=SUPER,8,workspace,8
-bind=SUPER,9,workspace,9
-bind=SUPER,0,workspace,10
-
-bind=SUPERSHIFT,1,movetoworkspace,1
-bind=SUPERSHIFT,2,movetoworkspace,2
-bind=SUPERSHIFT,3,movetoworkspace,3
-bind=SUPERSHIFT,4,movetoworkspace,4
-bind=SUPERSHIFT,5,movetoworkspace,5
-bind=SUPERSHIFT,6,movetoworkspace,6
-bind=SUPERSHIFT,7,movetoworkspace,7
-bind=SUPERSHIFT,8,movetoworkspace,8
-bind=SUPERSHIFT,9,movetoworkspace,9
-bind=SUPERSHIFT,0,movetoworkspace,10
