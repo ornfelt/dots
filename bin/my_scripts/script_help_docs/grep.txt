@@ -102,8 +102,17 @@ sudo wpa_cli status | sed -n -e 's/^ssid=//p'
 Grep two words:
 grep -in -C 10 "hello" 1.txt | grep -in -C 3 "tensor"
 
-# Highlight both words:
+# Highlight both words (doesn't really work as expected?):
 grep -in -C 10 "hello" 1.txt | grep -in -E -C 3 "tensor|hello"
 
 # OR:
 grep -in -C 10 "hello" 1.txt | grep -in -E "tensor|hello"
+
+# OR:
+grep -ERHn "\beasiest\W+(\w+\W+){1,10}new\b" * 
+grep -ERHn "\bX\W+(\w+\W+){1,10}Y\b" * 
+
+# Practical examples:
+grep -ERHn "\bLog\W+(\w+\W+){1,10}casting\b" * 
+grep -rin -C 1 "log" | grep -in -E -C 1 "casting"
+grep -rin -C 2 "mount" | grep -in -E -C 2 "shapeshift"

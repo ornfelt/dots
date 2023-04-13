@@ -51,7 +51,7 @@ case $chosen in
 		$2 -e bash -c 'cd ~/'"$codeDir"'/Lua;ls --color=auto; zsh'
         ;;
     $sqlOpt)
-		$2 -e bash -c 'cd ~/'"$codeDir"'/SQL_CODE;ls --color=auto; zsh'
+		$2 -e bash -c 'cd ~/'"$codeDir"'/MYSQL;ls --color=auto; zsh'
         ;;
     $pythonOpt)
 		$2 -e bash -c 'cd ~/'"$codeDir"'/Python;ls --color=auto; zsh'

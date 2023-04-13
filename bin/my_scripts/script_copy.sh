@@ -5,6 +5,9 @@ theme="/home/jonas/.config/rofi/themes/gruvbox/gruvbox-dark2.rasi"
 
 # Get user selection via dmenu from file.
 #chosen=$(cut -d ';' -f1 raw_oneliners.txt | rofi -theme "$theme" -p "Choose a command to copy" -dmenu -i -l 30 | sed "s/ .*//")
+# Dmenu
+#chosen=$(cut -d ';' -f1 /home/jonas/.local/bin/my_scripts/script_help_docs/raw_oneliners.txt | dmenu -i -l 30 | sed "s/\r//")
+# Rofi
 chosen=$(cut -d ';' -f1 /home/jonas/.local/bin/my_scripts/script_help_docs/raw_oneliners.txt | rofi -theme "$theme" -p "Choose a command to copy" -dmenu -i -l 30 | sed "s/\r//")
 
 # Exit if none chosen.

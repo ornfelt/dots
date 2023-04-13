@@ -42,6 +42,8 @@ You can use <c-x><c-l> for line completion.
 Use // to run your last search
 
 gC-a for incrementing several lines when visual block...
+gC-x to reduce instead.
+g~ for switching cases
 
 The Vim fzf plug-in has a native feature to open the selected item in a new tab. 
 If you type Ctrl + T inside the fzf selection window,
@@ -59,11 +61,11 @@ KEYBINDS:
 map('n', '<leader>b', togglebar) -- Toggle lualine
 map('n', '<M-q>', ':q<CR>') -- Quit neovim
 map('n', '<M-z>', ':noh<CR>')
-map <M-x> :call CompileRun()<CR>
+-- map('n', '<M-x>', ':call CompileRun()<CR>')
 map('n', 'Y', 'y$') -- Yank till end of line
-map <F4> <Esc>:set cursorline!<CR>
-map <F5> <Esc>:setlocal spell! spelllang=en_us<CR>
-map <F6> <Esc>:setlocal spell! spelllang=sv<CR>
+-- map('n', 'F4', ':set cursorline!<CR>')
+-- map('n', 'F5', ':setlocal spell! spelllang=en_us<CR>')
+-- map('n', 'F6', ':setlocal spell! spelllang=sv<CR>')
 
 map('n', '<leader>p', 'viw"_dP') -- Replace from void
 map('n', '<leader>d', '"_d') -- Delete to void
@@ -124,6 +126,7 @@ map('n', '<M-t>', ':tabe<CR>')
 map('n', '<M-s>', ':split<CR>')
 map('n', '<M-Enter>', ':vsp<CR>')
 map('n', '<M-<>', ':vsp<CR>')
+
 -- Go to tab by number
 map('n', '<M-1>', '1gt')
 map('n', '<M-2>', '2gt')
@@ -149,12 +152,43 @@ map('n', '<leader>ws', ':%s/\\s\\+$<CR>') -- Remove all extra whitespace
 map('n', '<leader>wu', ':%s/\\%u200b//g<CR>') -- Remove all extra unicode chars
 map('n', '<leader>wb', ':%s/[[:cntrl:]]//g<CR>') -- Remove all hidden characters
 map('n', '<leader>wf', 'gqG<C-o>zz') -- Format rest of the text with vim formatting, go back and center screen
-map('v', '<leader>gu', ':s/\\<./\\u&/g<CR>:noh<CR>') -- Capitalize first letter of each word on visually selected line
+map('v', '<leader>gu', ':s/\\<./\\u&/g<CR>:noh<CR>:noh<CR>') -- Capitalize first letter of each word on visually selected line
 map('v', '<leader>/', '"3y/<C-R>3<CR>') -- Search for highlighted text
 map('v', '<leader>%', '/\\%V') -- Search in highlighted text
 map("n", "Q", "<nop>") -- Remove Ex Mode
 vim.keymap.set("n", "<leader>r", [[:%s/\<<C-r><C-w>\>/<C-r><C-w>/gI<Left><Left><Left>]]) -- Replace word under cursor
 vim.keymap.set("n", "<leader>t", "<cmd>silent !tmux neww tmux-sessionizer<CR>") -- Start tmux-sessionizer
+
+autocmd FileType html inoremap <i<Tab> <em></em> <Space><++><Esc>/<<Enter>GNi
+autocmd FileType html inoremap <b<Tab> <b></b><Space><++><Esc>/<<Enter>GNi
+autocmd FileType html inoremap <h1<Tab> <h1></h1><Space><++><Esc>/<<Enter>GNi
+autocmd FileType html inoremap <h2<Tab> <h2></h2><Space><++><Esc>>/<<Enter>GNi
+autocmd FileType html inoremap <im<Tab> <img></img><Space><++><Esc>/<<Enter>GNi
+
+autocmd FileType java inoremap fore<Tab> for (String s : obj){<Enter><Enter>}<Esc>?obj<Enter>ciw
+autocmd FileType java inoremap for<Tab> for(int i = 0; i < val; i++){<Enter><Enter>}<Esc>?val<Enter>ciw
+autocmd FileType java inoremap sout<Tab> System.out.println("");<Esc>?""<Enter>li
+autocmd FileType java inoremap psvm<Tab> public static void main(String[] args){<Enter><Enter>}<Esc>?{<Enter>o
+autocmd FileType java inoremap hellow<Tab> <Esc>:r /home/jonas/Code/Java/hellow.java<Enter><Esc>/hellow<Enter>ciw
+
+autocmd FileType c inoremap for<Tab> for(int i = 0; i < val; i++){<Enter><Enter>}<Esc>?val<Enter>ciw
+autocmd FileType c inoremap hellow<Tab> <Esc>:r /home/jonas/Code/C/hellow.c<Enter>
+autocmd FileType cpp inoremap for<Tab> for(int i = 0; i < val; i++){<Enter><Enter>}<Esc>?val<Enter>ciw
+autocmd FileType cpp inoremap hellow<Tab> <Esc>:r /home/jonas/Code/C++/hellow.cpp<Enter>
+
+autocmd FileType cs inoremap sout<Tab> Console.WriteLine("");<Esc>?""<Enter>li
+autocmd FileType cs inoremap fore<Tab> for each (object o : obj){<Enter><Enter>}<Esc>?obj<Enter>ciw
+autocmd FileType cs inoremap for<Tab> for(int i = 0; i < val; i++){<Enter><Enter>}<Esc>?val<Enter>ciw
+autocmd FileType cs inoremap hellow<Tab> <Esc>:r /home/jonas/Code/C\#/hellow.cs<Enter><Esc>/Hellow<Enter>ciw
+
+autocmd FileType py,python inoremap hellow<Tab> <Esc>:r /home/jonas/Code/Python/hellow.py<Enter>
+
+autocmd FileType sql inoremap fun<Tab> delimiter //<Enter>create function x ()<Enter>returns int<Enter>no sql<Enter>begin<Enter><Enter><Enter>end //<Enter>delimiter ;<Esc>/x<Enter>GN
+autocmd FileType sql inoremap pro<Tab> delimiter //<Enter>create procedure x ()<Enter>begin<Enter><Enter><Enter>end //<Enter>delimiter ;<Esc>/x<Enter>GN
+autocmd FileType sql inoremap vie<Tab> create view x as<Enter>select <Esc>/x<Enter>GN
+
+autocmd FileType vtxt,vimwiki,wiki,text inoremap line<Tab> ----------------------------------------------------------------------------------<Enter>
+autocmd FileType vtxt,vimwiki,wiki,text inoremap date<Tab> <-- <C-R>=strftime("%Y-%m-%d %a")<CR><Esc>A -->
 
 ----------------------------------------------------------------------------------
 vim ~/Documents/vimtutor.txt

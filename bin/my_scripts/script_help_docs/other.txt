@@ -384,9 +384,37 @@ tasklist
 taskkill
 taskkill /f /t /im notepad.exe OR taskkill /f /t /pid 23136
 
+taskkill /im filename.exe /t /f
+taskkill /im nvim-qt.exe /t /f
+...replacing filename.exe with whatever filename the program you want to close is using. 
+The /t option makes sure any child processes are closed as well, and the /f option forcefully terminates the process.
+
+If in the very rare situation that you don't know the filename, but do know the PID (process ID), 
+you can execute taskkill like this instead:
+
+taskkill /pid processid /t /f
+
 powercfg /energy (generate error report file related to system power)
 powercfg /batteryreport
 
+win+r &
+chrome.exe --user-data-dir="C://Chrome dev session" --disable-web-security
+chrome.exe --user-data-dir="C://Chrome dev session" --disable-web-security
+
+Find network passwords:
+(netsh wlan show profiles) | Select-String "\:(.+)$" | %{$name=$_.Matches.Groups[1].Value.Trim(); $_} | %{(netsh wlan show profile name="$name" key=clear)} | Select-String "Key Content\W+\:(.+)$" | %{$pass=$_.Matches.Groups[1].Value.Trim(); $_} | %{[PSCustomObject]@{ PROFILE_NAME=$name;PASSWORD=$pass }} | Format-Table -Wrap
+
+----------------------------------------------------------------------------------
+Googling:
+-jquery
+after:2020
+before:2020
+2013..2015
+how to build a * with tailwind
+find all subdomains: site:*.fireship.io -www
+filetype:pdf
+See what competitors are up to: related:url (find websites similar to yours or a site)
+See if google has cached the latest version of ur site: cache:url
 
 ----------------------------------------------------------------------------------
 script_copy:

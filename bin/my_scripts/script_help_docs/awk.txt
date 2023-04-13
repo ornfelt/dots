@@ -20,7 +20,7 @@ awk 'tolower($0) ~/dir/' new.sh
 
 From: https://www.youtube.com/watch?v=9YOZmI-zWok
 ps gives columns so we will use it for awk. To print the first column:
-ps | awk '{print $1}
+ps | awk '{print $1}'
 
 Print everything
 ps | awk '{print $0}
@@ -168,3 +168,27 @@ or, as Avinash Raj suggested,
 
 awk -F, '{print $4}' x.CSV | awk -F\  '{print $1}' | sort -u
 
+----------------------------------------------------------------------------------
+To print the second line:
+awk 'FNR == 2 {print}'
+
+To print the second field:
+awk '{print $2}'
+
+To print the third field of the fifth line:
+awk 'FNR == 5 {print $3}'
+
+Here's an example with a header line and (redundant) field descriptions:
+awk 'BEGIN {print "Name\t\tAge"}  FNR == 5 {print "Name: "$3"\tAge: "$2}'
+
+There are better ways to align columns than "\t\t" by the way.
+Use exit to stop as soon as you've printed the desired record if there's no reason to process the whole file:
+awk 'FNR == 2 {print; exit}'
+
+----------------------------------------------------------------------------------
+Exaxmples with df-h:
+Get fourth field / col:
+df -h | awk '{print $4}'
+Get fourth line / row at fourth field / col:
+df -h | awk 'FNR == 4 {print $4}'
+The above works to get space available on my lenovo laptop...
