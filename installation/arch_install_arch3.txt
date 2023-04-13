@@ -1,0 +1,420 @@
+Arch linx installation:
+If on virtual box - enable EFI: settings > system
+If no wifi:
+iwctl
+device list
+station wlan0 scan
+station wlan0 get-networks
+station wlan0 connect OWNIT-B1C0
+enter password...
+--------------------------------------------------
+FIRST: curl https://raw.githubusercontent.com/archornf/dotfiles/master/installation/arch_install_arch3.txt -O
+--------------------------------------------------
+
+# Load the right keys
+ls /usr/share/kbd/keymaps**/*.map.gz | less
+loadkeys se-lat6
+
+#Make sure you have internet 
+ping 8.8.8.8
+
+# Set time 
+timedatectl set-ntp true
+verify with timedatectl status
+
+# Partion disk
+fdisk -l
+...
+m for menu
+fdisk /dev/sda
+g
+n > Enter > Enter > +550M (last sector)
+n > Enter > Enter > +2G
+n > Enter > Enter > Enter
+t > 1 > (L for list, choose EFI System) 1
+t > 2 > (L for list, choose Linux swap) 19
+w
+
+# Check disks again
+fdisk -l
+
+# Create fat32 on sda1 / sdb1
+mkfs.fat -F32 /dev/sda1
+# Create swap on sda2
+mkswap /dev/sda2
+swapon /dev/sda2
+# Create filesystem
+mkfs.ext4 /dev/sda3
+# Mount big partion (file system)
+mount /dev/sda3 /mnt
+# Install arch linux package
+pacstrap /mnt base linux linux-firmware
+
+# Generate file system table (fstab)
+genfstab -U /mnt >> /mnt/etc/fstab
+# Go to chroot to our new root on sda3
+arch-chroot /mnt
+
+# Set timezone (link)
+ln -sf /usr/share/zoneinfo/REGION/CITY /etc/locale/time
+# To find Region and city
+ls /usr/share/zoneinfo
+ls /usr/share/zoneinfo/europe
+ln -sf /usr/share/zoneinfo/Europe/Stockholm /etc/localetime
+
+# Might need to do this later after startx probably...
+timedatectl set-timezone Europe/Stockholm
+
+# Set hardware clock
+hwclock --systohc
+# Set locale
+pacman -S neovim wget
+nvim /etc/locale.gen
+Uncomment sv_SE.UTF-8 UTF-8
+Probably also need to uncomment en_US UTF-8 for LC_ALL... Can do this later also.
+locale-gen
+# Set hostname
+nvim /etc/hostname
+Enter hostname and wq
+# Create hostfile
+nvim /etc/hosts
+127.0.0.1	localhost
+::1			localhost
+127.0.1.1	ornf.localdomain	ornf
+
+
+# Set password for root
+Passwd
+# Add user
+useradd -m jonas
+passwd jonas
+# Set groups for user
+usermod -aG wheel,audio,video,optical,storage jonas
+pacman -S sudo
+EDITOR=nvim visudo
+Uncomment %wheel ... (Same thing without a password)
+# Add the below line which makes it so that you don't have to reinsert password in each terminal a user uses sudo in
+Defaults !tty_tickets
+
+# Install grub and fix boot
+pacman -S grub efibootmgr dosfstools os-prober mtools
+mkdir /boot/EFI
+mount /dev/sda1 /boot/EFI
+# Run grub install
+grub-install --target=x86_64-efi --bootloader-id=grub_uefi --recheck
+grub-mkconfig -o /boot/grub/grub.cfg
+
+# Done. Now we can install things... 
+pacman -S networkmanager git xorg.... 
+# Enable networkmanager
+systemctl enable NetworkManager
+# To exit, unmount and reboot
+exit
+umount /mnt OR umount -l /mnt
+sudo reboot
+...
+Connect to wifi again...
+sudo nmcli device wifi connect OWNIT-B1C0 password XXX
+sudo localectl set-keymap se-lat6 (this only)
+
+localectl set-locale LANG="sv_SE.UTF-8"
+localectl set-x11-keymap se
+localectl set-locale LANG=en_US.UTF-8
+sudo pacman-key --init
+sudo pacman-key --populate archlinux
+
+sudo pacman -S xorg-xinit i3 dmenu git (Need xterm?)
+# Install more things:
+sudo pacman -S rxvt-unicode firefox picom zsh xclip
+sudo cp /etc/X11/xinit/xinitrc ~/.xinitrc
+sudo localectl set-x11-keymap se
+edit .xinitrc ... (**** OBS: Might need to have twm & xclock... & exec i3 ****)
+For virtual box: install (not sure if all are needed, try with only the first next time)
+virtualbox-guest-utils and xf86-video-vmware and linux-headers (only need guest-utils)
+then...
+sudo systemctl enable vboxservice.service
+
+sudo reboot
+Check linux made simple for how to add video=1920x1080 after quiet... (no need...)
+
+------------------------------------
+
+Get yay:
+sudo pacman -S fakeroot make gcc clang
+cd /opt
+sudo git clone https://aur.archlinux.org/yay.git
+sudo chown -R jonas:jonas ./yay
+cd yay
+makepkg -si
+https://www.tecmint.com/install-yay-aur-helper-in-arch-linux-and-manjaro/
+
+Install all pks through yay script.
+
+Then:
+sudo pacman -S spotify-launcher flatpak
+
+git clone polybar themes and run the starting script
+then copy files from dotfiles to .config
+https://github.com/adi1090x/polybar-themes#installation
+
+oh-my-zsh:
+sh -c "$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+
+zsh-autosuggestions-git (DON'T USE YAY)
+zsh-syntax-highlighting-git (DON'T USE YAY)
+
+awesomewm spotify widget:
+git clone https://gist.github.com/fa6258f3ff7b17747ee3.git
+cd ./fa6258f3ff7b17747ee3 
+chmod +x sp
+sudo cp ./sp /usr/local/bin/
+
+Also clone fzf and run install script to get fzf keybinds:
+git clone --depth 1 https://github.com/junegunn/fzf.git ~/.fzf
+~/.fzf/install
+
+pip install bs4 requests ocrspace pytesseract
+pip install pynvim
+pip install i3ipc
+pip install pytesseract
+pip install pyperclip
+sudo pacman -S tesseract (need to install eng trained data also. Look for towardsdatascience python read text from image)... Also set tesseract variable...
+
+Picom enable vsync (if needed)...
+
+Then fix dots:
+git clone https://github.com/archornf/dotfiles
+git clone https://github.com/vmornf/dotfiles
+git clone https://github.com/ornfelt/dots
+-----------------------------------------------------------------------------------------------------
+BACKUP YAY / PACMAN etc.:
+
+yay -S urxvt-resize-font-git
+yay -S gruvbox-dark-gtk
+yay -S gruvbox-material-gtk-theme (Better?)
+yay -S adwaita-dark
+(Start gnome-cals with adwaita-dark)
+
+sudo pacman -S lxappearance nautilus feh ranger ueberzug zathura zathura-pdf-poppler
+
+lxappearance set gruvbox dark
+
+yay install gruvbox gtk theme...
+yay install picom rounded corners: github.com/ibhagwan/picom (sudo pacman -S pkgconf is required)
+
+localectl set-x11-keymap se (needs reboot after)
+Might need other localectl from above
+
+mkdir ~/Pictures/Wallpapers
+Get wallpapers
+copy files from dotfiles script?
+
+sudo pacman -S nodejs
+sudo pacman -S python3
+sudo pacman -S python-pip npm
+
+sudo pacman -S bluez bluez-utils rofi neofetch pamixer pulseaudio alsa-utils
+sudo systemctl enable bluetooth.service
+yay -S polybar
+sudo pacman -S fzf the_silver_searcher xdg-utils
+
+yay -S cava
+Need this before:
+sudu pacman -S fftw libtool automake build-essentials iniparser m4 autoconf gcc patch
+ttf-joypixels ttf-font-awesome nerd fonts... (maybe: ttf-jetbrains-mono)
+yay -S nerd-fonts-complete
+in .Xresources font: xft:JetBrainsMono Nerd Font:size=11:style=regular:antialias=true:autohint=true
+URxvt.boldFont: xft:JetBrainsMono Nerd Font:size=11:style=bold:antialias=true:autohint=true
+firewalld (there's another good firewall, see distrotube) xfce4-power-manager power-things... 
+xclip imagemagick lua go rust java mono jre-openjdk jdk-openjdk tmux qrencode pv libnotify notification-daemon
+kitty alacritty htop bashtop...
+
+(Follow archlinux doc if problems with notify-send)
+
+install vim-plug
+vim... PlugInstall ... CocInstall
+Might need: PlugUpdate / PlugUpgrade if coc problems. And also changing coc to release...
+
+With Lua: search packer neovim and install, then use packer to install inside nvim.
+
+dwm, dwmblocks
+nerd fonts (jetbrains or complete)	
+joypixels etc...
+
+mono dotnet-sdk jre-openjdk jdk-openjdk rust xfce4-power-manager go lm_sensors
+
+zip unzip htop bashtop imagemagick tmux fuse perl ntfs-3g cronie scrot maim visidata cmake qrencode yad
+python-gobject sndio netctl dhcpcd
+sudo systemctl start dhcpcd.service
+sudo systemctl start NetworkManager.service
+
+# yay -S conky tstock diodon jdtls spotify eww
+
+------------------------------------------------------------
+yay -S
+swaybg swayidle swaylock wlroots waybar-hyprland-git obs-studio
+
+nwg-look # Like lxappearance
+xorg-xwayland
+yay hyprland
+yay wlrobs-hg  # Obs-studio plugin
+
+mako imagemagick yad grim light wofi wl-clipboard hyprland-git cava waybar-mpris-git python rustup kitty fish tty-clock-git swaylockd slurp jq dunst swaylock-effects-git
+
+Optional:
+vlc ufw (firewall, needs enabling)
+gnome-calendar gnome-calculator
+starship
+wlogout
+foot
+
+SKIP: xdg-desktop-portal-wlr!
+
+------------------------------------------------------------
+Firefox slick-fox:
+https://github.com/Etesam913/slick-fox
+Type about:profiles into your urlbar and go to the page
+Open the root directory folder specified on the page
+Inside this folder, create a folder named "chrome"
+Put the userchrome.css file from this repo into the chrome folder
+Type about:config into your urlbar and go to the page
+Paste "toolkit.legacyUserProfileCustomizations.stylesheets" into the bar and set its value to true
+Go back to about:profiles and click the restart normally buton
+That should be it!
+
+FF addons:
+Tabliss with unsplash collection 
+adblock plus
+gruvbox dark theme firefox
+vimium
+imagus
+
+*******************************************************************************************
+*******************************************************************************************
+*******************************************************************************************
+
+DEB:
+Follow graphical install, then:
+su -
+Enter host passwd, then apt install sudo
+usermod -aG sudo jonas
+maybe also do: usermod -aG audio,video jonas
+apt install network-manager
+sudo nmcli device wifi connect OWNIT-B1C0 password XXX
+apt install neovim
+EDITOR=nvim visudo
+At the end of the /etc/sudoers file add this line: 
+jonas     ALL=(ALL) NOPASSWD:ALL
+exit
+reboot
+
+*OBS! If intel wifi, then you might have to follow:
+Change sources list:
+https://www.itzgeek.com/how-tos/linux/debian/setup-debian-11-official-repository-in-sources-list-etc-apt-sources-list.html
+
+add contrib non-free to every line and sudo apt update
+then sudo apt install iwlwifi and reboot...
+---------------
+sudo apt install xorg i3 lxappearance awesome rxvt-unicode
+Install dwm dependencies:
+sudo apt install dwm suckless-tools dmenu
+sudo apt install make gcc libx11-dev libxft-dev libxinerama-dev
+sudo apt install thunar feh ranger zathura chromium git zsh firefox-esr
+libtool automake m4 autoconf build-essential curl
+libx11-xcb-dev libxcb-res0-dev fonts-font-awesome
+# Newovim dependencies:
+sudo apt-get install ninja-build gettext libtool-bin cmake g++ pkg-config unzip zip doxygen
+
+git clone https://github.com/jmattheis/gruvbox-dark-gtk ~/.themes/gruvbox-dark-gtk
+sudo cp /etc/X11/xinit/xinitrc ~/.xinitrc
+sudo apt install polybar lm-sensors yad picom
+sudo apt install rofi neofetch pulseaudio fzf xdg-utils nodejs python3-pip (python preinstalled)
+sudo localectl set-x11-keymap se (then sudo reboot)
+git clone polybar themes and run the starting script
+then copy files from dotfiles to .config
+git clone --depth=1 https://github.com/adi1090x/polybar-themes.git
+cd polybar-themes
+chmod +x setup.sh
+./setup.sh
+
+DO THIS:
+https://www.nerdfonts.com/font-downloads
+Download Jetbrains from above and copy the files to ~/.local/share/fonts/ -> restart or fc-cache -fv.
+---
+OLD:
+Search for nerd fonts jetbrainsmono -> download -> mkdir JetBrains and unzip in new dir -> copy all files to ~/.local/share/fonts -> restart or fc-cache -fv.
+Or:
+https://github.com/JetBrains/JetBrainsMono
+mv JetBrainsMono-*.ttf ~/.local/share/fonts/
+---
+
+install oh-my-zsh:
+sh -c "$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+
+install zsh autosuggestions and zsh-syntax-highlighting:
+git clone https://github.com/zsh-users/zsh-autosuggestions ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions
+
+git clone https://github.com/zsh-users/zsh-syntax-highlighting.git ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting
+
+Copy bashrc and zshrc!
+
+https://github.com/erebe/greenclip
+
+sudo apt install virtualbox-guest-utils virtualbox-guest-X11
+Virtualbox guest utils doesn't work it seems... See:
+https://techviewleo.com/install-virtualbox-guest-additions-on-debian/
+
+Picom dependencies:
+sudo apt install libxext-dev libxcb1-dev libxcb-damage0-dev libxcb-xfixes0-dev libxcb-shape0-dev libxcb-render-util0-dev libxcb-render0-dev libxcb-randr0-dev libxcb-composite0-dev libxcb-image0-dev libxcb-present-dev libxcb-xinerama0-dev libxcb-glx0-dev libpixman-1-dev libdbus-1-dev libconfig-dev libgl1-mesa-dev libpcre2-dev libpcre3-dev libevdev-dev uthash-dev libev-dev libx11-xcb-dev
+
+https://github.com/pijulius/picom
+sudo apt remove picom, then:
+#git submodule update --init --recursive
+meson --buildtype=release . build
+ninja -C build
+sudo ninja -C build install
+
+Start picom with picom --animations
+
+pamix alsa-utils xinput qrencode silversearcher-ag maim imagemagick tesseract-ocr
+
+ST term works better for neovim theming it seems... Needs:
+sudo apt install libharfbuzz-dev
+And uncomment the line f->badweight = 1; in x.c
+
+sudo apt install lua / lua5.3
+sudo apt remove neovim, then:
+git clone https://github.com/neovim/neovim
+cd neovim && make CMAKE_BUILD_TYPE=RelWithDebInfo
+sudo make install
+
+Ueberzug:
+first try: sudo apt install ueberzug
+sudo apt install libxres-dev
+pip3 install setuptools
+git clone https://github.com/WhiteBlackGoose/ueberzug-latest && cd ueberzug-latest
+sudo pip install -e .
+
+For dwm, fix battery, volume and cputemp scripts (remove unnecessary whitespace, add /usr/bin/bash instead of /bin/sh, and use sb-volume_deb. Also need to add correct click/scroll for dwmblocks to sb-battery... Also update keybinds for volume in dwm conf.
+
+pip3 install bs4 requests ocrspace pytesseract
+pip3 install pynvim
+pip3 install i3ipc
+pip3 install pytesseract
+pip3 install pyperclip
+
+(need to install eng trained data for tesseract-ocr also. Look for towardsdatascience python read text from image)... Also set tesseract variable...
+Download:
+https://github.com/tesseract-ocr/tessdata/blob/main/eng.traineddata
+And place in /home/jonas/.local/share/tessdata
+
+Might need to change TESSDATA_PREFIX in tesseract_ocr to /home/jonas/.local/share/tessdata
+And change scripts to /usr/bin/bash and /usr/bin/python3...
+
+Azerothcore:
+sudo apt-get update && sudo apt-get install git cmake make gcc g++ clang default-libmysqlclient-dev libssl-dev libbz2-dev libreadline-dev libncurses-dev mariadb-server libboost-all-dev -y
+
+----------------------------------- 
+Haven't tried:
+bluez bluez-utils?
+sudo systemctl enable bluetooth.service
