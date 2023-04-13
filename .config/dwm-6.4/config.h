@@ -15,12 +15,11 @@ static unsigned int gappiv    = 20;       /* vert inner gap between windows */
 static unsigned int gappoh    = 20;       /* horiz outer gap between windows and screen edge */
 static unsigned int gappov    = 20;       /* vert outer gap between windows and screen edge */
 static int swallowfloating    = 0;        /* 1 means swallow floating windows by default */
-static int smartgaps          = 0;        /* 1 means no outer gap when there is only one window */
 static int browsergaps        = 0;        /* 0 means no outer gap when there is only one window and it is firefox */
 static int showbar            = 1;        /* 0 means no bar */
 static int topbar             = 1;        /* 0 means bottom bar */
-/* static char *fonts[]          = { "Linux Libertine Mono:size=12", "Mono:pixelsize=12:antialias=true:autohint=true", "FontAwesome:size=15","FontAwesome5Brands:size=13:antialias:true", "FontAwesome5Free:size=13:antialias:true", "FontAwesome5Free:style=Solid:size=13:antialias:true","JetBrainsMono Nerd Font:size=12:style=bold:antialias=true:autohint=true", "Nerd Font Complete Mono:size=13", "JoyPixels:pixelsize=10:antialias=true:autohint=true", "Inconsolata Nerd Font:size=15", "Nerd Font Complete Mono:size=13" }; */
-static const char *fonts[]               = { "JetBrainsMono Nerd Font:size=11:style=bold:antialias=true:autohint=true", "JoyPixels:pixelsize=13:antialias=true:autohint=true" };
+static const int focusonwheel = 0;        /* Switch focus only by mouse click and not sloppy */
+static const char *fonts[] = { "JetBrainsMono Nerd Font:size=11:style=bold:antialias=true:autohint=true", "JoyPixels:pixelsize=13:antialias=true:autohint=true" };
 static char normbgcolor[]           = "#222222";
 static char normbordercolor[]       = "#444444";
 static char normfgcolor[]           = "#bbbbbb";
@@ -73,7 +72,6 @@ static const Rule rules[] = {
 	{ NULL,      "gnome-calculator",    NULL,               0,              1,           0,         0,        -1 },
 	{ NULL,      "gnome-calendar",      NULL,               0,              1,           0,         0,        -1 },
 	{ NULL,      "yad",                 NULL,               0,              1,           0,         0,        -1 },
-	{ NULL,      "nm-connection-editor",NULL,               0,              1,           0,         0,        -1 },
 };
 
 /* layout(s) */
@@ -82,6 +80,8 @@ static int nmaster     = 1;    /* number of clients in master area */
 static int resizehints = 0;    /* 1 means respect size hints in tiled resizals */
 #define FORCE_VSPLIT 1  /* nrowgrid layout: force two clients to always split vertically */
 #include "vanitygaps.c"
+/* #include "shiftview.c" */
+
 static const Layout layouts[] = {
 	/* symbol     arrange function */
 	{ "[@]",	spiral },		/* Default: Fibonacci spiral */
@@ -141,11 +141,9 @@ ResourcePref resources[] = {
 		{ "gappoh",		INTEGER, &gappoh },
 		{ "gappov",		INTEGER, &gappov },
 		{ "swallowfloating",	INTEGER, &swallowfloating },
-		{ "smartgaps",		INTEGER, &smartgaps },
 };
 
 #include <X11/XF86keysym.h>
-#include "shiftview.c"
 
 static const Key keys[] = {
 	/* modifier                     key        function        argument */
@@ -223,12 +221,11 @@ static const Key keys[] = {
 	{ MODKEY,					XK_r,			spawn,		SHCMD("dmenu_run -fn 'Linux Libertine Mono'") },
 	{ MODKEY|ShiftMask,			XK_r,			spawn,		SHCMD("rofi -show run -theme ~/.config/polybar/forest/scripts/rofi/launcher.rasi") },
 	{ MODKEY,					XK_t,			spawn,		SHCMD("~/.local/bin/my_scripts/script_copy.sh") },
-	{ MODKEY|ShiftMask,			XK_t,			spawn,		SHCMD("~/.local/bin/my_scripts/script_helper.sh " TERMINAL) },
-	{ MODKEY|ShiftMask,			XK_c,			spawn,		SHCMD("~/.local/bin/my_scripts/code_helper.sh new " TERMINAL) },
-	{ MODKEY|ShiftMask,			XK_d,			spawn,		SHCMD("~/.local/bin/my_scripts/code_helper.sh old " TERMINAL) },
+	{ MODKEY|ShiftMask,			XK_t,			spawn,		SHCMD("~/.local/bin/my_scripts/script_helper.sh") },
+	{ MODKEY|ShiftMask,			XK_c,			spawn,		SHCMD("~/.local/bin/my_scripts/code_helper.sh new") },
+	{ MODKEY|ShiftMask,			XK_d,			spawn,		SHCMD("~/.local/bin/my_scripts/code_helper.sh old") },
 	{ MODKEY,					XK_g,			spawn,		SHCMD("~/.local/bin/my_scripts/fzf_open.sh " TERMINAL)},
-	{ MODKEY,					XK_c,			spawn,		SHCMD("~/.local/bin/my_scripts/term_calc.sh " TERMINAL) },
-	/* { MODKEY,					XK_c,			spawn,		SHCMD("GTK_THEME=Adwaita:dark gnome-calculator") }, */
+	{ MODKEY,					XK_c,			spawn,		SHCMD("GTK_THEME=Adwaita:dark gnome-calculator") },
 	/* { MODKEY|ControlMask,		XK_c,			spawn,		SHCMD("GTK_THEME=Adwaita:dark gnome-calendar") }, */
 	{ MODKEY|ControlMask,		XK_c,			spawn,		SHCMD("yad --calendar --no-buttons") },
 	{ MODKEY,					XK_b,			spawn,		SHCMD(TERMINAL " -e htop") },
@@ -236,18 +233,17 @@ static const Key keys[] = {
 	{ MODKEY|ControlMask,		XK_b,			spawn,		SHCMD(TERMINAL " -e ytop") },
 	{ MODKEY,				    XK_p,			spawn,		SHCMD("~/.local/bin/my_scripts/xrandr_helper.sh") },
 	{ MODKEY,					XK_n,			spawn,		SHCMD("~/.local/bin/my_scripts/nautilus_wd.sh") },
-	{ MODKEY|ShiftMask,			XK_n,			spawn,		SHCMD("thunar") },
-	{ MODKEY|ControlMask,		XK_n,			spawn,		SHCMD("~/.local/bin/my_scripts/open_notes.sh 1 " TERMINAL) },
-	{ MODKEY,			        XK_m,			spawn,		SHCMD("nm-connection-editor") },
+	{ MODKEY|ShiftMask,			XK_n,			spawn,		SHCMD("nautilus -w --no-desktop") },
+	{ MODKEY|ControlMask,		XK_n,			spawn,		SHCMD("~/.local/bin/my_scripts/open_notes.sh 1") },
+	{ MODKEY,			        XK_m,			spawn,		SHCMD("~/.local/bin/my_scripts/tstock.sh") },
 	{ MODKEY|ShiftMask,			XK_m,			spawn,		SHCMD("spotify") },
-	{ MODKEY|ControlMask,		XK_m,			spawn,		SHCMD("~/.local/bin/my_scripts/open_notes.sh 2 " TERMINAL) },
+	{ MODKEY|ControlMask,		XK_m,			spawn,		SHCMD("~/.local/bin/my_scripts/open_notes.sh 2") },
 	{ MODKEY|ShiftMask,         XK_comma,   	spawn,      SHCMD("~/.local/bin/my_scripts/alert_exit.sh && ~/.local/bin/my_scripts/suspend.sh")},
 	{ MODKEY|ShiftMask,         XK_period,  	spawn,      SHCMD("i3lock-fancy && ~/.local/bin/my_scripts/alert_exit.sh && systemctl suspend")},
-	{ MODKEY,					XK_v,			spawn,		SHCMD("~/.local/bin/my_scripts/clip_history.sh greenclip") },
+	{ MODKEY,					XK_v,			spawn,		SHCMD("~/.local/bin/my_scripts/clip_history.sh") },
 	{ MODKEY|ShiftMask,			XK_v,			spawn,		SHCMD("~/.local/bin/my_scripts/qr_clip.sh") },
-	{ MODKEY,					XK_comma,		spawn,		SHCMD("~/.local/bin/my_scripts/progrm_helper.sh " TERMINAL) },
 	{ MODKEY,					XK_period,		spawn,		SHCMD("~/.local/bin/my_scripts/emojipick/emojipick") },
-	{ MODKEY,					XK_a,			spawn,		SHCMD("~/.local/bin/my_scripts/tmux_attach.sh " TERMINAL) },
+	{ MODKEY,					XK_a,			spawn,		SHCMD(TERMINAL " -e bash -c 'tmux attach || tmux'") },
 	{ MODKEY|ShiftMask,         XK_a,			spawn,      SHCMD("picom-trans -c -5")},
 	{ MODKEY|ControlMask,       XK_a,			spawn,      SHCMD("picom-trans -c +5")},
 	{ MODKEY,					XK_section,		spawn,		SHCMD("~/.local/bin/my_scripts/loadEww.sh") },
@@ -255,7 +251,7 @@ static const Key keys[] = {
 	/* { MODKEY|ShiftMask,			XK_BackSpace,	spawn,		SHCMD("sysact") }, */
 	{ MODKEY,					XK_Return,		spawn,		SHCMD("~/.local/bin/my_scripts/term_wd.sh " TERMINAL) },
 	{ MODKEY|ShiftMask,			XK_Return,		spawn,		{.v = termcmd } },
-	{ MODKEY|ControlMask,		XK_Return,		spawn,		SHCMD("~/.local/bin/my_scripts/term_wd.sh urxvt") },
+	{ MODKEY|ControlMask,		XK_Return,		spawn,		SHCMD("~/.local/bin/my_scripts/term_wd.sh st") },
 
 	/* { MODKEY,				XK_bracketleft,		spawn,		SHCMD("mpc seek -10") }, */
 	/* { MODKEY|ShiftMask,		XK_bracketleft,		spawn,		SHCMD("mpc seek -60") }, */
@@ -266,9 +262,9 @@ static const Key keys[] = {
 	/* { MODKEY,				XK_Page_Down,		shiftview,	{ .i = +1 } }, */
 	/* { MODKEY|ShiftMask,		XK_Page_Down,		shifttag,	{ .i = +1 } }, */
 	/* { MODKEY,				XK_backslash,		view,		{0} }, */
-	/* { MODKEY,					XK_F1,				spawn,			SHCMD("groff -mom /usr/local/share/dwm/larbs.mom -Tpdf | zathura -") }, */
-	{ 0,						XK_F1,				spawn,			SHCMD("~/.local/bin/my_scripts/show_keys.sh dwm " TERMINAL) },
-	{ ShiftMask,				XK_F1,				spawn,			SHCMD("~/.local/bin/my_scripts/show_keys.sh vim " TERMINAL) },
+	/* { MODKEY,			XK_F1,				spawn,			SHCMD("groff -mom /usr/local/share/dwm/larbs.mom -Tpdf | zathura -") }, */
+	{ 0,				    XK_F1,				spawn,			SHCMD("~/.local/bin/my_scripts/show_keys.sh dwm") },
+	{ ShiftMask,			XK_F1,				spawn,			SHCMD("~/.local/bin/my_scripts/show_keys.sh vim") },
 	/* { MODKEY,				XK_F1,				spawn,			SHCMD(TERMINAL " -e nvim") }, */
 	/* { MODKEY,				XK_F2,				spawn,			SHCMD("tutorialvids") }, */
 	/* { MODKEY,				XK_F3,				spawn,			SHCMD("displayselect") }, */
@@ -329,7 +325,7 @@ static const Button buttons[] = {
 	{ ClkStatusText,        0,              Button5,        sigdwmblocks,   {.i = 5} },
 	{ ClkStatusText,        ShiftMask,      Button1,        sigdwmblocks,   {.i = 6} },
 #endif
-	{ ClkStatusText,        ShiftMask,      Button3,        spawn,          SHCMD(TERMINAL " -e nvim ~/.config/dwmblocks/config.h") },
+	{ ClkStatusText,        ShiftMask,      Button3,        spawn,          SHCMD(TERMINAL " -e nvim ~/dwm/dwm/dwmblocks/config.h") },
 	{ ClkClientWin,         MODKEY,         Button1,        movemouse,      {0} },
 	{ ClkClientWin,         MODKEY,         Button2,        defaultgaps,	{0} },
 	{ ClkClientWin,         MODKEY,         Button3,        resizemouse,    {0} },
