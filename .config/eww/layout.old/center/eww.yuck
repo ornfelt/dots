@@ -2,56 +2,56 @@
 ;;;;;;;;;;;;;;;;        LEFT BAR WIDGET       ;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; (defwidget barLeftWidget []
-  ;;       (box    :orientation "h"
-    ;;             :space-evenly false
-      ;;           :class "bar"
-        ;;         :spacing "40"
-          ;;       :halign "center"
-            ;;     :valign "center"
-       ;;  
-         ;;        (button :class "pink"
-           ;;              :onclick "dolphin&" "")
-;; 
-  ;;               (button :class "green"
-    ;;                     :onclick "vivaldi-stable&" "")
-      ;;                   
-        ;;         (button :class "yellow"
-          ;;               :onclick "code&" "﬏")
-            ;;     
-              ;;   (button :class "blue"
-                ;;         :onclick "gimp&" "")
-                  ;;                    
-                ;;(button :class "violet"
-                        ;;:onclick "discord&" "ﭮ")
-                        ;;
-                ;;(button :class "cyan"
-                        ;;:onclick "telegram-desktop&" "")
-    ;;)
-;;)
+(defwidget barLeftWidget []
+        (box    :orientation "h"
+                :space-evenly false
+                :class "bar"
+                :spacing "40"
+                :halign "center"
+                :valign "center"
+        
+                (button :class "pink"
+                        :onclick "dolphin&" "")
+
+                (button :class "green"
+                        :onclick "vivaldi-stable&" "")
+                        
+                (button :class "yellow"
+                        :onclick "code&" "﬏")
+                
+                (button :class "blue"
+                        :onclick "gimp&" "")
+                                     
+                (button :class "violet"
+                        :onclick "discord&" "ﭮ")
+                        
+                (button :class "cyan"
+                        :onclick "telegram-desktop&" "")
+    )
+)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;       RIGHT BAR WIDGET       ;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;;(defwidget barRightWidget []
-        ;;(box    :orientation "h"
-                ;;:space-evenly false
-                ;;:class "bar"
-                ;;:spacing "40"
-                ;;:halign "center"
-                ;;:valign "center"
-        ;;
-                ;;(button :class "blue"
-                        ;;:onclick "/home/jonas/.bin/rofi-drun" "")
-;;
-                ;;(button :class "green"
-                        ;;:onclick "timeout 10s /home/jonas/.bin/rofi-music" "")
-                        ;;
-                ;;(button :class "pink"
-                        ;;:onclick "/home/jonas/.bin/rofi-file" "")
-        ;;)
-;;)
+(defwidget barRightWidget []
+        (box    :orientation "h"
+                :space-evenly false
+                :class "bar"
+                :spacing "40"
+                :halign "center"
+                :valign "center"
+        
+                (button :class "blue"
+                        :onclick "/home/jonas/.bin/rofi-drun" "")
+
+                (button :class "green"
+                        :onclick "timeout 10s /home/jonas/.bin/rofi-music" "")
+                        
+                (button :class "pink"
+                        :onclick "/home/jonas/.bin/rofi-file" "")
+        )
+)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;          USER WIDGET         ;;;;;;;;;;;;;;;;
@@ -70,24 +70,10 @@
                         :height "250")
                 
                 (label  :class "pink"
-                        :text "Welcome Jonas!"
+                        :text "u/jonas"
                         :halign "center"
                         :valign "center")
                 )
-)
-
-(defwidget myPictureWidget []
-    (box        :class "myPicture"
-                :orientation "v"
-                :space-evenly false
-                :spacing "0"
-                :halign "center"
-                :valign "center"
-
-                (image  :path "${imgMyPicture}"
-                        :width "290"
-                        :height "217")
-			)
 )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -456,7 +442,7 @@
 )
 
 (defwidget favouriteWidget []
-    (button :class "violet" 
+    (button :class "yellow" 
             :onclick "dolphin /ArchDisk/Pictures&" "")
 )
 
@@ -467,8 +453,8 @@
         :monitor 0
         :geometry (geometry     :x "50px"
                                 :y "13px"
-                                :width "390px"
-                                :height "45px"
+                                :width "400px"
+                                :height "55px"
                                 :anchor "top left")
         :windowtype "dock"
         :wm-ignore true
@@ -478,8 +464,8 @@
         :monitor 0
         :geometry (geometry :x "-50px"
                                :y "13px"
-                               :width "240px"
-                               :height "45px"
+                               :width "250px"
+                               :height "55px"
                                :anchor "top right")
         :windowtype "dock"
         :wm-ignore true
@@ -487,10 +473,10 @@
 
 (defwindow user
         :monitor 0
-        :geometry (geometry     :x "340px"
-                                :y "130px"
-                                :width "360px"
-                                :height "370px"
+        :geometry (geometry     :x "1225px"
+                                :y "595px"
+                                :width "400px"
+                                :height "400px"
                                 :anchor "top left")
         :windowtype "dock"
         :wm-ignore true
@@ -499,10 +485,10 @@
 
 (defwindow power
         :monitor 0
-        :geometry (geometry     :x "715px"
-                                :y "130px"
-                                :width "80px"
-                                :height "370px"
+        :geometry (geometry     :x "1645px"
+                                :y "595px"
+                                :width "100px"
+                                :height "400px"
                                 :anchor "top left")
         :windowtype "dock"
         :wm-ignore true
@@ -511,10 +497,10 @@
 
 (defwindow date
         :monitor 0
-        :geometry (geometry     :x "340px"
-                                :y "515px"
-                                :width "455px"
-                                :height "180px"
+        :geometry (geometry     :x "1225px"
+                                :y "1015px"
+                                :width "520px"
+                                :height "215px"
                                 :anchor "top left")
         :windowtype "dock"
         :wm-ignore true
@@ -522,10 +508,10 @@
 
 (defwindow control
         :monitor 0
-        :geometry (geometry     :x "340px"
-                                :y "710px"
-                                :width "360px"
-                                :height "260px"
+        :geometry (geometry     :x "1345px"
+                                :y "1250px"
+                                :width "400px"
+                                :height "290px"
                                 :anchor "top left")
         :windowtype "dock"
         :wm-ignore true
@@ -534,10 +520,10 @@
 
 (defwindow screenshot
         :monitor 0
-        :geometry (geometry     :x "715px"
-                                :y "710px"
-                                :width "65px"
-                                :height "260px"
+        :geometry (geometry     :x "1225px"
+                                :y "1250px"
+                                :width "100px"
+                                :height "290px"
                                 :anchor "top left")
         :windowtype "dock"
         :wm-ignore true
@@ -545,10 +531,10 @@
 
 (defwindow system
         :monitor 0
-        :geometry (geometry     :x "810px"
-                                :y "640px"
-                                :width "420px"
-                                :height "330px"
+        :geometry (geometry     :x "1765px"
+                                :y "1175px"
+                                :width "450px"
+                                :height "365px"
                                 :anchor "top left")
         :windowtype "dock"
         :wm-ignore true
@@ -556,10 +542,10 @@
 
 (defwindow player
         :monitor 0
-        :geometry (geometry     :x "810"
-                                :y "130px"
-                                :width "420px"
-                                :height "500px"
+        :geometry (geometry     :x "1765px"
+                                :y "595px"
+                                :width "450px"
+                                :height "560px"
                                 :anchor "top left")
         :windowtype "dock"
         :wm-ignore true
@@ -567,10 +553,10 @@
 
 (defwindow fetch
         :monitor 0
-        :geometry (geometry     :x "1245px"
-                                :y "560px"
-                                :width "290px"
-                                :height "410px"
+        :geometry (geometry     :x "2235px"
+                                :y "1105px"
+                                :width "320px"
+                                :height "435px"
                                 :anchor "top left")
         :windowtype "dock"
         :wm-ignore true
@@ -580,10 +566,10 @@
 
 (defwindow home
         :monitor 0
-        :geometry (geometry     :x "1245px"
-                                :y "360px"
-                                :width "90px"
-                                :height "90px"
+        :geometry (geometry     :x "2235px"
+                                :y "595px"
+                                :width "150px"
+                                :height "150px"
                                 :anchor "top left")
         :windowtype "dock"
         :wm-ignore true
@@ -591,77 +577,67 @@
 
 (defwindow downloads
         :monitor 0
-        :geometry (geometry     :x "1345px"
-                                :y "360px"
-                                :width "90px"
-                                :height "90px"
+        :geometry (geometry     :x "2405px"
+                                :y "595px"
+                                :width "150px"
+                                :height "150px"
                                 :anchor "top left")
         :windowtype "dock"
         :wm-ignore true
 (downloadsWidget))
 
-(defwindow documents
-        :monitor 0
-        :geometry (geometry     :x "1445px"
-                                :y "360px"
-                                :width "90px"
-                                :height "90px"
-                                :anchor "top left")
-        :windowtype "dock"
-        :wm-ignore true
-(documentsWidget))
 
 (defwindow disk
         :monitor 0
-        :geometry (geometry     :x "1245px"
-                                :y "458px"
-                                :width "90px"
-                                :height "90px"
+        :geometry (geometry     :x "2235px"
+                                :y "765px"
+                                :width "150px"
+                                :height "150px"
                                 :anchor "top left")
         :windowtype "dock"
         :wm-ignore true
 (diskWidget))
 
+
 (defwindow pictures
         :monitor 0
-        :geometry (geometry     :x "1345px"
-                                :y "458px"
-                                :width "90px"
-                                :height "90px"
+        :geometry (geometry     :x "2405px"
+                                :y "765px"
+                                :width "150px"
+                                :height "150px"
                                 :anchor "top left")
         :windowtype "dock"
         :wm-ignore true
 (picturesWidget))
 
+(defwindow documents
+        :monitor 0
+        :geometry (geometry     :x "2235px"
+                                :y "935px"
+                                :width "150px"
+                                :height "150px"
+                                :anchor "top left")
+        :windowtype "dock"
+        :wm-ignore true
+(documentsWidget))
+
+
 (defwindow favourite
         :monitor 0
-        :geometry (geometry     :x "1445px"
-                                :y "458px"
-                                :width "90px"
-                                :height "90px"
+        :geometry (geometry     :x "2405px"
+                                :y "935px"
+                                :width "150px"
+                                :height "150px"
                                 :anchor "top left")
         :windowtype "dock"
         :wm-ignore true
 (favouriteWidget))
-
-(defwindow myPicture
-        :monitor 0
-        :geometry (geometry     :x "1245px"
-                                :y "130px"
-                                :width "290px"
-                                :height "217px"
-                                :anchor "top left")
-        :windowtype "dock"
-        :wm-ignore true
-(myPictureWidget))
-
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;      variables      ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defvar imgUser "/home/jonas/.config/eww/icons/user-avatar.png")
-(defvar imgMyPicture "/home/jonas/.config/eww/icons/picture.JPG")
 
 (defpoll hour :interval "1s" `date +%H`)
 (defpoll minute :interval "1s" `date +%M`)

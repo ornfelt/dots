@@ -1,0 +1,23 @@
+modules-left = launcher sep workspaces sep 
+modules-right = spotify cpu memory alsa battery network date sep sysmenu
+
+date. shade3
+network shade4
+bat: shade5
+alsa shade6
+memory: shade7
+cpu: shade8
+
+sysmenu: shade4
+----------------------------------------------------------------------------------
+
+NEW:
+date: shade1
+network: shade2
+bat: shade3
+alsa shade4
+memory: shade5
+cpu: shade6
+spotify: shade8
+
+sysmenu: shade4

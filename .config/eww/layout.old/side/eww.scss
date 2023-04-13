@@ -1,7 +1,6 @@
 * {
   all: unset;
-  // background-color: #EDEFF1;
-  background-color: #282828;
+  background-color: #EDEFF1;
 }
 
 /*************************************************/
@@ -48,13 +47,7 @@
 
 .user{
   color: #C98093;
-  font-size: 27px;
-  font-family: 'Monaco';
-}
-
-.myPicture{
-  color: #C98093;
-  font-size: 27px;
+  font-size: 23px;
   font-family: 'Monaco';
 }
 
@@ -104,8 +97,7 @@
 
 .metric-ram scale trough , .metric-vol scale trough , .metric-root scale trough , .metric-disk scale trough, .metric-bright scale trough {
   all: unset;
-  // background-color: #cdcfd1;
-  background-color: #282828;
+  background-color: #cdcfd1;
   border-radius: 50px;
   min-height: 18px;
   min-width: 280px;
@@ -206,11 +198,10 @@
 
 .metric-player scale trough  {
   all: unset;
-  // background-color: #cdcfd1;
-  background-color: #282828;
+  background-color: #cdcfd1;
   border-radius: 50px;
-  min-height: 12px;
-  min-width: 350px;
+  min-height: 10px;
+  min-width: 210px;
   
 }
 

@@ -7,7 +7,8 @@ set $mod Mod4
 # Font for window titles. Will also be used by the bar unless a different font
 # is used in the bar {} block below.
 #font pango:monospace 10
-font pango:Linux Libertine Mono 10
+#font pango:Linux Libertine Mono 10
+font pango:JetBrains Mono Medium 10
 
 # This font is widely installed, provides lots of unicode glyphs, right-to-left
 # text rendering and scalability on retina/hidpi displays (thanks to pango).
@@ -18,11 +19,11 @@ font pango:Linux Libertine Mono 10
 
 # xss-lock grabs a logind suspend inhibit lock and will use i3lock to lock the
 # screen before suspend. Use loginctl lock-session to lock your screen.
-exec --no-startup-id xss-lock --transfer-sleep-lock -- i3lock --nofork
+#exec --no-startup-id xss-lock --transfer-sleep-lock -- i3lock --nofork
 
 # NetworkManager is the most popular way to manage wireless networks on Linux,
 # and nm-applet is a desktop environment-independent system tray GUI for it.
-exec --no-startup-id nm-applet
+#exec --no-startup-id nm-applet
 
 # Use pactl to adjust volume in PulseAudio.
 set $refresh_i3status killall -SIGUSR1 i3status
@@ -44,9 +45,10 @@ bindsym $mod+Shift+dead_acute exec --no-startup-id pactl set-sink-volume @DEFAUL
 floating_modifier $mod
 
 # start a terminal in wd
-bindsym $mod+Return exec --no-startup-id ~/.local/bin/my_scripts/term_wd.sh
+bindsym $mod+Return exec --no-startup-id ~/.local/bin/my_scripts/term_wd.sh urxvt
 # start a terminal
-bindsym $mod+Shift+Return exec --no-startup-id urxvt -cd ~/
+bindsym $mod+Shift+Return exec --no-startup-id urxvt
+bindsym $mod+Control+Return exec --no-startup-id ~/.local/bin/my_scripts/term_wd.sh st
 
 # kill focused window
 bindsym $mod+q kill
@@ -99,8 +101,7 @@ bindsym $mod+Shift+z layout stacked
 bindsym $mod+Control+t layout tabbed
 bindsym $mod+less layout toggle split
 bindsym $mod+z gaps inner current set 0; gaps outer current set 0
-#bindsym $mod+x gaps inner current set 15; gaps outer current set 15
-bindsym $mod+x gaps inner current set 30; gaps outer current set 30
+bindsym $mod+x gaps inner current set 15; gaps outer current set 15
 
 bindsym $mod+plus gaps inner current plus 5
 bindsym $mod+minus gaps inner current minus 5
@@ -112,13 +113,14 @@ bindsym $mod+space floating toggle
 # change focus between tiling / floating windows
 bindsym $mod+Shift+space focus mode_toggle
 
-# focus the parent container
-bindsym $mod+Shift+a focus parent
 # focus the child container
 bindsym $mod+Shift+d focus child
+# focus the parent container
+bindsym $mod+Control+d focus parent
 
 # open tmux
-bindsym $mod+a exec i3-sensible-terminal -e bash -c "tmux attach || tmux"
+#bindsym $mod+a exec i3-sensible-terminal -e bash -c "tmux attach || tmux"
+bindsym $mod+a exec urxvt -e bash -c "tmux attach || tmux"
 # Open nautilus in wd
 #bindsym $mod+w exec nautilus --no-desktop
 bindsym $mod+n exec ~/.local/bin/my_scripts/nautilus_wd.sh
@@ -128,7 +130,7 @@ bindsym $mod+Shift+n exec nautilus -w --no-desktop
 # open ranger
 bindsym $mod+w exec urxvt -e ranger ~/
 # open ranger from wd
-bindsym $mod+e exec ~/.local/bin/my_scripts/ranger_wd.sh
+bindsym $mod+e exec ~/.local/bin/my_scripts/ranger_wd.sh urxvt
 
 # Define names for default workspaces for which we configure key bindings later on.
 # We use variables to avoid repeating the names in multiple places.
@@ -183,24 +185,21 @@ bindsym $mod+Control+0 move container to workspace number $ws10
 assign [class="studio"] $ws3
 assign [class="Eclipse"] $ws3
 assign [class="Code"] $ws3
-assign [class="Steam"] $ws4
+# assign [class="Steam"] $ws4
 assign [class="Vlc"] $ws4
 assign [class="Spotify"] $ws5
 for_window [class="Spotify"] move to workspace $ws5
-bindsym $mod+c exec gnome-calculator
-for_window [class="Gnome-calculator"] floating enable, move position 100 px 500 px, exec xdotool search --class Gnome-calculator getwindowpid -- windowsize %@ 250 195
-bindsym $mod+Control+c exec gnome-calendar
-for_window [class="Gnome-calendar"] floating enable, move position 1105 px 430 px, exec xdotool search --class Gnome-calculator getwindowpid -- windowsize %@ 250 195
-bindsym $mod+t exec ~/.local/bin/my_scripts/script_copy.sh
-bindsym $mod+Shift+t exec ~/.local/bin/my_scripts/script_helper.sh
+bindsym $mod+c exec --no-startup-id GTK_THEME=Adwaita:dark gnome-calculator
+for_window [class="gnome-calculator"] floating enable, move position 100 px 500 px, exec --no-startup-id xdotool search --class Gnome-calculator getwindowpid -- windowsize %@ 250 195
+bindsym $mod+Control+c exec --no-startup-id GTK_THEME=Adwaita:dark gnome-calendar 
+for_window [class="gnome-calendar"] floating enable, move position 1105 px 430 px, exec --no-startup-id xdotool search --class Gnome-calculator getwindowpid -- windowsize %@ 250 195
 
+bindsym $mod+t exec ~/.local/bin/my_scripts/script_copy.sh
+bindsym $mod+Shift+t exec ~/.local/bin/my_scripts/script_helper.sh 
 # reload the configuration file
 bindsym $mod+Shift+c reload
 # restart i3 inplace (preserves your layout/session, can be used to upgrade i3)
 bindsym $mod+Shift+r restart
-
-# exit i3 (logs you out of your X session)
-#bindsym $mod+Shift+e exec "i3-nagbar -t warning -m 'You pressed the exit shortcut. Do you really want to exit i3? This will end your X session.' -B 'Yes, exit i3' 'i3-msg exit'"; exec ~/.local/bin/my_scripts/alert_exit.sh
 
 # New way to logout, rebott or shutdown
 mode "exit: [l]ogout, [r]eboot, [s]hutdown" {
@@ -211,8 +210,8 @@ mode "exit: [l]ogout, [r]eboot, [s]hutdown" {
   bindsym Return mode "default"
 }
 #bindsym $mod+Shift+e mode "exit: [l]ogout, [r]eboot, [s]hutdown"; exec ~/.local/bin/my_scripts/alert_exit.sh
-bindsym $mod+Shift+e exec ~/.local/bin/my_scripts/alert_exit.sh; exec ~/.config/polybar/forest/scripts/powermenu.sh
-bindsym $mod+Shift+p exec ~/.local/bin/my_scripts/toggle_polybar.sh
+bindsym $mod+Shift+e exec --no-startup-id ~/.local/bin/my_scripts/alert_exit.sh; exec ~/.config/polybar/forest/scripts/powermenu.sh
+bindsym $mod+shift+p exec --no-startup-id ~/.local/bin/my_scripts/toggle_polybar.sh
 
 #BRIGHTNESS KEYS
 bindsym XF86MonBrightnessUp exec --no-startup-id ~/.local/bin/my_scripts/brightness.sh +10
@@ -269,29 +268,29 @@ bindsym $mod+o resize grow width 10 px or 1 ppt
 
 # Diodon scripts and emojipick
 bindsym $mod+v exec ~/.local/bin/my_scripts/clip_history.sh
-bindsym $mod+Shift+v exec ~/.local/bin/my_scripts/qr_clip.sh
-bindsym $mod+period exec ~/.local/bin/my_scripts/emojipick/emojipick
+bindsym $mod+Shift+v exec --no-startup-id ~/.local/bin/my_scripts/qr_clip.sh
+bindsym $mod+period exec --no-startup-id ~/.local/bin/my_scripts/emojipick/emojipick
 # Program shortcuts
 bindsym $mod+b exec urxvt -e sudo htop
-bindsym $mod+Shift+b exec urxvt -e sudo bashtop
-bindsym $mod+Control+b exec urxvt -e sudo ytop
-bindsym $mod+m exec spotify
-bindsym $mod+Shift+m exec flatpak run org.jamovi.jamovi
-bindsym $mod+Control+m exec ~/.local/bin/my_scripts/tstock.sh
+bindsym $mod+Shift+b exec --no-startup-id urxvt -e sudo bashtop
+bindsym $mod+Control+b exec --no-startup-id urxvt -e sudo ytop
+bindsym $mod+m exec --no-startup-id spotify
+bindsym $mod+Shift+m exec --no-startup-id flatpak run org.jamovi.jamovi
+#bindsym $mod+Control+m exec --no-startup-id ~/.local/bin/my_scripts/tstock.sh
 
 # Print screen keybinds
-bindsym $mod+Shift+s --release exec import png:- | xclip -selection clipboard -t image/png
-bindsym $mod+Control+s --release exec ~/.local/bin/my_scripts/tesseract_ocr.sh
-bindsym Print --release exec ~/.local/bin/my_scripts/screenshot_select.sh
-bindsym shift+Print exec ~/.local/bin/my_scripts/screenshot.sh
-bindsym $mod+Print --release exec ~/.local/bin/my_scripts/screenshot_ocr.sh
+bindsym $mod+Shift+s --release exec --no-startup-id import png:- | xclip -selection clipboard -t image/png
+bindsym $mod+Control+s --release exec --no-startup-id ~/.local/bin/my_scripts/tesseract_ocr.sh
+bindsym Print --release exec --no-startup-id ~/.local/bin/my_scripts/screenshot_select.sh
+bindsym shift+Print exec --no-startup-id ~/.local/bin/my_scripts/screenshot.sh
+bindsym $mod+Print --release exec --no-startup-id ~/.local/bin/my_scripts/screenshot_ocr.sh
 bindsym $mod+section exec --no-startup-id ~/.local/bin/my_scripts/loadEww.sh
 # Lock screen 
-bindsym $mod+Shift+x exec i3lock-fancy
-bindsym $mod+Control+x exec i3lock -i ~/Downloads/lock-wallpaper.png 
+bindsym $mod+Shift+x exec --no-startup-id i3lock-fancy
+bindsym $mod+Control+x exec --no-startup-id i3lock -t -i ~/Downloads/lock-wallpaper.png 
 #Suspend 
-bindsym $mod+Shift+comma exec ~/.local/bin/my_scripts/alert_exit.sh; exec ~/.local/bin/my_scripts/suspend.sh
-bindsym $mod+Shift+period exec i3lock-fancy; exec ~/.local/bin/my_scripts/alert_exit.sh; exec systemctl suspend
+bindsym $mod+Shift+comma exec --no-startup-id ~/.local/bin/my_scripts/alert_exit.sh; exec --no-startup-id ~/.local/bin/my_scripts/suspend.sh
+bindsym $mod+Shift+period exec --no-startup-id i3lock-fancy; exec --no-startup-id ~/.local/bin/my_scripts/alert_exit.sh; exec --no-startup-id systemctl suspend
 # Open FZF in neovim
 bindsym $mod+g exec urxvt -e bash -c 'nvim -c "FZF ~"'
 
@@ -303,24 +302,24 @@ smart_borders on
 # for_window [class=".*"] border pixel 2
 for_window [class=".*"] border pixel 1
 #gaps horizontal 8
-gaps inner 30
-gaps outer 30
+gaps inner 15
+gaps outer 15
 
 # On i3 start
 exec --no-startup-id picom
-exec --no-startup-id xfce4-power-manager
+#exec --no-startup-id xfce4-power-manager
 #exec --no-startup-id firefox
 exec_always --no-startup-id diodon
 
 #set wallpaper
 #exec_always feh --bg-scale ~/Pictures/Wallpapers/wallpaper.png
-exec_always --no-startup-id feh --bg-fill --randomize ~/Pictures/Wallpapers/* &
+exec_always --no-startup-id feh --bg-fill --randomize ~/Pictures/Wallpapers/*
+#exec_always --no-startup-id ~/.local/bin/my_scripts/bg_pbar.sh
 # Alternating layout
 exec_always --no-startup-id ~/.local/bin/my_scripts/i3-alternating-layout/alternating_layouts.py
 #run polybar
-#exec_always ~/.config/polybar/launch.sh --forest
-#exec_always ~/.config/polybar/launch.sh --colorblocks
-exec_always ~/.config/polybar/launch_reg.sh
+# exec_always --no-startup-id ~/.config/polybar/forest/launch.sh
+exec_always --no-startup-id ~/.config/polybar/colorblocks/launch.sh
 
 # client.focused #458588 #458588 #000088 #458588
 client.focused #2C2C2C #2C2C2C #000088 #2C2C2C
@@ -328,17 +327,18 @@ client.focused_inactive #2C2C2C #2C2C2C #ffffff #2C2C2C
 client.unfocused #2C2C2C #2C2C2C #ffffff #2C2C2C
 client.urgent #00C1FF #00C1FF #000088 #00C1FF
 
-bindsym $mod+odiaeresis floating enable, resize set 50 ppt 50 ppt, move position 10 px 10 px
-bindsym $mod+Shift+odiaeresis floating enable, resize set 50 ppt 50 ppt, move position 10 px 490 px
-bindsym $mod+Control+odiaeresis floating enable, resize set 43 ppt 32 ppt, move position 10 px 700 px
+bindsym $mod+odiaeresis floating enable, resize set 50 ppt 50 ppt, move position 10 px 44 px
+bindsym $mod+Shift+odiaeresis floating enable, resize set 50 ppt 50 ppt, move position 10 px 527 px
+bindsym $mod+Control+odiaeresis floating enable, resize set 43 ppt 32 ppt, move position 10 px 738 px
 
-bindsym $mod+adiaeresis floating enable, resize set 50 ppt 50 ppt, move position 950 px 10 px
-bindsym $mod+Shift+adiaeresis floating enable, resize set 50 ppt 50 ppt, move position 950 px 493 px
-bindsym $mod+Control+adiaeresis floating enable, resize set 43 ppt 32 ppt, move position 1090 px 700 px
+bindsym $mod+adiaeresis floating enable, resize set 50 ppt 50 ppt, move position 950 px 46 px
+bindsym $mod+Shift+adiaeresis floating enable, resize set 50 ppt 50 ppt, move position 950 px 527 px
+bindsym $mod+Control+adiaeresis floating enable, resize set 43 ppt 32 ppt, move position 1090 px 738 px
 
-bindsym $mod+aring floating enable, resize set 50 ppt 95 ppt, move position 13 px 13 px
-bindsym $mod+Shift+aring floating enable, resize set 50 ppt 95 ppt, move position 950 px 13 px
-bindsym $mod+Control+aring floating enable, resize set 30 ppt 30 ppt, move position 1330 px 720 px
+bindsym $mod+aring floating enable, resize set 50 ppt 95 ppt, move position 13 px 44 px
+bindsym $mod+Shift+aring floating enable, resize set 50 ppt 95 ppt, move position 950 px 44 px
+bindsym $mod+Control+aring floating enable, resize set 30 ppt 30 ppt, move position 1330 px 746 px
 
-bindsym $mod+Shift+diaeresis exec --no-startup-id compton-trans -c +10
-bindsym $mod+Control+diaeresis exec --no-startup-id compton-trans -c -10
+bindsym $mod+apostrophe exec --no-startup-id ~/.local/bin/my_scripts/i3_scratchpad.sh
+bindsym $mod+Shift+a exec --no-startup-id picom-trans -c -5
+bindsym $mod+Control+a exec --no-startup-id picom-trans -c +5
