@@ -14,6 +14,7 @@ local A   = vim.api
 
 o.termguicolors = true
 -- o.background = 'dark'
+require'colorizer'.setup()
 
 -- Do not save when switching buffers
 -- o.hidden = true
@@ -317,7 +318,7 @@ map('n', '<leader>ws', ':%s/\\s\\+$<CR>') -- Remove all extra whitespace
 map('n', '<leader>wu', ':%s/\\%u200b//g<CR>') -- Remove all extra unicode chars
 map('n', '<leader>wb', ':%s/[[:cntrl:]]//g<CR>') -- Remove all hidden characters
 map('n', '<leader>wf', 'gqG<C-o>zz') -- Format rest of the text with vim formatting, go back and center screen
-map('v', '<leader>gu', ':s/\\<./\\u&/g<CR>:noh<CR>') -- Capitalize first letter of each word on visually selected line
+map('v', '<leader>gu', ':s/\\<./\\u&/g<CR>:noh<CR>:noh<CR>') -- Capitalize first letter of each word on visually selected line
 map('v', '<leader>/', '"3y/<C-R>3<CR>') -- Search for highlighted text
 map('v', '<leader>%', '/\\%V') -- Search in highlighted text
 map("n", "Q", "<nop>") -- Remove Ex Mode
@@ -409,7 +410,7 @@ vim.keymap.set("n", "<leader>t", "<cmd>silent !tmux neww tmux-sessionizer<CR>") 
 
   -- Setup lspconfig (line below deprecated)
   -- local capabilities = require('cmp_nvim_lsp').update_capabilities(vim.lsp.protocol.make_client_capabilities())
-  -- local capabilities = require('cmp_nvim_lsp').default_capabilities(vim.lsp.protocol.make_client_capabilities())
+  local capabilities = require('cmp_nvim_lsp').default_capabilities(vim.lsp.protocol.make_client_capabilities())
 
   -- Replace <YOUR_LSP_SERVER> with each lsp server you've enabled.
   -- require('lspconfig')['<YOUR_LSP_SERVER>'].setup {
@@ -470,8 +471,8 @@ func! CompileRun()
     elseif &filetype == 'sh'
         exec "!time bash %"
     elseif &filetype == 'python'
-        exec "!python3 %"
-        "exec "!time python3 %"
+        "exec "!python3 %"
+        exec "!time python3 %"
     elseif &filetype == 'html'
         exec "!firefox % &"
     elseif &filetype == 'javascript'
@@ -533,7 +534,7 @@ return require('packer').startup(function()
 
   -- Syntax Highlighting and Colors --
   use 'vim-python/python-syntax'
-  use 'ap/vim-css-color'
+  use 'norcalli/nvim-colorizer.lua'
   -- use 'vim-syntastic/syntastic'
   use 'neovim/nvim-lspconfig' -- Configurations for Nvim LSP
   use 'hrsh7th/cmp-nvim-lsp'
@@ -547,17 +548,17 @@ return require('packer').startup(function()
 
   -- Colorschemes
   use("gruvbox-community/gruvbox")
-  use {
-      "catppuccin/nvim",
-      as = "catppuccin",
-      config = function()
-          require("catppuccin").setup {
-              --flavour = "macchiato" -- mocha, macchiato, frappe, latte
-              flavour = "mocha"
-          }
-          -- vim.api.nvim_command "colorscheme catppuccin"
-      end
-  }
+  -- use {
+  --     "catppuccin/nvim",
+  --     as = "catppuccin",
+  --     config = function()
+  --         require("catppuccin").setup {
+  --             --flavour = "macchiato" -- mocha, macchiato, frappe, latte
+  --             flavour = "mocha"
+  --         }
+  --         -- vim.api.nvim_command "colorscheme catppuccin"
+  --     end
+  -- }
   -- use 'RRethy/nvim-base16'
 
   -- Other stuff

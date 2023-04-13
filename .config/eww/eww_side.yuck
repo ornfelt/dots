@@ -317,7 +317,7 @@
 (defwindow user
         :monitor 0
         :geometry (geometry     :x "30px"
-                                :y "105px"
+                                :y "120px"
                                 :width "360px"
                                 :height "370px"
                                 :anchor "top left")
@@ -329,7 +329,7 @@
 (defwindow power
         :monitor 0
         :geometry (geometry     :x "400px"
-                                :y "105px"
+                                :y "120px"
                                 :width "80px"
                                 :height "370px"
                                 :anchor "top left")
@@ -341,7 +341,7 @@
 (defwindow date
         :monitor 0
         :geometry (geometry     :x "30px"
-                                :y "485px"
+                                :y "500px"
                                 :width "450px"
                                 :height "180px"
                                 :anchor "top left")
@@ -352,7 +352,7 @@
 (defwindow control
         :monitor 0
         :geometry (geometry     :x "30px"
-                                :y "675px"
+                                :y "690px"
                                 :width "360px"
                                 :height "260px"
                                 :anchor "top left")
@@ -364,7 +364,7 @@
 (defwindow screenshot
         :monitor 0
         :geometry (geometry     :x "400px"
-                                :y "675px"
+                                :y "690px"
                                 :width "65px"
                                 :height "260px"
                                 :anchor "top left")

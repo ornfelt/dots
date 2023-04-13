@@ -12,8 +12,7 @@
     "modules-left": ["wlr/workspaces"],
     //"modules-right": ["temperature","network","battery","custom/ss","custom/cycle_wall","custom/expand","cpu","clock"],
     //"modules-right": ["network","battery","custom/ss","custom/cycle_wall","custom/expand","cpu","clock"],
-    //"modules-right": ["network","battery","pulseaudio","custom/cycle_wall","custom/expand","cpu","clock"],
-    "modules-right": ["network","pulseaudio","custom/cycle_wall","custom/expand","cpu","clock"],
+    "modules-right": ["network","battery","pulseaudio","custom/cycle_wall","custom/expand","cpu","clock"],
     "modules-center": ["custom/dynamic_pill"],
     // Modules configuration
 
@@ -168,13 +167,10 @@
     "network": {
         // "interface": "wlp2*", // (Optional) To force the use of this interface
         "format-wifi": "",
-        "format-ethernet": "直",
-        "tooltip-format": "{ifname} via {gwaddr} ",
-        "tooltip-format-wifi": "{essid} ({signalStrength}%) ",
-        //"tooltip-format-ethernet": "{ifname} ",
-        "tooltip-format-disconnected": "Disconnected",
+        "format-ethernet": "",
+        "tooltip-format": "via {gwaddr} {ifname}",
         "format-linked": "",
-        "format-disconnected": "睊",
+        "format-disconnected": "wifi",
         "format-alt": "   "
     },
     "pulseaudio": {

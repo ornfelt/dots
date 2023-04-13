@@ -299,7 +299,7 @@
                 (box    
                         :halign "center"
                         :class "fetch"
-                        (label  :text "jonas @ jonas"
+                        (label  :text "jonas @ linux"
                                 :class "blue")
                 )
 
@@ -337,7 +337,7 @@
                                         :text ": arch")
                                 (label :class "green" 
                                         :halign "start"
-                                        :text ": i3")
+                                        :text ": dwm")
                                 (label  :class "yellow" 
                                         :halign "start"
                                         :text ": dem")
