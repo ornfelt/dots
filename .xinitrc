@@ -29,10 +29,15 @@ if [ -d /etc/X11/xinit/xinitrc.d ] ; then
 fi
 
 setxkbmap -option caps:escape
-xrandr --output DP-3 --primary --mode 1920x1080 --rate 240.00 --output DP-1 --mode 1920x1080 --rate 144.00 --right-of DP-3
+# Multiple monitors
+# xrandr --output eDP-1 --auto --primary --output HDMI-1 --auto --right-of eDP-1
+# Multiple monitors (PC)
+#xrandr --output DP-3 --primary --mode 1920x1080 --rate 240.00 --output DP-1 --mode 1920x1080 --rate 144.00 --right-of DP-3
 
-xrdb ~/.Xresources
+#xrdb ~/.Xresources
 xhost si:localuser:root
+#systemctl --user import-environment DISPLAY
+
 #exec awesome
 #exec i3
 exec dwm &

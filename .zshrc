@@ -147,6 +147,7 @@ alias .dots='cd ~/Downloads/dotfiles; ls'
 alias .ioq3='/home/jonas/Code/C/ioq3/build/release-linux-x86_64/ioquake3.x86_64 +set sv_pure 0 +set vm_game 0 +set vm_cgame 0 +set vm_ui 0'
 alias .ioq32='/home/jonas/Code/C/ioq3/build/release-linux-x86_64_golden/ioquake3.x86_64 +set sv_pure 0 +set vm_game 0 +set vm_cgame 0 +set vm_ui 0'
 alias .stk3='/home/jonas/Code/C/supertuxkart/stk-code/cmake_build_50/bin/supertuxkart'
+alias lf='/home/jonas/.local/bin/lfub'
 
 # use the vi navigation keys in menu completion
 #bindkey -M menuselect 'h' vi-backward-char
@@ -189,23 +190,6 @@ npx() {
   npx $@
 }
 
-export LANG=en_US.UTF-8
-export LANGUAGE=en
-export LC_ALL=en_US.UTF-8 
-#export ALPHAVANTAGE_API_KEY=X5JHFXWJ4OTINV2B
-export ALPHAVANTAGE_API_KEY=AOUX3DK05GCWDMZ9
-
-[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
-export FZF_DEFAULT_COMMAND='ag --hidden --ignore .git -g ""'
-
-precmd() { eval "$PROMPT_COMMAND" }
-export PROMPT_COMMAND="pwd > /tmp/whereami"
-
-~/.local/bin/my_scripts/hello.sh
-export PATH="${PATH}:${HOME}/.local/bin/"
-export PATH="${PATH}:${HOME}/.local/bin/my_scripts"
-bindkey '^ ' autosuggest-accept
-
 fuzzyfind(){
 	# If in tmux
 	if [ -z "$TMUX" ]; then
@@ -215,5 +199,22 @@ fuzzyfind(){
 	fi
 }
 
+[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
+export FZF_DEFAULT_COMMAND='ag --hidden --ignore .git -g ""'
+
+precmd() { eval "$PROMPT_COMMAND" }
+export PROMPT_COMMAND="pwd > /tmp/whereami"
+export PATH=$PATH:/usr/local/go/bin
+export GOPATH=$HOME/go
+export PATH=$PATH:$GOPATH/bin
+export PATH="${PATH}:${HOME}/.local/bin/"
+export PATH="${PATH}:${HOME}/.local/bin/my_scripts"
+export LANG=en_US.UTF-8
+export LANGUAGE=en
+export LC_ALL=en_US.UTF-8 
+#export ALPHAVANTAGE_API_KEY=AOUX3DK05GCWDMZ9
+
 alias f='fuzzyfind'
+bindkey '^ ' autosuggest-accept
 LS_COLORS+=':ow=01;33'
+~/.local/bin/my_scripts/hello.sh

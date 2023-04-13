@@ -8,6 +8,7 @@ feh --bg-fill --randomize ~/Pictures/Wallpapers/* &
 #arr=("xfce4-power-man" "copyq" "fcitx5" "dunst" "clipmenud" "qv2ray" "redshift-gtk" "mpd" "picom" "qbittorrent" "nutstore" "solaar")
 # arr=("xfce4-power-manager" "diodon" "dwmblocks", "firefox")
 # arr=("diodon")
+#arr=("xfce4-power-manager")
 
 for value in ${arr[@]}; do
   if [[ ! $(pgrep ${value}) ]]; then
