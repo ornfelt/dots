@@ -73,7 +73,7 @@ static const Rule rules[] = {
 	{ NULL,      "gnome-calculator",    NULL,               0,              1,           0,         0,        -1 },
 	{ NULL,      "gnome-calendar",      NULL,               0,              1,           0,         0,        -1 },
 	{ NULL,      "yad",                 NULL,               0,              1,           0,         0,        -1 },
-	{ NULL,      "Nm-connection-editor",NULL,               0,              1,           0,         0,        -1 },
+	{ NULL,      "nm-connection-editor",NULL,               0,              1,           0,         0,        -1 },
 };
 
 /* layout(s) */

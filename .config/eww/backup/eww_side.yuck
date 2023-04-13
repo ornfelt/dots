@@ -76,20 +76,6 @@
                 )
 )
 
-(defwidget myPictureWidget []
-    (box        :class "myPicture"
-                :orientation "v"
-                :space-evenly false
-                :spacing "0"
-                :halign "center"
-                :valign "center"
-
-                (image  :path "${imgMyPicture}"
-                        :width "290"
-                        :height "217")
-			)
-)
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;          POWER WIDGET        ;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -207,77 +193,6 @@
         )
 )
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;        SYSTEM WIDGET         ;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
- 
-(defwidget systemWidget []
-        (box    :orientation "v"
-                :class "system"
-                :space-evenly false
-                :spacing 35;
-                :valign "center"
-                :halign "center"
-                (box    :orientation "h"
-                        :class "metric-ram"
-                        :space-evenly false
-                        
-                        (label  :text "" 
-                                :class "ram-lable")
-                        (scale  :min 0
-                                :max 101
-                                :active "false"
-                                :value "${ram}")
-                )
-                
-
-                (box    :orientation "h"
-                        :class "metric-vol"
-                        :space-evenly false
-                        (label  :text ""
-                                :class "vol-lable")
-                        (scale  :min 0
-                                :max 101
-                                :value "${vol}"
-                                :onchange "amixer -D pulse sset Master {}%")
-                )
-
-                (box    :orientation "h"
-                        :class "metric-bright"
-                        :space-evenly false
-
-                        (label  :text ""
-                                :class "bright-lable")
-                        (scale  :min 0
-                                :max 101
-                                :value "${bright}"
-                                :onchange "timeout 15s /home/jonas/.bin/setBright {}")
-                )
-
-                (box    :orientation "h"
-                        :class "metric-root"
-                        :space-evenly false
-                        (label  :text ""
-                                :class "root-lable")
-                        (scale  :min 0
-                                :max 101
-                                :active "false"
-                                :value {round((1 - (EWW_DISK["/"].free / EWW_DISK["/"].total)) * 100, 0)})
-                )
-
-                (box     :orientation "h"
-                        :class "metric-disk"
-                        :space-evenly false
-                        (label  :text ""
-                                :class "disk-lable")
-                        (scale  :min 0
-                                :max 101
-                                :active "false"
-                                :value {round((1 - (EWW_DISK["/ArchDisk"].free / EWW_DISK["/ArchDisk"].total)) * 100, 0)})
-                )
-        )
-)
-
 
 (defwidget centerWidget[]
 
@@ -289,176 +204,90 @@
 ;;;;;;;;;;;;;;;;         FETCH WIDGET         ;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defwidget fetchWidget []
-        (box    :orientation "v"
-                :valign "center"
-                :halign "center"
-                :space-evenly "false"
-                :spacing "35"
+;;(defwidget fetchWidget []
+;;        (box    :orientation "v"
+;;                :valign "center"
+;;                :halign "center"
+;;                :space-evenly "false"
+;;                :spacing "35"
+;;
+;;                (box    
+;;                        :halign "center"
+;;                        :class "fetch"
+;;                        (label  :text "jonas @ jonas"
+;;                                :class "blue")
+;;                )
+;;
+;;                (box    :orientation "h"
+;;                        :space-evenly "false"
+;;                        :spacing 25;
+;;
+;;                        (box    :orientation "v"
+;;                                :class "fetch"
+;;                                :spacing 5;
+;;                                (label  :class "pink" 
+;;                                        :halign "end"
+;;                                        :text "")
+;;                                (label :class "green" 
+;;                                        :halign "end"
+;;                                        :text "")
+;;                                (label  :class "yellow" 
+;;                                        :halign "end"
+;;                                        :text "缾")
+;;                                (label  :class "blue" 
+;;                                        :halign "end"
+;;                                        :text "")
+;;                                (label  :class "violet" 
+;;                                        :halign "end"
+;;                                        :text "")
+;;                                (label  :class "cyan" 
+;;                                        :halign "end"
+;;                                        :text "")
+;;                        )
+;;
+;;                        (box    :orientation "v"
+;;                                :class "fetch"
+;;                                (label  :class "pink" 
+;;                                        :halign "start"
+;;                                        :text ": arch")
+;;                                (label :class "green" 
+;;                                        :halign "start"
+;;                                        :text ": i3")
+;;                                (label  :class "yellow" 
+;;                                        :halign "start"
+;;                                        :text ": dem")
+;;                                (label  :class "blue" 
+;;                                        :halign "start"
+;;                                        :text ": zsh")
+;;                                (label  :class "violet" 
+;;                                        :halign "start"
+;;                                        :text ": ${uptime}")
+;;                                (label  :class "cyan" 
+;;                                        :halign "start"
+;;                                        :text ": ${packages}")
+;;                        )
+;;                )
+;;
+;;                (box    :orientation "h"
+;;                        :halign "center"
+;;                        :class "dots"
+;;                        :spacing 15;
+;;                        (label  :text ""
+;;                                :class "pink")
+;;                        (label  :text ""
+;;                                :class "green")
+;;                        (label  :text ""
+;;                                :class "yellow")
+;;                        (label  :text ""
+;;                                :class "blue")
+;;                        (label  :text ""
+;;                                :class "violet")
+;;                        (label  :text ""
+;;                                :class "cyan")
+;;                )
+;;        )
+;;)
 
-                (box    
-                        :halign "center"
-                        :class "fetch"
-                        (label  :text "jonas @ jonas"
-                                :class "blue")
-                )
-
-                (box    :orientation "h"
-                        :space-evenly "false"
-                        :spacing 25;
-
-                        (box    :orientation "v"
-                                :class "fetch"
-                                :spacing 5;
-                                (label  :class "pink" 
-                                        :halign "end"
-                                        :text "")
-                                (label :class "green" 
-                                        :halign "end"
-                                        :text "")
-                                (label  :class "yellow" 
-                                        :halign "end"
-                                        :text "缾")
-                                (label  :class "blue" 
-                                        :halign "end"
-                                        :text "")
-                                (label  :class "violet" 
-                                        :halign "end"
-                                        :text "")
-                                (label  :class "cyan" 
-                                        :halign "end"
-                                        :text "")
-                        )
-
-                        (box    :orientation "v"
-                                :class "fetch"
-                                (label  :class "pink" 
-                                        :halign "start"
-                                        :text ": arch")
-                                (label :class "green" 
-                                        :halign "start"
-                                        :text ": i3")
-                                (label  :class "yellow" 
-                                        :halign "start"
-                                        :text ": dem")
-                                (label  :class "blue" 
-                                        :halign "start"
-                                        :text ": zsh")
-                                (label  :class "violet" 
-                                        :halign "start"
-                                        :text ": ${uptime}")
-                                (label  :class "cyan" 
-                                        :halign "start"
-                                        :text ": ${packages}")
-                        )
-                )
-
-                (box    :orientation "h"
-                        :halign "center"
-                        :class "dots"
-                        :spacing 15;
-                        (label  :text ""
-                                :class "pink")
-                        (label  :text ""
-                                :class "green")
-                        (label  :text ""
-                                :class "yellow")
-                        (label  :text ""
-                                :class "blue")
-                        (label  :text ""
-                                :class "violet")
-                        (label  :text ""
-                                :class "cyan")
-                )
-        )
-)
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;         PLAYER WIDGET        ;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defwidget playerWidgets []
-        (box    :orientation "v"
-                :space-evenly false
-                :halign "center"
-                :valign "center"
-                :spacing "30"
-                (image  :path "${imgCover}"
-                        :width "220"
-                        :height "220")
-
-                (box    :orientation "v"
-                        :space-evenly false
-                        :halign "center"
-                        :spacing "20"
-
-                        (box    :orientation "v"
-                                :space-evenly false
-                                :halign "center"
-                                :spacing "15"
-
-                                (label  :class "artist"
-                                        :text {artist != "" ? "${artist}" : "Artist"})
-
-                                (label  :class "song"
-                                        :text {song != "" ? "${song}" : "Not playing"}) 
-                        )
-
-                        (box    :class "control"
-                                :orientation "h"
-                                :space-evenly true
-                                :spacing 75
-                                (button :onclick "mpc perv" "丹")
-                                (button :onclick "mpc toggle" "${playpause}")
-                                (button :onclick "mpc next" "")
-                        )
-                )
-            
-                (box    :orientation "h"
-                        :class "metric-player"
-    
-                        (scale  :min 0
-                                :max 101
-                                :active "false"
-                                :value {songtime != "" ? "${songtime}" : "0"}
-                        )       
-                )   
-        )
-)
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;       LOCATIONS WIDGET       ;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defwidget homeWidget []
-    (button :class "cyan" 
-            :onclick "dolphin /home/jonas&" "")
-)
-
-(defwidget diskWidget []
-    (button     :class "blue"
-                :onclick "dolphin /ArchDisk&" "")
-)
-
-(defwidget downloadsWidget  []
-    (button :class "green" 
-            :onclick "dolphin /ArchDisk/Downloads&" "")
-)
-
-(defwidget picturesWidget []
-    (button :class "pink" 
-            :onclick "dolphin /ArchDisk/Pictures&" "")
-)
-
-(defwidget documentsWidget []
-    (button :class "violet" 
-            :onclick "dolphin /ArchDisk/Pictures&" "")
-)
-
-(defwidget favouriteWidget []
-    (button :class "violet" 
-            :onclick "dolphin /ArchDisk/Pictures&" "")
-)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;       WINDOWS       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -487,7 +316,7 @@
 
 (defwindow user
         :monitor 0
-        :geometry (geometry     :x "340px"
+        :geometry (geometry     :x "30px"
                                 :y "105px"
                                 :width "360px"
                                 :height "370px"
@@ -499,7 +328,7 @@
 
 (defwindow power
         :monitor 0
-        :geometry (geometry     :x "715px"
+        :geometry (geometry     :x "400px"
                                 :y "105px"
                                 :width "80px"
                                 :height "370px"
@@ -511,9 +340,9 @@
 
 (defwindow date
         :monitor 0
-        :geometry (geometry     :x "340px"
-                                :y "490px"
-                                :width "455px"
+        :geometry (geometry     :x "30px"
+                                :y "485px"
+                                :width "450px"
                                 :height "180px"
                                 :anchor "top left")
         :windowtype "dock"
@@ -522,8 +351,8 @@
 
 (defwindow control
         :monitor 0
-        :geometry (geometry     :x "340px"
-                                :y "685px"
+        :geometry (geometry     :x "30px"
+                                :y "675px"
                                 :width "360px"
                                 :height "260px"
                                 :anchor "top left")
@@ -534,8 +363,8 @@
 
 (defwindow screenshot
         :monitor 0
-        :geometry (geometry     :x "715px"
-                                :y "685px"
+        :geometry (geometry     :x "400px"
+                                :y "675px"
                                 :width "65px"
                                 :height "260px"
                                 :anchor "top left")
