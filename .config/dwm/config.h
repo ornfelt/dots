@@ -124,6 +124,7 @@ static const char *termcmd[]  = { TERMINAL, NULL };
  */
 ResourcePref resources[] = {
 		{ "color0",		STRING,	&normbordercolor },
+		/* { "foreground",		STRING,	&selbordercolor }, */
 		{ "color8",		STRING,	&selbordercolor },
 		{ "color0",		STRING,	&normbgcolor },
 		{ "foreground",		STRING,	&normfgcolor },
