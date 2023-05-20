@@ -2,17 +2,23 @@
 
 ## dwm
 
+![dwm](./Screenshots/dwm/dwm_eww.png?raw=true "dwm")
+
+Multiple monitors:
+
 ![dwm](./Screenshots/dwm.png?raw=true "dwm")
 
 ## Hyprland
 
+![Hyprland](./Screenshots/hyprland/1668632438.png?raw=true "Hyprland")
+
+Multiple monitors:
+
 ![Hyprland](./Screenshots/hyprland1.png?raw=true "Hyprland")
-
-
 
 ![Hyprland](./Screenshots/hyprland2.png?raw=true "Hyprland")
 
-
+[SWWW](https://github.com/Horus645/swww):
 
 ![Hyprland_swww](./Screenshots/hyprland_swww.png?raw=true "Hyprland_swww")
 
