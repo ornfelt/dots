@@ -1,16 +1,20 @@
 # My dotfiles
 
+## dwm
+
+![dwm](./Screenshots/dwm.png?raw=true "dwm")
+
 ## Hyprland
 
 ![Hyprland](./Screenshots/hyprland1.png?raw=true "Hyprland")
 
+
+
 ![Hyprland](./Screenshots/hyprland2.png?raw=true "Hyprland")
 
+
+
 ![Hyprland_swww](./Screenshots/hyprland_swww.png?raw=true "Hyprland_swww")
-
-## dwm
-
-![dwm](./Screenshots/dwm_current.png?raw=true "dwm")
 
 ## i3
 
