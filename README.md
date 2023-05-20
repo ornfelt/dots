@@ -18,6 +18,7 @@ Multiple monitors:
 
 ![Hyprland](./Screenshots/hyprland1.png?raw=true "Hyprland")
 
+Multiple monitors expanded waybar:
 
 ![Hyprland](./Screenshots/hyprland2.png?raw=true "Hyprland")
 
@@ -28,7 +29,7 @@ Multiple monitors:
 
 ## i3
 
-![i3](./Screenshots/i3/i3_eww.png?raw=true "i3")
+![i3](./Screenshots/i3/i3_new_2.png?raw=true "i3")
 
 ## Reddit posts
 
