@@ -2141,19 +2141,13 @@ spawn(const Arg *arg)
 void
 tag(const Arg *arg)
 {
-	if ((arg->ui & 10101) == 0  && selmon != mons) {
+	if ((arg->ui & 341) == 0  && selmon != mons) {
 		if (selmon->sel && arg->ui & TAGMASK) {
 			selmon->sel->tags = arg->ui & TAGMASK;
 			focus(NULL);
 			arrange(selmon);
 		}
-	} else if ((arg->ui & TAGMASK) == (1 << 5) && selmon == mons){
-		tagnextmon(arg);
-	} else if ((arg->ui & TAGMASK) == (1 << 5)){
-			selmon->sel->tags = arg->ui & TAGMASK;
-			focus(NULL);
-			arrange(selmon);
-	} else if (((arg->ui & 10101) > 0  && selmon == mons)){
+	} else if (((arg->ui & 341) > 0  && selmon == mons)){
 		if (selmon->sel && arg->ui & TAGMASK) {
 			selmon->sel->tags = arg->ui & TAGMASK;
 			focus(NULL);
@@ -2168,16 +2162,11 @@ void
 tagview(const Arg *arg)
 {
 	// If first mon and moving to even tag (other mon)
-	if ((arg->ui & 10101) == 0  && selmon == mons) {
+	if ((arg->ui & 341) == 0  && selmon == mons) {
 		tagnthmonview(&((Arg) { .i = 1 }));
 		tagnewmon(arg);
 		return;
-	} else if (((arg->ui & TAGMASK) == (1 << 5) && selmon == mons)){
-		tagnthmonview(&((Arg) { .i = 1 }));
-		tagnewmon(arg);
-	} else if (((arg->ui & TAGMASK) == (1 << 5))){
-
-	} else if (((arg->ui & 10101) > 0  && selmon != mons)){
+	} else if (((arg->ui & 341) > 0  && selmon != mons)){
 		tagnthmonview(&((Arg) { .i = 0 }));
 		tagnewmon(arg);
 		return;
@@ -2701,12 +2690,9 @@ view(const Arg *arg)
 	/* } */
 
 	// GENIUS 10101
-	if ((arg->ui & 10101) == 0 ) {
+	if ((arg->ui & 341) == 0 ) {
 		focusnthmon(&((Arg) { .i = 1 }));
-	}else if ((arg->ui & TAGMASK) == (1 << 5)){
-		focusnthmon(&((Arg) { .i = 1 }));
-	}
-	else{
+	} else{
 		focusnthmon(&((Arg) { .i = 0 }));
 	}
 
