@@ -1404,7 +1404,7 @@ manage(Window w, XWindowAttributes *wa)
 		c->isfloating = c->oldstate = t || c->isfixed;
 	if (c->isfloating){
 		XRaiseWindow(dpy, c->win);
-		if (strcmp(c->name, "Calendar") == 0) {
+		if (strcmp(c->name, "YAD") == 0) {
             c->x = 1489;
             c->y = 42;
             c->w = 405;
