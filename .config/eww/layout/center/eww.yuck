@@ -101,9 +101,9 @@
                         :onclick "poweroff" "")
                 (button :class "blue"
                         :onclick "reboot" "")
-                (button :class "violet"
+                (button :class "violet2"
                         :onclick "/home/jonas/.bin/logout" "")
-                (button :class "yellow"
+                (button :class "yellow2"
                         :onclick "/home/jonas/.bin/lock" "")
     )
 )
@@ -299,7 +299,7 @@
                 (box    
                         :halign "center"
                         :class "fetch"
-                        (label  :text "jonas @ jonas"
+                        (label  :text "jonas @ linux"
                                 :class "blue")
                 )
 
@@ -313,7 +313,7 @@
                                 (label  :class "pink" 
                                         :halign "end"
                                         :text "")
-                                (label :class "green" 
+                                (label :class "green3" 
                                         :halign "end"
                                         :text "")
                                 (label  :class "yellow" 
@@ -337,7 +337,7 @@
                                         :text ": arch")
                                 (label :class "green" 
                                         :halign "start"
-                                        :text ": i3")
+                                        :text ": dwm")
                                 (label  :class "yellow" 
                                         :halign "start"
                                         :text ": dem")
@@ -431,7 +431,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defwidget homeWidget []
-    (button :class "cyan" 
+    (button :class "cyan2" 
             :onclick "dolphin /home/jonas&" "")
 )
 
@@ -441,7 +441,7 @@
 )
 
 (defwidget downloadsWidget  []
-    (button :class "green" 
+    (button :class "green2" 
             :onclick "dolphin /ArchDisk/Downloads&" "")
 )
 
@@ -488,7 +488,7 @@
 (defwindow user
         :monitor 0
         :geometry (geometry     :x "340px"
-                                :y "105px"
+                                :y "130px"
                                 :width "360px"
                                 :height "370px"
                                 :anchor "top left")
@@ -500,7 +500,7 @@
 (defwindow power
         :monitor 0
         :geometry (geometry     :x "715px"
-                                :y "105px"
+                                :y "130px"
                                 :width "80px"
                                 :height "370px"
                                 :anchor "top left")
@@ -512,7 +512,7 @@
 (defwindow date
         :monitor 0
         :geometry (geometry     :x "340px"
-                                :y "490px"
+                                :y "515px"
                                 :width "455px"
                                 :height "180px"
                                 :anchor "top left")
@@ -523,7 +523,7 @@
 (defwindow control
         :monitor 0
         :geometry (geometry     :x "340px"
-                                :y "685px"
+                                :y "710px"
                                 :width "360px"
                                 :height "260px"
                                 :anchor "top left")
@@ -535,7 +535,7 @@
 (defwindow screenshot
         :monitor 0
         :geometry (geometry     :x "715px"
-                                :y "685px"
+                                :y "710px"
                                 :width "65px"
                                 :height "260px"
                                 :anchor "top left")
@@ -546,7 +546,7 @@
 (defwindow system
         :monitor 0
         :geometry (geometry     :x "810px"
-                                :y "615px"
+                                :y "640px"
                                 :width "420px"
                                 :height "330px"
                                 :anchor "top left")
@@ -557,7 +557,7 @@
 (defwindow player
         :monitor 0
         :geometry (geometry     :x "810"
-                                :y "105px"
+                                :y "130px"
                                 :width "420px"
                                 :height "500px"
                                 :anchor "top left")
@@ -568,7 +568,7 @@
 (defwindow fetch
         :monitor 0
         :geometry (geometry     :x "1245px"
-                                :y "535px"
+                                :y "560px"
                                 :width "290px"
                                 :height "410px"
                                 :anchor "top left")
@@ -581,7 +581,7 @@
 (defwindow home
         :monitor 0
         :geometry (geometry     :x "1245px"
-                                :y "335px"
+                                :y "360px"
                                 :width "90px"
                                 :height "90px"
                                 :anchor "top left")
@@ -592,7 +592,7 @@
 (defwindow downloads
         :monitor 0
         :geometry (geometry     :x "1345px"
-                                :y "335px"
+                                :y "360px"
                                 :width "90px"
                                 :height "90px"
                                 :anchor "top left")
@@ -603,7 +603,7 @@
 (defwindow documents
         :monitor 0
         :geometry (geometry     :x "1445px"
-                                :y "335px"
+                                :y "360px"
                                 :width "90px"
                                 :height "90px"
                                 :anchor "top left")
@@ -614,7 +614,7 @@
 (defwindow disk
         :monitor 0
         :geometry (geometry     :x "1245px"
-                                :y "433px"
+                                :y "458px"
                                 :width "90px"
                                 :height "90px"
                                 :anchor "top left")
@@ -625,7 +625,7 @@
 (defwindow pictures
         :monitor 0
         :geometry (geometry     :x "1345px"
-                                :y "433px"
+                                :y "458px"
                                 :width "90px"
                                 :height "90px"
                                 :anchor "top left")
@@ -636,7 +636,7 @@
 (defwindow favourite
         :monitor 0
         :geometry (geometry     :x "1445px"
-                                :y "433px"
+                                :y "458px"
                                 :width "90px"
                                 :height "90px"
                                 :anchor "top left")
@@ -647,7 +647,7 @@
 (defwindow myPicture
         :monitor 0
         :geometry (geometry     :x "1245px"
-                                :y "105px"
+                                :y "130px"
                                 :width "290px"
                                 :height "217px"
                                 :anchor "top left")

@@ -20,7 +20,8 @@ static int browsergaps        = 0;        /* 0 means no outer gap when there is 
 static int showbar            = 1;        /* 0 means no bar */
 static int topbar             = 1;        /* 0 means bottom bar */
 /* static char *fonts[]          = { "Linux Libertine Mono:size=12", "Mono:pixelsize=12:antialias=true:autohint=true", "FontAwesome:size=15","FontAwesome5Brands:size=13:antialias:true", "FontAwesome5Free:size=13:antialias:true", "FontAwesome5Free:style=Solid:size=13:antialias:true","JetBrainsMono Nerd Font:size=12:style=bold:antialias=true:autohint=true", "Nerd Font Complete Mono:size=13", "JoyPixels:pixelsize=10:antialias=true:autohint=true", "Inconsolata Nerd Font:size=15", "Nerd Font Complete Mono:size=13" }; */
-static const char *fonts[]               = { "JetBrainsMono Nerd Font:size=11:style=bold:antialias=true:autohint=true", "JoyPixels:pixelsize=13:antialias=true:autohint=true" };
+/* static const char *fonts[]               = { "JetBrainsMono Nerd Font:size=11:style=bold:antialias=true:autohint=true", "JoyPixels:pixelsize=13:antialias=true:autohint=true" }; */
+static const char *fonts[]               = { "JetBrainsMono Nerd Font:size=11:style=bold:antialias=true:autohint=true" };
 static char normbgcolor[]           = "#222222";
 static char normbordercolor[]       = "#444444";
 static char normfgcolor[]           = "#bbbbbb";
@@ -124,8 +125,7 @@ static const char *termcmd[]  = { TERMINAL, NULL };
  */
 ResourcePref resources[] = {
 		{ "color0",		STRING,	&normbordercolor },
-		/* { "foreground",		STRING,	&selbordercolor }, */
-		{ "color8",		STRING,	&selbordercolor },
+		{ "foreground",		STRING,	&selbordercolor },
 		{ "color0",		STRING,	&normbgcolor },
 		{ "foreground",		STRING,	&normfgcolor },
 		{ "color0",		STRING,	&selfgcolor },

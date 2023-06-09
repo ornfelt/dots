@@ -101,9 +101,9 @@
                         :onclick "poweroff" "")
                 (button :class "blue"
                         :onclick "reboot" "")
-                (button :class "violet"
+                (button :class "violet2"
                         :onclick "/home/jonas/.bin/logout" "")
-                (button :class "yellow"
+                (button :class "yellow2"
                         :onclick "/home/jonas/.bin/lock" "")
     )
 )
@@ -313,7 +313,7 @@
                                 (label  :class "pink" 
                                         :halign "end"
                                         :text "")
-                                (label :class "green" 
+                                (label :class "green3" 
                                         :halign "end"
                                         :text "")
                                 (label  :class "yellow" 
@@ -431,7 +431,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defwidget homeWidget []
-    (button :class "cyan" 
+    (button :class "cyan2" 
             :onclick "dolphin /home/jonas&" "")
 )
 
@@ -441,7 +441,7 @@
 )
 
 (defwidget downloadsWidget  []
-    (button :class "green" 
+    (button :class "green2" 
             :onclick "dolphin /ArchDisk/Downloads&" "")
 )
 
