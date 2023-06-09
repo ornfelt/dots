@@ -2662,12 +2662,12 @@ updatewmhints(Client *c)
 void
 view(const Arg *arg)
 {
-	/* if ((arg->ui & TAGMASK) == selmon->tagset[selmon->seltags]) */
- 		/* return; */
-	if ((arg->ui & TAGMASK) == selmon->tagset[selmon->seltags]) {
-		view(&((Arg) { .ui = 0 }));
-		return;
-	}
+	if ((arg->ui & TAGMASK) == selmon->tagset[selmon->seltags])
+ 		return;
+	/* if ((arg->ui & TAGMASK) == selmon->tagset[selmon->seltags]) { */
+	/* 	view(&((Arg) { .ui = 0 })); */
+	/* 	return; */
+	/* } */
 
 	// GENIUS 101010101
 	if ((arg->ui & 341) == 0) {
