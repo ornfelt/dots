@@ -2136,43 +2136,42 @@ spawn(const Arg *arg)
 void
 tag(const Arg *arg)
 {
-	if ((arg->ui & 341) == 0  && selmon != mons) {
-		if (selmon->sel && arg->ui & TAGMASK) {
-			selmon->sel->tags = arg->ui & TAGMASK;
-			focus(NULL);
-			arrange(selmon);
-		}
-	} else if (((arg->ui & 341) > 0  && selmon == mons)){
-		if (selmon->sel && arg->ui & TAGMASK) {
-			selmon->sel->tags = arg->ui & TAGMASK;
-			focus(NULL);
-			arrange(selmon);
-		}
-	}else{
-		tagnextmon(arg);
-	}
+    if (selmon->sel && arg->ui & TAGMASK) {
+        // Moving to even tag, selected mon != first mon
+        if ((arg->ui & 341) == 0 && selmon != mons) {
+            selmon->sel->tags = arg->ui & TAGMASK;
+            focus(NULL);
+            arrange(selmon);
+        // Moving to odd tag, selected mon == first mon
+        } else if ((arg->ui & 341) > 0 && selmon == mons) {
+            selmon->sel->tags = arg->ui & TAGMASK;
+            focus(NULL);
+            arrange(selmon);
+        } else {
+            tagnextmon(arg);
+        }
+    }
 }
 
 void
 tagview(const Arg *arg)
 {
-	// If first mon and moving to even tag (other mon)
-	if ((arg->ui & 341) == 0  && selmon == mons) {
-		tagnthmonview(&((Arg) { .i = 1 }));
-		tagnewmon(arg);
-		return;
-	} else if (((arg->ui & 341) > 0  && selmon != mons)){
-		tagnthmonview(&((Arg) { .i = 0 }));
-		tagnewmon(arg);
-		return;
-	}
-
-	if (selmon->sel && arg->ui & TAGMASK) {
-		selmon->sel->tags = arg->ui & TAGMASK;
-		focus(NULL);
-		arrange(selmon);
-		view(arg);
-	}
+    if (selmon->sel && arg->ui & TAGMASK) {
+        // If first monitor and moving to even tag (second mon)
+        if ((arg->ui & 341) == 0 && selmon == mons) {
+            tagnthmonview(&((Arg) { .i = 1 }));
+            tagnewmon(arg);
+            return;
+        } else if ((arg->ui & 341) > 0 && selmon != mons){
+            tagnthmonview(&((Arg) { .i = 0 }));
+            tagnewmon(arg);
+            return;
+        }
+        selmon->sel->tags = arg->ui & TAGMASK;
+        focus(NULL);
+        arrange(selmon);
+        view(arg);
+    }
 }
 
 void
@@ -2265,11 +2264,13 @@ togglefloating(const Arg *arg)
 	if (selmon->sel->isfullscreen) /* no support for fullscreen windows */
 		return;
 	selmon->sel->isfloating = !selmon->sel->isfloating || selmon->sel->isfixed;
-	if (selmon->sel->isfloating)
+	if (selmon->sel->isfloating) {
+        /* selmon->sel->bw = 0; */
+        /* configure(selmon->sel); */ 
 		/* restore last known float dimensions */
 		resize(selmon->sel, selmon->sel->sfx, selmon->sel->sfy,
 		       selmon->sel->sfw, selmon->sel->sfh, False);
-	else {
+    } else {
 		/* save last known float dimensions */
 		selmon->sel->sfx = selmon->sel->x;
 		selmon->sel->sfy = selmon->sel->y;
@@ -2278,22 +2279,6 @@ togglefloating(const Arg *arg)
 	}
 	arrange(selmon);
 }
-
-// Without save floats patch:
-/* void */
-/* togglefloating(const Arg *arg) */
-/* { */
-/* 	if (!selmon->sel) */
-/* 		return; */
-/* 	if (selmon->sel->isfullscreen) /1* no support for fullscreen windows *1/ */
-/* 		return; */
-/* 	selmon->sel->isfloating = !selmon->sel->isfloating || selmon->sel->isfixed; */
-/* 	if (selmon->sel->isfloating) */
-/* 		resize(selmon->sel, selmon->sel->x, selmon->sel->y, */
-/* 			selmon->sel->w, selmon->sel->h, 0); */
-/* 	arrange(selmon); */
-/* } */
-
 
 void
 togglefullscr(const Arg *arg)
@@ -2677,15 +2662,15 @@ updatewmhints(Client *c)
 void
 view(const Arg *arg)
 {
-	if ((arg->ui & TAGMASK) == selmon->tagset[selmon->seltags])
- 		return;
-	/* if ((arg->ui & TAGMASK) == selmon->tagset[selmon->seltags]) { */
-	/* 	view(&((Arg) { .ui = 0 })); */
-	/* 	return; */
-	/* } */
+	/* if ((arg->ui & TAGMASK) == selmon->tagset[selmon->seltags]) */
+ 		/* return; */
+	if ((arg->ui & TAGMASK) == selmon->tagset[selmon->seltags]) {
+		view(&((Arg) { .ui = 0 }));
+		return;
+	}
 
-	// GENIUS 10101
-	if ((arg->ui & 341) == 0 ) {
+	// GENIUS 101010101
+	if ((arg->ui & 341) == 0) {
 		focusnthmon(&((Arg) { .i = 1 }));
 	} else{
 		focusnthmon(&((Arg) { .i = 0 }));
