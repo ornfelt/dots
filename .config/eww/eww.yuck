@@ -98,13 +98,13 @@
     (box        :class "power" 
                 :orientation "v"
                 (button :class "pink"
-                        :onclick "poweroff" "")
+                        :onclick "poweroff" "󰐥")
                 (button :class "blue"
-                        :onclick "reboot" "")
+                        :onclick "reboot" "")
                 (button :class "violet2"
                         :onclick "/home/jonas/.bin/logout" "")
                 (button :class "yellow2"
-                        :onclick "/home/jonas/.bin/lock" "")
+                        :onclick "/home/jonas/.bin/lock" "")
     )
 )
 
@@ -432,7 +432,7 @@
 
 (defwidget homeWidget []
     (button :class "cyan2" 
-            :onclick "dolphin /home/jonas&" "")
+            :onclick "dolphin /home/jonas&" "󰋜")
 )
 
 (defwidget diskWidget []
@@ -442,7 +442,7 @@
 
 (defwidget downloadsWidget  []
     (button :class "green2" 
-            :onclick "dolphin /ArchDisk/Downloads&" "")
+            :onclick "dolphin /ArchDisk/Downloads&" "󰇚")
 )
 
 (defwidget picturesWidget []
@@ -452,12 +452,12 @@
 
 (defwidget documentsWidget []
     (button :class "violet" 
-            :onclick "dolphin /ArchDisk/Pictures&" "")
+            :onclick "dolphin /ArchDisk/Pictures&" "󱔘")
 )
 
 (defwidget favouriteWidget []
     (button :class "violet" 
-            :onclick "dolphin /ArchDisk/Pictures&" "")
+            :onclick "dolphin /ArchDisk/Pictures&" "󰓎")
 )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

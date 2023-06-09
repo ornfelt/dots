@@ -2,30 +2,31 @@
 
 ## dwm
 
-![dwm](./Screenshots/dwm/dwm_eww.png?raw=true "dwm")
-
+![dwm](./Screenshots/dwm.png?raw=true "dwm")
 
 Multiple monitors:
 
-![dwm](./Screenshots/dwm.png?raw=true "dwm")
-
+![dwm_mul_mon](./Screenshots/dwm_mul_mon.png?raw=true "dwm_mul_mon")
 
 ## Hyprland
 
-![Hyprland](./Screenshots/hyprland/1668632438.png?raw=true "Hyprland")
+![Hyprland](./Screenshots/hyprland.png?raw=true "Hyprland")
 
 Multiple monitors:
 
-![Hyprland](./Screenshots/hyprland1.png?raw=true "Hyprland")
+![Hyprland_mul_mon](./Screenshots/hyprland_mul_mon.png?raw=true "Hyprland_mul_mon")
 
 Multiple monitors expanded waybar:
 
-![Hyprland](./Screenshots/hyprland2.png?raw=true "Hyprland")
+![Hyprland](./Screenshots/hyprland_mul_mon_expanded.png?raw=true "Hyprland")
 
-[SWWW](https://github.com/Horus645/swww):
+[SWWW (Animated background changer)](https://github.com/Horus645/swww):
 
 ![Hyprland_swww](./Screenshots/hyprland_swww.png?raw=true "Hyprland_swww")
 
+## Awesome
+
+![Awesome](./Screenshots/awesome/awesomewm.png?raw=true "Awesome")
 
 ## i3
 
