@@ -26,7 +26,6 @@ fakeroot
 feh
 firefox
 fish
-flatpak
 flex
 foot
 fuse2

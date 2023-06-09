@@ -13,19 +13,23 @@
 
 # [ $(pamixer --get-mute) = true ] && echo 🔇 && exit
 # [ $(pamixer --get-mute) = true ] && echo 婢 && exit
-[ $(pamixer --get-mute) = true ] && echo "婢 0%" && exit
+#[ $(pamixer --get-mute) = true ] && echo "婢 0%" && exit
+[ $(pamixer --get-mute) = true ] && echo "󰖁 0%" && exit
 
 vol="$(pamixer --get-volume)"
 
-if [ "$vol" -gt "70" ]; then
-	# icon="🔊"
-	icon="墳 "
-elif [ "$vol" -lt "30" ]; then
-	# icon="🔈"
-	icon="墳 "
-else
-	# icon="🔉"
-	icon="墳 "
-fi
+icon="󰕾 "
+#
+
+#if [ "$vol" -gt "70" ]; then
+#    # icon="🔊"
+#    icon="墳 "
+#elif [ "$vol" -lt "30" ]; then
+#    # icon="🔈"
+#    icon="墳 "
+#else
+#    # icon="🔉"
+#    icon="墳 "
+#fi
 
 echo "$icon$vol%"

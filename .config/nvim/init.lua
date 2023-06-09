@@ -33,16 +33,16 @@ o.relativenumber = true
 -- o.signcolumn = 'yes'
 o.cursorline = true
 
--- o.expandtab = true
+o.expandtab = true -- indent using spaces
 o.smarttab = true
 -- o.cindent = true
-o.autoindent = true
-o.smartindent = true
+o.autoindent = true -- autoindents
+o.smartindent = true -- autoindent with syntax support
 o.wrap = true
 -- o.textwidth = 300
-o.tabstop = 4
-o.shiftwidth = 4
--- o.softtabstop = 4
+o.tabstop = 4 -- width used to display tab char
+o.shiftwidth = 4 -- width used for shifting commands (<< >> ==), 0 means replicate tabstop
+-- o.softtabstop = 4 -- how wide an indentation is supposed to span. 0 means replicate tabstop
 o.softtabstop = -1 -- If negative, shiftwidth value is used
 o.list = true
 -- o.listchars = 'trail:·,nbsp:◇,tab:→ ,extends:▸,precedes:◂'
@@ -127,6 +127,7 @@ let g:jedi#popup_on_dot = 1
 let g:syntastic_always_populate_loc_list = 0
 let g:syntastic_check_on_open = 1
 let g:syntastic_check_on_wq = 0
+let g:NERDTreeQuitOnOpen=1
 let NERDTreeShowHidden=1
 
 " Disable tab key for vimwiki (enables autocomplete via tabbing)

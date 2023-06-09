@@ -246,7 +246,7 @@ label:focus {
 
 #network{
     color:#000;
-    padding-right: 14px;
+    /* padding-right: 14px; */
 }
 
 #network.disabled{
