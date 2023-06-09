@@ -24,9 +24,9 @@ Multiple monitors expanded waybar:
 
 ![Hyprland_swww](./Screenshots/hyprland_swww.png?raw=true "Hyprland_swww")
 
-## Awesome
+## AwesomeWM
 
-![Awesome](./Screenshots/awesome/awesomewm.png?raw=true "Awesome")
+![AwesomeWM](./Screenshots/awesome/awesomewm.png?raw=true "AwesomeWM")
 
 ## i3
 
