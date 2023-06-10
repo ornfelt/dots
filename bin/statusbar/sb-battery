@@ -39,7 +39,7 @@ for battery in /sys/class/power_supply/BAT?*; do
 	case "$(cat "$battery/status")" in
 		"Full") status=" " ;;
 		"Discharging") status="" ;;
-		"Charging") status="" ;;
+		"Charging") status="󰂄" ;;
 		#"Charging") status="ﮣ⚡ " ;;
 		"Not charging") status="" ;;
 		"Unknown") status="" ;;
@@ -47,12 +47,15 @@ for battery in /sys/class/power_supply/BAT?*; do
 	capacity=$(cat "$battery/capacity")
 	# Will make a warn variable if discharging and low
 	#[ "$status" = "🔋" ] && [ "$capacity" -le 25 ] && warn="❗"
+    if [ $capacity = "99" ]; then
+        capacity=100;
+    fi
 
 	# Prints the info
 	# For debian change env to /usr/bin/bash and remove whitespaces from prints...
 	if [[ $status = " " ]]; then
 		printf "%s %s%d%%" "$status" "$warn" "$capacity"; unset warn
-	elif [[ $status = "" ]]; then
+	elif [[ $status = "󰂄" ]]; then
 		printf "%s %s%d%%" "$status" "$warn" "$capacity"; unset warn
 	elif (( $capacity > 85)); then
 		printf "  %s%s%d%%" "$status" "$warn" "$capacity"; unset warn

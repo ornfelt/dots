@@ -1,13 +1,35 @@
 (some keys are mapped in vimscript instead)
 
+-- map('n', '*', '*N')
+-- Fix n and N. Keeping cursor in center
+-- map('n', 'n', 'nzz')
+-- map('n', 'N', 'Nzz')
+
+-- Mimic shell movements
+map('i', '<C-E>', '<ESC>A')
+map('i', '<C-A>', '<ESC>I')
+map('i', '<C-v>', '<Esc>"+p')
+map('i', '<C-a>', '<Esc>gg"yG') -- Copy everything from file into clipboard
+map('i', '<C-BS>', '<C-W>a') -- Copy everything from file into clipboard
+map('i', '<S-Tab>', '<BS>')
+-- Undo break points
+-- map('i', ',', ',<c-g>u')
+-- map('i', '.', '.<c-g>u')
+-- map('i', '!', '!<c-g>u')
+-- map('i', '?', '?<c-g>u')
+
+-- Make shift-insert work like in Xterm
+map('i', '<S-Insert>', '<Esc><MiddleMouse>A')
+map('n', '<S-Insert>', '<MiddleMouse>')
+
 map('n', '<leader>b', togglebar) -- Toggle lualine
 map('n', '<M-q>', ':q<CR>') -- Quit neovim
 map('n', '<M-z>', ':noh<CR>')
-map <M-x> :call CompileRun()<CR>
+-- map('n', '<M-x>', ':call CompileRun()<CR>')
 map('n', 'Y', 'y$') -- Yank till end of line
-map <F4> <Esc>:set cursorline!<CR>
-map <F5> <Esc>:setlocal spell! spelllang=en_us<CR>
-map <F6> <Esc>:setlocal spell! spelllang=sv<CR>
+-- map('n', 'F4', ':set cursorline!<CR>')
+-- map('n', 'F5', ':setlocal spell! spelllang=en_us<CR>')
+-- map('n', 'F6', ':setlocal spell! spelllang=sv<CR>')
 
 map('n', '<leader>p', 'viw"_dP') -- Replace from void
 map('n', '<leader>d', '"_d') -- Delete to void
@@ -72,7 +94,13 @@ map('n', '<M-<>', ':vsp<CR>')
 map('n', '<M-1>', '1gt')
 map('n', '<M-2>', '2gt')
 map('n', '<M-3>', '3gt')
-...
+map('n', '<M-4>', '4gt')
+map('n', '<M-5>', '5gt')
+map('n', '<M-6>', '6gt')
+map('n', '<M-7>', '7gt')
+map('n', '<M-8>', '8gt')
+map('n', '<M-9>', '9gt')
+map('n', '<M-0>', ':tablast<CR>')
 
 -- Session management
 map('n', '<leader>o', '<C-^>')
@@ -93,14 +121,13 @@ map('n', '<leader>ws', ':%s/\\s\\+$<CR>') -- Remove all extra whitespace
 map('n', '<leader>wu', ':%s/\\%u200b//g<CR>') -- Remove all extra unicode chars
 map('n', '<leader>wb', ':%s/[[:cntrl:]]//g<CR>') -- Remove all hidden characters
 map('n', '<leader>wf', 'gqG<C-o>zz') -- Format rest of the text with vim formatting, go back and center screen
-map('v', '<leader>gu', ':s/\\<./\\u&/g<CR>:noh<CR>') -- Capitalize first letter of each word on visually selected line
+map('v', '<leader>gu', ':s/\\<./\\u&/g<CR>:noh<CR>:noh<CR>') -- Capitalize first letter of each word on visually selected line
 map('v', '<leader>/', '"3y/<C-R>3<CR>') -- Search for highlighted text
 map('v', '<leader>%', '/\\%V') -- Search in highlighted text
 map("n", "Q", "<nop>") -- Remove Ex Mode
 vim.keymap.set("n", "<leader>r", [[:%s/\<<C-r><C-w>\>/<C-r><C-w>/gI<Left><Left><Left>]]) -- Replace word under cursor
 vim.keymap.set("n", "<leader>t", "<cmd>silent !tmux neww tmux-sessionizer<CR>") -- Start tmux-sessionizer
 
--- Autocommands:
 autocmd FileType html inoremap <i<Tab> <em></em> <Space><++><Esc>/<<Enter>GNi
 autocmd FileType html inoremap <b<Tab> <b></b><Space><++><Esc>/<<Enter>GNi
 autocmd FileType html inoremap <h1<Tab> <h1></h1><Space><++><Esc>/<<Enter>GNi
@@ -131,3 +158,7 @@ autocmd FileType sql inoremap vie<Tab> create view x as<Enter>select <Esc>/x<Ent
 
 autocmd FileType vtxt,vimwiki,wiki,text inoremap line<Tab> ----------------------------------------------------------------------------------<Enter>
 autocmd FileType vtxt,vimwiki,wiki,text inoremap date<Tab> <-- <C-R>=strftime("%Y-%m-%d %a")<CR><Esc>A -->
+
+map <F4> <Esc>:set cursorline!<CR>
+map <F5> <Esc>:setlocal spell! spelllang=en_us<CR>
+map <F6> <Esc>:setlocal spell! spelllang=sv<CR>
