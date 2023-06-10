@@ -58,7 +58,7 @@ static Sp scratchpads[] = {
 
 /* tagging */
 static const char *tags[] = { "1", "2", "3", "4", "5", "6", "7", "8", "9" };
-/* static const char *tags[] = { "", "", "", "", "", "", "", "", "" }; */
+/* static const char *tags[] = { "", "", "", "", "", "", "", "", "" }; */
 
 static const Rule rules[] = {
 	/* xprop(1):
@@ -213,7 +213,7 @@ static const Key keys[] = {
 	/* { MODKEY,					XK_semicolon,	shiftview,		{ .i = 1 } }, */
 	/* { MODKEY|ShiftMask,			XK_semicolon,	shifttag,		{ .i = 1 } }, */
 
-	{ MODKEY|ShiftMask,			XK_x,			spawn,		SHCMD("i3lock-fancy") },
+	{ MODKEY|ShiftMask,			XK_x,			spawn,		SHCMD("i3lock") },
 	{ MODKEY|ControlMask,       XK_x,       	spawn,      SHCMD("i3lock -i ~/Downloads/lock-wallpaper.png")},
 	{ MODKEY,					XK_w,			spawn,		SHCMD(TERMINAL " -e ranger ~/") },
 	{ MODKEY,					XK_e,			spawn,		SHCMD("~/.local/bin/my_scripts/ranger_wd.sh " TERMINAL) },
@@ -243,7 +243,8 @@ static const Key keys[] = {
 	{ MODKEY|ShiftMask,			XK_m,			spawn,		SHCMD("spotify") },
 	{ MODKEY|ControlMask,		XK_m,			spawn,		SHCMD("~/.local/bin/my_scripts/open_notes.sh 2 " TERMINAL) },
 	{ MODKEY|ShiftMask,         XK_comma,   	spawn,      SHCMD("~/.local/bin/my_scripts/alert_exit.sh && ~/.local/bin/my_scripts/suspend.sh")},
-	{ MODKEY|ShiftMask,         XK_period,  	spawn,      SHCMD("i3lock-fancy && ~/.local/bin/my_scripts/alert_exit.sh && systemctl suspend")},
+	{ MODKEY|ControlMask,       XK_comma,   	spawn,      SHCMD("~/.local/bin/my_scripts/alert_exit.sh && ~/.local/bin/my_scripts/suspend_mute.sh")},
+	{ MODKEY|ShiftMask,         XK_period,  	spawn,      SHCMD("i3lock && ~/.local/bin/my_scripts/alert_exit.sh && systemctl suspend")},
 	{ MODKEY,					XK_v,			spawn,		SHCMD("~/.local/bin/my_scripts/clip_history.sh greenclip") },
 	{ MODKEY|ShiftMask,			XK_v,			spawn,		SHCMD("~/.local/bin/my_scripts/qr_clip.sh") },
 	{ MODKEY,					XK_comma,		spawn,		SHCMD("~/.local/bin/my_scripts/progrm_helper.sh " TERMINAL) },
@@ -279,9 +280,9 @@ static const Key keys[] = {
 	/* { MODKEY,				XK_F7,				spawn,			SHCMD("td-toggle") }, */
 	/* { MODKEY,				XK_F8,				spawn,			SHCMD("mw -Y") }, */
 	/* { MODKEY,				XK_F9,				spawn,			SHCMD("dmenumount") }, */
-	/* { MODKEY,				XK_F10,				spawn,			SHCMD("dmenuumount") }, */
-	/* { MODKEY,				XK_F11,				spawn,			SHCMD("mpv --no-cache --no-osc --no-input-default-bindings --profile=low-latency --input-conf=/dev/null --title=webcam $(ls /dev/video[0,2,4,6,8] | tail -n 1)") }, */
-	/* { MODKEY,				XK_F12,				spawn,			SHCMD("remaps & notify-send \\\"⌨️ Keyboard remapping...\\\" \\\"Re-running keyboard defaults for any newly plugged-in keyboards.\\\"") }, */
+    { 0,						XK_F10,				spawn,			SHCMD("pactl set-sink-mute @DEFAULT_SINK@ toggle ; kill -44 $(pidof dwmblocks)") },
+    { 0,						XK_F11,				spawn,			SHCMD("pactl set-sink-volume @DEFAULT_SINK@ -5%; kill -44 $(pidof dwmblocks)") },
+    { 0,						XK_F12,				spawn,			SHCMD("pactl set-sink-volume @DEFAULT_SINK@ +5%; kill -44 $(pidof dwmblocks)") },
 	{ 0,					XK_Print,			spawn,			SHCMD("~/.local/bin/my_scripts/screenshot_select.sh") },
 	{ ShiftMask,			XK_Print,			spawn,			SHCMD("~/.local/bin/my_scripts/screenshot.sh") },
 	{ ControlMask,			XK_Print,			spawn,			SHCMD("~/.local/bin/my_scripts/screenshot_ocr.sh") },
