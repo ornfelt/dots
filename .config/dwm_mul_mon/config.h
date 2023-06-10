@@ -215,7 +215,7 @@ static const Key keys[] = {
 	/* { MODKEY,					XK_semicolon,	shiftview,		{ .i = 1 } }, */
 	/* { MODKEY|ShiftMask,			XK_semicolon,	shifttag,		{ .i = 1 } }, */
 
-	{ MODKEY|ShiftMask,			XK_x,			spawn,		SHCMD("i3lock-fancy") },
+	{ MODKEY|ShiftMask,			XK_x,			spawn,		SHCMD("i3lock") },
 	{ MODKEY|ControlMask,       XK_x,       	spawn,      SHCMD("i3lock -i ~/Downloads/lock-wallpaper.png")},
 	{ MODKEY,					XK_w,			spawn,		SHCMD(TERMINAL " -e ranger ~/") },
 	{ MODKEY,					XK_e,			spawn,		SHCMD("~/.local/bin/my_scripts/ranger_wd.sh " TERMINAL) },
@@ -245,7 +245,8 @@ static const Key keys[] = {
 	{ MODKEY|ShiftMask,			XK_m,			spawn,		SHCMD("spotify") },
 	{ MODKEY|ControlMask,		XK_m,			spawn,		SHCMD("~/.local/bin/my_scripts/open_notes.sh 2 " TERMINAL) },
 	{ MODKEY|ShiftMask,         XK_comma,   	spawn,      SHCMD("~/.local/bin/my_scripts/alert_exit.sh && ~/.local/bin/my_scripts/suspend.sh")},
-	{ MODKEY|ShiftMask,         XK_period,  	spawn,      SHCMD("i3lock-fancy && ~/.local/bin/my_scripts/alert_exit.sh && systemctl suspend")},
+	{ MODKEY|ControlMask,       XK_comma,   	spawn,      SHCMD("~/.local/bin/my_scripts/alert_exit.sh && ~/.local/bin/my_scripts/suspend_mute.sh")},
+	{ MODKEY|ShiftMask,         XK_period,  	spawn,      SHCMD("i3lock && ~/.local/bin/my_scripts/alert_exit.sh && systemctl suspend")},
 	{ MODKEY,					XK_v,			spawn,		SHCMD("~/.local/bin/my_scripts/clip_history.sh greenclip") },
 	{ MODKEY|ShiftMask,			XK_v,			spawn,		SHCMD("~/.local/bin/my_scripts/qr_clip.sh") },
 	{ MODKEY,					XK_comma,		spawn,		SHCMD("~/.local/bin/my_scripts/progrm_helper.sh " TERMINAL) },

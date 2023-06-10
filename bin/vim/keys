@@ -1,11 +1,5 @@
 (some keys are mapped in vimscript instead)
 
--- map('n', '*', '*N')
--- Fix n and N. Keeping cursor in center
--- map('n', 'n', 'nzz')
--- map('n', 'N', 'Nzz')
-
--- Mimic shell movements
 map('i', '<C-E>', '<ESC>A')
 map('i', '<C-A>', '<ESC>I')
 map('i', '<C-v>', '<Esc>"+p')
@@ -128,6 +122,7 @@ map("n", "Q", "<nop>") -- Remove Ex Mode
 vim.keymap.set("n", "<leader>r", [[:%s/\<<C-r><C-w>\>/<C-r><C-w>/gI<Left><Left><Left>]]) -- Replace word under cursor
 vim.keymap.set("n", "<leader>t", "<cmd>silent !tmux neww tmux-sessionizer<CR>") -- Start tmux-sessionizer
 
+-- Autocommands:
 autocmd FileType html inoremap <i<Tab> <em></em> <Space><++><Esc>/<<Enter>GNi
 autocmd FileType html inoremap <b<Tab> <b></b><Space><++><Esc>/<<Enter>GNi
 autocmd FileType html inoremap <h1<Tab> <h1></h1><Space><++><Esc>/<<Enter>GNi
