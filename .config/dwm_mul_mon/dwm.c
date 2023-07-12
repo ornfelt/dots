@@ -1400,17 +1400,17 @@ manage(Window w, XWindowAttributes *wa)
 
 	XSelectInput(dpy, w, EnterWindowMask|FocusChangeMask|PropertyChangeMask|StructureNotifyMask);
 	grabbuttons(c, 0);
-	if (!c->isfloating)
-		c->isfloating = c->oldstate = t || c->isfixed;
-	if (c->isfloating){
-		XRaiseWindow(dpy, c->win);
-		if (strcmp(c->name, "YAD") == 0) {
+    if (!c->isfloating)
+        c->isfloating = c->oldstate = t || c->isfixed;
+    if (c->isfloating) {
+        XRaiseWindow(dpy, c->win);
+        if (strcmp(c->name, "YAD") == 0) {
             c->x = 1489;
             c->y = 42;
             c->w = 405;
             c->h = 280;
-		} 
-	}
+        }
+    }
 	attach(c);
 	attachstack(c);
 	XChangeProperty(dpy, root, netatom[NetClientList], XA_WINDOW, 32, PropModeAppend,
@@ -2162,7 +2162,7 @@ tagview(const Arg *arg)
             tagnthmonview(&((Arg) { .i = 1 }));
             tagnewmon(arg);
             return;
-        } else if ((arg->ui & 341) > 0 && selmon != mons){
+        } else if ((arg->ui & 341) > 0 && selmon != mons) {
             tagnthmonview(&((Arg) { .i = 0 }));
             tagnewmon(arg);
             return;
@@ -2662,25 +2662,24 @@ updatewmhints(Client *c)
 void
 view(const Arg *arg)
 {
-	if ((arg->ui & TAGMASK) == selmon->tagset[selmon->seltags])
- 		return;
-	/* if ((arg->ui & TAGMASK) == selmon->tagset[selmon->seltags]) { */
-	/* 	view(&((Arg) { .ui = 0 })); */
-	/* 	return; */
-	/* } */
+    if ((arg->ui & TAGMASK) == selmon->tagset[selmon->seltags])
+        return;
+    /* if ((arg->ui & TAGMASK) == selmon->tagset[selmon->seltags]) { */
+    /*     view(&((Arg) { .ui = 0 })); */
+    /*     return; */
+    /* } */
 
 	// GENIUS 101010101
-	if ((arg->ui & 341) == 0) {
-		focusnthmon(&((Arg) { .i = 1 }));
-	} else{
-		focusnthmon(&((Arg) { .i = 0 }));
-	}
+    if ((arg->ui & 341) == 0)
+        focusnthmon(&((Arg) { .i = 1 }));
+    else
+        focusnthmon(&((Arg) { .i = 0 }));
 
-	selmon->seltags ^= 1; /* toggle sel tagset */
-	if (arg->ui & TAGMASK)
-		selmon->tagset[selmon->seltags] = arg->ui & TAGMASK;
-	focus(NULL);
-	arrange(selmon);
+    selmon->seltags ^= 1; /* toggle sel tagset */
+    if (arg->ui & TAGMASK)
+        selmon->tagset[selmon->seltags] = arg->ui & TAGMASK;
+    focus(NULL);
+    arrange(selmon);
 }
 
 pid_t

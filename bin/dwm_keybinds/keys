@@ -29,8 +29,7 @@
 /* { MODKEY,					XK_Tab,			view,			{0} }, */
 /* { MODKEY,					XK_Tab,			view,			{0} }, */
 { MODKEY,					XK_q,			killclient,		{0} },
-{ MODKEY|ShiftMask,			XK_p,			togglebars,		{0} },
-{ MODKEY|ControlMask|ShiftMask,		XK_p,	togglebar,		{0} },
+{ MODKEY|ShiftMask,			XK_p,			togglebar,		{0} },
 { MODKEY,					XK_h,			focusmon,		{ .i = -1 } },
 { MODKEY|ShiftMask,			XK_h,			tagmonview,		{ .i = -1 } },
 { MODKEY|ControlMask,		XK_h,			tagmon,			{ .i = -1 } },
@@ -116,9 +115,9 @@
 { 0,						XK_F10,				spawn,			SHCMD("pactl set-sink-mute @DEFAULT_SINK@ toggle ; kill -44 $(pidof dwmblocks)") },
 { 0,						XK_F11,				spawn,			SHCMD("pactl set-sink-volume @DEFAULT_SINK@ -5%; kill -44 $(pidof dwmblocks)") },
 { 0,						XK_F12,				spawn,			SHCMD("pactl set-sink-volume @DEFAULT_SINK@ +5%; kill -44 $(pidof dwmblocks)") },
-{ 0,						XK_Print,			spawn,			SHCMD("~/.local/bin/my_scripts/screenshot_select.sh") },
-{ ShiftMask,				XK_Print,			spawn,			SHCMD("~/.local/bin/my_scripts/screenshot.sh") },
-{ ControlMask,				XK_Print,			spawn,			SHCMD("~/.local/bin/my_scripts/screenshot_ocr.sh") },
+{ 0,					XK_Print,			spawn,			SHCMD("~/.local/bin/my_scripts/screenshot_select.sh") },
+{ ShiftMask,			XK_Print,			spawn,			SHCMD("~/.local/bin/my_scripts/screenshot.sh") },
+{ ControlMask,			XK_Print,			spawn,			SHCMD("~/.local/bin/my_scripts/screenshot_ocr.sh") },
 
 /* { MODKEY, XK_Insert,						spawn,			SHCMD("xdotool type $(grep -v '^#' ~/.local/share/larbs/snippets | dmenu -i -l 50 | cut -d' ' -f1)") }, */
 { 0, XF86XK_AudioMute,						spawn,			SHCMD("pactl set-sink-mute @DEFAULT_SINK@ toggle ; kill -44 $(pidof dwmblocks)") },
