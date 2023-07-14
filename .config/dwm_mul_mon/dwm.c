@@ -1499,7 +1499,7 @@ void pop(Client *c)
     arrange(c->mon);
 }
 
-void pushstack(const Arg *arg) 
+void pushstack(const Arg *arg)
 {
     int i = stackpos(arg);
     Client *sel = selmon->sel, *c, *p;
@@ -1698,7 +1698,7 @@ void run(void)
             handler[ev.type](&ev); /* call handler */
 }
 
-void runAutostart(void) 
+void runAutostart(void)
 {
     system("killall -q dwmblocks; dwmblocks &");
 }
@@ -1832,7 +1832,7 @@ void setfullscreen(Client *c, int fullscreen)
     }
 }
 
-int stackpos(const Arg *arg) 
+int stackpos(const Arg *arg)
 {
     int n, i;
     Client *c, *l;

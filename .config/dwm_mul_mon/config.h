@@ -38,17 +38,17 @@ static const char col4[]        = "#83a598";
 static const char col5[]        = "#d3869b";
 static const char col6[]        = "#8ec07c";
 static char *colors[][3]        = {
-    /*               fg           bg           border   */
-    [SchemeNorm] =     { normfgcolor, normbgcolor,  normbordercolor },
-    [SchemeSel]  =     { selfgcolor, selbgcolor,   selbordercolor },
+    /*               fg              bg              border   */
+    [SchemeNorm] = { normfgcolor,   normbgcolor,    normbordercolor },
+    [SchemeSel]  = { selfgcolor,    selbgcolor,     selbordercolor },
 };
 
 typedef struct {
     const char *name;
     const void *cmd;
 } Sp;
-const char *spcmd1[] = {"st", "-n", "spterm", "-g", "120x34", "-e", "python3", NULL };
-const char *spcmd2[] = {"st", "-n", "spcalc", "-g", "220x14", NULL };
+const char *spcmd1[] = {"st", "-n", "spterm", "-g", "30x30", "-e", "python3", NULL };
+const char *spcmd2[] = {"st", "-n", "spcalc", "-g", "30x30", NULL };
 /* const char *spcmd2[] = {"st", "-n", "spcalc", "-f", "monospace:size=16", "-g", "50x20", "-e", "bc", "-lq", NULL }; */
 static Sp scratchpads[] = {
     /* name          cmd  */
@@ -288,7 +288,7 @@ static const Key keys[] = {
         { ShiftMask,                XK_Print,           spawn,              SHCMD("~/.local/bin/my_scripts/screenshot.sh") },
         { ControlMask,              XK_Print,           spawn,              SHCMD("~/.local/bin/my_scripts/screenshot_ocr.sh") },
 
-        { MODKEY, XK_Insert,                            spawn,              SHCMD("xdotool type $(grep -v '^#' ~/.local/share/larbs/snippets | dmenu -i -l 50 | cut -d' ' -f1)") },
+        /* { MODKEY, XK_Insert,                            spawn,              SHCMD("xdotool type $(grep -v '^#' ~/.local/share/larbs/snippets | dmenu -i -l 50 | cut -d' ' -f1)") }, */
         { 0, XF86XK_AudioMute,                          spawn,              SHCMD("pactl set-sink-mute @DEFAULT_SINK@ toggle ; kill -44 $(pidof dwmblocks)") },
         { 0, XF86XK_AudioRaiseVolume,                   spawn,              SHCMD("pactl set-sink-volume @DEFAULT_SINK@ +5%; kill -44 $(pidof dwmblocks)") },
         { 0, XF86XK_AudioLowerVolume,                   spawn,              SHCMD("pactl set-sink-volume @DEFAULT_SINK@ -5%; kill -44 $(pidof dwmblocks)") },
