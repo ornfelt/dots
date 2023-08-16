@@ -470,12 +470,16 @@ func! CompileRun()
         exec "!gcc % && time ./a.out"
     elseif &filetype == 'cpp'
         "exec "!g++ % -o %< -lbgi -lgdi32 -lcomdlg32 -luuid -loleaut32 -lole32"
-        exec "!g++ -pthread % -o %<"
-        exec "!./%:r"
+        "exec "!g++ -pthread % -o %<"
+        "exec "!g++ -pthread % -o %< -std=c++11 -lcpprest -lcrypto -lssl"
+        "exec "!g++ -pthread % -o %< -std=c++17 -lcpprest -lcrypto -lssl"
+        "exec "!g++ -O2 -Wall % -o %< -std=c++17"
+        exec "!g++ -O2 -Wall % -o %< -std=c++17 -lcpprest -lcrypto -lssl"
+        exec "!time ./%:r"
     elseif &filetype == 'java'
         "exec "!javac %"
         "exec "!java -cp %:p:h %:t:r"
-        exec "!java %"
+        exec "!time java %"
     elseif &filetype == 'sh'
         exec "!time bash %"
     elseif &filetype == 'python'
@@ -484,11 +488,11 @@ func! CompileRun()
     elseif &filetype == 'html'
         exec "!firefox % &"
     elseif &filetype == 'javascript'
-        exec "!node %"
+        exec "!time node %"
     elseif &filetype == 'jsx'
-        exec "!node %"
+        exec "!time node %"
     elseif &filetype == 'typescript'
-        exec "!node %"
+        exec "!time node %"
     elseif &filetype == 'go'
         exec "!go build %<"
         exec "!time go run %"
@@ -502,8 +506,8 @@ func! CompileRun()
         exec "!firefox % &"
     elseif &filetype == 'cs'
         "exec "!csc %"
-        "exec "!%:r.exe"
-        exec "!mcs % && mono ./%:t:r.exe"
+        "exec "!time %:r.exe"
+        exec "!mcs % && time mono ./%:t:r.exe"
     endif
 endfunc
 map <M-x> :call CompileRun()<CR>
