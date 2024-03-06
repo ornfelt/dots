@@ -2,3 +2,6 @@
 #*/30 * * * * sudo XDG_RUNTIME_DIR=/run/user/1000 /home/jonas/.local/bin/my_scripts/bg_pbar_mon.sh >> /home/jonas/sensorLog.txt 2>&1
 
 #*/1 * * * * sudo XDG_RUNTIME_DIR=/run/user/1000 env PATH=/usr/local/sbin:/usr/bin DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/1000/bus" /home/jonas/.local/bin/my_scripts/bg_pbar_mon.sh >> /home/jonas/sensorLog.txt 2>&1
+
+# */2 * * * * sh /home/jonas/.local/bin/my_scripts/screenshot.sh
+# */3 * * * * python3 /home/jonas/Code2/Python/db_mail.py >> /home/jonas/pymail.log 2>&1

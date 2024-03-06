@@ -789,11 +789,11 @@ Monitor * createmon(void)
     Monitor *m;
 
     m = ecalloc(1, sizeof(Monitor));
-    if (mons) {
+    if (mons)
         m->tagset[0] = m->tagset[1] = 2;
-    } else {
+    else
         m->tagset[0] = m->tagset[1] = 1;
-    }
+
     m->mfact = mfact;
     m->nmaster = nmaster;
     m->showbar = showbar;
@@ -860,9 +860,8 @@ Monitor * numtomon(int num)
     Monitor *m = NULL;
     int i = 0;
 
-    for(m = mons, i=0; m->next && i < num; m = m->next){
+    for(m = mons, i=0; m->next && i < num; m = m->next)
         i++;
-    }
     return m;
 }
 

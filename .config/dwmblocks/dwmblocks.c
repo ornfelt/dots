@@ -110,7 +110,7 @@ void getcmd(const Block *block, char *output)
 	remove_all(output, '\n');
 	i = strlen(output);
     if ((i > 0 && block != &blocks[LENGTH(blocks) - 1])){
-		strcat(output, delim);
+        strcat(output, delim);
     }
     i+=strlen(delim);
 	output[i++] = '\0';
@@ -143,27 +143,27 @@ void getsigcmds(int signal)
 
 void setupsignals()
 {
-	struct sigaction sa;
+    struct sigaction sa;
 
-	for(int i = SIGRTMIN; i <= SIGRTMAX; i++)
-		signal(i, SIG_IGN);
+    for(int i = SIGRTMIN; i <= SIGRTMAX; i++)
+        signal(i, SIG_IGN);
 
-	for(int i = 0; i < LENGTH(blocks); i++)
-	{
-		if (blocks[i].signal > 0)
-		{
-			signal(SIGRTMIN+blocks[i].signal, sighandler);
-			sigaddset(&sa.sa_mask, SIGRTMIN+blocks[i].signal);
-		}
-	}
-	sa.sa_sigaction = buttonhandler;
-	sa.sa_flags = SA_SIGINFO;
-	sigaction(SIGUSR1, &sa, NULL);
-	struct sigaction sigchld_action = {
-  		.sa_handler = SIG_DFL,
-  		.sa_flags = SA_NOCLDWAIT
-	};
-	sigaction(SIGCHLD, &sigchld_action, NULL);
+    for(int i = 0; i < LENGTH(blocks); i++)
+    {
+        if (blocks[i].signal > 0)
+        {
+            signal(SIGRTMIN+blocks[i].signal, sighandler);
+            sigaddset(&sa.sa_mask, SIGRTMIN+blocks[i].signal);
+        }
+    }
+    sa.sa_sigaction = buttonhandler;
+    sa.sa_flags = SA_SIGINFO;
+    sigaction(SIGUSR1, &sa, NULL);
+    struct sigaction sigchld_action = {
+        .sa_handler = SIG_DFL,
+        .sa_flags = SA_NOCLDWAIT
+    };
+    sigaction(SIGCHLD, &sigchld_action, NULL);
 
 }
 #endif
@@ -207,7 +207,7 @@ void pstdout()
 void statusloop()
 {
 #ifndef __OpenBSD__
-	setupsignals();
+    setupsignals();
 #endif
     // first figure out the default wait interval by finding the
     // greatest common denominator of the intervals
@@ -217,13 +217,13 @@ void statusloop()
             interval = gcd(blocks[i].interval, interval);
         }
     }
-	unsigned int i = 0;
+    unsigned int i = 0;
     int interrupted = 0;
     const struct timespec sleeptime = {interval, 0};
     struct timespec tosleep = sleeptime;
-	getcmds(-1);
-	while(statusContinue)
-	{
+    getcmds(-1);
+    while(statusContinue)
+    {
         // sleep for tosleep (should be a sleeptime of interval seconds) and put what was left if interrupted back into tosleep
         interrupted = nanosleep(&tosleep, &tosleep);
         // if interrupted then just go sleep again for the remaining time
@@ -237,46 +237,45 @@ void statusloop()
         i += interval;
         // set the time to sleep back to the sleeptime of 1s
         tosleep = sleeptime;
-	}
+    }
 }
 
 #ifndef __OpenBSD__
 void sighandler(int signum)
 {
-	getsigcmds(signum-SIGRTMIN);
+    getsigcmds(signum-SIGRTMIN);
 	writestatus();
 }
 
 void buttonhandler(int sig, siginfo_t *si, void *ucontext)
 {
-	char button[2] = {'0' + si->si_value.sival_int & 0xff, '\0'};
-	pid_t process_id = getpid();
-	sig = si->si_value.sival_int >> 8;
-	if (fork() == 0)
-	{
-		const Block *current;
-		for (int i = 0; i < LENGTH(blocks); i++)
-		{
-			current = blocks + i;
-			if (current->signal == sig)
-				break;
-		}
-		char shcmd[1024];
-		sprintf(shcmd,"%s && kill -%d %d",current->command, current->signal+34,process_id);
-		char *command[] = { "/bin/sh", "-c", shcmd, NULL };
-		setenv("BLOCK_BUTTON", button, 1);
-		setsid();
-		execvp(command[0], command);
-		exit(EXIT_SUCCESS);
-	}
+    char button[2] = {'0' + si->si_value.sival_int & 0xff, '\0'};
+    pid_t process_id = getpid();
+    sig = si->si_value.sival_int >> 8;
+    if (fork() == 0)
+    {
+        const Block *current;
+        for (int i = 0; i < LENGTH(blocks); i++)
+        {
+            current = blocks + i;
+            if (current->signal == sig)
+                break;
+        }
+        char shcmd[1024];
+        sprintf(shcmd,"%s && kill -%d %d",current->command, current->signal+34,process_id);
+        char *command[] = { "/bin/sh", "-c", shcmd, NULL };
+        setenv("BLOCK_BUTTON", button, 1);
+        setsid();
+        execvp(command[0], command);
+        exit(EXIT_SUCCESS);
+    }
 }
-
 #endif
 
 void termhandler(int signum)
 {
 	statusContinue = 0;
-	exit(0);
+    exit(0);
 }
 
 int main(int argc, char** argv)

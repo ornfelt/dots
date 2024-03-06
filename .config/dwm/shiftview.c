@@ -3,7 +3,8 @@
  * @param: "arg->i" stores the number of tags to shift right (positive value)
  *          or left (negative value)
  */
-void shiftview(const Arg *arg)
+void
+shiftview(const Arg *arg)
 {
     Arg shifted;
     Client *c;
@@ -30,7 +31,8 @@ void shiftview(const Arg *arg)
     view(&shifted);
 }
 
-void shifttag(const Arg *arg)
+void
+shifttag(const Arg *arg)
 {
     Arg a;
     Client *c;

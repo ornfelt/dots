@@ -114,9 +114,9 @@ bindsym $mod+space floating toggle
 bindsym $mod+Shift+space focus mode_toggle
 
 # focus the child container
-bindsym $mod+Shift+d focus child
+#bindsym $mod+Shift+Control+a focus child
 # focus the parent container
-bindsym $mod+Control+d focus parent
+#bindsym $mod+Shift+Control+d focus parent
 
 # open tmux
 #bindsym $mod+a exec i3-sensible-terminal -e bash -c "tmux attach || tmux"
@@ -126,6 +126,7 @@ bindsym $mod+a exec urxvt -e bash -c "tmux attach || tmux"
 bindsym $mod+n exec ~/.local/bin/my_scripts/nautilus_wd.sh
 # Open nautilus at home
 bindsym $mod+Shift+n exec nautilus -w --no-desktop
+bindsym $mod+Control+n exec --no-startup-id ~/.local/bin/my_scripts/open_notes.sh 1
 
 # open ranger
 bindsym $mod+w exec urxvt -e ranger ~/
@@ -190,14 +191,20 @@ assign [class="Vlc"] $ws4
 assign [class="Spotify"] $ws5
 for_window [class="Spotify"] move to workspace $ws5
 bindsym $mod+c exec --no-startup-id GTK_THEME=Adwaita:dark gnome-calculator
-for_window [class="gnome-calculator"] floating enable, move position 100 px 500 px, exec --no-startup-id xdotool search --class Gnome-calculator getwindowpid -- windowsize %@ 250 195
-bindsym $mod+Control+c exec --no-startup-id GTK_THEME=Adwaita:dark gnome-calendar 
-for_window [class="gnome-calendar"] floating enable, move position 1105 px 430 px, exec --no-startup-id xdotool search --class Gnome-calculator getwindowpid -- windowsize %@ 250 195
+for_window [class="gnome-calculator"] floating enable, move position 1520 px 60 px, exec --no-startup-id xdotool search --class Gnome-calculator getwindowpid -- windowsize %@ 250 195
+bindsym $mod+Control+c exec --no-startup-id GTK_THEME=Adwaita:dark gnome-calendar
+for_window [class="gnome-calendar"] floating enable, move position 1125 px 60 px, exec --no-startup-id xdotool search --class Gnome-calculator getwindowpid -- windowsize %@ 250 195
+#for_window [class="Yad"] floating enable, move position center, exec --no-startup-id xdotool search --class yad getwindowpid -- windowsize %@ 250 195
+for_window [class="Yad"] floating enable, move position center
 
 bindsym $mod+t exec ~/.local/bin/my_scripts/script_copy.sh
 bindsym $mod+Shift+t exec ~/.local/bin/my_scripts/script_helper.sh 
+bindsym $mod+Shift+c exec ~/.local/bin/my_scripts/code_helper.sh new 
+bindsym $mod+Shift+d exec ~/.local/bin/my_scripts/code_helper.sh old 
+bindsym F1 exec --no-startup-id ~/.local/bin/my_scripts/show_keys.sh i3
+bindsym Shift+F1 exec --no-startup-id ~/.local/bin/my_scripts/show_keys.sh vim
 # reload the configuration file
-bindsym $mod+Shift+c reload
+bindsym $mod+Control+r reload
 # restart i3 inplace (preserves your layout/session, can be used to upgrade i3)
 bindsym $mod+Shift+r restart
 
@@ -211,6 +218,7 @@ mode "exit: [l]ogout, [r]eboot, [s]hutdown" {
 }
 #bindsym $mod+Shift+e mode "exit: [l]ogout, [r]eboot, [s]hutdown"; exec ~/.local/bin/my_scripts/alert_exit.sh
 bindsym $mod+Shift+e exec --no-startup-id ~/.local/bin/my_scripts/alert_exit.sh; exec ~/.config/polybar/forest/scripts/powermenu.sh
+bindsym $mod+p exec --no-startup-id ~/.local/bin/my_scripts/xrandr_helper.sh
 bindsym $mod+shift+p exec --no-startup-id ~/.local/bin/my_scripts/toggle_polybar.sh
 
 #BRIGHTNESS KEYS
@@ -274,20 +282,21 @@ bindsym $mod+period exec --no-startup-id ~/.local/bin/my_scripts/emojipick/emoji
 bindsym $mod+b exec urxvt -e sudo htop
 bindsym $mod+Shift+b exec --no-startup-id urxvt -e sudo bashtop
 bindsym $mod+Control+b exec --no-startup-id urxvt -e sudo ytop
-bindsym $mod+m exec --no-startup-id spotify
-bindsym $mod+Shift+m exec --no-startup-id flatpak run org.jamovi.jamovi
-#bindsym $mod+Control+m exec --no-startup-id ~/.local/bin/my_scripts/tstock.sh
+bindsym $mod+m exec --no-startup-id ~/.local/bin/my_scripts/tstock.sh
+bindsym $mod+Shift+m exec --no-startup-id spotify
+bindsym $mod+Control+m exec --no-startup-id ~/.local/bin/my_scripts/open_notes.sh 2
 
 # Print screen keybinds
 bindsym $mod+Shift+s --release exec --no-startup-id import png:- | xclip -selection clipboard -t image/png
 bindsym $mod+Control+s --release exec --no-startup-id ~/.local/bin/my_scripts/tesseract_ocr.sh
 bindsym Print --release exec --no-startup-id ~/.local/bin/my_scripts/screenshot_select.sh
-bindsym shift+Print exec --no-startup-id ~/.local/bin/my_scripts/screenshot.sh
-bindsym $mod+Print --release exec --no-startup-id ~/.local/bin/my_scripts/screenshot_ocr.sh
+bindsym Shift+Print --release exec --no-startup-id ~/.local/bin/my_scripts/screenshot.sh
+bindsym Control+Print --release exec --no-startup-id ~/.local/bin/my_scripts/screenshot_ocr.sh
 bindsym $mod+section exec --no-startup-id ~/.local/bin/my_scripts/loadEww.sh
 # Lock screen 
 bindsym $mod+Shift+x exec --no-startup-id i3lock-fancy
 bindsym $mod+Control+x exec --no-startup-id i3lock -t -i ~/Downloads/lock-wallpaper.png 
+bindsym $mod+Control+Shift+x exec --no-startup-id i3lock -t -i ~/Downloads/lock-wallpaper-win.png
 #Suspend 
 bindsym $mod+Shift+comma exec --no-startup-id ~/.local/bin/my_scripts/alert_exit.sh; exec --no-startup-id ~/.local/bin/my_scripts/suspend.sh
 bindsym $mod+Shift+period exec --no-startup-id i3lock-fancy; exec --no-startup-id ~/.local/bin/my_scripts/alert_exit.sh; exec --no-startup-id systemctl suspend
@@ -318,7 +327,7 @@ exec_always --no-startup-id feh --bg-fill --randomize ~/Pictures/Wallpapers/*
 # Alternating layout
 exec_always --no-startup-id ~/.local/bin/my_scripts/i3-alternating-layout/alternating_layouts.py
 #run polybar
-# exec_always --no-startup-id ~/.config/polybar/forest/launch.sh
+#exec_always --no-startup-id ~/.config/polybar/forest/launch.sh
 exec_always --no-startup-id ~/.config/polybar/colorblocks/launch.sh
 
 # client.focused #458588 #458588 #000088 #458588

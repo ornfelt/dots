@@ -29,3 +29,4 @@ rm -f $HOME/.config/hypr/component/waybar/config_is_detailed
 #diodon
 #systemctl --user import-environment DISPLAY
 greenclip daemon
+swww-daemon

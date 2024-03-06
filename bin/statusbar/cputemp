@@ -1,0 +1,22 @@
+#!/bin/sh
+#sensors | awk '/Tctl/ {sub(/^\+/, "", $2);print $2}'
+#sensors | awk '/Package/ {sub(/^\+/, "", $2);print $4}'
+#sensors | awk '/Package/ {sub(/^\+/, "", $2);print $4}' | sed 's/\+//'
+
+case $BLOCK_BUTTON in
+	1) "$TERMINAL" -e sh -c "curl -sf 'wttr.in/Uppsala'; zsh" ;;
+	2) rofi -theme "~/.config/rofi/themes/gruvbox/gruvbox-dark.rasi" -e "Weather clicked 2" ;;
+	3) pkill -RTMIN+5 dwmblocks ;;
+	4) rofi -theme "~/.config/rofi/themes/gruvbox/gruvbox-dark.rasi" -e "Weather clicked 4" ;;
+	5) rofi -theme "~/.config/rofi/themes/gruvbox/gruvbox-dark.rasi" -e "Weather clicked 5" ;;
+	6) "$TERMINAL" -e "$EDITOR" "$0" ;;
+esac
+
+#STR=$(sensors | awk '/Package/ {sub(/^\+/, "", $2);print $4}' | sed 's/\+//')
+STR=$(sensors | awk '/Tctl/ {sub(/^\+/, "", $2);print $2}')
+
+#if [ -z "$STR" ]; then
+#	STR="0°"
+#fi
+
+echo "$STR"

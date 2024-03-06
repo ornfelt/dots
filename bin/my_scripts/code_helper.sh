@@ -1,65 +1,21 @@
 #!/bin/bash
 
+codeDir="/home/jonas/Code"
+case $1 in
+	"old") codeDir="/home/jonas/Code" ;;
+	"new") codeDir="/home/jonas/Code2" ;;
+esac
+
 rofi_command="rofi -theme ~/.config/rofi/themes/gruvbox/gruvbox-dark.rasi"
 
-case $1 in
-	"old") codeDir="Code" ;;
-	"new") codeDir="Code2" ;;
-esac
+# Get the directory names from codeDir
+directories=$(find "$codeDir" -maxdepth 1 -mindepth 1 -type d -printf "%f\n")
 
-# Options
-csharpOpt="c#"
-cplplOpt="c++"
-cOpt="c"
-goOpt="go"
-javaOpt="java"
-jsOpt="js"
-latexOpt="latex"
-luaOpt="lua"
-sqlOpt="sql"
-pythonOpt="python"
-rOpt="r"
-rustOpt="rust"
+# Show the directory names as options through Rofi
+chosen=$(echo -e "$directories" | $rofi_command -p "Choose a directory" -dmenu -selected-row 0)
 
-# Variable passed to rofi
-options="$csharpOpt\n$cplplOpt\n$cOpt\n$goOpt\n$javaOpt\n$jsOpt\n$latexOpt\n$luaOpt\n$sqlOpt\n$pythonOpt\n$rOpt\n$rustOpt"
-
-chosen="$(echo -e "$options" | $rofi_command -p "Choose a command" -dmenu -selected-row 0)"
-case $chosen in
-    $csharpOpt)
-		$2 -e bash -c 'cd ~/'"$codeDir"'/C#;ls --color=auto; zsh;'
-        ;;
-    $cplplOpt)
-		$2 -e bash -c 'cd ~/'"$codeDir"'/C++;ls --color=auto; zsh'
-        ;;
-    $cOpt)
-		$2 -e bash -c 'cd ~/'"$codeDir"'/C;ls --color=auto; zsh'
-        ;;
-    $goOpt)
-		$2 -e bash -c 'cd ~/'"$codeDir"'/Go;ls --color=auto; zsh'
-        ;;
-    $javaOpt)
-		$2 -e bash -c 'cd ~/'"$codeDir"'/Java;ls --color=auto; zsh'
-        ;;
-    $jsOpt)
-		$2 -e bash -c 'cd ~/'"$codeDir"'/Javascript;ls --color=auto; zsh'
-        ;;
-    $latexOpt)
-		$2 -e bash -c 'cd ~/'"$codeDir"'/Latex;ls --color=auto; zsh'
-        ;;
-    $luaOpt)
-		$2 -e bash -c 'cd ~/'"$codeDir"'/Lua;ls --color=auto; zsh'
-        ;;
-    $sqlOpt)
-		$2 -e bash -c 'cd ~/'"$codeDir"'/MYSQL;ls --color=auto; zsh'
-        ;;
-    $pythonOpt)
-		$2 -e bash -c 'cd ~/'"$codeDir"'/Python;ls --color=auto; zsh'
-        ;;
-    $rOpt)
-		$2 -e bash -c 'cd ~/'"$codeDir"'/R;ls --color=auto; zsh'
-        ;;
-    $rustOpt)
-		$2 -e bash -c 'cd ~/'"$codeDir"'/Rust;ls --color=auto; zsh'
-        ;;
-esac
+# If user picks a directory, open the directory in a terminal
+if [ "$chosen" != "" ]; then
+    dir_path="$codeDir/$chosen"
+    $2 -e bash -c "cd '$dir_path'; ls --color=auto; exec zsh"
+fi

@@ -1,0 +1,293 @@
+Arch linx installation:
+If on virtual box - enable EFI: settings > system
+If no wifi:
+iwctl
+device list
+station wlan0 scan
+station wlan0 get-networks
+station wlan0 connect OWNIT-B1C0
+enter password...
+
+******************************************
+curl -o install.txt https://raw.githubusercontent.com/archornf/dotfiles/master/installation/install.txt
+wget -O install.txt https://raw.githubusercontent.com/archornf/dotfiles/master/installation/install.txt
+******************************************
+
+# Load the right keys
+ls /usr/share/kbd/keymaps**/*.map.gz | less
+loadkeys se-lat6
+
+#Make sure you have internet 
+ping 8.8.8.8
+
+# Set time 
+timedatectl set-ntp true
+verify with timedatectl status
+
+# Partion disk
+fdisk -l
+...
+m for menu
+fdisk /dev/sda
+g
+n > Enter > Enter > +550M (last sector)
+n > Enter > Enter > +2G
+n > Enter > Enter > Enter
+t > 1 > (L for list, choose EFI System) 1
+t > 2 > (L for list, choose Linux swap) 19
+w
+
+# Check disks again
+fdisk -l
+
+# Create fat32 on sda1 / sdb1
+mkfs.fat -F32 /dev/sda1
+# Create swap on sda2
+mkswap /dev/sda2
+swapon /dev/sda2
+# Create filesystem
+mkfs.ext4 /dev/sda3
+# Mount big partion (file system)
+mount /dev/sda3 /mnt
+# Install arch linux package
+pacstrap /mnt base linux linux-firmware
+
+# Generate file system table (fstab)
+genfstab -U /mnt >> /mnt/etc/fstab
+# Go to chroot to our new root on sda3
+arch-chroot /mnt
+
+# Set timezone (link)
+ln -sf /usr/share/zoneinfo/REGION/CITY /etc/locale/time
+# To find Region and city
+ls /usr/share/zoneinfo
+ls /usr/share/zoneinfo/europe
+ln -sf /usr/share/zoneinfo/Europe/Stockholm /etc/localetime
+
+# Might need to do this later after startx probably...
+timedatectl set-timezone Europe/Stockholm
+
+# Set hardware clock
+hwclock --systohc
+# Set locale
+pacman -S neovim wget
+nvim /etc/locale.gen
+Uncomment sv_SE.UTF-8 UTF-8
+Probably also need to uncomment en_US UTF-8 for LC_ALL... Can do this later also.
+locale-gen
+# Set hostname
+nvim /etc/hostname
+Enter hostname and wq
+# Create hostfile
+nvim /etc/hosts
+127.0.0.1	localhost
+::1			localhost
+127.0.1.1	ornf.localdomain	ornf
+
+
+# Set password for root
+Passwd
+# Add user
+useradd -m jonas
+passwd jonas
+# Set groups for user
+usermod -aG wheel,audio,video,optical,storage jonas
+pacman -S sudo
+EDITOR=nvim visudo
+Uncomment %wheel ... (Same thing without a password)
+# Add the below line which makes it so that you don't have to reinsert password in each terminal a user uses sudo in
+Defaults !tty_tickets
+
+# Install grub and fix boot
+pacman -S grub efibootmgr dosfstools os-prober mtools
+mkdir /boot/EFI
+mount /dev/sda1 /boot/EFI
+# Run grub install
+grub-install --target=x86_64-efi --bootloader-id=grub_uefi --recheck
+grub-mkconfig -o /boot/grub/grub.cfg
+
+# Done. Now we can install things... 
+pacman -S networkmanager git xorg.... 
+# Enable networkmanager
+systemctl enable NetworkManager
+# To exit, unmount and reboot
+exit
+umount /mnt OR umount -l /mnt
+sudo reboot
+...
+Connect to wifi again...
+sudo nmcli device wifi connect OWNIT-B1C0 password XXX
+sudo localectl set-keymap se-lat6 (this only)
+
+localectl set-locale LANG="sv_SE.UTF-8"
+localectl set-x11-keymap se
+localectl set-locale LANG=en_US.UTF-8
+sudo pacman-key --init
+sudo pacman-key --populate archlinux
+
+sudo pacman -S xorg-xinit i3 dmenu git (Need xterm?)
+# Install more things:
+sudo pacman -S rxvt-unicode firefox picom zsh xclip
+sudo cp /etc/X11/xinit/xinitrc ~/.xinitrc
+sudo localectl set-x11-keymap se
+edit .xinitrc ... (**** OBS: Might need to have twm & xclock... & exec i3 ****)
+For virtual box: install (not sure if all are needed, try with only the first next time)
+virtualbox-guest-utils and xf86-video-vmware and linux-headers (only need guest-utils)
+then...
+sudo systemctl enable vboxservice.service
+
+sudo reboot
+Check linux made simple for how to add video=1920x1080 after quiet... (no need...)
+
+------------------------------------
+
+Get yay:
+sudo pacman -S fakeroot make gcc clang
+cd /opt
+sudo git clone https://aur.archlinux.org/yay.git
+sudo chown -R jonas:jonas ./yay
+cd yay
+makepkg -si
+https://www.tecmint.com/install-yay-aur-helper-in-arch-linux-and-manjaro/
+
+Install all pks through yay script.
+
+Then:
+sudo pacman -S spotify-launcher flatpak
+
+git clone polybar themes and run the starting script
+then copy files from dotfiles to .config
+https://github.com/adi1090x/polybar-themes#installation
+
+oh-my-zsh:
+sh -c "$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+
+zsh-autosuggestions-git (DON'T USE YAY)
+zsh-syntax-highlighting-git (DON'T USE YAY)
+
+awesomewm spotify widget:
+git clone https://gist.github.com/fa6258f3ff7b17747ee3.git
+cd ./fa6258f3ff7b17747ee3 
+chmod +x sp
+sudo cp ./sp /usr/local/bin/
+
+Also clone fzf and run install script to get fzf keybinds:
+git clone --depth 1 https://github.com/junegunn/fzf.git ~/.fzf
+~/.fzf/install
+
+pip install bs4 requests ocrspace pytesseract
+pip install pynvim
+pip install i3ipc
+pip install pytesseract
+pip install pyperclip
+sudo pacman -S tesseract (need to install eng trained data also. Look for towardsdatascience python read text from image)... Also set tesseract variable...
+
+Picom enable vsync (if needed)...
+
+Then fix dots:
+git clone https://github.com/archornf/dotfiles
+git clone https://github.com/vmornf/dotfiles
+git clone https://github.com/ornfelt/dots
+-----------------------------------------------------------------------------------------------------
+BACKUP YAY / PACMAN etc.:
+
+yay -S urxvt-resize-font-git
+yay -S gruvbox-dark-gtk
+yay -S gruvbox-material-gtk-theme (Better?)
+yay -S adwaita-dark
+(Start gnome-cals with adwaita-dark)
+
+sudo pacman -S lxappearance nautilus feh ranger ueberzug zathura zathura-pdf-poppler
+
+lxappearance set gruvbox dark
+
+yay install gruvbox gtk theme...
+yay install picom rounded corners: github.com/ibhagwan/picom (sudo pacman -S pkgconf is required)
+
+localectl set-x11-keymap se (needs reboot after)
+Might need other localectl from above
+
+mkdir ~/Pictures/Wallpapers
+Get wallpapers
+copy files from dotfiles script?
+
+sudo pacman -S nodejs
+sudo pacman -S python3
+sudo pacman -S python-pip npm
+
+sudo pacman -S bluez bluez-utils rofi neofetch pamixer pulseaudio alsa-utils
+sudo systemctl enable bluetooth.service
+yay -S polybar
+sudo pacman -S fzf the_silver_searcher xdg-utils
+
+yay -S cava
+Need this before:
+sudu pacman -S fftw libtool automake build-essentials iniparser m4 autoconf gcc patch
+ttf-joypixels ttf-font-awesome nerd fonts... (maybe: ttf-jetbrains-mono)
+yay -S nerd-fonts-complete
+in .Xresources font: xft:JetBrainsMono Nerd Font:size=11:style=regular:antialias=true:autohint=true
+URxvt.boldFont: xft:JetBrainsMono Nerd Font:size=11:style=bold:antialias=true:autohint=true
+firewalld (there's another good firewall, see distrotube) xfce4-power-manager power-things... 
+xclip imagemagick lua go rust java mono jre-openjdk jdk-openjdk tmux qrencode pv libnotify notification-daemon
+kitty alacritty htop bashtop...
+
+(Follow archlinux doc if problems with notify-send)
+
+install vim-plug
+vim... PlugInstall ... CocInstall
+Might need: PlugUpdate / PlugUpgrade if coc problems. And also changing coc to release...
+
+With Lua: search packer neovim and install, then use packer to install inside nvim.
+
+dwm, dwmblocks
+nerd fonts (jetbrains or complete)	
+joypixels etc...
+
+mono dotnet-sdk jre-openjdk jdk-openjdk rust xfce4-power-manager go lm_sensors
+
+zip unzip htop bashtop imagemagick tmux fuse perl ntfs-3g cronie scrot maim visidata cmake qrencode yad
+python-gobject sndio netctl dhcpcd
+sudo systemctl start dhcpcd.service
+sudo systemctl start NetworkManager.service
+
+# yay -S conky tstock diodon jdtls spotify eww
+
+------------------------------------------------------------
+yay -S
+swaybg swayidle swaylock wlroots waybar-hyprland-git obs-studio
+
+nwg-look # Like lxappearance
+xorg-xwayland
+yay hyprland
+yay wlrobs-hg  # Obs-studio plugin
+
+mako imagemagick yad grim light wofi wl-clipboard hyprland-git cava waybar-mpris-git python rustup kitty fish tty-clock-git swaylockd slurp jq dunst swaylock-effects-git
+
+Optional:
+vlc ufw (firewall, needs enabling)
+gnome-calendar gnome-calculator
+starship
+wlogout
+foot
+
+SKIP: xdg-desktop-portal-wlr!
+
+------------------------------------------------------------
+Firefox slick-fox:
+https://github.com/Etesam913/slick-fox
+Type about:profiles into your urlbar and go to the page
+Open the root directory folder specified on the page
+Inside this folder, create a folder named "chrome"
+Put the userchrome.css file from this repo into the chrome folder
+Type about:config into your urlbar and go to the page
+Paste "toolkit.legacyUserProfileCustomizations.stylesheets" into the bar and
+set its value to true
+Go back to about:profiles and click the restart normally buton
+That should be it!
+
+FF addons:
+Tabliss with unsplash collection 
+adblock plus
+gruvbox dark theme firefox
+vimium
+imagus

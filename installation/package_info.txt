@@ -10,3 +10,5 @@ for x in $(cat pk1); do yay -S --noconfirm $x; done
 
 # List packages not install from main repos:
 pacman -Qm > other.txt
+
+pip freeze > requirements.txt

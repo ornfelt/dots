@@ -7,10 +7,10 @@ static const Block blocks[] = {
     /* {"",            "~/.local/bin/statusbar/sb-forecast",           18000,                  20}, */
     /* {"",            "~/.local/bin/statusbar/sb-volumetwo.sh",       0,                      11}, */
 
-    {"^2^   ",     "~/.local/bin/dwmblocks/weather",               1800,                   5},
-    /* {"   ",        "~/.local/bin/dwmblocks/weather",               1800,                   5}, */
-    {"^3^  ",      "~/.local/bin/dwmblocks/cputemp",               5,                      4},
-    /* {"  ",         "~/.local/bin/dwmblocks/cputemp",               5,                      4}, */
+    {"^2^   ",     "~/.local/bin/statusbar/weather",               1800,                   5},
+    /* {"   ",        "~/.local/bin/statusbar/weather",               1800,                   5}, */
+    {"^3^  ",      "~/.local/bin/statusbar/cputemp",               5,                      4},
+    /* {"  ",         "~/.local/bin/statusbar/cputemp",               5,                      4}, */
     /* {"^4^ ",        "~/.local/bin/statusbar/sb-volume",             0,                      10}, */
     {"^4^ ",        "~/.local/bin/statusbar/sb-volume",             0,                      10},
     /* {" ",           "~/.local/bin/statusbar/sb-volume",             0,                      10}, */
@@ -21,7 +21,7 @@ static const Block blocks[] = {
     /* {"  ",         "~/.local/bin/statusbar/sb-clock",              60,                     1}, */
 };
 
-/*Icons:       婢墳  */
+/*Icons:            婢 墳  */
 
 //Sets delimiter between status commands. NULL character ('\0') means no delimiter.
 /* static char *delim = " | "; */

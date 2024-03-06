@@ -47,8 +47,8 @@ typedef struct {
     const char *name;
     const void *cmd;
 } Sp;
-const char *spcmd1[] = {"st", "-n", "spterm", "-g", "120x34", "-e", "python3", NULL };
-const char *spcmd2[] = {"st", "-n", "spcalc", "-g", "220x14", NULL };
+const char *spcmd1[] = {"st", "-n", "spterm", "-g", "30x30", "-e", "python3", NULL };
+const char *spcmd2[] = {"st", "-n", "spcalc", "-g", "30x30", NULL };
 /* const char *spcmd2[] = {"st", "-n", "spcalc", "-f", "monospace:size=16", "-g", "50x20", "-e", "bc", "-lq", NULL }; */
 static Sp scratchpads[] = {
     /* name          cmd  */
@@ -66,7 +66,7 @@ static const Rule rules[] = {
      *    WM_NAME(STRING) = title
      */
     /* class        instance                title               tags mask       isfloating   isterminal noswallow   monitor */
-    { "Gimp",       NULL,                   NULL,               1 << 8,         0,           0,         0,          -1 },
+    /* { "Gimp",       NULL,                   NULL,               1 << 8,         0,           0,         0,          -1 }, */
     { TERMCLASS,    NULL,                   NULL,               0,              0,           1,         0,          -1 },
     { NULL,         NULL,                   "Event Tester",     0,              0,           0,         1,          -1 },
     { NULL,         "spterm",               NULL,               SPTAG(0),       1,           1,         1,          -1 },
@@ -224,7 +224,7 @@ static const Key keys[] = {
         { MODKEY|ShiftMask,         XK_s,               spawn,              SHCMD("import png:- | xclip -selection clipboard -t image/png") },
         { MODKEY|ControlMask,       XK_s,               spawn,              SHCMD("~/.local/bin/my_scripts/tesseract_ocr.sh") },
         { MODKEY,                   XK_d,               spawn,              SHCMD("rofi -show run -theme ~/.config/rofi/themes/gruvbox/gruvbox-dark.rasi") },
-        { MODKEY,                   XK_r,               spawn,              SHCMD("dmenu_run -fn 'Linux Libertine Mono'") },
+        { MODKEY,                   XK_r,               spawn,              SHCMD("dmenu_run -i -l 20") },
         { MODKEY|ShiftMask,         XK_r,               spawn,              SHCMD("rofi -show run -theme ~/.config/polybar/forest/scripts/rofi/launcher.rasi") },
         { MODKEY,                   XK_t,               spawn,              SHCMD("~/.local/bin/my_scripts/script_copy.sh") },
         { MODKEY|ShiftMask,         XK_t,               spawn,              SHCMD("~/.local/bin/my_scripts/script_helper.sh " TERMINAL) },
@@ -288,7 +288,7 @@ static const Key keys[] = {
         { ShiftMask,                XK_Print,           spawn,              SHCMD("~/.local/bin/my_scripts/screenshot.sh") },
         { ControlMask,              XK_Print,           spawn,              SHCMD("~/.local/bin/my_scripts/screenshot_ocr.sh") },
 
-        { MODKEY, XK_Insert,                            spawn,              SHCMD("xdotool type $(grep -v '^#' ~/.local/share/larbs/snippets | dmenu -i -l 50 | cut -d' ' -f1)") },
+        /* { MODKEY, XK_Insert,                            spawn,              SHCMD("xdotool type $(grep -v '^#' ~/.local/share/larbs/snippets | dmenu -i -l 50 | cut -d' ' -f1)") }, */
         { 0, XF86XK_AudioMute,                          spawn,              SHCMD("pactl set-sink-mute @DEFAULT_SINK@ toggle ; kill -44 $(pidof dwmblocks)") },
         { 0, XF86XK_AudioRaiseVolume,                   spawn,              SHCMD("pactl set-sink-volume @DEFAULT_SINK@ +5%; kill -44 $(pidof dwmblocks)") },
         { 0, XF86XK_AudioLowerVolume,                   spawn,              SHCMD("pactl set-sink-volume @DEFAULT_SINK@ -5%; kill -44 $(pidof dwmblocks)") },

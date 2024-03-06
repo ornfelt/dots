@@ -9,11 +9,11 @@
     // "margin-right":25,
     "margin-bottom":-11,
     //"margin-top":5,
-    "modules-left": ["wlr/workspaces"],
+    //"modules-left": ["wlr/workspaces"],
+    "modules-left": ["hyprland/workspaces"],
     //"modules-right": ["temperature","network","battery","custom/ss","custom/cycle_wall","custom/expand","cpu","clock"],
     //"modules-right": ["network","battery","custom/ss","custom/cycle_wall","custom/expand","cpu","clock"],
-    //"modules-right": ["network","battery","pulseaudio","custom/cycle_wall","custom/expand","cpu","clock"],
-	"modules-right": ["network","pulseaudio","custom/cycle_wall","custom/expand","cpu","clock"],
+    "modules-right": ["network","battery","pulseaudio","custom/cycle_wall","custom/expand","cpu","clock"],
     "modules-center": ["custom/dynamic_pill"],
     // Modules configuration
 
@@ -156,11 +156,14 @@
         //"format-plugged": "",
 
         "format": "<span font='15'>{icon}</span>",
-        "format-charging": "<span font='15'></span>",
-        "format-plugged": "<span font='15'></span>",
+        //"format-charging": "<span font='15'></span>",
+        //"format-plugged": "<span font='15'></span>",
+        "format-charging": "<span font='15'>󰂄</span>",
+        "format-plugged": "<span font='15'>󰂄</span>",
         // "format-good": "", // An empty format will hide the module
         // "format-full": "",
-        "format-icons": ["", "", "", "", ""]
+        //"format-icons": ["", "", "", "", ""]
+        "format-icons": ["", "", "", "", ""]
     },
     "battery#bat2": {
         "bat": "BAT2"
@@ -168,13 +171,10 @@
     "network": {
         // "interface": "wlp2*", // (Optional) To force the use of this interface
         "format-wifi": "",
-        "format-ethernet": "直",
-        "tooltip-format": "{ifname} via {gwaddr} ",
-        "tooltip-format-wifi": "{essid} ({signalStrength}%) ",
-        //"tooltip-format-ethernet": "{ifname} ",
-        "tooltip-format-disconnected": "Disconnected",
+        "format-ethernet": "",
+        "tooltip-format": "via {gwaddr} {ifname}",
         "format-linked": "",
-        "format-disconnected": "睊",
+        "format-disconnected": "wifi",
         "format-alt": "   "
     },
     "pulseaudio": {

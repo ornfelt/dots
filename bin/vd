@@ -1,6 +1,0 @@
-#!/usr/bin/python
-
-import visidata.main
-
-if __name__ == '__main__':
-    visidata.main.vd_cli()

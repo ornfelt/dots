@@ -49,8 +49,8 @@ URxvt.urgentOnBell: true
 URxvt.depth: 32
 URxvt.iso14755: false
 URxvt.transparent: false
-URxvt.shading: 45
-!URxvt.shading: 30
+!!URxvt.shading: 45
+!!URxvt.shading: 10
 
 URxvt*inheritPixmap:    false
 

@@ -176,11 +176,11 @@ window#waybar {
     background-size: 300% 300%;
     /* text-shadow: 0 0 5px rgba(0, 0, 0, 0.377); */
     animation: gradient 20s ease infinite;
-    font-size: 15px;
+    font-size: 16px;
     padding-top: 2px;
     padding-right: 21px;
     font-weight: bolder;
-    padding-left: 20px
+    padding-left: 20px;
 }
 
 #battery.charging, #battery.plugged {
@@ -246,7 +246,6 @@ label:focus {
 
 #network{
     color:#000;
-    /* padding-right: 14px; */
 }
 
 #network.disabled{

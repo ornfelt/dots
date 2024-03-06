@@ -9,8 +9,8 @@
 #[ -f ~/.fzf.bash ] && source ~/.fzf.bash
 
 alias ls='ls --color=auto'
-alias config='/usr/bin/git --git-dir=/home/jonas/.cfg/ --work-tree=/home/jonas'
 alias vim='nvim'
+#alias config='/usr/bin/git --git-dir=/home/jonas/.cfg/ --work-tree=/home/jonas'
 # alias grep='grep -ri --color'
 
 export VISUAL=nvim;

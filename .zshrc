@@ -133,7 +133,7 @@ alias vim='nvim'
 alias xup='xrdb ~/.Xresources'
 # alias grep='grep -rin --color'
 alias vd='python -m visidata'
-alias scripts='cd ~/.local/bin/my_scripts; ls'
+alias .scripts='cd ~/.local/bin/my_scripts; ls'
 alias .cnf='cd ~/.config; ls'
 alias .cnfa='cd ~/.config/awesome; ls'
 alias .cnfd='cd ~/.config/dwm; ls'
@@ -146,15 +146,31 @@ alias .down='cd ~/Downloads; ls'
 alias .dots='cd ~/Downloads/dotfiles; ls'
 alias .ioq3='/home/jonas/Code/C/ioq3/build/release-linux-x86_64/ioquake3.x86_64 +set sv_pure 0 +set vm_game 0 +set vm_cgame 0 +set vm_ui 0'
 alias .ioq32='/home/jonas/Code/C/ioq3/build/release-linux-x86_64_golden/ioquake3.x86_64 +set sv_pure 0 +set vm_game 0 +set vm_cgame 0 +set vm_ui 0'
-alias .stk3='/home/jonas/Code/C/supertuxkart/stk-code/cmake_build_50/bin/supertuxkart'
+alias .stk='/home/jonas/Code3/C++/stk-code/cmake_build/bin/supertuxkart'
 alias lf='/home/jonas/.local/bin/lfub'
+
+alias .acore='cd ~/acore/bin; pwd; ls'
+alias .tcore='cd ~/tcore/bin; pwd; ls'
+alias .wow='wine ~/Downloads/wow/Wow.exe'
+
+playermap ()
+{
+    if [ -n "$1" ]; then
+        echo "Launching tcore playermap: php -S localhost:8000"
+        #cd ~/Code2/Python/wander_nodes_util/tcore_map/playermap && php -S localhost:8000;
+        cd ~/Code2/Python/wander_nodes_util/tcore_map/playermap && php -S $(ip addr show | grep -v 'inet6' | grep -v 'inet 127' | grep 'inet' | head -n 1 | awk '{print $2}' | cut -d/ -f1):8000;
+    else
+        echo "Launching acore playermap: php -S localhost:8000"
+        cd ~/Code2/Python/wander_nodes_util/acore_map/playermap && php -S $(ip addr show | grep -v 'inet6' | grep -v 'inet 127' | grep 'inet' | head -n 1 | awk '{print $2}' | cut -d/ -f1):8000;
+    fi
+}
+alias .playermap='playermap'
 
 # use the vi navigation keys in menu completion
 #bindkey -M menuselect 'h' vi-backward-char
 #bindkey -M menuselect 'k' vi-up-line-or-history
 #bindkey -M menuselect 'l' vi-forward-char
 #bindkey -M menuselect 'j' vi-down-line-or-history
-
 
 #neofetch --color_blocks off
 #curl wttr.in/Skopje\?0 2> /dev/null
@@ -224,3 +240,5 @@ alias f='fuzzyfind'
 bindkey '^ ' autosuggest-accept
 LS_COLORS+=':ow=01;33'
 ~/.local/bin/my_scripts/hello.sh
+
+source ~/.bash_profile
