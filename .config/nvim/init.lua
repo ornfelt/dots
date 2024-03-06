@@ -44,7 +44,7 @@ o.tabstop = 4 -- width used to display tab char
 o.shiftwidth = 4 -- width used for shifting commands (<< >> ==), 0 means replicate tabstop
 -- o.softtabstop = 4 -- how wide an indentation is supposed to span. 0 means replicate tabstop
 o.softtabstop = -1 -- If negative, shiftwidth value is used
-o.list = false
+o.list = true
 -- o.listchars = 'trail:·,nbsp:◇,tab:→ ,extends:▸,precedes:◂'
 -- o.listchars = 'eol:¬,space:·,lead: ,trail:·,nbsp:◇,tab:→-,extends:▸,precedes:◂,multispace:···⬝,leadmultispace:│   ,'
 -- o.formatoptions = 'qrn1'
@@ -121,6 +121,7 @@ set completeopt+=preview
 autocmd FileType * setlocal formatoptions-=c formatoptions-=r formatoptions-=o
 filetype plugin indent on
 
+
 let g:jedi#popup_on_dot = 1
 " Syntastic
 let g:syntastic_always_populate_loc_list = 0
@@ -146,7 +147,6 @@ require('lualine').setup {
     icons_enabled = true,
     theme = 'gruvbox',
     -- theme = 'catppuccin',
-    -- globalstatus = true,
     refresh = {
       statusline = 1000,
       tabline = 1000,
@@ -307,13 +307,12 @@ map('n', '<leader>,', ':mks! ~/.vim/sessions/s2.vim<CR>')
 map('n', '<leader>.', ':so ~/.vim/sessions/s.vim<CR>')
 map('n', '<leader>-', ':so ~/.vim/sessions/s2.vim<CR>')
 
--- Open new tabs
-map('n', '<M-n>', ':tabe ~/Documents/vimtutor.txt<CR>')
+-- Open vim config in new tab
 map('n', '<M-m>', ':tabe ~/.config/nvim/init.lua<CR>')
 map('n', '<M-,>', ':tabe ~/.config/i3/config<CR>')
 map('n', '<M-.>', ':tabe ~/.zshrc<CR>')
--- map('n', '<C-c>', 'y')
-map('v', '<C-c>', 'y')
+map('n', '<C-c>', 'y')
+-- map('v', '<C-c>', 'y')
 
 map('n', '<leader>s', "/\\s\\+$/<CR>") -- Show extra whitespace
 map('n', '<leader>ws', ':%s/\\s\\+$<CR>') -- Remove all extra whitespace
@@ -433,19 +432,19 @@ autocmd FileType java inoremap fore<Tab> for (String s : obj){<Enter><Enter>}<Es
 autocmd FileType java inoremap for<Tab> for(int i = 0; i < val; i++){<Enter><Enter>}<Esc>?val<Enter>ciw
 autocmd FileType java inoremap sout<Tab> System.out.println("");<Esc>?""<Enter>li
 autocmd FileType java inoremap psvm<Tab> public static void main(String[] args){<Enter><Enter>}<Esc>?{<Enter>o
-autocmd FileType java inoremap hellow<Tab> <Esc>:r ~/Code/Java/hellow.java<Enter><Esc>/hellow<Enter>ciw
+autocmd FileType java inoremap hellow<Tab> <Esc>:r /home/jonas/Code/Java/hellow.java<Enter><Esc>/hellow<Enter>ciw
 
 autocmd FileType c inoremap for<Tab> for(int i = 0; i < val; i++){<Enter><Enter>}<Esc>?val<Enter>ciw
-autocmd FileType c inoremap hellow<Tab> <Esc>:r ~/Code/C/hellow.c<Enter>
+autocmd FileType c inoremap hellow<Tab> <Esc>:r /home/jonas/Code/C/hellow.c<Enter>
 autocmd FileType cpp inoremap for<Tab> for(int i = 0; i < val; i++){<Enter><Enter>}<Esc>?val<Enter>ciw
-autocmd FileType cpp inoremap hellow<Tab> <Esc>:r ~/Code/C++/hellow.cpp<Enter>
+autocmd FileType cpp inoremap hellow<Tab> <Esc>:r /home/jonas/Code/C++/hellow.cpp<Enter>
 
 autocmd FileType cs inoremap sout<Tab> Console.WriteLine("");<Esc>?""<Enter>li
 autocmd FileType cs inoremap fore<Tab> for each (object o : obj){<Enter><Enter>}<Esc>?obj<Enter>ciw
 autocmd FileType cs inoremap for<Tab> for(int i = 0; i < val; i++){<Enter><Enter>}<Esc>?val<Enter>ciw
-autocmd FileType cs inoremap hellow<Tab> <Esc>:r ~/Code/C\#/hellow.cs<Enter><Esc>/Hellow<Enter>ciw
+autocmd FileType cs inoremap hellow<Tab> <Esc>:r /home/jonas/Code/C\#/hellow.cs<Enter><Esc>/Hellow<Enter>ciw
 
-autocmd FileType py,python inoremap hellow<Tab> <Esc>:r ~/Code/Python/hellow.py<Enter>
+autocmd FileType py,python inoremap hellow<Tab> <Esc>:r /home/jonas/Code/Python/hellow.py<Enter>
 
 autocmd FileType sql inoremap fun<Tab> delimiter //<Enter>create function x ()<Enter>returns int<Enter>no sql<Enter>begin<Enter><Enter><Enter>end //<Enter>delimiter ;<Esc>/x<Enter>GN
 autocmd FileType sql inoremap pro<Tab> delimiter //<Enter>create procedure x ()<Enter>begin<Enter><Enter><Enter>end //<Enter>delimiter ;<Esc>/x<Enter>GN
@@ -453,12 +452,6 @@ autocmd FileType sql inoremap vie<Tab> create view x as<Enter>select <Esc>/x<Ent
 
 autocmd FileType vtxt,vimwiki,wiki,text inoremap line<Tab> ----------------------------------------------------------------------------------<Enter>
 autocmd FileType vtxt,vimwiki,wiki,text inoremap date<Tab> <-- <C-R>=strftime("%Y-%m-%d %a")<CR><Esc>A -->
-
-autocmd FileType go inoremap hellow<Tab> <Esc>:r ~/Code/Go/hellow.go<Enter><Esc>/Hellow<Enter>ciw
-autocmd FileType perl inoremap hellow<Tab> <Esc>:r ~/Code/Perl/hellow.pl<Enter><Esc>/Hellow<Enter>ciw
-autocmd FileType kotlin inoremap hellow<Tab> <Esc>:r ~/Code/Kotlin/hellow.kt<Enter><Esc>/Hellow<Enter>ciw
-autocmd FileType rust inoremap hellow<Tab> <Esc>:r ~/Code/Rust/hellow.rs<Enter><Esc>/Hellow<Enter>ciw
-autocmd FileType scala inoremap hellow<Tab> <Esc>:r ~/Code/Scala/hellow.scala<Enter><Esc>/Hellow<Enter>ciw
 
 map <F4> <Esc>:set cursorline!<CR>
 map <F5> <Esc>:setlocal spell! spelllang=en_us<CR>
@@ -470,16 +463,12 @@ func! CompileRun()
         exec "!gcc % && time ./a.out"
     elseif &filetype == 'cpp'
         "exec "!g++ % -o %< -lbgi -lgdi32 -lcomdlg32 -luuid -loleaut32 -lole32"
-        "exec "!g++ -pthread % -o %<"
-        "exec "!g++ -pthread % -o %< -std=c++11 -lcpprest -lcrypto -lssl"
-        "exec "!g++ -pthread % -o %< -std=c++17 -lcpprest -lcrypto -lssl"
-        "exec "!g++ -O2 -Wall % -o %< -std=c++17"
-        exec "!g++ -O2 -Wall % -o %< -std=c++17 -lcpprest -lcrypto -lssl"
-        exec "!time ./%:r"
+        exec "!g++ -pthread % -o %<"
+        exec "!./%:r"
     elseif &filetype == 'java'
         "exec "!javac %"
         "exec "!java -cp %:p:h %:t:r"
-        exec "!time java %"
+        exec "!java %"
     elseif &filetype == 'sh'
         exec "!time bash %"
     elseif &filetype == 'python'
@@ -488,11 +477,11 @@ func! CompileRun()
     elseif &filetype == 'html'
         exec "!firefox % &"
     elseif &filetype == 'javascript'
-        exec "!time node %"
+        exec "!node %"
     elseif &filetype == 'jsx'
-        exec "!time node %"
+        exec "!node %"
     elseif &filetype == 'typescript'
-        exec "!time node %"
+        exec "!node %"
     elseif &filetype == 'go'
         exec "!go build %<"
         exec "!time go run %"
@@ -506,8 +495,8 @@ func! CompileRun()
         exec "!firefox % &"
     elseif &filetype == 'cs'
         "exec "!csc %"
-        "exec "!time %:r.exe"
-        exec "!mcs % && time mono ./%:t:r.exe"
+        "exec "!%:r.exe"
+        exec "!mcs % && mono ./%:t:r.exe"
     endif
 endfunc
 map <M-x> :call CompileRun()<CR>

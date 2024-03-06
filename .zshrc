@@ -149,26 +149,12 @@ alias .ioq32='/home/jonas/Code/C/ioq3/build/release-linux-x86_64_golden/ioquake3
 alias .stk3='/home/jonas/Code/C/supertuxkart/stk-code/cmake_build_50/bin/supertuxkart'
 alias lf='/home/jonas/.local/bin/lfub'
 
-alias .acore='cd ~/acore_relwithdebinfo/bin; pwd; ls'
-alias .tcore='cd ~/tcore_relwithdebinfo/bin; pwd; ls'
-
-playermap ()
-{
-    if [ -n "$1" ]; then
-        echo "Launching tcore playermap: php -S 127.0.0.1:8000" &
-        cd ~/Code2/Javascript/tcore_map/playermap && php -S 127.0.0.1:8000;
-    else
-        echo "Launching acore playermap: php -S 127.0.0.1:8000" &
-        cd ~/Code2/Javascript/acore_map/playermap && php -S 127.0.0.1:8000;
-    fi
-}
-alias .playermap='playermap'
-
 # use the vi navigation keys in menu completion
 #bindkey -M menuselect 'h' vi-backward-char
 #bindkey -M menuselect 'k' vi-up-line-or-history
 #bindkey -M menuselect 'l' vi-forward-char
 #bindkey -M menuselect 'j' vi-down-line-or-history
+
 
 #neofetch --color_blocks off
 #curl wttr.in/Skopje\?0 2> /dev/null
