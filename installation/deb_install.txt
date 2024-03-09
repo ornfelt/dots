@@ -1,19 +1,4 @@
-TODO:
-OpenJKDF2 - Use ornfelt and maybe create linux branch???
-Add other star wars
-small_games compilation...
-Move command notes to docs
-add blp and stormlib and do the copy for lib also! sudo cp ....
-
-add:
-wget https://github.com/erebe/greenclip/releases/download/v4.2/greenclip
-Where is greenclip daemon?
-
-Add python notebooks to https://github.com/ornfelt/food-wine-pairing-api
-2024-02-25: Ost- och skinksås pasta
-2024-02-24: xx
-
-******************************************
+----------------------------------------------------------------------------------
 https://www.debian.org/releases/bookworm/debian-installer/
 https://archlinux.org/download/
 
@@ -134,6 +119,449 @@ Might need to change TESSDATA_PREFIX in tesseract_ocr to /home/jonas/.local/shar
 And change scripts to /usr/bin/bash and /usr/bin/python3...
 
 ******************************************
+TODO:
+
+vmangos, cmangos-bots... Copy data from home pc to HDD...
+dbs...
+
+Fix battery script to show for different batteries and network if no
+battery found?
+
+----------------------------------------------------------------------------------
+cd ~/Documents
+
+git clone https://$GITHUB_TOKEN@github.com/archornf/my_notes
+
+----------------------------------------------------------------------------------
+cd ~/Code/c
+
+sudo apt remove neovim, then:
+git clone https://github.com/neovim/neovim
+cd neovim && git checkout stable
+make CMAKE_BUILD_TYPE=RelWithDebInfo
+sudo make install
+
+----------------------------------------------------------------------------------
+cd ~/Code/c++
+
+******************************************
+Openmw:
+
+git clone https://gitlab.com/OpenMW/openmw
+cd openmw
+If you have mygui 3.4.2, then: git checkout 1c2f92cac9
+If you have mygui 3.4.1, then git checkout abb71eeb
+See mygui version with:
+dpkg -l | grep mygui
+Or:
+apt list --installed | grep mygui
+Or:
+ldconfig -p | grep mygui
+
+mkdir build && cd build 
+cmake .. -DCMAKE_BUILD_TYPE=Release
+make -j$(nproc)
+sudo make install
+Note** If you are having undefined reference errors while compiling, 
+its possible that you have previously installed a different openscenegraph 
+version than what openMW depends on.
+To remove it, you can use:
+#removes just package
+apt-get remove <yourOSGversion>
+#or 
+#removes configurations as well
+apt-get remove --purge <yourOSGversion>
+
+******************************************
+OpenJK:
+
+git clone --recurse-submodules https://github.com/JACoders/OpenJK 
+
+Change the BuildJK2SPEngine, BuildJK2SPGame, and BuildJK2SPRdVanilla
+options to ON in CMakeLists.txt.
+
+cd OpenJK
+cmake -DCMAKE_INSTALL_PREFIX=/home/jonas/Downloads/ja_data -DCMAKE_BUILD_TYPE=RelWithDebInfo ..
+make -j$(nproc)
+sudo make install
+
+******************************************
+JediKnightGalaxies & jk2mv:
+
+git clone --recurse-submodules https://github.com/JKGDevs/JediKnightGalaxies
+cd JediKnightGalaxies && mkdir build && cd build
+cmake -DCMAKE_INSTALL_PREFIX=/home/jonas/Downloads/ja_data -DCMAKE_BUILD_TYPE=RelWithDebInfo ..
+make -j$(nproc)
+sudo make install
+
+git clone --recurse-submodules https://github.com/mvdevs/jk2mv
+cd jk2mv && mkdir build_new && cd build_new
+cmake .. CMAKE_BUILD_TYPE=Debug
+make -j$(nproc)
+sudo make install
+make package Generates rpm/deb packages on Linux and a dmg image on MacOSX.
+The above works, but you could also try the build files in jk2mv/build
+
+******************************************
+unvanquished:
+
+git clone --recurse-submodules https://github.com/Unvanquished/Unvanquished.git
+cd Unvanquished/
+./download-paks build/pkg
+mkdir build && cd build
+cmake .. -DCMAKE_BUILD_TYPE=Release
+make -j$(nproc)
+
+On rbpi I got some IPC socket errors. However, you should still be able to run the game like this:
+./daemon -set r_fullscreen 0 -set r_noBorder 1 -set r_mode -1 -set r_customWidth 1280 -set r_customHeight 720 -set vm.cgame.type 3 -set vm.sgame.type 3
+
+See:
+https://github.com/Unvanquished/Unvanquished/issues/2739
+https://github.com/Unvanquished/Unvanquished/issues/1015
+
+******************************************
+GTA / re3:
+
+git clone --recurse-submodules https://github.com/halpz/re3.git
+cd re3
+If you're on x86/x86_64, run $ ./premake5Linux --with-librw gmake2
+
+If you're on i.e. arm/arm64, you need to build your own premake5 from source.
+Then you can proceed to running premake5 with --with-librw gmake2 arguments.
+
+Do this:
+cd ~/Downloads
+For fetching pre-compiled binary (doesn't work for ARM64 :()
+#wget https://github.com/premake/premake-core/releases/download/v5.0.0-alpha16/premake-5.0.0-alpha16-linux.tar.gz
+See https://github.com/premake/premake-core/releases for updated version.
+Then,
+#tar -zxvf premake-5.0.0-alpha16-linux.tar.gz
+sudo mv premake5 /usr/local/bin
+premake5 --version
+
+Do this instead:
+cd ~/Downloads
+git clone --recurse-submodules https://github.com/premake/premake-core
+cd premake-core
+make -f Bootstrap.mak linux
+cd bin/release
+Verify that it's built for ARM64:
+file premake5
+sudo mv premake5 /usr/local/bin
+premake5 --version
+
+Now we can do:
+premake5 --with-librw gmake
+Instead of: ./premake5Linux --with-librw gmake2
+
+Enter the build directory and run make help to see a help message with supported 
+build configurations and architectures. As of now, refer to one of the 
+available configurations:
+
+make config=debug_linux-arm64-librw_gl3_glfw-oal
+Or:
+make config=release_linux-arm64-librw_gl3_glfw-oal
+
+For Vice City / miami branch:
+git clone --recurse-submodules -b miami https://github.com/halpz/re3 re3_vice
+
+Arm64 (rpbi):
+premake5 --with-librw gmake
+Else:
+./premake5Linux --with-librw gmake2
+
+Enter the build directory and run make help to see a help message with supported 
+build configurations and architectures. As of now, refer to one of the 
+available configurations:
+
+make config=debug_linux-arm64-librw_gl3_glfw-oal
+Or:
+make config=release_linux-arm64-librw_gl3_glfw-oal
+
+******************************************
+reone:
+
+git clone --recurse-submodules https://github.com/seedhartha/reone
+cd reone && cmake -B build -S . -DCMAKE_BUILD_TYPE=RelWithDebInfo
+make -j$(nproc)
+sudo make install
+
+Reone doesn't work well with ARM. Pi's GPU usually supports up to OpenGL ES
+3.2, reone requires OpenGL 3.3 Core.
+https://github.com/seedhartha/reone/issues/54
+Otherwise:
+reone --game GAME_DIR
+
+----------------------------------------------------------------------------------
+cd ~/Code/js
+
+kotor-js:
+
+npm install
+# Run the build command
+npm run webpack:dev-watch
+# Run the start command in a separate console/shell window
+npm run start
+
+----------------------------------------------------------------------------------
+cd ~/Code/rust
+
+eww and swww requires other rust version (> 1.7?):
+
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+source "$HOME/.cargo/env"
+rustc --version
+
+Eww:
+git clone https://github.com/elkowar/eww
+cd eww
+cargo build --release --no-default-features --features x11
+cd target/release
+chmod +x ./eww
+./eww daemon
+./eww open <window_name>
+
+swww:
+git clone https://github.com/LGFae/swww
+cd swww
+cargo build --release
+
+----------------------------------------------------------------------------------
+cd ~/Code2/C
+
+git clone https://github.com/ornfelt/ioq3
+cd ioq3 && make
+
+https://github.com/ornfelt/q3lite doesn't work on rbpi 4b+
+You can get it to compile by adding this in make-raspberrypi.sh:
+else
+    echo -e "\e[01;31mUnable to determine platform type from /proc/cpuinfo\n\e[0m"
+    ptype="arm"
+    #exit 6
+fi
+
+******************************************
+picom:
+
+git clone recurse-submodules https://github.com/ornfelt/picom-animations
+cd picom-animations
+meson --buildtype=release . build
+ninja -C build
+
+----------------------------------------------------------------------------------
+cd ~/Code2/C++
+
+supertuxkart:
+
+git clone https://github.com/ornfelt/stk-code
+svn co https://svn.code.sf.net/p/supertuxkart/code/stk-assets stk-assets
+
+cd stk-code
+# create and enter the cmake_build directory
+mkdir build && cd build
+cmake ..
+Or:
+cmake .. -DCMAKE_BUILD_TYPE=Debug
+* Install shaderc from your distribution or disable vulkan support:
+cmake .. -DCMAKE_BUILD_TYPE=Release -DNO_SHADERC=on
+make -j$(nproc)
+
+To recompile the latest code without redownloading the entire source, 
+first run the svn up command inside the 'stk-assets' directory, then 
+run the following commands inside the 'stk-code' directory:
+git pull
+cd build
+cmake ..
+make -j$(nproc)
+
+******************************************
+small-games: Craft, CPP-FightingGame (also compile v2), pacman, space-shooter.
+
+git clone --recurse-submodules -b linux https://github.com/ornfelt/small_games
+cd small_games
+cd BirdGame
+g++ -std=c++17 -g *.cpp -o main -lSDL2main -lSDL2 -lSDL2_image -lSDL2_ttf -lSDL2_mixer
+cp -r BirdGame/graphics ./
+cd ../CPP_FightingGame/FightingGameProject
+cmake . && make -j$(nproc)
+
+cd ../../Craft
+cmake . && make -j$(nproc)
+gcc -std=c99 -O3 -fPIC -shared -o world -I src -I deps/noise deps/noise/noise.c src/world.c
+
+cd ../pacman/
+mkdir build && cd build
+cmake ..
+cmake --build .
+
+https://emscripten.org/docs/getting_started/downloads.html#installation-instructions
+# git clone https://github.com/emscripten-core/emsdk.git
+# cd emsdk
+# ./emsdk install latest
+# ./emsdk activate latest
+# source ./emsdk_env.sh
+# mkdir build_wasm && cd build_wasm
+# emcmake cmake -G"Unix Makefiles" -DCMAKE_BUILD_TYPE=MinSizeRel ..
+# cmake --build .
+
+cd ../../space-shooter
+make linux / make linux-release
+#make web / make web-release
+
+******************************************
+AzerothCore:
+git clone https://github.com/ornfelt/azerothcore-wotlk
+cd azerothcore-wotlk
+mkdir build && cd build
+cmake ../ -DCMAKE_INSTALL_PREFIX=$HOME/acore/ -DCMAKE_C_COMPILER=/usr/bin/clang -DCMAKE_CXX_COMPILER=/usr/bin/clang++ -DWITH_WARNINGS=1 -DTOOLS_BUILD=all -DSCRIPTS=static -DMODULES=static -DWITH_COREDEBUG=1 -DCMAKE_BUILD_TYPE=RelWithDebInfo
+make -j$(nproc)
+make install
+
+TrinityCore:
+git clone -b 3.3.5 https://github.com/ornfelt/trinitycore --single-branch --depth 1
+cd trinitycore
+mkdir build && cd build
+cmake ../ -DCMAKE_INSTALL_PREFIX=$HOME/tcore/ -DCMAKE_C_COMPILER=/usr/bin/clang -DCMAKE_CXX_COMPILER=/usr/bin/clang++ -DWITH_WARNINGS=1 -DTOOLS_BUILD=all -DSCRIPTS=static -DMODULES=static -DWITH_COREDEBUG=1 -DCMAKE_BUILD_TYPE=RelWithDebInfo
+make -j$(nproc)
+make install
+
+For DB configuration...
+sudo mysql
+-- for MySQL
+ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'passwd';
+-- for MariaDB
+ALTER USER 'root'@'localhost' IDENTIFIED VIA mysql_native_password USING PASSWORD('passwd');
+Then login via:
+mysql -u root -p
+
+******************************************
+simc:
+
+git clone --recurse-submodules https://github.com/ornfelt/simc --single-branch --depth 1
+cd simc/
+mkdir build && cd build
+cmake ../ -DCMAKE_BUILD_TYPE=Release
+make -j$(nproc)
+sudo make install
+
+Or:
+Command Line Interface (classic build):
+cd your_simc_source_dir/engine
+make optimized
+This builds an optimized executable named simc
+Additional options:
+Build with clang: Add CXX=clang++, eg. make optimized CXX=clang++
+Note that if you issue the build with SC_NO_NETWORKING=1, libcurl-dev
+package is not necessary
+
+******************************************
+OpenJKDF2:
+
+* Make sure cog package is NOT installed (only pip3 install cogapp)
+sudo apt remove cog
+Make sure that cog is in ~/.local/bin
+git clone --recurse-submodules https://github.com/ornfelt/OpenJKDF2 -b linux
+cd OpenJKDF2
+Add the following to ~/.bashrc (if not added already)
+export PATH=$PATH:~/.local/bin
+then: source ~/.bashrc
+
+export CC=clang
+export CXX=clang++
+./build_linux64.sh
+LD_LIBRARY_PATH=build_linux64 ./build_linux64/openjkdf2
+or just: ./build_linux64/openjkdf2
+
+******************************************
+Diablo:
+
+git clone https://github.com/ornfelt/devilutionX
+cd devilutionX
+The smpq package on debian has had issues so it might not work.
+But can you always try to install it and build:
+sudo apt-get install smpq
+Otherwise, you can do:
+sudo apt remove smpq
+cd tools && ./build_and_install_smpq.sh
+then:
+sudo cp /usr/local/bin/smpq /usr/bin/smpq
+
+Then build with:
+arm64 (aarch64):
+Packaging/nix/debian-cross-aarch64-prep.sh
+cmake -S. -Bbuild-aarch64-rel \
+  -DCMAKE_TOOLCHAIN_FILE=../CMake/platforms/aarch64-linux-gnu.toolchain.cmake \
+  -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DCPACK=ON \
+  -DDEVILUTIONX_SYSTEM_LIBFMT=OFF
+cmake --build build-aarch64-rel -j $(getconf _NPROCESSORS_ONLN) --target package
+
+Other:
+cmake -S. -Bbuild -DCMAKE_BUILD_TYPE=Release
+cmake --build build -j $(getconf _NPROCESSORS_ONLN)
+
+******************************************
+Crispy-doom
+
+git clone --recurse-submodules https://github.com/ornfelt/crispy-doom
+
+cd crispy-doom
+autoreconf -fiv
+./configure
+make -j$(nproc)
+
+After successful compilation the resulting binaries can be found in the src/
+director
+
+Same with chocolate-doom:
+git clone --recurse-submodules https://github.com/chocolate-doom/chocolate-doom
+cd chocolate-doom
+autoreconf -fiv
+./configure
+make -j$(nproc)
+Run with:
+./crispy-doom -iwad ~/Downloads/doom/DOOM.WAD
+For chocolate-doom:
+./chocolate-doom -iwad ~/Downloads/doom/DOOM.WAD
+
+Doom 3:
+git clone --recurse-submodules https://github.com/ornfelt/dhewm3.git
+cd dhewm3
+mkdir build && cd build
+cmake ../neo/
+make -j$(nproc)
+When all steps are done and no errors occurred, you should be able to run
+dhewm3 right there, like:
+./dhewm3 +set fs_basepath /path/to/your/doom3/
+Replace /path/to/your/doom3/ with the path to your Doom3 installation (that
+contains base/ with pak000.pk4 to pak008.pk4
+
+----------------------------------------------------------------------------------
+cd ~/Code2/General
+
+git clone --recurse-submodules https://github.com/ornfelt/Svea-Examples
+git clone --recurse-submodules https://github.com/ornfelt/Svea-1brc
+git clone https://$GITHUB_TOKEN@github.com/ornfelt/utils
+
+----------------------------------------------------------------------------------
+cd ~/Code2/Go
+
+git clone --recurse-submodules https://github.com/ornfelt/wotlk-sim
+
+----------------------------------------------------------------------------------
+cd ~/Code2/Python
+
+git clone https://github.com/ornfelt/wander_nodes_util
+
+----------------------------------------------------------------------------------
+cd ~/Code2/Wow/tools
+
+******************************************
+mpq gophercraft:
+
+cd gophercraft_mpq_set
+go build github.com/Gophercraft/mpq/cmd/gophercraft_mpq_set
+
+******************************************
 BLPConverter
 sudo apt-get install cmake git gcc
 git clone git://github.com/ornfelt/BLPConverter.git
@@ -144,6 +572,7 @@ sudo make install
 sudo cp /usr/local/lib/libblp.so /usr/lib/
 sudo ldconfig
 
+******************************************
 Stormlib:
 sudo apt-get install cmake git gcc zlib1g-dev
 git clone git://github.com/ladislav-zezula/StormLib.git
@@ -155,33 +584,8 @@ sudo cp /usr/local/lib/libstorm.so /usr/lib/
 sudo ldconfig
 
 ******************************************
-mpq gophercraft:
+Wowser and spelunker:
 
-go build github.com/Gophercraft/mpq/cmd/gophercraft_mpq_set
-
-******************************************
-clone my_notes
-
-******************************************
-Simc:
-
-git clone --recurse-submodules https://github.com/ornfelt/simc --single-branch --depth 1
-cd simc/
-mkdir build && cd build
-cmake ../ -DCMAKE_BUILD_TYPE=Release
-make -j$(nproc)
-sudo make install
-
-Or:
-Command Line Interface (classic build)
-    cd your_simc_source_dir/engine
-    make optimized
-    This builds an optimized executable named simc
-    Additional options:
-        Build with clang: Add CXX=clang++, eg. make optimized CXX=clang++
-    Note that if you issue the build with SC_NO_NETWORKING=1, libcurl-dev package is not necessary
-
-******************************************
 git clone --recurse-submodules https://github.com/wowserhq/spelunker
 cd spelunker/packages/spelunker-api && npm install && cd -
 cd spelunker/packages/spelunker-web && npm install && cd -
@@ -215,55 +619,29 @@ export DATA_URI=http://192.168.1.172:3002/files
 export MINIMAP_URI=http://192.168.1.172:3002/files
 
 ******************************************
-AzerothCore:
-git clone https://github.com/ornfelt/azerothcore-wotlk
-cd azerothcore-wotlk
+wowmapview:
+
+wowmapview:
+git clone --recurse-submodules https://github.com/ornfelt/wowmapviewer -b linux
+cd src/stormlib && make -f Makefile.linux
+cd .. && make
+
+To run:
+./wowmapview -gamepath ~/Downloads/cata/Data/
+
+WebWowViewerCpp:
+
+git clone --recurse-submodules https://github.com/Deamon87/WebWowViewerCpp -b linux
+cd WebWowViewerCpp
 mkdir build && cd build
-cmake ../ -DCMAKE_INSTALL_PREFIX=$HOME/acore/ -DCMAKE_C_COMPILER=/usr/bin/clang -DCMAKE_CXX_COMPILER=/usr/bin/clang++ -DWITH_WARNINGS=1 -DTOOLS_BUILD=all -DSCRIPTS=static -DMODULES=static -DWITH_COREDEBUG=1 -DCMAKE_BUILD_TYPE=RelWithDebInfo
-make -j$(nproc)
+cmake .. && make -j$(nproc)
 
-TrinityCore:
-git clone -b 3.3.5 https://github.com/ornfelt/trinitycore --single-branch --depth 1
-cd trinitycore
-mkdir build && cd build
-cmake ../ -DCMAKE_INSTALL_PREFIX=$HOME/tcore/ -DCMAKE_C_COMPILER=/usr/bin/clang -DCMAKE_CXX_COMPILER=/usr/bin/clang++ -DWITH_WARNINGS=1 -DTOOLS_BUILD=all -DSCRIPTS=static -DMODULES=static -DWITH_COREDEBUG=1 -DCMAKE_BUILD_TYPE=RelWithDebInfo
-make -j$(nproc)
+----------------------------------------------------------------------------------
+Other stuff:
 
-For DB configuration...
-sudo mysql
--- for MySQL
-ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'passwd';
--- for MariaDB
-ALTER USER 'root'@'localhost' IDENTIFIED VIA mysql_native_password USING PASSWORD('passwd');
-Then login via:
-mysql -u root -p
+Greenclip:
 
-******************************************
-sudo apt remove neovim, then:
-git clone https://github.com/neovim/neovim
-cd neovim && git checkout stable
-make CMAKE_BUILD_TYPE=RelWithDebInfo
-sudo make install
- 
-******************************************
-eww and swww requires other rust version:
-
-curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
-source "$HOME/.cargo/env"
-rustc --version
-
-swww:
-git clone https://github.com/LGFae/swww
-cargo build --release
-
-Eww:
-git clone https://github.com/elkowar/eww
-cd eww
-cargo build --release --no-default-features --features x11
-cd target/release
-chmod +x ./eww
-./eww daemon
-./eww open <window_name>
+wget https://github.com/erebe/greenclip/releases/download/v4.2/greenclip -O ~/.local/bin/greenclip
 
 ******************************************
 Dotnet:
@@ -319,9 +697,6 @@ https://wiki.debian.org/AndroidStudio
 Steam:
 https://wiki.debian.org/Steam#Installing_Steam
 
-Greenclip:
-https://github.com/erebe/greenclip
-
 For virtualbox:
 sudo apt install -y virtualbox-guest-utils virtualbox-guest-X11
 Virtualbox guest utils doesn't work it seems... See:
@@ -348,276 +723,64 @@ You can add it after arm_boost=1 for example. (before [cm4] and [all].
 
 Also make sure that realmlist address and port is set correctly. I've changed
 port when testing wowser / acore-client for example.
-******************************************
 
-ioq3:
-just run make
-
-https://github.com/ornfelt/q3lite doesn't work on rbpi 4b+
-You can get it to compile by adding this in make-raspberrypi.sh:
-else
-    echo -e "\e[01;31mUnable to determine platform type from /proc/cpuinfo\n\e[0m"
-    ptype="arm"
-    #exit 6
-fi
-
-******************************************
-supertuxkart:
-
-git clone https://github.com/ornfelt/stk-code
-svn co https://svn.code.sf.net/p/supertuxkart/code/stk-assets stk-assets
-
-cd stk-code
-# create and enter the cmake_build directory
-mkdir build && cd build
-cmake ..
-Or:
-cmake .. -DCMAKE_BUILD_TYPE=Debug
-* Install shaderc from your distribution or disable vulkan support:
-cmake .. -DCMAKE_BUILD_TYPE=Release -DNO_SHADERC=on
-make -j$(nproc)
-
-To recompile the latest code without redownloading the entire source, 
-first run the svn up command inside the 'stk-assets' directory, then 
-run the following commands inside the 'stk-code' directory:
-git pull
-cd build
-cmake ..
-make -j$(nproc)
-
-******************************************
-OpenJK:
-
-Change the BuildJK2SPEngine, BuildJK2SPGame, and BuildJK2SPRdVanilla
-options to ON in CMakeLists.txt.
-
-cmake -DCMAKE_INSTALL_PREFIX=/home/jonas/Downloads/ja_data -DCMAKE_BUILD_TYPE=RelWithDebInfo ..
-make -j$(nproc)
-
-******************************************
-git clone --recurse-submodules https://github.com/JKGDevs/JediKnightGalaxies
-cd JediKnightGalaxies && mkdir build && cd build
-cmake -DCMAKE_INSTALL_PREFIX=/home/jonas/Downloads/ja_data -DCMAKE_BUILD_TYPE=RelWithDebInfo ..
-make -j$(nproc)
-sudo make install
-
-git clone --recurse-submodules https://github.com/mvdevs/jk2mv
-cd jk2mv && mkdir build_new && cd build_new
-cmake .. CMAKE_BUILD_TYPE=Debug
-make -j$(nproc)
-sudo make install
-make package Generates rpm/deb packages on Linux and a dmg image on MacOSX.
-The above works, but you could also try the build files in jk2mv/build
-
-******************************************
-unvanquished:
-
-git clone --recurse-submodules https://github.com/Unvanquished/Unvanquished.git
-cd Unvanquished/
-./download-paks build/pkg
-mkdir build && cd build
-cmake ..
-make -j$(nproc)
-
-On rbpi I got some IPC socket errors. However, you should still be able to run the game like this:
-./daemon -set r_fullscreen 0 -set r_noBorder 1 -set r_mode -1 -set r_customWidth 1280 -set r_customHeight 720 -set vm.cgame.type 3 -set vm.sgame.type 3
-
-See:
-https://github.com/Unvanquished/Unvanquished/issues/2739
-https://github.com/Unvanquished/Unvanquished/issues/1015
-
-******************************************
-small-games: Craft, CPP-FightingGame (also compile v2), pacman, space-shooter.
-
-git clone --recurse-submodules -b linux https://github.com/ornfelt/small_games
-
-Follow build instructions in readme.
-
-******************************************
-OpenJKDF2:
-
-* Make sure cog package is NOT installed (only pip3 install cogapp)
-git clone --recurse-submodules https://github.com/ornfelt/OpenJKDF2 -b linux
-cd OpenJKDF2
-Add the following to the end of ~/.bashrc:
-export PATH=$PATH:~/.local/bin
-source ~/.bashrc
-export CC=clang
-export CXX=clang++
-./build_linux64.sh
-LD_LIBRARY_PATH=build_linux64 ./build_linux64/openjkdf2
-or just: ./build_linux64/openjkdf2
-
-******************************************
-Gta:
-
-git clone --recurse-submodules https://github.com/halpz/re3.git
-cd re3
-If you're on x86/x86_64, run $ ./premake5Linux --with-librw gmake2.
-
-If you're on i.e. arm/arm64, you need to build your own premake5 from source.
-Then you can proceed to running premake5 with --with-librw gmake2 arguments.
-
-Do this:
-cd ~/Downloads
-For fetching pre-compiled binary (doesn't work for ARM64 :()
-#wget https://github.com/premake/premake-core/releases/download/v5.0.0-alpha16/premake-5.0.0-alpha16-linux.tar.gz
-See https://github.com/premake/premake-core/releases for updated version.
-Then,
-#tar -zxvf premake-5.0.0-alpha16-linux.tar.gz
-sudo mv premake5 /usr/local/bin
-premake5 --version
-
-Do this instead:
-cd ~/Downloads
-git clone --recurse-submodules https://github.com/premake/premake-core
-cd premake-core
-make -f Bootstrap.mak linux
-cd bin/release
-Verify that it's built for ARM64:
-file premake5
-sudo mv premake5 /usr/local/bin
-premake5 --version
-
-Now we can do:
-premake5 --with-librw gmake
-Instead of: ./premake5Linux --with-librw gmake2
-
-Enter the build directory and run make help to see a help message with supported 
-build configurations and architectures. As of now, refer to one of the 
-available configurations:
-
-make config=debug_linux-arm64-librw_gl3_glfw-oal
-Or:
-make config=release_linux-arm64-librw_gl3_glfw-oal
-
-For Vice City / miami branch:
-git clone --recurse-submodules -b miami https://github.com/halpz/re3 re3_vice
-
-Arm64 (rpbi):
-premake5 --with-librw gmake
-Else:
-./premake5Linux --with-librw gmake2
-
-Enter the build directory and run make help to see a help message with supported 
-build configurations and architectures. As of now, refer to one of the 
-available configurations:
-
-make config=debug_linux-arm64-librw_gl3_glfw-oal
-Or:
-make config=release_linux-arm64-librw_gl3_glfw-oal
-
-******************************************
-Openmw:
-
-git clone https://gitlab.com/OpenMW/openmw
-cd openmw
-If you have mygui 3.4.2, then: git checkout 1c2f92cac9
-If you have mygui 3.4.1, then git checkout abb71eeb
-See mygui version with:
-dpkg -l | grep mygui
-Or:
-apt list --installed | grep mygui
-Or:
-ldconfig -p | grep mygui
-
-mkdir build && cd build 
-cmake .. -DCMAKE_BUILD_TYPE=Release
-make -j$(nproc)
-sudo make install
-Note** If you are having undefined reference errors while compiling, 
-its possible that you have previously installed a different openscenegraph 
-version than what openMW depends on.
-To remove it, you can use:
-#removes just package
-apt-get remove <yourOSGversion>
-#or 
-#removes configurations as well
-apt-get remove --purge <yourOSGversion>
-
-******************************************
-Diablo:
-git clone https://github.com/ornfelt/devilutionX
-cd devilutionX
-The smpq package on debian has had issues so it might not work.
-But can you always try to install it and build:
-sudo apt-get install smpq
-Otherwise, you can do:
-sudo apt remove smpq
-cd tools && ./build_and_install_smpq.sh
-then:
-sudo cp /usr/local/bin/smpq /usr/bin/smpq
-
-Then build with:
-arm64 (aarch64):
-Packaging/nix/debian-cross-aarch64-prep.sh
-cmake -S. -Bbuild-aarch64-rel \
-  -DCMAKE_TOOLCHAIN_FILE=../CMake/platforms/aarch64-linux-gnu.toolchain.cmake \
-  -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DCPACK=ON \
-  -DDEVILUTIONX_SYSTEM_LIBFMT=OFF
-cmake --build build-aarch64-rel -j $(getconf _NPROCESSORS_ONLN) --target package
-
-Other:
-cmake -S. -Bbuild -DCMAKE_BUILD_TYPE=Release
-cmake --build build -j $(getconf _NPROCESSORS_ONLN)
-
-******************************************
-Crispy-doom
-
-git clone --recurse-submodules https://github.com/ornfelt/crispy-doom
-
-cd crispy-doom
-autoreconf -fiv
-./configure
-make -j$(nproc)
-
-After successful compilation the resulting binaries can be found in the src/
-director
-
-Same with chocolate-doom:
-git clone --recurse-submodules https://github.com/chocolate-doom/chocolate-doom
-cd chocolate-doom
-autoreconf -fiv
-./configure
-make -j$(nproc)
-Run with:
-./crispy-doom -iwad ~/Downloads/doom/DOOM.WAD
-For chocolate-doom:
-./chocolate-doom -iwad ~/Downloads/doom/DOOM.WAD
-
-Doom 3:
-git clone --recurse-submodules https://github.com/ornfelt/dhewm3.git
-mkdir build && cd build
-cmake ../neo/
-When all steps are done and no errors occurred, you should be able to run
-dhewm3 right there, like:
-./dhewm3 +set fs_basepath /path/to/your/doom3/
-Replace /path/to/your/doom3/ with the path to your Doom3 installation (that
-contains base/ with pak000.pk4 to pak008.pk4
-
-******************************************
-* Don't forget to copy data for acore, tcore, q3, jajo, jkdf2, gta, openmw, diablo, doom and doom3!
+----------------------------------------------------------------------------------
+* Don't forget to copy data for:
+acore, tcore, vmangos, cmangos-bots,
+q3, doom, doom3,
+jajo, jkdf2, kotor1/2,
+gta, openmw, diablo, stk_addons
 
 q3: copy all pk3 files into baseq3 dir (in buld dir).
-For jajo:
-For JO place game files place base in build dir. JA files at ~/local/share/openjk
-You also need to add all required .so files from the build dirs to
-~/local/share/openjk (maybe even in base dir it seems) and perhaps build dir.
-Not required on Windows. Maybe fixable with sudo make install?
-For jkdfs, copy all files into buld dir.
+
+ja: ~/local/share/openjk or maybe /usr/local/JediAcademy or wherever you used DCMAKE_INSTALL_PREFIX?
+jo:~/local/share/openjo or maybe /usr/local/JediOutcast wherever you used DCMAKE_INSTALL_PREFIX?
+Run from either:
+/usr/local/JediAcademy
+/usr/local/JediOutcast
+
+For jkdf2:
+~/.local/share/OpenJKDF2/openjkdf2
+
+Kotor:
+use launcher(s) to select location.
+
 For GTA, just copy re3 executable into GTA dirs / copy all GTA files into build
 dir.
+
 For OpenMW, keep the files in Download and run openmw-launcher and select the
 Morrowind.esm in Data Files dir. Then start with ./openmw
+
 For diablo: 
 Copy DIABDAT.MPQ from the CD or GOG-installation to the build dir.
 To run the Diablo: Hellfire expansion you will need to also copy hellfire.mpq,
 hfmonk.mpq, hfmusic.mpq, hfvoice.mpq.
+
 For Doom you can keep the files in Downloads and run the executable with:
 ./crispy-doom -iwad ~/Downloads/doom/DOOM.WAD
 For chocolate-doom:
 ./chocolate-doom -iwad ~/Downloads/doom/DOOM.WAD
 For doom3, copy into build dir.
+
+stk addons:
+On Windows: %APPDATA%\supertuxkart\addons
+
+On Linux: ~/.local/share/supertuxkart/addons
+/usr/share/games/supertuxkart/data/tracks (for older STK versions)
+
+On Mac OS X: ~/Library/Application Support/SuperTuxKart/Addons
+
+Installing and Removing:
+Within this folder, the following files and subdirectories exist: icons, karts,
+tmp, tracks, addons.xml, addons_installed.xml, news.xml
+
+To install an Add-on, simply copy the whole folder with the Add-On to the
+correspondig subdirectory. Note that Arenas go in the track folder because they
+are technically tracks.
+
+Uninstalling is done by removing that folder.
+Additionally, /installaddon and /uninstalladdon can be used in networking lobby
+to install or uninstall Add-ons.
 
 ******************************************
 Missing packages - install manually:
@@ -630,47 +793,7 @@ ttf-joypixels
 ******************************************
 sudo systemctl enable bluetooth.service
 sudo systemctl enable NetworkManager.service
-More services...
-
-******************************************
-dpkg -l | awk '/^ii/ { print $2 }' > package_list.txt
-
-dpkg -l > package_list_all_info.txt
-
-sudo apt list --installed > package_list.txt
-
-# Alternative:
-sudo dpkg-query -f '${binary:Package}\n' -W > packages_list.txt
-
-# Now that you have the list, you can install the same packages
-# on your new server with:
-sudo xargs -a packages_list.txt apt install
-
-# Count
-sudo dpkg-query -f '${binary:Package}\n' -W | wc -l
-
-# USE THIS to print name only:
-dpkg-query -W -f='${binary:Package}\n' > package_list.txt
-# Get rid of ':arm64':
-dpkg-query -W -f='${binary:Package}\n' | awk -F: '{print $1}' > package_list.txt
-# Using sed:
-dpkg-query -W -f='${binary:Package}\n' | sed 's/:.*//' > package_list.txt
-# Using grep and cut:
-{ dpkg-query -W -f='${binary:Package}\n' | grep ":" | cut -d':' -f1; dpkg-query -W -f='${binary:Package}\n' | grep -v ":"; } > package_list.txt
-
-----
-To change all file permissions to full access recursively:
-chmod -R 777 /path/to/directory
-
-777 sets the permissions for the owner, group, and others 
-to read, write, and execute. This is the numeric way to 
-represent full permissions.
-
-Set owner recursively:
-sudo chown -R jonas:jonas .
-
-To see permissions / owners on files and dirs:
-ls -lh
+More services nginx, firewall etc...
 
 ----------------------------------------------------------------------------------
 #sudo apt-get update -y && sudo apt-get upgrade -y
@@ -801,6 +924,7 @@ liblua5.2-dev
 liblua5.3-dev 
 libluajit-5.1-dev 
 liblz4-dev 
+libmad0-dev
 libmbedtls-dev 
 libminizip-dev
 libmpg123-dev
@@ -829,6 +953,8 @@ libqt5opengl5-dev
 libreadline-dev 
 librecast-dev 
 librust-starship-module-config-derive-dev
+libsdl1.2-compat
+libsdl1.2-compat-dev
 libsdl2-2.0.0 
 libsdl2-dev
 libsdl2-gfx-1.0-0 
@@ -859,6 +985,7 @@ libunshield-dev
 libvorbis-dev 
 libwebp-dev 
 libwine 
+libwxgtk3.2-dev
 libx11-dev 
 libx11-xcb-dev
 libxcb-composite0-dev 
