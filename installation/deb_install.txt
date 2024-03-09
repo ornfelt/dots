@@ -181,7 +181,7 @@ Change the BuildJK2SPEngine, BuildJK2SPGame, and BuildJK2SPRdVanilla
 options to ON in CMakeLists.txt.
 
 cd OpenJK
-cmake -DCMAKE_INSTALL_PREFIX=/home/jonas/Downloads/ja_data -DCMAKE_BUILD_TYPE=RelWithDebInfo ..
+cmake -DCMAKE_INSTALL_PREFIX=/home/jonas/.local/share/openjk -DCMAKE_BUILD_TYPE=RelWithDebInfo ..
 make -j$(nproc)
 sudo make install
 
