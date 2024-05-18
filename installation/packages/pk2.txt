@@ -52,6 +52,7 @@ rtl8852be-dkms-git
 rtw89-dkms-git
 rustup
 rxvt-unicode
+scons
 scrot
 sdl12-compat
 sdl2_image
@@ -82,4 +83,3 @@ tmux
 tstock
 ttf-font-awesome
 ttf-icomoon-feather
-ttf-iosevka-nerd

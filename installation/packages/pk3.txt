@@ -1,3 +1,4 @@
+ttf-iosevka-nerd
 ttf-jetbrains-mono-nerd
 ttf-joypixels
 ufw
@@ -75,7 +76,8 @@ xsel
 yad
 yaml-cpp
 yarn
-yay-git
+yay-bin
+yay-bin-debug
 yq
 zathura
 zathura-pdf-poppler

@@ -54,7 +54,7 @@ gdb
 ghc
 git
 git-lfs
-glfw-x11
+glfw
 glm
 gnome-calculator
 gnome-calendar

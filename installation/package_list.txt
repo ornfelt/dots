@@ -54,7 +54,7 @@ gdb
 ghc
 git
 git-lfs
-glfw-x11
+glfw
 glm
 gnome-calculator
 gnome-calendar
@@ -137,6 +137,7 @@ rtl8852be-dkms-git
 rtw89-dkms-git
 rustup
 rxvt-unicode
+scons
 scrot
 sdl12-compat
 sdl2_image
@@ -245,7 +246,8 @@ xsel
 yad
 yaml-cpp
 yarn
-yay-git
+yay-bin
+yay-bin-debug
 yq
 zathura
 zathura-pdf-poppler

@@ -187,7 +187,6 @@ sudo -Scc will clean pacman cache also
 GIT:
 
 git clone https://scuzzlebuzzle:<MYTOKEN>@github.com/scuzzlebuzzle/ol3-1.git --branch=gh-pages gh-pages
-git clone https://archornf:<MYTOKEN>@github.com/archornf/progrm_help_docs.git
 
 # After cloning
 cd gh-pages
@@ -204,9 +203,6 @@ git diff file
 Add files at patch level: git add -p file
 Then you can say y to one change and n to another that isn't part of the same topic...
 for example: some changes in index.html will be staged for first commit and other changes can be staged for commit later...
-
-X5JHFXWJ4OTINV2B
-export ALPHAVANTAGE_API_KEY=X5JHFXWJ4OTINV2B
 
 vmornf@gmail.com
 vmornf @ github
@@ -507,6 +503,10 @@ ls /usr/lib | grep -in mygui > test2.txt
 See pacman install paths:
 pacman -Ql mygui
 
+Copy files or working directory:
+ls -a | xclip -selection clipboard
+pwd | xclip -selection clipboard
+
 ----------------------------------------------------------------------------------
 SSH:
 
@@ -758,6 +758,38 @@ git push origin master
 ./server -m models/llama-2-7b.Q4_K_M.gguf --threads $(nproc) -c 2048
 ./server -m models/llama-2-7b-chat/ggml-model-q4_0.gguf --threads $(nproc) -c 2048
 
+<<-- 2024-05-18 Sat -->
+llama3:
+python convert-hf-to-gguf.py /media/2024/ollama/huggingfaces/Meta-Llama-3-8B-Instruct
+./quantize /media/2024/ollama/huggingfaces/Meta-Llama-3-8B-Instruct/ggml-model-f16.gguf /media/2024/ollama/huggingfaces/Meta-Llama-3-8B-Instruct/ggml-model-f16-Q4.gguf Q4_K_M
+
+./server -m /media/2024/ollama/huggingfaces/Meta-Llama-3-8B-Instruct/ggml-model-f16-Q4.gguf --threads $(nproc) -c 2048
+
+curl --request POST \
+    --url http://localhost:8080/completion \
+    --header "Content-Type: application/json" \
+    --data '{"prompt": "Building a website can be done in 10 simple steps:","n_predict": 128}'
+
+curl --request POST \
+    --url http://localhost:8080/completion \
+    --header "Content-Type: application/json" \
+    --data '{"prompt": "Write python code for calculating effective interest rate:","n_predict": 500}'
+
+Server load status:
+http://localhost:8080/health
+
+./main -m /media/2024/ollama/huggingfaces/Meta-Llama-3-8B-Instruct/ggml-model-f16-Q4.gguf -n -1 --color -r "User:" --in-prefix " " -i -p \
+'User: Hi
+AI: Hello. I am an AI chatbot. Would you like to talk?
+User: Sure!
+AI: What would you like to talk about?
+User:'
+
+Using in vim:
+cp llama.vim ~/.vim/autoload/
+Use llm function in vimrc instead...
+Not perfect...
+
 ----------------------------------------------------------------------------------
 Rename files and dirs to lowercase:
 
@@ -934,3 +966,100 @@ your application.
 CMAKE:
 cmake -DCMAKE_BUILD_TYPE=Debug ..
 cmake -DCMAKE_BUILD_TYPE=Release ..
+
+******************************************
+ps aux | grep openjk
+
+kill -9 1396473
+killall -9 chrome
+
+To get all process IDs by name:
+pgrep process_name
+
+To kill all processes by name:
+pkill process_name
+
+To get all process IDs by name and kill them:
+ps aux | grep process_name | grep -v grep | awk '{print $2}' | xargs kill
+
+ps aux lists all running processes.
+grep process_name filters processes by name. Replace process_name with the
+actual name of the process you're targeting.
+grep -v grep excludes the grep command itself from the results (since it will
+also appear in the list, matching the search term).
+awk '{print $2}' extracts the second column, which is the PID.
+xargs kill passes the PIDs to the kill command, which terminates the
+processes.
+
+If you need to force kill the processes (if they don't terminate gracefully
+with SIGTERM), you can use kill -9 instead of kill:
+ps aux | grep process_name | grep -v grep | awk '{print $2}' | xargs kill -9
+
+******************************************
+OpeneJK:
+
+sed -i '/option(BuildJK2SPEngine /s/OFF)/ON)/; /option(BuildJK2SPGame /s/OFF)/ON)/; /option(BuildJK2SPRdVanilla /s/OFF)/ON)/' ../CMakeLists.txt
+cmake -DCMAKE_INSTALL_PREFIX=/home/jonas/.local/share/openjk -DCMAKE_BUILD_TYPE=RelWithDebInfo ..
+make -j$(nproc)
+sudo make install
+
+To recompile:
+cmake .. && make -j$(nproc)
+Or just: sudo make install
+
+For japp:
+simply compile with:
+scons
+(On raspberrypi - specify arch = "arm64" or similar in SConstruct (after arch
+check code that seems to fail)
+
+Then do .japlus or:
+./openjk.x86_64 +set fs_game "japlus"
+quit game and:
+cp *.so ~/.local/share/openjk/japlus
+or:
+sudo cp uix86_64.so jampgamex86_64.so cgamex86_64.so ~/.local/share/openjk/japlus/
+
+Get *.so files:
+ls -l | grep '\.so$'
+Get only filename:
+ls -l | grep '\.so$' | awk '{print $NF}'
+
+Get *.so files with find:
+find . -name '*.so'
+
+For Limiting the Search to One Level:
+find . -maxdepth 1 -name '*.so'
+
+Only file name:
+find . -maxdepth 1 -name '*.so' -exec basename {} \;
+
+After copying compiled shared libraries, also copy files from japp-assets to:
+~/.local/share/openjk/japlus/
+like:
+sudo cp -r ~/joja/ja/japp-assets/* ~/.local/share/openjk/japlus/
+also edit modelscale.cfg and modify lua/sv/modelscale/plugin.lua if needed!
+
+Commands:
+https://jkhub.org/tutorials/console-commands-cvars/all-console-commands-cheats-r15/
+https://jkhub.org/files/file/602-yoda-vm/
+
+Notes on modelscale:
+https://jkhub.org/forums/topic/7522-modelscales/
+
+For jk2mv, place pk3s in ~/.jk2mv and run with:
+jk2mvmp
+
+JediOutcast files needs to be in both dirs like:
+sudo cp -r /home/jonas/.jk2mv/base /home/jonas/.local/share/openjk/JediOutcast/
+
+JediAcademy files in:
+/home/jonas/.local/share/openjk/base
+or:
+/home/jonas/.local/share/openjk/JediAcademy/base
+
+******************************************
+Recursively add chmod +x to *.sh:
+
+find . -type f -name "*.sh" -exec chmod +x {} \;
+
