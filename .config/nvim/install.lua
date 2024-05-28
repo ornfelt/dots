@@ -45,19 +45,32 @@ return require('packer').startup(function()
 
   -- Colorschemes
   use("gruvbox-community/gruvbox")
-  -- use {
-  --     "catppuccin/nvim",
-  --     as = "catppuccin",
-  --     config = function()
-  --         require("catppuccin").setup {
-  --             --flavour = "macchiato" -- mocha, macchiato, frappe, latte
-  --             flavour = "mocha"
-  --         }
-  --         -- vim.api.nvim_command "colorscheme catppuccin"
-  --     end
-  -- }
   -- use 'RRethy/nvim-base16'
 
   -- Other stuff
   -- use 'frazrepo/vim-rainbow'
+
+  --use({
+  --    "jackMort/ChatGPT.nvim",
+  --    --config = function()
+  --    --    require("chatgpt").setup()
+  --    --end,
+  --    requires = {
+  --        "MunifTanjim/nui.nvim",
+  --        "nvim-lua/plenary.nvim",
+  --        "folke/trouble.nvim",
+  --        "nvim-telescope/telescope.nvim"
+  --    }
+  --})
+
+  use("robitx/gp.nvim")
+  --use({
+  --    "robitx/gp.nvim",
+  --    config = function()
+  --        require("gp").setup()
+  --        or setup with your own config (see Install > Configuration in Readme)
+  --        require("gp").setup(config)
+  --        shortcuts might be setup here (see Usage > Shortcuts in Readme)
+  --    end,
+  --})
 end)

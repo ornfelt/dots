@@ -83,3 +83,4 @@ libcurl-openssl-1.0
 light
 linux
 linux-firmware
+lua-language-server

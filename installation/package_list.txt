@@ -83,6 +83,7 @@ libcurl-openssl-1.0
 light
 linux
 linux-firmware
+lua-language-server
 luarocks
 lxappearance
 m4
@@ -162,6 +163,7 @@ sxiv
 tesseract
 the_silver_searcher
 thunar
+tinyobjloader
 tk
 tlp
 tmux

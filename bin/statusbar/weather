@@ -10,19 +10,27 @@ case $BLOCK_BUTTON in
 	6) "$TERMINAL" -e "$EDITOR" "$0" ;;
 esac
 
-# Fetch weather information and process it
-curl -sf --max-time 2  "wttr.in/Uppsala?format=1" | sed -r 's/^.{3}//;s/^ *//g;s/C//g' | tee "$HOME/.local/share/weatherreport"
+WIFI_NAME=$(iwgetid -r | tr '[:upper:]' '[:lower:]')
 
-# Read the output to check for digits
-WEATHER_REPORT=$(cat "$HOME/.local/share/weatherreport")
-
-# Check if the output contains a digit
-if ! [[ "$WEATHER_REPORT" =~ [0-9] ]] || [[ ${#WEATHER_REPORT} -gt 10 ]]; then
-    #echo "Using fallback..."
-    # If no digit is found, fallback to the python script
-    python ~/.local/bin/statusbar/weather_py.py | tee "$HOME/.local/share/weatherreport"
+# Determine the city based on WiFi SSID (not really acurate but hey...)
+CITY="Uppsala" # Default
+if [[ "$WIFI_NAME" == *"nätet"* || "$WIFI_NAME" == *"telia"* ]]; then
+    CITY="Stockholm"
 fi
 
+#WEATHER_REPORT=$(curl -sf --max-time 2 "wttr.in/Uppsala?format=1" | sed -r 's/^.{3}//;s/^ *//g;s/C//g')
+WEATHER_REPORT=$(curl -sf --max-time 2 "wttr.in/${CITY}?format=1" | sed -r 's/^.{3}//;s/^ *//g;s/C//g')
+
+if [[ "$WEATHER_REPORT" =~ [0-9] ]] && [[ ${#WEATHER_REPORT} -le 10 ]]; then
+    #echo "$WEATHER_REPORT"
+    #echo "$WEATHER_REPORT" > "$HOME/.local/share/weatherreport"
+    echo "$WEATHER_REPORT" | tee "$HOME/.local/share/weatherreport"
+else
+    #FALLBACK_OUTPUT=$(python ~/.local/bin/statusbar/weather_py.py)
+    #echo "$FALLBACK_OUTPUT" > "$HOME/.local/share/weatherreport"
+    #echo "$FALLBACK_OUTPUT"
+    python ~/.local/bin/statusbar/weather_py.py "$CITY" | tee "$HOME/.local/share/weatherreport"
+fi
 
 # old code (kept for reference)
 

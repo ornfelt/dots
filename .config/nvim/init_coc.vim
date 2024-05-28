@@ -7,20 +7,17 @@ Plug 'preservim/nerdtree'
 Plug 'tpope/vim-surround'
 Plug 'justinmk/vim-sneak'
 Plug 'morhetz/gruvbox'
-"Plug 'catppuccin/nvim', { 'as': 'catppuccin' }
 Plug 'w0ng/vim-hybrid'
 Plug 'vim-syntastic/syntastic'
 Plug 'ap/vim-css-color'
 Plug 'tpope/vim-commentary'
+Plug 'mhinz/vim-startify'
 Plug 'vimwiki/vimwiki'
 Plug 'jalvesaq/vimcmdline'
 Plug 'junegunn/fzf'
-Plug 'neovim/nvim-lspconfig' " Configurations for Nvim LSP
-Plug 'hrsh7th/cmp-nvim-lsp'
-Plug 'hrsh7th/cmp-buffer'
-Plug 'hrsh7th/cmp-path'
-Plug 'hrsh7th/cmp-cmdline'
-Plug 'hrsh7th/nvim-cmp'
+"Plug 'neoclide/coc.nvim', {'tag': '*', 'do': { -> coc#util#install()}}
+Plug 'neoclide/coc.nvim', {'branch': 'release'}
+"Plug 'neovim/nvim-lspconfig'
 "Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
 "Plug 'nvim-treesitter/nvim-treesitter'
 call plug#end() " Initialize plugin system
@@ -107,7 +104,7 @@ nnoremap <M-P> :clast<CR>
 nnoremap <M-b> :copen<CR>
 
 " Neovim FZF
-nnoremap <M-d> :FZF ./ <cr>
+nnoremap <M-d> :FZF <cr>
 " nnoremap <M-d> :FZF ../../..<cr> " Go up a few levels and FZF
 nnoremap <M-a> :FZF ~/<cr>
 nnoremap <M-A> :FZF /<cr>
@@ -169,10 +166,10 @@ noremap <M-0> :tablast<cr>
 "nnoremap <silent> <leader>l :exe "tabn ".g:lasttab<cr>
 "vnoremap <silent> <leader>l :exe "tabn ".g:lasttab<cr>
 nnoremap <leader>o <C-^>
-nnoremap <leader>m :mks! ~/.vim/sessions/s.vim<cr>
-nnoremap <leader>, :mks! ~/.vim/sessions/s2.vim<cr>
-nnoremap <leader>. :so ~/.vim/sessions/s.vim<cr>
-nnoremap <leader>- :so ~/.vim/sessions/s2.vim<cr>
+nnoremap <leader>m :mks! ~/.vim/sessions/s.vim<cr> 
+nnoremap <leader>, :mks! ~/.vim/sessions/s2.vim<cr> 
+nnoremap <leader>. :so ~/.vim/sessions/s.vim<cr> 
+nnoremap <leader>- :so ~/.vim/sessions/s2.vim<cr> 
 
 " Filetype shortcuts
 autocmd FileType html inoremap <i<Tab> <em></em> <Space><++><Esc>/<<Enter>GNi
@@ -185,19 +182,10 @@ autocmd FileType java inoremap fore<Tab> for (String s : obj){<Enter><Enter>}<Es
 autocmd FileType java inoremap for<Tab> for(int i = 0; i < val; i++){<Enter><Enter>}<Esc>?val<Enter>ciw
 autocmd FileType java inoremap sout<Tab> System.out.println("");<Esc>?""<Enter>li
 autocmd FileType java inoremap psvm<Tab> public static void main(String[] args){<Enter><Enter>}<Esc>?{<Enter>o
-autocmd FileType java inoremap hellow<Tab> <Esc>:r ~/Documents/WindowsPowerShell/nvim/hellow/hellow.java<Enter><Esc>/hellow<Enter>ciw
-
-autocmd FileType c inoremap for<Tab> for(int i = 0; i < val; i++){<Enter><Enter>}<Esc>?val<Enter>ciw
-autocmd FileType c inoremap hellow<Tab> <Esc>:r ~/Documents/WindowsPowerShell/nvim/hellow/hellow.c<Enter>
-autocmd FileType cpp inoremap for<Tab> for(int i = 0; i < val; i++){<Enter><Enter>}<Esc>?val<Enter>ciw
-autocmd FileType cpp inoremap hellow<Tab> <Esc>:r ~/Documents/WindowsPowerShell/nvim/hellow/hellow.cpp<Enter>
 
 autocmd FileType cs inoremap sout<Tab> Console.WriteLine("");<Esc>?""<Enter>li
 autocmd FileType cs inoremap fore<Tab> for each (object o : obj){<Enter><Enter>}<Esc>?obj<Enter>ciw
 autocmd FileType cs inoremap for<Tab> for(int i = 0; i < val; i++){<Enter><Enter>}<Esc>?val<Enter>ciw
-autocmd FileType cs inoremap hellow<Tab> <Esc>:r ~/Documents/WindowsPowerShell/nvim/hellow/hellow.cs<Enter><Esc>/Hellow<Enter>ciw
-
-autocmd FileType py,python inoremap hellow<Tab> <Esc>:r ~/Documents/WindowsPowerShell/nvim/hellow/hellow.py<Enter>
 
 autocmd FileType sql inoremap fun<Tab> delimiter //<Enter>create function x ()<Enter>returns int<Enter>no sql<Enter>begin<Enter><Enter><Enter>end //<Enter>delimiter ;<Esc>/x<Enter>GN
 autocmd FileType sql inoremap pro<Tab> delimiter //<Enter>create procedure x ()<Enter>begin<Enter><Enter><Enter>end //<Enter>delimiter ;<Esc>/x<Enter>GN
@@ -205,11 +193,10 @@ autocmd FileType sql inoremap vie<Tab> create view x as<Enter>select <Esc>/x<Ent
 
 autocmd FileType vtxt,vimwiki,wiki,text inoremap line<Tab> ----------------------------------------------------------------------------------<Enter>
 autocmd FileType vtxt,vimwiki,wiki,text inoremap date<Tab> <-- <C-R>=strftime("%Y-%m-%d %a")<CR><Esc>A -->
+autocmd FileType c inoremap for<Tab> for(int i = 0; i < val; i++){<Enter><Enter>}<Esc>?val<Enter>ciw
 
-" Disable tab key for vimwiki (enables autocomplete via tabbing)
+" Disable tab key for vimwiki (enables autocomplete via tabbing) 
 let g:vimwiki_key_mappings = { 'table_mappings': 0 }
-" Quit NERDTree on opening file
-let g:NERDTreeQuitOnOpen = 1
 
 " StatusLine
 autocmd BufReadPost,BufRead,BufNewFile,BufWritePost *.* :call GetStatusLine()
@@ -228,6 +215,31 @@ vnoremap < <gv
 vnoremap > >gv
 
 " --------------------------------
+" Coc
+" Use tab and s-tab to navigate the completion list
+inoremap <silent><expr> <TAB>
+      \ coc#pum#visible() ? coc#pum#next(1) :
+      \ CheckBackspace() ? "\<Tab>" :
+      \ coc#refresh()
+inoremap <expr><S-TAB> coc#pum#visible() ? coc#pum#prev(1) : "\<C-h>"
+
+" Make <CR> to accept selected completion item or notify coc.nvim to format
+" <C-g>u breaks current undo, please make your own choice
+inoremap <silent><expr> <CR> coc#pum#visible() ? coc#pum#confirm()
+                              \: "\<C-g>u\<CR>\<c-r>=coc#on_enter()\<CR>"
+
+function! CheckBackspace() abort
+  let col = col('.') - 1
+  return !col || getline('.')[col - 1]  =~# '\s'
+endfunction
+
+" Use <c-space> to trigger completion
+if has('nvim')
+  inoremap <silent><expr> <c-space> coc#refresh()
+else
+  inoremap <silent><expr> <c-@> coc#refresh()
+endif
+
 " --------------------------------
 
 " Make shift-insert work like in Xterm
@@ -243,19 +255,17 @@ nmap <leader>ws :%s/\s\+$<cr>
 nmap <leader>wu :%s/\%u200b//g<cr>
 " Remove all hidden characters
 nmap <leader>wb :%s/[[:cntrl:]]//g<cr>
-" Format rest of the text with vim formatting, go back and center screen
-nmap <leader>wf gqG<C-o>zz
 " Replace all weird citation and hypens to regular ones
 nmap <leader>wa :%s/“/"/g <bar> :%s/’/'/g <bar> :%s/—/-/g <bar> :%s/”/"/g
 " Capitalize first letter of each word on visually selected line
-vmap <leader>gu :s/\<./\u&/g<cr>:noh<CR>
+vmap <leader>gu :s/\<./\u&/g<cr>
+" Format rest of the text with vim formatting, go back and center screen
+nmap <leader>r gqG<C-o>zz
+
 " Search for highlighted text
 vmap <leader>/ "3y/<C-R>3<CR>
 " Search in highlighted text
 vmap <leader>% /\%V
-nmap <leader>r :%s/\<<C-r><C-w>\>/<C-r><C-w>/gI<Left><Left><Left>
-nmap <leader>t <cmd>silent !tmux neww tmux-sessionizer<CR>
-nmap Q <nop>
 
 " Undo break points
 "inoremap , ,<c-g>u
@@ -265,6 +275,19 @@ nmap Q <nop>
 
 " Map Ctrl-Backspace to delete the previous word in insert mode.
 imap <C-BS> <C-W>a
+
+ Coc config
+let g:coc_global_extensions = [
+  \ 'coc-snippets',
+  \ 'coc-pairs',
+  \ 'coc-eslint',
+  \ 'coc-prettier',
+  \ 'coc-java',
+  ""\ 'coc-python',
+  \ 'coc-tsserver',
+  \ 'coc-json',
+  \ 'coc-clangd',
+  \ ]
 
 " Function for toggling the bottom statusbar:
 let s:hidden_all = 1
@@ -329,8 +352,7 @@ set lines=48
 set columns=210
 set lines=999" cumns=999 "set fullscreen
 "set tw=235
-"set tw=187
-set tw=90
+set tw=188
 noremap <M-m> :tabe $myvimrc<cr>
 " Copy everything from file into clipboard
 inoremap <C-a> <Esc>gg"*yG
@@ -338,12 +360,11 @@ inoremap <C-a> <Esc>gg"*yG
 noremap <C-c> "*y
 "colorscheme hybrid
 colorscheme gruvbox
-"colorscheme catppuccin-mocha
 
 func! CompileRun()
 	exec "w"
 	if &filetype == 'c'
-		exec "!gcc -Wall % -o %<"
+		exec "!gcc % -o %<"
 		exec "!%:r.exe"
 		"exec "!time ./%<"
 	elseif &filetype == 'cpp'
@@ -378,99 +399,3 @@ func! CompileRun()
 	endif
 endfunc
 endif
-
-set completeopt=menu,menuone,noselect
-set completeopt+=longest,menuone
-set completeopt+=preview
-
-lua <<EOF
-  -- Set up nvim-cmp.
-  local cmp = require'cmp'
-
-  cmp.setup({
-    snippet = {
-      -- REQUIRED - you must specify a snippet engine
-      expand = function(args)
-        vim.fn["vsnip#anonymous"](args.body) -- For `vsnip` users.
-        -- require('luasnip').lsp_expand(args.body) -- For `luasnip` users.
-        -- require('snippy').expand_snippet(args.body) -- For `snippy` users.
-        -- vim.fn["UltiSnips#Anon"](args.body) -- For `ultisnips` users.
-      end,
-    },
-    window = {
-      -- completion = cmp.config.window.bordered(),
-      -- documentation = cmp.config.window.bordered(),
-    },
-    mapping = cmp.mapping.preset.insert({
-      ['<C-b>'] = cmp.mapping.scroll_docs(-4),
-      ['<C-f>'] = cmp.mapping.scroll_docs(4),
-      ['<C-Space>'] = cmp.mapping.complete(),
-      ['<C-e>'] = cmp.mapping.abort(),
-      ['<CR>'] = cmp.mapping.confirm({ select = true }), -- Accept currently selected item. Set `select` to `false` to only confirm explicitly selected items.
-  -- Use Tab and Shift-Tab to browse through the suggestions.
-    ["<Tab>"] = cmp.mapping(function(fallback)
-      if cmp.visible() then
-        cmp.select_next_item()
-      -- elseif vim.fn["vsnip#available"](1) == 1 then
-        -- feedkey("<Plug>(vsnip-expand-or-jump)", "")
-      -- elseif has_words_before() then
-        -- cmp.complete()
-      else
-        fallback()
-      end
-    end, { "i", "s" }),
-    ["<S-Tab>"] = cmp.mapping(function(fallback)
-      if cmp.visible() then
-        cmp.select_prev_item()
-      -- elseif vim.fn["vsnip#jumpable"](-1) == 1 then
-        -- feedkey("<Plug>(vsnip-jump-prev)", "")
-      else
-        fallback()
-      end
-    end, { "i", "s" }),
-    }),
-    sources = cmp.config.sources({
-      { name = 'nvim_lsp' },
-      { name = 'vsnip' }, -- For vsnip users.
-      -- { name = 'luasnip' }, -- For luasnip users.
-      -- { name = 'ultisnips' }, -- For ultisnips users.
-      -- { name = 'snippy' }, -- For snippy users.
-    }, {
-      { name = 'buffer' },
-    })
-  })
-
-  -- Set configuration for specific filetype.
-  cmp.setup.filetype('gitcommit', {
-    sources = cmp.config.sources({
-      { name = 'cmp_git' }, -- You can specify the `cmp_git` source if you were installed it.
-    }, {
-      { name = 'buffer' },
-    })
-  })
-
-  -- Use buffer source for `/` and `?` (if you enabled `native_menu`, this won't work anymore).
-  cmp.setup.cmdline({ '/', '?' }, {
-    mapping = cmp.mapping.preset.cmdline(),
-    sources = {
-      { name = 'buffer' }
-    }
-  })
-
-  -- Use cmdline & path source for ':' (if you enabled `native_menu`, this won't work anymore).
-  cmp.setup.cmdline(':', {
-    mapping = cmp.mapping.preset.cmdline(),
-    sources = cmp.config.sources({
-      { name = 'path' }
-    }, {
-      { name = 'cmdline' }
-    })
-  })
-
-  -- Set up lspconfig.
-  local capabilities = require('cmp_nvim_lsp').default_capabilities()
-  -- Replace <YOUR_LSP_SERVER> with each lsp server you've enabled.
-  require('lspconfig')['pyright'].setup {
-    capabilities = capabilities
-  }
-EOF
