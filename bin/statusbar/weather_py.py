@@ -2,6 +2,7 @@
 # using openweathermap api
 # From: https://www.geeksforgeeks.org/python-find-current-weather-of-any-city-using-openweathermap-api/
 
+import os
 import sys
 import requests, json
 
@@ -13,7 +14,11 @@ if len(sys.argv) > 1:
 else:
     city_name = "Uppsala" # Default
 
-api_key = "83d7f99badc359fb59cd5f2101fddcad"
+api_key = os.getenv('OPENWEATHERMAP_KEY')
+if not api_key:
+    print("Error: 'OPENWEATHERMAP_KEY' environment variable not set.")
+    sys.exit(1) # Exit the script if the API key is not found
+
 base_url = "http://api.openweathermap.org/data/2.5/weather?"
 complete_url = base_url + "appid=" + api_key + "&q=" + city_name
 response = requests.get(complete_url)
