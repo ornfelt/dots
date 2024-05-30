@@ -21,4 +21,3 @@ nnoremap <Plug>WinMoveDown :<C-U>call <SID>WinMove('j')<CR>
 nnoremap <Plug>WinMoveUp :<C-U>call <SID>WinMove('k')<CR>
 " Navigate to pane to the right, or create a new pane
 nnoremap <Plug>WinMoveRight :<C-U>call <SID>WinMove('l')<CR>
-

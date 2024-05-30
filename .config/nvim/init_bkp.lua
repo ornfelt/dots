@@ -16,8 +16,10 @@ local on_attach = function(client, bufnr)
     local function buf_set_keymap(...) vim.api.nvim_buf_set_keymap(bufnr, ...) end
     buf_set_keymap('n', '<M-r>', '<cmd>lua vim.lsp.buf.references()<CR>', { noremap = true, silent = true })
     buf_set_keymap('n', '<M-d>', '<cmd>lua vim.lsp.buf.definition()<CR>', { noremap = true, silent = true })
-    --buf_set_keymap('n', '<M-s-d>', '<cmd>lua vim.lsp.buf.implementation()<CR>', { noremap = true, silent = true })
-    buf_set_keymap('n', '<M-s-d>', '', { noremap = true, silent = true, callback = go_to_definition_twice })
+    buf_set_keymap('n', '<M-s-D>', '<cmd>lua vim.lsp.buf.implementation()<CR>', { noremap = true, silent = true })
+    buf_set_keymap('n', '<M-s-E>', '<cmd>lua vim.lsp.buf.type_definition()<CR>', { noremap = true, silent = true })
+    buf_set_keymap('n', '<M-s-C>', '<cmd>lua vim.lsp.buf.code_action()<CR>', { noremap = true, silent = true })
+    --buf_set_keymap('n', '<M-s-d>', '', { noremap = true, silent = true, callback = go_to_definition_twice })
 end
 
 -- Python language server
@@ -624,9 +626,6 @@ local config = {
      openai_api_key = os.getenv("OPENAI_API_KEY"), 
 }
 
--- TODO: Use alt-c for custom chatgpt function!
--- map('n', '<M-c>', ':tabe ~/Documents/vimtutor.txt<CR>')
-
 -- Model can be changed in actions for this plugin
 require("chatgpt").setup(config)
 map('n', '<leader>e', ':ChatGPTEditWithInstructions<CR>')
@@ -649,6 +648,8 @@ map('n', '<leader>9', ':ChatGPTRun code_readability_analysis<CR>')
 map('v', '<leader>9', ':ChatGPTRun code_readability_analysis<CR>')
 map('n', '<leader>0', ':ChatGPT<CR>')
 map('v', '<leader>0', ':ChatGPT<CR>')
+map('n', '<M-c>', ':ChatGPTRun send_request<CR>')
+map('v', '<M-c>', ':ChatGPTRun send_request<CR>')
 
 --require("gp").setup({openai_api_key: os.getenv("OPENAI_API_KEY")})
 --require("gp").setup(config)
@@ -960,7 +961,7 @@ function compile_run()
     vim.cmd('w') -- Save the file first
 
     local filetype = vim.bo.filetype
-    local is_windows = vim.fn.has('win32') or vim.fn.has('win16') or vim.fn.has('win64')
+    local is_windows = vim.fn.has('win32') == 1 -- or vim.fn.has('win16') == 1 or vim.fn.has('win64') == 1
 
     if filetype == 'c' then
         if is_windows then
@@ -1071,7 +1072,7 @@ return require('packer').startup(function()
   -- use 'frazrepo/vim-rainbow'
 
   use({
-      "jackMort/ChatGPT.nvim",
+      "ornfelt/ChatGPT.nvim",
       --config = function()
       --    require("chatgpt").setup()
       --end,

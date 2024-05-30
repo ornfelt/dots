@@ -50,20 +50,20 @@ return require('packer').startup(function()
   -- Other stuff
   -- use 'frazrepo/vim-rainbow'
 
-  --use({
-  --    "jackMort/ChatGPT.nvim",
-  --    --config = function()
-  --    --    require("chatgpt").setup()
-  --    --end,
-  --    requires = {
-  --        "MunifTanjim/nui.nvim",
-  --        "nvim-lua/plenary.nvim",
-  --        "folke/trouble.nvim",
-  --        "nvim-telescope/telescope.nvim"
-  --    }
-  --})
+  use({
+      "ornfelt/ChatGPT.nvim",
+      --config = function()
+      --    require("chatgpt").setup()
+      --end,
+      requires = {
+          "MunifTanjim/nui.nvim",
+          "nvim-lua/plenary.nvim",
+          "folke/trouble.nvim",
+          "nvim-telescope/telescope.nvim"
+      }
+  })
 
-  use("robitx/gp.nvim")
+  --use("robitx/gp.nvim")
   --use({
   --    "robitx/gp.nvim",
   --    config = function()
