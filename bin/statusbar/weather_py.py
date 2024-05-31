@@ -12,7 +12,12 @@ def kelvinToCelsius(kelvin):
 if len(sys.argv) > 1:
     city_name = sys.argv[1]
 else:
+    response = requests.get('https://ipinfo.io/json')
+    data = response.json()
     city_name = "Uppsala" # Default
+    city_name = data.get('city', 'Uppsala')
+
+#print(city_name)
 
 api_key = os.getenv('OPENWEATHERMAP_KEY')
 if not api_key:
