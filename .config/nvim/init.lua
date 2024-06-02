@@ -43,8 +43,8 @@ local function setup_lsp_if_available(server_name, config, binary_name)
 
     if vim.fn.executable(binary_name) == 1 then
         require'lspconfig'[server_name].setup(config)
-    else
-        print(binary_name .. " is not installed or not found in PATH")
+    --else
+    --    print(binary_name .. " is not installed or not found in PATH")
     end
 end
 
