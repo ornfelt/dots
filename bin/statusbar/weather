@@ -29,7 +29,8 @@ WEATHER_REPORT=$(curl -sf --max-time 2 "wttr.in/${CITY}?format=1" | sed -r 's/^.
 if [[ "$WEATHER_REPORT" =~ [0-9] ]] && [[ ${#WEATHER_REPORT} -le 10 ]]; then
     #echo "$WEATHER_REPORT"
     #echo "$WEATHER_REPORT" > "$HOME/.local/share/weatherreport"
-    echo "$WEATHER_REPORT" | tee "$HOME/.local/share/weatherreport"
+    #echo "$WEATHER_REPORT" | tee "$HOME/.local/share/weatherreport"
+    echo "$CITY $WEATHER_REPORT" | tee "$HOME/.local/share/weatherreport"
 else
     #FALLBACK_OUTPUT=$(python ~/.local/bin/statusbar/weather_py.py)
     #echo "$FALLBACK_OUTPUT" > "$HOME/.local/share/weatherreport"

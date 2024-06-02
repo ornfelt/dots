@@ -1,3 +1,5 @@
+ttf-font-awesome
+ttf-icomoon-feather
 ttf-iosevka-nerd
 ttf-jetbrains-mono-nerd
 ttf-joypixels

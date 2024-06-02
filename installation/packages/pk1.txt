@@ -59,6 +59,7 @@ glm
 gnome-calculator
 gnome-calendar
 gnuplot
+gopls
 gradle
 grim
 grub

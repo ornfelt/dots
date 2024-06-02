@@ -48,23 +48,67 @@ local function setup_lsp_if_available(server_name, config, binary_name)
     end
 end
 
-local pyright_config = {
-    on_attach = on_attach,
-}
-
-local clangd_config = {
-    on_attach = on_attach,
-}
-
 local lsp_attach_config = {
     on_attach = on_attach,
 }
 
---setup_lsp_if_available('pyright', pyright_config)
 setup_lsp_if_available('pyright', lsp_attach_config)
 setup_lsp_if_available('clangd', lsp_attach_config)
--- lua_ls is not the executable, lua-language-server is...
+setup_lsp_if_available('gopls', lsp_attach_config)
+setup_lsp_if_available('phpactor', lsp_attach_config)
+setup_lsp_if_available('tsserver', lsp_attach_config)
+-- lua_ls isn't the executable, lua-language-server is
 setup_lsp_if_available('lua_ls', lsp_attach_config, 'lua-language-server')
+-- rust_analyzer isn't the executable, rust-analyzer is
+setup_lsp_if_available('rust_analyzer', lsp_attach_config, 'rust-analyzer')
+setup_lsp_if_available('fsautocomplete', lsp_attach_config)
+
+local omnisharp_dll_path = os.getenv('OMNISHARP_DLL_PATH')
+if omnisharp_dll_path then
+    require'lspconfig'.omnisharp.setup {
+        on_attach = on_attach,
+        cmd = { "dotnet", omnisharp_dll_path .. "/OmniSharp.dll" },
+
+        settings = {
+            FormattingOptions = {
+                -- Enables support for reading code style, naming convention and analyzer
+                -- settings from .editorconfig.
+                EnableEditorConfigSupport = true,
+                -- Specifies whether 'using' directives should be grouped and sorted during
+                -- document formatting.
+                OrganizeImports = nil,
+            },
+            MsBuild = {
+                -- If true, MSBuild project system will only load projects for files that
+                -- were opened in the editor. This setting is useful for big C# codebases
+                -- and allows for faster initialization of code navigation features only
+                -- for projects that are relevant to code that is being edited. With this
+                -- setting enabled OmniSharp may load fewer projects and may thus display
+                -- incomplete reference lists for symbols.
+                LoadProjectsOnDemand = nil,
+            },
+            RoslynExtensionsOptions = {
+                -- Enables support for roslyn analyzers, code fixes and rulesets.
+                EnableAnalyzersSupport = nil,
+                -- Enables support for showing unimported types and unimported extension
+                -- methods in completion lists. When committed, the appropriate using
+                -- directive will be added at the top of the current file. This option can
+                -- have a negative impact on initial completion responsiveness,
+                -- particularly for the first few completion sessions after opening a
+                -- solution.
+                EnableImportCompletion = nil,
+                -- Only run analyzers against open files when 'enableRoslynAnalyzers' is
+                -- true
+                AnalyzeOpenDocumentsOnly = nil,
+            },
+            Sdk = {
+                -- Specifies whether to include preview versions of the .NET SDK when
+                -- determining which version to use for project loading.
+                IncludePrereleases = true,
+            },
+        },
+    }
+end
 
 local g   = vim.g
 local o   = vim.o
@@ -352,27 +396,7 @@ map('n', '<M-v>', ':cdo s///gc | update<C-f><Esc>13hi')
 map('n', '<M-n>', ':cnext<CR>')
 map('n', '<M-p>', ':cprev<CR>')
 map('n', '<M-P>', ':clast<CR>')
---map('n', '<M-b>', ':copen<CR>')
-
--- Toggle quickfix window
-local function toggle_quickfix()
-    local windows = vim.fn.getwininfo()
-    local is_quickfix_open = false
-    for _, win in pairs(windows) do
-        if win.quickfix == 1 then
-            is_quickfix_open = true
-            break
-        end
-    end
-
-    if is_quickfix_open then
-        vim.cmd('cclose')
-    else
-        vim.cmd('copen')
-    end
-end
-
-vim.api.nvim_set_keymap('n', '<M-b>', '', {noremap = true, silent = true, callback = toggle_quickfix})
+map('n', '<M-b>', ':copen<CR>')
 
 -- Window management and movement
 map('n', '<M-u>', ':resize +2<CR>')
@@ -856,6 +880,8 @@ return require('packer').startup(function()
 
   -- Other stuff
   -- use 'frazrepo/vim-rainbow'
+
+  -- use("simrat39/rust-tools.nvim")
 
   use({
       "ornfelt/ChatGPT.nvim",

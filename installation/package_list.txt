@@ -59,6 +59,7 @@ glm
 gnome-calculator
 gnome-calendar
 gnuplot
+gopls
 gradle
 grim
 grub
@@ -108,6 +109,7 @@ nodejs-nopt
 npm
 ntfs-3g
 obs-studio
+omnisharp-roslyn
 onetbb
 openal
 openscenegraph
@@ -118,6 +120,7 @@ pamixer
 patch
 perl-rename
 php
+phpactor
 picom-pijulius-git
 pkgconf
 pngquant
@@ -136,6 +139,7 @@ rofi
 rofi-greenclip
 rtl8852be-dkms-git
 rtw89-dkms-git
+rust-analyzer
 rustup
 rxvt-unicode
 scons

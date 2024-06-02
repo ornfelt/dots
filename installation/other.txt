@@ -20,7 +20,10 @@ libcurl-openssl-1.0 7.79.1-1
 libvterm01 0.1.4-2
 light 1.2.2-4
 light-debug 1.2.2-4
+omnisharp-roslyn 1.39.11-1
+omnisharp-roslyn-debug 1.39.11-1
 openssl-1.0 1.0.2.u-6
+phpactor 2024.03.09.0-1
 picom-pijulius-git 1691_Next.129.g982bb43_2021.10.23-1
 rofi-greenclip 4.2-3
 rtl8852be-dkms-git r28.28daf8c-1
