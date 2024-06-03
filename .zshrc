@@ -238,7 +238,7 @@ export PATH="${PATH}:${HOME}/.local/bin/"
 export PATH="${PATH}:${HOME}/.local/bin/my_scripts"
 #export PATH="${PATH}:${HOME}/.local/lib/"
 export PATH="${PATH}:${HOME}/Code/f#/FsAutoComplete/src/FsAutoComplete/bin/Release/net6.0"
-export OMNISHARP_DLL_PATH="/usr/lib/omnisharp-roslyn/"
+export OMNISHARP_PATH="/usr/lib/omnisharp-roslyn/"
 
 export LANG=en_US.UTF-8
 export LANGUAGE=en

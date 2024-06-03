@@ -63,12 +63,19 @@ setup_lsp_if_available('lua_ls', lsp_attach_config, 'lua-language-server')
 setup_lsp_if_available('rust_analyzer', lsp_attach_config, 'rust-analyzer')
 setup_lsp_if_available('fsautocomplete', lsp_attach_config)
 
-local omnisharp_dll_path = os.getenv('OMNISHARP_DLL_PATH')
-if omnisharp_dll_path then
+local omnisharp_path = os.getenv('OMNISHARP_PATH')
+if omnisharp_path then
+    local cmd
+
+    if vim.fn.has('unix') == 1 then
+        cmd = { "dotnet", omnisharp_path .. "/OmniSharp.dll" }
+    else
+        cmd = { omnisharp_path .. "/OmniSharp.exe", "--languageserver", "--hostPID", tostring(vim.fn.getpid()) }
+    end
+
     require'lspconfig'.omnisharp.setup {
         on_attach = on_attach,
-        cmd = { "dotnet", omnisharp_dll_path .. "/OmniSharp.dll" },
-
+        cmd = cmd,
         settings = {
             FormattingOptions = {
                 -- Enables support for reading code style, naming convention and analyzer
@@ -446,7 +453,7 @@ map('n', '<M-0>', ':tablast<CR>')
 map('n', '<leader>o', '<C-^>')
 map('n', '<leader>m', ':mks! ~/.vim/sessions/s.vim<CR>')
 map('n', '<leader>,', ':mks! ~/.vim/sessions/s2.vim<CR>')
-map('n', '<leader>.', ':so ~/.vim/sessions/s.vim<CR>')
+map('n', '<leader>.', ':silent so ~/.vim/sessions/s.vim<CR>')
 map('n', '<leader>-', ':so ~/.vim/sessions/s2.vim<CR>')
 
 -- Open new tabs
