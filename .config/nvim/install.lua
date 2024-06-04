@@ -45,10 +45,12 @@ return require('packer').startup(function()
 
   -- Colorschemes
   use("gruvbox-community/gruvbox")
-  -- use 'RRethy/nvim-base16'
+  use { "catppuccin/nvim", as = "catppuccin" }
 
   -- Other stuff
   -- use 'frazrepo/vim-rainbow'
+
+  -- use("simrat39/rust-tools.nvim")
 
   use({
       "ornfelt/ChatGPT.nvim",
