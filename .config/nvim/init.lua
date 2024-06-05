@@ -1,3 +1,12 @@
+local g   = vim.g
+local o   = vim.o
+local opt = vim.opt
+local A   = vim.api
+
+-- Map <leader> to space
+g.mapleader = ' '
+g.maplocalleader = ' '
+
 lspconfig = require'lspconfig'
 
 local function go_to_definition_twice()
@@ -11,9 +20,13 @@ local on_attach = function(client, bufnr)
     buf_set_keymap('n', '<M-r>', '<cmd>lua vim.lsp.buf.references()<CR>', { noremap = true, silent = true })
     buf_set_keymap('n', '<M-d>', '<cmd>lua vim.lsp.buf.definition()<CR>', { noremap = true, silent = true })
     buf_set_keymap('n', '<M-s-D>', '<cmd>lua vim.lsp.buf.implementation()<CR>', { noremap = true, silent = true })
-    buf_set_keymap('n', '<M-s-E>', '<cmd>lua vim.lsp.buf.type_definition()<CR>', { noremap = true, silent = true })
-    buf_set_keymap('n', '<M-s-C>', '<cmd>lua vim.lsp.buf.code_action()<CR>', { noremap = true, silent = true })
     --buf_set_keymap('n', '<M-s-d>', '', { noremap = true, silent = true, callback = go_to_definition_twice })
+    buf_set_keymap('n', '<leader>la', '<cmd>lua vim.lsp.buf.code_action()<CR>', { noremap = true, silent = true })
+    buf_set_keymap('n', '<leader>lr', '<cmd>lua vim.lsp.buf.rename()<CR>', { noremap = true, silent = true })
+    buf_set_keymap('n', '<leader>lh', '<cmd>lua vim.lsp.buf.signature_help()<CR>', { noremap = true, silent = true })
+    buf_set_keymap('n', '<leader>lo', '<cmd>lua vim.lsp.buf.hover()<CR>', { noremap = true, silent = true })
+    buf_set_keymap('n', '<leader>ld', '<cmd>lua vim.lsp.buf.type_definition()<CR>', { noremap = true, silent = true })
+    buf_set_keymap('n', '<leader>lc', '<cmd>lua vim.lsp.buf.declaration()<CR>', { noremap = true, silent = true })
 end
 
 -- Python language server
@@ -117,11 +130,6 @@ if omnisharp_path then
     }
 end
 
-local g   = vim.g
-local o   = vim.o
-local opt = vim.opt
-local A   = vim.api
-
 -- cmd('syntax on')
 -- vim.api.nvim_command('filetype plugin indent on')
 
@@ -200,10 +208,6 @@ o.splitright = true
 --
 -- opt.mouse = "a"
 
--- Map <leader> to space
-g.mapleader = ' '
-g.maplocalleader = ' '
-
 -- General settings
 vim.opt.wrap = false -- No Wrap lines
 vim.opt.backspace = { 'start', 'eol', 'indent' }
@@ -258,9 +262,9 @@ vim.cmd [[
 vim.g['jedi#popup_on_dot'] = 1
 
 -- Syntastic Plugin Settings
-vim.g['syntastic_always_populate_loc_list'] = 0
-vim.g['syntastic_check_on_open'] = 1
-vim.g['syntastic_check_on_wq'] = 0
+-- vim.g['syntastic_always_populate_loc_list'] = 0
+-- vim.g['syntastic_check_on_open'] = 1
+-- vim.g['syntastic_check_on_wq'] = 0
 
 -- NERDTree Plugin Settings
 vim.g['NERDTreeQuitOnOpen'] = 1
@@ -389,12 +393,24 @@ map('n', '<leader>5', '"5p')
 map('n', '<M-w>', ':silent! NERDTreeToggle ~/<CR>')
 map('n', '<M-e>', ':silent! NERDTreeToggle %:p<CR>')
 --map('n', '<M-d>', ':FZF<CR>')
-map('n', '<M-a>', ':FZF ../<CR>')
+map('n', '<M-a>', ':FZF ./<CR>')
 map('n', '<M-A>', ':FZF ~/<CR>')
 map('n', '<M-S>', ':FZF C:/<CR>')
 
+-- Function to start FZF from a given environment variable
+local function FZFStart(env_var)
+    local path = os.getenv(env_var) or "~/Documents/my_notes"
+    path = path:gsub(" ", '\\ ')
+    vim.cmd("FZF " .. path)
+end
+
+vim.api.nvim_create_user_command('RunFZFCodeRootDir', function() FZFStart("code_root_dir") end, {})
+vim.api.nvim_set_keymap('n', '<leader>a', '<cmd>RunFZFCodeRootDir<CR>', { noremap = true, silent = true })
+
+vim.api.nvim_create_user_command('RunFZFMyNotesPath', function() FZFStart("my_notes_path") end, {})
+vim.api.nvim_set_keymap('n', '<leader>f', '<cmd>RunFZFMyNotesPath<CR>', { noremap = true, silent = true })
+
 -- Vimgrep and QuickFix Lists
--- TODO: leader-f?
 map('n', '<M-f>', ':vimgrep //g **/*.txt<C-f><Esc>11hi')
 map('n', '<M-g>', ':vimgrep //g **/*.*<C-f><Esc>9hi') -- Search all
 map('n', '<M-G>', ':vimgrep //g **/.*<C-f><Esc>8hi') -- Search dotfiles
@@ -411,8 +427,8 @@ map('n', '<M-i>', ':resize -2<CR>')
 map('n', '<M-o>', ':vertical resize +2<CR>')
 map('n', '<M-y>', ':vertical resize -2<CR>')
 map('n', '<M-h>', '<Plug>WinMoveLeft')
-map('n', '<M-J>', '<Plug>WinMoveDown')
-map('n', '<M-K>', '<Plug>WinMoveUp')
+map('n', '<M-j>', '<Plug>WinMoveDown')
+map('n', '<M-k>', '<Plug>WinMoveUp')
 map('n', '<M-l>', '<Plug>WinMoveRight')
 
 -- Moving text and indentation
@@ -482,6 +498,8 @@ map('v', '<leader>%', '/\\%V') -- Search in highlighted text
 map("n", "Q", "<nop>") -- Remove Ex Mode
 vim.keymap.set("n", "<leader>r", [[:%s/\<<C-r><C-w>\>/<C-r><C-w>/gI<Left><Left><Left>]]) -- Replace word under cursor
 vim.keymap.set("n", "<leader>t", "<cmd>silent !tmux neww tmux-sessionizer<CR>") -- Start tmux-sessionizer
+vim.keymap.set('n', '<leader>df', '<cmd>lua vim.diagnostic.open_float()<CR>', { noremap = true, silent = true })
+vim.keymap.set('n', '<leader>db', '<cmd>lua vim.diagnostic.setqflist()<CR>', { noremap = true, silent = true })
 
 local function PythonCommand()
     local code_root_dir = os.getenv("code_root_dir") or "~/"
