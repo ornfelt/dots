@@ -17,6 +17,7 @@ else
     fi
 fi
 
+rm -rf .config/alacritty
 rm -rf .config/awesome
 rm -rf .config/cava
 rm -rf .config/conky
@@ -55,6 +56,7 @@ printf "Removed files...\n"
 sleep 0.5
 
 cp -r ~/.config/awesome .config/awesome/
+cp -r ~/.config/alacritty .config/alacritty/
 cp -r ~/.config/cava .config/cava/
 cp -r ~/.config/conky .config/conky/
 cp -r ~/.config/dmenu .config/dmenu/

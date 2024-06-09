@@ -325,7 +325,10 @@ sudo modprobe 8852be
 Firefox gestures:
 hold ctrl for zoom, hold alt for swipe gestures...
 
+fc-list : family | sort -f
+
 fc-list | grep -i 'font awesome'
+fc-list : family | sort -f | grep -i "JetBrains"
 
 htop I for reverse sort
 

@@ -1,6 +1,7 @@
 ace
 advancecomp
 adwaita-dark
+alacritty
 alsa-utils
 autoconf
 automake
@@ -77,7 +78,6 @@ jdk-openjdk
 jdtls
 jq
 jupyter-notebook
-kitty
 lf
 lib32-libpulse
 libcurl-openssl-1.0
