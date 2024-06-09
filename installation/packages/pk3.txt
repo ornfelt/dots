@@ -1,3 +1,8 @@
+tinyobjloader
+tk
+tlp
+tmux
+tstock
 ttf-font-awesome
 ttf-icomoon-feather
 ttf-iosevka-nerd
@@ -11,6 +16,7 @@ visidata
 vorbis-tools
 waybar
 waybar-mpris-git
+wezterm
 wget
 wine
 wine-gecko

@@ -65,13 +65,24 @@ local lsp_attach_config = {
     on_attach = on_attach,
 }
 
+local lua_ls_config = {
+    on_attach = on_attach,
+    settings = {
+        Lua = {
+            diagnostics = {
+                globals = { 'vim', 'use' }
+            },
+        },
+    }
+}
+
 setup_lsp_if_available('pyright', lsp_attach_config)
 setup_lsp_if_available('clangd', lsp_attach_config)
 setup_lsp_if_available('gopls', lsp_attach_config)
 setup_lsp_if_available('phpactor', lsp_attach_config)
 setup_lsp_if_available('tsserver', lsp_attach_config)
 -- lua_ls isn't the executable, lua-language-server is
-setup_lsp_if_available('lua_ls', lsp_attach_config, 'lua-language-server')
+setup_lsp_if_available('lua_ls', lua_ls_config, 'lua-language-server')
 -- rust_analyzer isn't the executable, rust-analyzer is
 setup_lsp_if_available('rust_analyzer', lsp_attach_config, 'rust-analyzer')
 setup_lsp_if_available('fsautocomplete', lsp_attach_config)
@@ -134,7 +145,7 @@ end
 -- vim.api.nvim_command('filetype plugin indent on')
 
 o.termguicolors = true
--- o.background = 'dark'
+o.background = 'dark'
 require'colorizer'.setup()
 
 -- Do not save when switching buffers
@@ -196,7 +207,8 @@ o.splitright = true
 -- Preserve view while jumping
 -- o.jumpoptions = 'view'
 
--- When running macros and regexes on a large file, lazy redraw tells neovim/vim not to draw the screen
+-- When running macros and regexes on a large file, lazy redraw tells
+-- neovim/vim not to draw the screen
 -- You can enable this inside vim with :set lazyredraw
 -- o.lazyredraw = true
 
@@ -209,44 +221,44 @@ o.splitright = true
 -- opt.mouse = "a"
 
 -- General settings
-vim.opt.wrap = false -- No Wrap lines
-vim.opt.backspace = { 'start', 'eol', 'indent' }
-vim.opt.path:append { '**' } -- Finding files - Search down into subfolders
-vim.opt.wildignore:append { '*/node_modules/*' }
+opt.wrap = false -- No Wrap lines
+opt.backspace = { 'start', 'eol', 'indent' }
+opt.path:append { '**' } -- Finding files - search down into subfolders
+opt.wildignore:append { '*/node_modules/*' }
 vim.scriptencoding = 'utf-8'
-vim.opt.encoding = 'utf-8'
-vim.opt.fileencoding = 'utf-8'
+opt.encoding = 'utf-8'
+opt.fileencoding = 'utf-8'
 -- vim.cmd("autocmd!")
--- vim.opt.cmdheight = 1
+-- opt.cmdheight = 1
 
 -- Setting runtimepath
-vim.opt.runtimepath:append('~/.vim')
-vim.opt.runtimepath:append('~/.fzf')
+opt.runtimepath:append('~/.vim')
+opt.runtimepath:append('~/.fzf')
 
 -- UI tweaks
-vim.opt.errorbells = false
-vim.opt.visualbell = false
---vim.opt.t_vb = ''
+opt.errorbells = false
+opt.visualbell = false
+--opt.t_vb = ''
 vim.cmd('set t_vb=')
 
 -- File handling
-vim.opt.autoread = true
-vim.opt.autowrite = true
+opt.autoread = true
+opt.autowrite = true
 
 -- Command-line completion adjustments
-vim.opt.wildmenu = true
+opt.wildmenu = true
 
 -- Editor behavior
---vim.opt.nocompatible = true
+--opt.nocompatible = true
 vim.cmd('set nocompatible')
-vim.opt.shiftround = true
-vim.opt.hlsearch = true
-vim.opt.autochdir = true
+opt.shiftround = true
+opt.hlsearch = true
+opt.autochdir = true
 
 -- Completion settings
-vim.opt.complete:append('kspell')
-vim.opt.shortmess:append('c')
-vim.opt.completeopt:append({'longest', 'menuone', 'preview'})
+opt.complete:append('kspell')
+opt.shortmess:append('c')
+opt.completeopt:append({'longest', 'menuone', 'preview'})
 
 -- Automatic command to adjust format options
 vim.cmd [[
@@ -370,11 +382,7 @@ map('n', '<S-Insert>', '<MiddleMouse>')
 map('n', '<leader>b', togglebar) -- Toggle lualine
 map('n', '<M-q>', ':q<CR>') -- Quit
 map('n', '<M-z>', ':noh<CR>')
--- map('n', '<M-x>', ':call CompileRun()<CR>')
 map('n', 'Y', 'y$') -- Yank till end of line
--- map('n', 'F4', ':set cursorline!<CR>')
--- map('n', 'F5', ':setlocal spell! spelllang=en_us<CR>')
--- map('n', 'F6', ':setlocal spell! spelllang=sv<CR>')
 
 map('n', '<leader>p', 'viw"_dP') -- Replace from void
 map('v', '<leader>p', '<Esc>viw"_dP') -- Replace from void
@@ -399,7 +407,8 @@ map('n', '<M-S>', ':FZF C:/<CR>')
 
 -- Function to start FZF from a given environment variable
 local function FZFStart(env_var)
-    local path = os.getenv(env_var) or "~/Documents/my_notes"
+    local default_path = (env_var == "my_notes_path") and "~/Documents/my_notes" or "~"
+    local path = os.getenv(env_var) or default_path
     path = path:gsub(" ", '\\ ')
     vim.cmd("FZF " .. path)
 end
@@ -708,15 +717,33 @@ vim.api.nvim_set_keymap('i', '<C-B>', '<Cmd>:Llm<CR>', {noremap = true, silent =
 -- vim.api.nvim_command('autocmd BufEnter *.tex :set wrap linebreak nolist spell')
 
 -- Helper function for setting key mappings for filetypes
-local function set_hellow_mapping(ft, template_file)
+local function create_hellow_mapping(ft, template_file)
+  local code_root_dir = os.getenv("code_root_dir") or "~/"
+  code_root_dir = code_root_dir:gsub(" ", '" "')
+  if not template_file then
+    template_file = code_root_dir .. "Code2/General/utils/hellow/hellow." .. ft
+  else
+    template_file = code_root_dir .. "Code2/General/utils/hellow/hellow." .. template_file
+  end
+
   vim.api.nvim_create_autocmd("FileType", {
     pattern = ft,
     callback = function()
       local map_opts = { noremap = true, silent = true }
-      vim.api.nvim_buf_set_keymap(0, 'i', 'hellow<Tab>', '<Esc>:r ' .. template_file .. '<Enter><Esc>/Hellow<Enter>ciw', map_opts)
+      vim.api.nvim_buf_set_keymap(0, 'i', 'hellow<Tab>', '<Esc>:r ' .. template_file .. '<Enter>', map_opts)
     end
   })
 end
+
+vim.keymap.set("i", "<m-,>", function()
+    print("hi")
+    vim.ui.input({ prompt = "😄Calculator: " }, function(input)
+        local calc = load("return " .. (input or ""))()
+        if (calc) then
+            vim.api.nvim_feedkeys(tostring(calc), "i", true)
+        end
+    end)
+end)
 
 -- Automatically load the session when entering vim
 -- vim.api.nvim_create_autocmd("VimEnter", {
@@ -725,16 +752,46 @@ end
 -- })
 
 -- Set mappings for various filetypes
-set_hellow_mapping("go", "~/hellow/hellow.go")
-set_hellow_mapping("perl", "~/hellow/hellow.pl")
-set_hellow_mapping("kotlin", "~/hellow/hellow.kt")
-set_hellow_mapping("rust", "~/hellow/hellow.rs")
-set_hellow_mapping("scala", "~/hellow/hellow.scala")
+create_hellow_mapping("asm")
+create_hellow_mapping("c")
+create_hellow_mapping("clojure", "clj")
+create_hellow_mapping("cobol", "cob")
+create_hellow_mapping("cpp")
+create_hellow_mapping("cs")
+create_hellow_mapping("dart")
+create_hellow_mapping("erlang", "erl")
+create_hellow_mapping("elixir", "ex")
+create_hellow_mapping("fortran", "f90")
+create_hellow_mapping("fsharp", "fs")
+create_hellow_mapping("go")
+create_hellow_mapping("groovy")
+create_hellow_mapping("haskell", "hs")
+create_hellow_mapping("java")
+create_hellow_mapping("julia", "jl")
+create_hellow_mapping("javascript", "js")
+create_hellow_mapping("kotlin", "kt")
+create_hellow_mapping("lua")
+create_hellow_mapping("ocaml", "ml")
+create_hellow_mapping("nim")
+create_hellow_mapping("pascal", "pas")
+create_hellow_mapping("perl", "pl")
+create_hellow_mapping("php")
+create_hellow_mapping("py,python", "py")
+create_hellow_mapping("r")
+create_hellow_mapping("ruby", "rb")
+create_hellow_mapping("rust", "rs")
+create_hellow_mapping("scala")
+create_hellow_mapping("scheme", "scm")
+create_hellow_mapping("st")
+create_hellow_mapping("swift")
+create_hellow_mapping("typescript", "ts")
+create_hellow_mapping("vb")
+create_hellow_mapping("zig")
 
 -- Function keys mappings
-vim.api.nvim_set_keymap('n', '<F4>', '<Esc>:set cursorline!<CR>', { noremap = true, silent = true })
-vim.api.nvim_set_keymap('n', '<F5>', '<Esc>:setlocal spell! spelllang=en_us<CR>', { noremap = true, silent = true })
-vim.api.nvim_set_keymap('n', '<F6>', '<Esc>:setlocal spell! spelllang=sv<CR>', { noremap = true, silent = true })
+map('n', '<F4>', '<Esc>:set cursorline!<CR>')
+map('n', '<F5>', '<Esc>:setlocal spell! spelllang=en_us<CR>')
+map('n', '<F6>', '<Esc>:setlocal spell! spelllang=sv<CR>')
 
 -- Helper function to create key mappings for given filetypes
 local function create_mappings(ft, mappings)
@@ -753,13 +810,12 @@ end
 create_mappings("cs", {
   ["sout<Tab>"] = 'Console.WriteLine("");<Esc>?""<Enter>li',
   ["fore<Tab>"] = 'foreach (object o in obj){<Enter><Enter>}<Esc>?obj<Enter>ciw',
-  ["for<Tab>"] = 'for(int i = 0; i < val; i++){<Enter><Enter>}<Esc>?val<Enter>ciw',
-  ["hellow<Tab>"] = '<Esc>:r ~/hellow/hellow.cs<Enter><Esc>/Hellow<Enter>ciw'
+  ["for<Tab>"] = 'for(int i = 0; i < val; i++){<Enter><Enter>}<Esc>?val<Enter>ciw'
 })
 
--- Python mappings
 create_mappings("py,python", {
-  ["hellow<Tab>"] = '<Esc>:r ~/hellow/hellow.py<Enter>'
+  ["for<Tab>"] = 'for i in range():<Esc>hi',
+  ["fore<Tab>"] = 'for i in :<Esc>i'
 })
 
 -- SQL mappings
@@ -790,19 +846,16 @@ create_mappings("java", {
   ["fore<Tab>"] = 'for (String s : obj){<Enter><Enter>}<Esc>?obj<Enter>ciw',
   ["for<Tab>"] = 'for(int i = 0; i < val; i++){<Enter><Enter>}<Esc>?val<Enter>ciw',
   ["sout<Tab>"] = 'System.out.println("");<Esc>?""<Enter>li',
-  ["psvm<Tab>"] = 'public static void main(String[] args){<Enter><Enter>}<Esc>?{<Enter>o',
-  ["hellow<Tab>"] = '<Esc>:r ~/hellow/hellow.java<Enter><Esc>/hellow<Enter>ciw'
+  ["psvm<Tab>"] = 'public static void main(String[] args){<Enter><Enter>}<Esc>?{<Enter>o'
 })
 
 -- C and C++ mappings
 create_mappings("c", {
-  ["for<Tab>"] = 'for(int i = 0; i < val; i++){<Enter><Enter>}<Esc>?val<Enter>ciw',
-  ["hellow<Tab>"] = '<Esc>:r ~/hellow/hellow.c<Enter>'
+  ["for<Tab>"] = 'for(int i = 0; i < val; i++){<Enter><Enter>}<Esc>?val<Enter>ciw'
 })
 
 create_mappings("cpp", {
-  ["for<Tab>"] = 'for(int i = 0; i < val; i++){<Enter><Enter>}<Esc>?val<Enter>ciw',
-  ["hellow<Tab>"] = '<Esc>:r ~/hellow/hellow.cpp<Enter>'
+  ["for<Tab>"] = 'for(int i = 0; i < val; i++){<Enter><Enter>}<Esc>?val<Enter>ciw'
 })
 
 function compile_run()
@@ -816,7 +869,8 @@ function compile_run()
             vim.cmd('!gcc -Wall % -o %<')
             vim.cmd('!%:r.exe')
         else
-            vim.cmd('!gcc % && time ./a.out')
+            vim.cmd('!gcc -Wall -lm % -o %<')
+            vim.cmd('!time ./%:r')
         end
     elseif filetype == 'cpp' then
         if is_windows then
@@ -836,36 +890,65 @@ function compile_run()
     elseif filetype == 'sh' then
         vim.cmd('!time bash %')
     elseif filetype == 'python' then
-        if is_windows then
-            vim.cmd('!python %')
-        else
-            vim.cmd('!time python3 %')
-        end
+        vim.cmd(is_windows and '!python %' or '!time python %')
     elseif filetype == 'html' then
         vim.cmd('!firefox % &')
     elseif filetype == 'php' then
-        vim.cmd('!php %')
-    elseif filetype == 'javascript' or filetype == 'jsx' or filetype == 'typescript' then
-        if is_windows then
-            vim.cmd('!node %')
-        else
-            vim.cmd('!time node %')
-        end
+        vim.cmd(is_windows and '!php %' or '!time php %')
+    elseif filetype == 'javascript' or filetype == 'jsx' then
+        vim.cmd(is_windows and '!node %' or '!time node %')
+    elseif filetype == 'typescript' or filetype == 'tsx' then
+        local ts_file = vim.fn.expand('%:p')
+        local js_file = ts_file:gsub('%.ts$', '.js')
+        --vim.cmd(is_windows and '!tsc %; node ' .. js_file or '!tsc % && time node ' .. js_file)
+        vim.cmd(is_windows and '!tsc; node ' .. js_file or '!tsc && time node ' .. js_file)
     elseif filetype == 'go' then
         vim.cmd('!go build %<')
-        vim.cmd('!time go run %')
+        vim.cmd(is_windows and '!go run %' or '!time go run %')
     elseif filetype == 'rust' then
         vim.cmd('!cargo build && cargo run')
     elseif filetype == 'lua' then
-        vim.cmd('!time lua %')
+        vim.cmd(is_windows and '!lua %' or '!time lua %')
     elseif filetype == 'mkd' or filetype == 'mk' then
         vim.cmd('!grip')
     elseif filetype == 'cs' or filetype == 'fs' or filetype == 'fsx' or filetype == 'fsharp' or filetype == 'vb' then
         vim.cmd('!dotnet build && dotnet run')
+    elseif filetype == 'tex' then
+        --vim.cmd('!pdflatex % && zathura ' .. vim.fn.expand('%:p:r') .. '.pdf &')
+        if not is_windows then
+            vim.cmd('!pdflatex %')
+            local pdf_path = vim.fn.expand('%:p:r') .. '.pdf'
+            local command = 'ps aux | grep "zathura .*' .. pdf_path .. '" | grep -v grep'
+            --print("command: ", command)
+            local handle = io.popen(command)
+            local result = handle:read("*a")
+            handle:close()
+            --print("ps aux output: ", result)
+
+            if result == "" then
+                vim.cmd('!zathura ' .. pdf_path .. ' &')
+            end
+        end
+
+    else
+        print("Compilation of " .. filetype .. " extensions not configured..")
     end
 end
 
 vim.api.nvim_set_keymap('n', '<M-x>', '<Cmd>lua compile_run()<CR>', { noremap = true, silent = true })
+
+local function run_pdflatex()
+    local file = vim.fn.expand('%:p')
+    vim.fn.jobstart({'pdflatex', file})
+end
+
+-- Set up autocommand to run pdflatex on write for .tex files
+if vim.fn.has('unix') == 1 then
+    vim.api.nvim_create_autocmd('BufWritePost', {
+    pattern = '*.tex',
+    callback = run_pdflatex,
+    })
+end
 
 -- useINS
 --

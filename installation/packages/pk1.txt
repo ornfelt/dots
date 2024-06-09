@@ -85,3 +85,10 @@ light
 linux
 linux-firmware
 lua-language-server
+luarocks
+lxappearance
+m4
+maim
+make
+mako
+mariadb

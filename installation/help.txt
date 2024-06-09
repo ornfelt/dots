@@ -183,6 +183,13 @@ sudo pacman-key --populate archlinux
 sudo -Rns pkg
 sudo -Scc will clean pacman cache also
 
+To completely remove all packages (whether they are installed or uninstalled)
+from the cache, run the following command:
+sudo pacman -Scc
+
+Also:
+yay -Scc
+
 ----------------------------------------------------------------------------------
 GIT:
 
@@ -586,6 +593,23 @@ dotnet new console -lang VB -o create_order
 
 cd create_order
 dotnet build && dotnet run
+
+----------------------------------------------------------------------------------
+Make sure you have ts installed:
+npm install -g typescript
+
+New typescript project (will create tsconfig.json):
+tsc --init
+
+Just run:
+tsc
+The compiled JavaScript files will be placed in the dist directory.
+Then:
+node example.js
+
+or:
+tsc example.js
+node example.js
 
 ----------------------------------------------------------------------------------
 re3:

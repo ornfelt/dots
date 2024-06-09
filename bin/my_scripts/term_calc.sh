@@ -10,7 +10,8 @@ tmux has-session -t $session 2>/dev/null
 
 if [ $? != 0 ]; then
 	# Set up your session
-	tmux new -d -s calc && tmux send-keys -t calc.0 "python3" Enter
+	tmux new -d -s calc && tmux send-keys -t calc.1 "python" Enter
 fi
 
 $1 -e bash -c 'tmux a -t calc; zsh'
+
