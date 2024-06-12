@@ -12,15 +12,15 @@ esac
 
 WIFI_NAME=$(iwgetid -r | tr '[:upper:]' '[:lower:]')
 
-CITY="Uppsala" # Default
+CITY="Stockholm" # Default
 
 # Determine the city based on WiFi SSID (not really acurate but hey...)
-#if [[ "$WIFI_NAME" == *"nätet"* || "$WIFI_NAME" == *"telia"* ]]; then
-#    CITY="Stockholm"
-#fi
-
-data=$(curl -s https://ipinfo.io/json)
-CITY=$(echo "$data" | jq -r '.city')
+if [[ "$WIFI_NAME" == *"nätet"* || "$WIFI_NAME" == *"telia"* ]]; then
+    CITY="Stockholm"
+else
+    data=$(curl -s https://ipinfo.io/json)
+    CITY=$(echo "$data" | jq -r '.city')
+fi
 #echo "CITY: $CITY"
 
 #WEATHER_REPORT=$(curl -sf --max-time 2 "wttr.in/Uppsala?format=1" | sed -r 's/^.{3}//;s/^ *//g;s/C//g')
