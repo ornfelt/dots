@@ -416,19 +416,18 @@ function compile_run()
     elseif filetype == 'tex' then
         --vim.cmd('!pdflatex % && zathura ' .. vim.fn.expand('%:p:r') .. '.pdf &')
         vim.cmd('!pdflatex %')
-        --if not is_windows then
-        local pdf_path = vim.fn.expand('%:p:r') .. '.pdf'
-        local command = 'ps aux | grep "zathura .*' .. pdf_path .. '" | grep -v grep'
-        --print("command: ", command)
-        local handle = io.popen(command)
-        local result = handle:read("*a")
-        handle:close()
-        --print("ps aux output: ", result)
-
-        if result == "" then
-            vim.cmd('!zathura ' .. pdf_path .. ' &')
+        if not is_windows then
+            local pdf_path = vim.fn.expand('%:p:r') .. '.pdf'
+            local command = 'ps aux | grep "zathura .*' .. pdf_path .. '" | grep -v grep'
+            --print("command: ", command)
+            local handle = io.popen(command)
+            local result = handle:read("*a")
+            handle:close()
+            --print("ps aux output: ", result)
+            if result == "" then
+                vim.cmd('!zathura ' .. pdf_path .. ' &')
+            end
         end
-        --end
     else
         print("Compilation of " .. filetype .. " extensions not configured..")
     end
