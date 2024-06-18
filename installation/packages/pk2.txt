@@ -1,3 +1,4 @@
+mariadb
 meson
 mono
 mpv

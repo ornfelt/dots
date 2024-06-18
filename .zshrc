@@ -156,7 +156,7 @@ alias lf='/home/jonas/.local/bin/lfub'
 
 alias .acore='cd ~/acore/bin; pwd; ls'
 alias .tcore='cd ~/tcore/bin; pwd; ls'
-alias .wow='wine ~/Downloads/wow/Wow.exe'
+alias .wow='wine /mnt/new/wow/Wow.exe'
 
 playermap ()
 {

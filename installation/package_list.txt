@@ -3,6 +3,7 @@ advancecomp
 adwaita-dark
 alacritty
 alsa-utils
+assimp
 autoconf
 automake
 awesome
@@ -15,7 +16,7 @@ bison
 bluez
 bluez-utils
 boost
-bullet-dp
+bullet
 c-ares
 cabal-install
 cava
@@ -61,6 +62,7 @@ gnome-calculator
 gnome-calendar
 gnuplot
 gopls
+gparted
 gradle
 grim
 grub

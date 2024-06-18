@@ -152,7 +152,7 @@ map('n', '<leader>-', ':so ~/.vim/sessions/s2.vim<CR>')
 -- Open new tabs
 map('n', '<M-m>', ':tabe ~/.config/nvim/init.lua<CR>')
 map('n', '<M-,>', ':tabe ~/.zshrc<CR>')
-map('n', '<M-.>', ':tabe ~/Documents/vimtutor.txt<CR>')
+map('n', '<M-.>', ':tabe ~/Documents/my_notes/vimtutor.txt<CR>')
 
 -- Windows
 if vim.fn.has('win32') == 1 then
@@ -308,7 +308,7 @@ end
 
 vim.keymap.set("i", "<m-,>", function()
     print("hi")
-    vim.ui.input({ prompt = "😄Calculator: " }, function(input)
+    vim.ui.input({ prompt = "Calc: " }, function(input)
         local calc = load("return " .. (input or ""))()
         if (calc) then
             vim.api.nvim_feedkeys(tostring(calc), "i", true)
