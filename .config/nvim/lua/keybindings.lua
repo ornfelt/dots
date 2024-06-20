@@ -413,7 +413,7 @@ function compile_run()
         vim.cmd('!grip')
     elseif filetype == 'cs' or filetype == 'fs' or filetype == 'fsx' or filetype == 'fsharp' or filetype == 'vb' then
         vim.cmd('!dotnet build && dotnet run')
-    elseif filetype == 'tex' then
+    elseif filetype == 'tex' or filetype == 'plaintex' then
         --vim.cmd('!pdflatex % && zathura ' .. vim.fn.expand('%:p:r') .. '.pdf &')
         vim.cmd('!pdflatex %')
         if not is_windows then
