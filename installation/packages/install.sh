@@ -32,7 +32,7 @@ is_excluded() {
 
 install_arch() {
     for file in pk1.txt pk2.txt pk3.txt; do
-    # for file in pk1.txt; do # One pkX file per run...
+    #for file in pk1.txt; do # One pkX file per run...
         while read -r pkg; do
             if ! is_excluded "$pkg"; then
                 if [ "$testing_mode" = true ]; then
@@ -48,7 +48,7 @@ install_arch() {
 
 install_debian() {
     for file in debian/pk1.txt debian/pk2.txt debian/pk3.txt; do
-    # for file in debian/pk1.txt; do # One pkX file per run...
+    #for file in debian/pk1.txt; do # One pkX file per run...
         while read -r pkg; do
             if ! is_excluded "$pkg"; then
                 if [ "$testing_mode" = true ]; then

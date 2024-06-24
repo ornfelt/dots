@@ -42,4 +42,6 @@ xhost si:localuser:root
 #exec i3
 exec dwm &
 sh ~/.dwm/autostart.sh &
+#sh ~/.dwm/autostart.sh >> ~/.dwm/autostart.log 2>&1 &
 picom
+

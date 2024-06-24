@@ -37,12 +37,34 @@ it's not already installed:
 sudo apt-get install apt-transport-https
 
 Setup settings in xfce4-power-manager-settings (display should never sleep) 
-install packages from debian notes... use testing_mode and check for installed
+
+lxappearance -> set gruvbox-dark
+thunar:
+view -> show hidden files
+view -> location selector -> buttons style
+bookmarks: docs, down, pics, repos, Code/c++, General, tools
 
 * hmm, which picom to use?
 https://github.com/ornfelt/picom-animations
 https://github.com/pijulius/picom
 https://github.com/FT-Labs/picom
+
+firefox:
+imagus, vimium, adblock, js-injector?
+
+Clone dotfiles to Downloads dir
+git clone https://github.com/archornf/dotfiles
+Install packages with install.sh
+install dwm, dwmblocks (compile.sh), dmenu, st.
+fetch .batch_profile from drive with firefox
+run setup.sh to setup stuff and clone projects
+compile neovim and picom manually...
+Do PackerInstall...
+proceed with compiling rest...
+Rust version needs fix.
+* Update deb packages from other pc, qt5web was missing...
+
+Fix everything else, like game data files, dotnet and other stuff...
 
 ******************************************
 curl -o install.txt https://raw.githubusercontent.com/archornf/dotfiles/master/installation/install.txt
@@ -52,7 +74,6 @@ curl -o deb_install.txt https://raw.githubusercontent.com/archornf/dotfiles/mast
 wget -O deb_install.txt https://raw.githubusercontent.com/archornf/dotfiles/master/installation/deb_install.txt
 
 ******************************************
-
 # TrinityCore:
 # For latest mysql-apt repository, check url from https://dev.mysql.com/downloads/repo/apt/
 wget https://dev.mysql.com/get/mysql-apt-config_0.8.29-1_all.deb -O /tmp/mysql-apt-config_all.deb
