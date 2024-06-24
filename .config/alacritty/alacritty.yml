@@ -34,7 +34,7 @@ font:
   bold:
     family: "JetBrainsMono Nerd Font"
     style: "Bold"
-  size: 7.0
+  size: 11.0
   #hinting: "Full"
 
 # Window Padding
@@ -42,13 +42,13 @@ window:
   padding:
     x: 13
     y: 13
-  opacity: 0.8
+  #opacity: 0.8
 
 # Keybindings
 key_bindings:
   - { key: V, mods: Alt|Shift, action: ToggleViMode }
   - { key: C, mods: Alt|Control, action: Copy }
   - { key: V, mods: Alt|Control, action: Paste }
-  - { key: A, mods: Control|Shift, action: IncreaseBackgroundOpacity }
-  - { key: S, mods: Control|Shift, action: DecreaseBackgroundOpacity }
+  # - { key: A, mods: Control|Shift, action: IncreaseBackgroundOpacity }
+  # - { key: S, mods: Control|Shift, action: DecreaseBackgroundOpacity }
   #  - { key: L, mods: Alt|Control, action: { Command: { program: "/path/to/extract_links.sh", args: [] } } }

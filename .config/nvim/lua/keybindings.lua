@@ -369,7 +369,7 @@ function compile_run()
             vim.cmd('!gcc -Wall % -o %<')
             vim.cmd('!%:r.exe')
         else
-            vim.cmd('!gcc -Wall -lm % -o %<')
+            vim.cmd('!gcc -Wall -lm -lcurl % -o %<')
             vim.cmd('!time ./%:r')
         end
     elseif filetype == 'cpp' then

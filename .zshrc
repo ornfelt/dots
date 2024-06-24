@@ -226,7 +226,21 @@ mkcdir ()
        cd -P -- "$1"
 }
 
-[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
+# fzf
+if command -v fzf >/dev/null 2>&1; then
+    fzf_version=$(fzf --version | awk '{print $1}')
+    fzf_major_version=$(echo "$fzf_version" | awk -F. '{print $1}')
+    fzf_minor_version=$(echo "$fzf_version" | awk -F. '{print $2}')
+
+    if [ "$fzf_minor_version" -lt 48 ]; then
+        [ -f /usr/share/doc/fzf/examples/completion.zsh ] && source /usr/share/doc/fzf/examples/completion.zsh
+        [ -f /usr/share/doc/fzf/examples/key-bindings.zsh ] && source /usr/share/doc/fzf/examples/key-bindings.zsh
+    else
+        [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
+    fi
+else
+    echo "fzf is not installed"
+fi
 export FZF_DEFAULT_COMMAND='ag --hidden --ignore .git -g ""'
 
 precmd() { eval "$PROMPT_COMMAND" }
@@ -237,6 +251,7 @@ export PATH=$PATH:$GOPATH/bin
 export PATH="${PATH}:${HOME}/.local/bin/"
 export PATH="${PATH}:${HOME}/.local/bin/my_scripts"
 #export PATH="${PATH}:${HOME}/.local/lib/"
+export PATH="${PATH}:/sbin"
 export PATH="${PATH}:${HOME}/Code/f#/FsAutoComplete/src/FsAutoComplete/bin/Release/net6.0"
 export OMNISHARP_PATH="/usr/lib/omnisharp-roslyn/"
 

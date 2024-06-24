@@ -7,6 +7,7 @@ mkdir -p $HOME/Documents $HOME/Downloads $HOME/Pictures/Wallpapers
 mkdir -p $HOME/Code/c $HOME/Code/c++ $HOME/Code/c# $HOME/Code/js $HOME/Code/python $HOME/Code/rust $HOME/Code2/C $HOME/Code2/C++ $HOME/Code2/C# $HOME/Code2/General $HOME/Code2/Go $HOME/Code2/Python $HOME/Code2/Wow/tools
 
 # Copy stuff
+cp -r .config/alacritty/ $HOME/.config/
 cp -r .config/awesome/ $HOME/.config/
 cp -r .config/cava/ $HOME/.config/
 cp -r .config/conky/ $HOME/.config/
@@ -42,6 +43,7 @@ cp -r bin/widgets $HOME/.local/bin/
 cp -r bin/xyz $HOME/.local/bin/
 cp bin/lfub $HOME/.local/bin/
 cp bin/lf-select $HOME/.local/bin/
+cp bin/greenclip $HOME/.local/bin/
 
 cp -r installation/ $HOME/Documents/
 cp installation/help.txt $HOME/Documents/
@@ -333,6 +335,14 @@ check_dir() {
     local dir_name=$1
     local dir_type=${2:-build} # Default to build
     echo "--------------------------------------------------------"
+
+    read -p "Compile $dir_name? (yes/y to confirm): " user_input
+    if [[ "$user_input" =~ ^([yY][eE][sS]|[yY])$ ]]; then
+        echo "Proceeding with compilation of $dir_name..."
+    else
+        echo "Skipping compilation of $dir_name."
+        return 1 # False, exit function
+    fi
     
     # Capture the actual directory name, preserving its case
     #local actual_dir_name=$(find . -maxdepth 1 -type d -iname "${dir_name}" -exec basename {} \; | head -n 1)
@@ -356,10 +366,17 @@ check_dir() {
                     echo "${target_dir} NOT compiled."
                     return 1
                 fi
-                echo "Creating and entering ${target_dir}..."
-                mkdir -p "$target_dir" && cd "$target_dir"
-                sleep 1
-                return 0 # Return true
+                if [[ "$actual_dir_name" == "ioq3" ]]; then
+                    echo "Entering ${actual_dir_name}..."
+                    cd "./${actual_dir_name}"
+                    sleep 1
+                    return 0 # Return true
+                else
+                    echo "Creating and entering ${target_dir}..."
+                    mkdir -p "$target_dir" && cd "$target_dir"
+                    sleep 1
+                    return 0 # Return true
+                fi
             fi
         else
             if [ -d "$target_dir" ]; then
@@ -391,6 +408,14 @@ check_file() {
     local dir_name=$1
     local file_path=$2
     echo "--------------------------------------------------------"
+
+    read -p "Compile $dir_name? (yes/y to confirm): " user_input
+    if [[ "$user_input" =~ ^([yY][eE][sS]|[yY])$ ]]; then
+        echo "Proceeding with compilation of $dir_name..."
+    else
+        echo "Skipping compilation of $dir_name."
+        return 1 # False, exit function
+    fi
     
     # Capture the actual directory name, preserving its case
     #local actual_dir_name=$(find . -maxdepth 1 -type d -iname "$dir_name" -exec basename {} \; | head -n 1)
@@ -432,16 +457,16 @@ compile_projects() {
 
     print_and_cd_to_dir "$HOME/Code/c" "Compiling"
 
-    if check_dir "neovim"; then
-        cd ..
-        #if dpkg -l | grep -qw "neovim"; then
-        #    sudo apt remove neovim -y
-        #fi
-        #git checkout stable
-        #make CMAKE_BUILD_TYPE=RelWithDebInfo
-        #sudo make install
-        cd ..
-    fi
+    #if check_dir "neovim"; then
+    #    cd ..
+    #    if dpkg -l | grep -qw "neovim"; then
+    #        sudo apt remove neovim -y
+    #    fi
+    #    git checkout stable
+    #    make CMAKE_BUILD_TYPE=RelWithDebInfo
+    #    sudo make install
+    #    cd ..
+    #fi
 
     # Note: If the shell has issues with '++', you might need to quote or escape it...
     print_and_cd_to_dir "$HOME/Code/c++" "Compiling"
@@ -463,7 +488,8 @@ compile_projects() {
             cmake .. -DCMAKE_BUILD_TYPE=Release
             make -j$(nproc)
             sudo make install
-            cd ...
+            #cd ...
+            cd ../..
         else
             echo "MyGUI is not installed or not found."
             cd ..
@@ -475,7 +501,7 @@ compile_projects() {
         cmake -DCMAKE_INSTALL_PREFIX=/home/jonas/.local/share/openjk -DCMAKE_BUILD_TYPE=RelWithDebInfo ..
         make -j$(nproc)
         sudo make install
-        cd ...
+        cd ../..
     fi
 
     # Compile if NOT arm arch
@@ -484,21 +510,21 @@ compile_projects() {
             cmake -DCMAKE_INSTALL_PREFIX=/home/jonas/Downloads/ja_data -DCMAKE_BUILD_TYPE=RelWithDebInfo ..
             make -j$(nproc)
             sudo make install
-            cd ...
+            cd ../..
         fi
 
         if check_dir "jk2mv.js" "build_new"; then
             cmake .. CMAKE_BUILD_TYPE=Release
             make -j$(nproc)
             sudo make install
-            cd ...
+            cd ../..
         fi
 
         if check_dir "Unvanquished"; then
             cd .. && ./download-paks build/pkg && cd -
             cmake .. -DCMAKE_BUILD_TYPE=Release
             make -j$(nproc)
-            cd ...
+            cd ../..
         fi
     fi
 
@@ -524,7 +550,7 @@ compile_projects() {
             cd build && make help
             make config=release_linux-amd64-librw_gl3_glfw-oal
         fi
-        cd ...
+        cd ../..
     fi
 
     if check_dir "re3_vice"; then
@@ -538,7 +564,7 @@ compile_projects() {
             cd build && make help
             make config=release_linux-amd64-librw_gl3_glfw-oal
         fi
-        cd ...
+        cd ../..
     fi
 
     if check_dir "reone"; then
@@ -546,71 +572,79 @@ compile_projects() {
         cmake -B build -S . -DCMAKE_BUILD_TYPE=RelWithDebInfo
         cd build && make -j$(nproc)
         sudo make install
-        cd ...
+        cd ../..
     fi
 
     print_and_cd_to_dir "$HOME/Code/js" "Compiling"
 
     if check_dir "KotOR.js" "node_modules"; then
         npm install
-        npm run webpack:dev-watch
+        #npm run webpack:dev-watch
+        npm run webpack:dev -- --no-watch # No watch to exit after compile
         cd ..
     fi
 
     print_and_cd_to_dir "$HOME/Code/rust" "Compiling"
 
-    # Only compile if rust version is > 1.7
-    rustc_version=$(rustc --version | grep -oP 'rustc \K[^\s]+')
-    major_version=$(echo "$rustc_version" | cut -d'.' -f1)
-    minor_version=$(echo "$rustc_version" | cut -d'.' -f2)
+    # Only compile if rust version is > 1.63
+    #rust_version=$(rustc --version | awk '{print $2}') # Also works...
+    rust_version=$(rustc --version | grep -oP 'rustc \K[^\s]+')
+    major_version=$(echo "$rust_version" | cut -d'.' -f1)
+    minor_version=$(echo "$rust_version" | cut -d'.' -f2)
+    echo "Rust version: $rust_version"
+    echo "major: $major_version"
+    echo "minor: $minor_version"
 
     if check_dir "eww" "target"; then
-        if [ "$major_version" -gt 1 ] || { [ "$major_version" -eq 1 ] && [ "$minor_version" -gt 7 ]; }; then
-            echo "rustc version is above 1.7"
+        if [ "$major_version" -gt 1 ] || { [ "$major_version" -eq 1 ] && [ "$minor_version" -gt 63 ]; }; then
+            echo "rustc version is above 1.63"
             cargo build --release --no-default-features --features x11
             cd target/release
             chmod +x ./eww
             cd ../../..
         else
-            echo "rustc version is 1.7 or below. Skipping rust project..."
+            echo "rustc version is 1.63 or below. Skipping rust project..."
+            cd ..
         fi
     fi
 
     if check_dir "swww" "target"; then
-        if [ "$major_version" -gt 1 ] || { [ "$major_version" -eq 1 ] && [ "$minor_version" -gt 7 ]; }; then
-            echo "rustc version is above 1.7"
+        if [ "$major_version" -gt 1 ] || { [ "$major_version" -eq 1 ] && [ "$minor_version" -gt 63 ]; }; then
+            echo "rustc version is above 1.63"
             cargo build --release
             cd ..
         else
-            echo "rustc version is 1.7 or below. Skipping rust project..."
+            echo "rustc version is 1.63 or below. Skipping rust project..."
+            cd ..
         fi
     fi
 
     print_and_cd_to_dir "$HOME/Code2/C" "Compiling"
 
     if check_dir "ioq3"; then
+        cd ..
         make
         cd ..
     fi
 
-    if check_dir "picom-animations"; then
-        cd ..
-        meson --buildtype=release . build
-        ninja -C build
-        cd ..
-    fi
+    #if check_dir "picom-animations"; then
+    #    cd ..
+    #    meson --buildtype=release . build
+    #    ninja -C build
+    #    cd ..
+    #fi
 
     print_and_cd_to_dir "$HOME/Code2/C++" "Compiling"
 
     if check_dir "stk-code"; then
         cmake .. -DCMAKE_BUILD_TYPE=Release -DNO_SHADERC=on
         make -j$(nproc)
-        cd ...
+        cd ../..
     fi
 
     # Simply check for Craft binary for this...
     if check_file "small_games" "Craft/craft"; then
-        cd small_games/BirdGame
+        cd BirdGame
         g++ -std=c++17 -g *.cpp -o main -lSDL2main -lSDL2 -lSDL2_image -lSDL2_ttf -lSDL2_mixer
         cp -r BirdGame/graphics ./
 
@@ -624,32 +658,37 @@ compile_projects() {
         gcc -std=c99 -O3 -fPIC -shared -o world -I src -I deps/noise deps/noise/noise.c src/world.c
 
         echo "--------------------------------------------------------"
+        cd ../space-shooter/
+        make linux
+        #make linux-release
+
+        echo "--------------------------------------------------------"
         cd ../pacman/
         mkdir build && cd build
         cmake ..
         cmake --build .
-        cd ...
+        cd ../../..
     fi
 
     if check_dir "azerothcore-wotlk"; then
         cmake ../ -DCMAKE_INSTALL_PREFIX=$HOME/acore/ -DCMAKE_C_COMPILER=/usr/bin/clang -DCMAKE_CXX_COMPILER=/usr/bin/clang++ -DWITH_WARNINGS=1 -DTOOLS_BUILD=all -DSCRIPTS=static -DMODULES=static -DWITH_COREDEBUG=1 -DCMAKE_BUILD_TYPE=RelWithDebInfo
         make -j$(nproc)
         make install
-        cd ...
+        cd ../..
     fi
 
     if check_dir "trinitycore"; then
         cmake ../ -DCMAKE_INSTALL_PREFIX=$HOME/tcore/ -DCMAKE_C_COMPILER=/usr/bin/clang -DCMAKE_CXX_COMPILER=/usr/bin/clang++ -DWITH_WARNINGS=1 -DTOOLS_BUILD=all -DSCRIPTS=static -DMODULES=static -DWITH_COREDEBUG=1 -DCMAKE_BUILD_TYPE=RelWithDebInfo
         make -j$(nproc)
         make install
-        cd ...
+        cd ../..
     fi
 
     if check_dir "simc"; then
         cmake ../ -DCMAKE_BUILD_TYPE=Release
         make -j$(nproc)
         sudo make install
-        cd ...
+        cd ../..
     fi
 
     if check_dir "OpenJKDF2" "build*"; then
@@ -878,3 +917,4 @@ fi
 #        echo "$repo_dir already cloned."
 #    fi
 #}
+

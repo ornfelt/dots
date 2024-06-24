@@ -614,6 +614,15 @@ or:
 tsc example.js
 node example.js
 
+******************************************
+Or:
+
+# if needed:
+npm init -y
+npm install typescript ts-node @types/node --save-dev
+# If ts already installed, skip to this step:
+npx tsc --init
+
 ----------------------------------------------------------------------------------
 re3:
 ./premake5Linux --with-librw gmake2

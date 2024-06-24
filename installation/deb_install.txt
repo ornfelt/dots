@@ -5,12 +5,14 @@ https://archlinux.org/download/
 Follow graphical install, then:
 
 su - / sudo su
-Enter host passwd, then apt install sudo
+Enter host passwd
+apt-get install git neovim sudo tmux network-manager
 usermod -aG sudo jonas
-maybe also do: usermod -aG audio,video jonas
-apt install network-manager
+Also do: usermod -aG audio,video,input jonas
 sudo nmcli device wifi connect OWNIT-B1C0 password XXX
-apt install neovim
+*OBS! If intel wifi, then you might have to:
+sudo apt install iwlwifi and reboot...
+
 EDITOR=nvim visudo
 At the end of the /etc/sudoers file add this line: 
 jonas     ALL=(ALL) NOPASSWD:ALL
@@ -20,15 +22,35 @@ reboot
 Update sources list:
 https://www.itzgeek.com/how-tos/linux/debian/setup-debian-11-official-repository-in-sources-list-etc-apt-sources-list.html
 
-Add contrib non-free to every line, uncomment lines with deb-src, then sudo apt update
+Add contrib non-free to every line, uncomment lines with deb-src, then sudo apt
+update
 For newer debian versions, it suffices to just uncomment the deb-src lines...
 
-*OBS! If intel wifi, then you might have to:
-sudo apt install iwlwifi and reboot...
+/etc/apt/sources.list
+
+Add "contrib non-free" to the end of each line...
+
+Also install apt-transport-https if needed:
+Some sources might require HTTPS. Install the apt-transport-https package if
+it's not already installed:
+
+sudo apt-get install apt-transport-https
+
+Setup settings in xfce4-power-manager-settings (display should never sleep) 
+install packages from debian notes... use testing_mode and check for installed
+
+* hmm, which picom to use?
+https://github.com/ornfelt/picom-animations
+https://github.com/pijulius/picom
+https://github.com/FT-Labs/picom
 
 ******************************************
-curl -o install.txt https://raw.githubusercontent.com/archornf/dotfiles/master/installation/deb_install.txt
-wget -O install.txt https://raw.githubusercontent.com/archornf/dotfiles/master/installation/deb_install.txt
+curl -o install.txt https://raw.githubusercontent.com/archornf/dotfiles/master/installation/install.txt
+wget -O install.txt https://raw.githubusercontent.com/archornf/dotfiles/master/installation/install.txt
+
+curl -o deb_install.txt https://raw.githubusercontent.com/archornf/dotfiles/master/installation/deb_install.txt
+wget -O deb_install.txt https://raw.githubusercontent.com/archornf/dotfiles/master/installation/deb_install.txt
+
 ******************************************
 
 # TrinityCore:
@@ -801,6 +823,7 @@ More services nginx, firewall etc...
 
 ace 
 advancecomp 
+alacritty
 alsa-utils
 autoconf 
 automake 
@@ -858,6 +881,7 @@ git-core
 git-lfs 
 git-man 
 gnuplot 
+golang
 gpg
 gradle 
 grep 
@@ -1103,6 +1127,7 @@ vorbis-tools
 wget 
 wine 
 wine64 
+wireless-tools
 xawtv 
 xclip 
 xdg-utils 

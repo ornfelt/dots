@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/bash
 
 # Show wifi 📶 and percent strength or 📡 if none.
 # Show 🌐 if connected to ethernet or ❎ if none.
@@ -13,13 +13,34 @@ case $BLOCK_BUTTON in
 	6) "$TERMINAL" -e "$EDITOR" "$0" ;;
 esac
 
-case "$(cat /sys/class/net/w*/operstate 2>/dev/null)" in
-# case "$(cat /sys/class/net/e*/operstate 2>/dev/null)" in
-	# down) wifiicon="睊 " ;;
-	down) printf "睊 " ;;
-	# up) wifiicon="$(awk '/^\s*w/ { print "📶", int($3 * 100 / 70) "% " }' /proc/net/wireless)" ;;
-	up) wifiicon=" " ;;
+# Check state of wireless interface (w*)
+internet_state=$(cat /sys/class/net/w*/operstate 2>/dev/null)
+
+# If wireless state is empty or null, check the state of ethernet interface (e*)
+if [[ -z "$internet_state" ]]; then
+    internet_state=$(cat /sys/class/net/e*/operstate 2>/dev/null)
+fi
+
+case "$internet_state" in
+    down) 
+        wifiicon="睊 "
+        ;;
+    up) 
+        wifiicon=" "
+        ;;
+    *) 
+        wifiicon="❓"
+        ;;
 esac
+
+# Old
+# case "$(cat /sys/class/net/w*/operstate 2>/dev/null)" in
+# # case "$(cat /sys/class/net/e*/operstate 2>/dev/null)" in
+# 	# down) wifiicon="睊 " ;;
+# 	down) printf "睊 " ;;
+# 	# up) wifiicon="$(awk '/^\s*w/ { print "📶", int($3 * 100 / 70) "% " }' /proc/net/wireless)" ;;
+# 	up) wifiicon=" " ;;
+# esac
 
 # printf "%s%s%s\n" "$wifiicon" "$(sed "s/down/❎/;s/up/🌐/" /sys/class/net/e*/operstate 2>/dev/null)" "$(sed "s/.*/🔒/" /sys/class/net/tun*/operstate 2>/dev/null)"
 # printf "%s%s%s\n" "$wifiicon" "$(sed "s/down//;s/up/ /" /sys/class/net/e*/operstate 2>/dev/null)" "$(sed "s/.*/🔒/" /sys/class/net/tun*/operstate 2>/dev/null)"

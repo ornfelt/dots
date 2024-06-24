@@ -92,6 +92,7 @@ cp -r ~/.local/bin/widgets bin/
 cp -r ~/.local/bin/xyz bin/
 cp -r ~/.local/bin/lfub bin/
 cp -r ~/.local/bin/lf-select bin/
+cp -r ~/.local/bin/greenclip bin/
 
 cp -r ~/.bashrc .bashrc
 cp -r ~/.tmux.conf .tmux.conf

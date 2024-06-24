@@ -18,3 +18,4 @@ sleep 5
 for x in $(cat pk2); do yay -S --noconfirm $x; done
 sleep 5
 for x in $(cat pk3); do yay -S --noconfirm $x; done
+

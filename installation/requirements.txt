@@ -14,6 +14,7 @@ beautifulsoup4==4.12.3
 bleach==6.1.0
 blinker==1.8.2
 btrfsutil==6.8.1
+cachetools==5.3.3
 certifi==2024.2.2
 cffi==1.16.0
 chardet==5.2.0
@@ -31,9 +32,16 @@ executing==2.0.0
 fastjsonschema==2.19.1
 Flask==3.0.3
 Flask-Cors==4.0.1
+google-api-core==2.19.0
+google-api-python-client==2.134.0
+google-auth==2.30.0
+google-auth-httplib2==0.2.0
+google-auth-oauthlib==1.2.0
+googleapis-common-protos==1.63.1
 greenlet==3.0.3
 h11==0.14.0
 httpcore==1.0.5
+httplib2==0.22.0
 httpx==0.27.0
 idna==3.6
 importlib_metadata==5.1.0
@@ -79,6 +87,7 @@ notebook==7.2.0
 notebook_shim==0.2.4
 nspektr==0.5.0
 numpy==1.26.4
+oauthlib==3.2.2
 ordered-set==4.1.0
 overrides==7.7.0
 packaging==24.0
@@ -91,10 +100,14 @@ platformdirs==4.2.0
 ply==3.11
 prometheus_client==0.20.0
 prompt_toolkit==3.0.45
+proto-plus==1.24.0
+protobuf==4.25.3
 psutil==5.9.8
 ptyprocess==0.7.0
 pure_eval==0.2.2
 pwquality==1.4.5
+pyasn1==0.6.0
+pyasn1_modules==0.4.0
 PyAudio==0.2.14
 pycparser==2.22
 pydantic==2.7.2
@@ -113,8 +126,10 @@ pyzmq==25.1.2
 ranger-fm==1.9.3
 referencing==0.33.0
 requests==2.32.3
+requests-oauthlib==2.0.0
 rich==13.7.1
 rpds-py==0.17.1
+rsa==4.9
 ruamel.yaml==0.18.6
 ruamel.yaml.clib==0.2.8
 SCons==4.7.0
@@ -138,6 +153,7 @@ typeguard==4.2.1
 typing_extensions==4.12.0
 uc-micro-py==1.0.3
 ufw==0.36.2
+uritemplate==4.1.1
 urllib3==1.26.18
 userpath==1.9.2
 validate-pyproject==0.16

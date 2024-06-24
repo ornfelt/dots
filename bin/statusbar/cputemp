@@ -12,11 +12,14 @@ case $BLOCK_BUTTON in
 	6) "$TERMINAL" -e "$EDITOR" "$0" ;;
 esac
 
-#STR=$(sensors | awk '/Package/ {sub(/^\+/, "", $2);print $4}' | sed 's/\+//')
 STR=$(sensors | awk '/Tctl/ {sub(/^\+/, "", $2);print $2}')
 
-#if [ -z "$STR" ]; then
-#	STR="0°"
-#fi
+if [ -z "$STR" ]; then
+    STR=$(sensors | awk '/Package/ {sub(/^\+/, "", $2);print $4}' | sed 's/\+//')
+fi
+
+if [ -z "$STR" ]; then
+	STR="0°"
+fi
 
 echo "$STR"
