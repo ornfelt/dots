@@ -1,3 +1,4 @@
+thunar
 tinyobjloader
 tk
 tlp

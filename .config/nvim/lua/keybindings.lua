@@ -52,6 +52,7 @@ map('n', '<M-q>', ':q<CR>') -- Quit
 map('n', '<M-z>', ':noh<CR>')
 map('n', 'Y', 'y$') -- Yank till end of line
 
+--map('x', '<leader>p', "\"_dP") -- Replace from void
 map('n', '<leader>p', 'viw"_dP') -- Replace from void
 map('v', '<leader>p', '<Esc>viw"_dP') -- Replace from void
 map('n', '<leader>d', '"_d') -- Delete to void
@@ -107,10 +108,12 @@ map('n', '<M-h>', '<Plug>WinMoveLeft')
 map('n', '<M-j>', '<Plug>WinMoveDown')
 map('n', '<M-k>', '<Plug>WinMoveUp')
 map('n', '<M-l>', '<Plug>WinMoveRight')
+map('n', '<C-d>', '<C-d>zz')
+map('n', '<C-u>', '<C-u>zz')
 
--- Moving text and indentation
-map('x', 'K', ":move '<-2<CR>gv-gv")
-map('x', 'J', ":move '>+1<CR>gv-gv")
+-- Moving text
+map('x', 'J', ":move '>+1<CR>gv=gv")
+map('x', 'K', ":move '<-2<CR>gv=gv")
 map('n', '<leader>j', ':join<CR>')
 map('n', '<leader>J', ':join!<CR>')
 map('n', '<leader>z', '<Plug>Zoom')
@@ -434,4 +437,5 @@ function compile_run()
 end
 
 vim.api.nvim_set_keymap('n', '<M-x>', '<Cmd>lua compile_run()<CR>', { noremap = true, silent = true })
+vim.api.nvim_set_keymap('n', '<M-S-X>', '<Cmd>!chmod +x %<CR>', { noremap = true, silent = true })
 

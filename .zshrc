@@ -2,7 +2,7 @@
 # export PATH=$HOME/bin:/usr/local/bin:$PATH
 
 # Path to your oh-my-zsh installation.
-export ZSH="/home/jonas/.oh-my-zsh"
+export ZSH="$HOME/.oh-my-zsh"
 export VISUAL=nvim
 export EDITOR=nvim
 export TESSDATA_PREFIX=/usr/local/share/tessdata
@@ -107,66 +107,69 @@ source $ZSH/oh-my-zsh.sh
 # For a full list of active aliases, run `alias`.
 #
 # Example aliases
-# alias zshconfig="mate ~/.zshrc"
-# alias ohmyzsh="mate ~/.oh-my-zsh"
+# alias zshconfig="mate $HOME/.zshrc"
+# alias ohmyzsh="mate $HOME/.oh-my-zsh"
 
 #dotfiles
 #alias config='/usr/bin/git --git-dir=$HOME/.cfg/ --work-tree=$HOME'
 
 #Config aliases
-alias zshconf='nvim ~/.zshrc'
-alias i3conf='nvim ~/.config/i3/config'
+alias zshconf='nvim $HOME/.zshrc'
+alias i3conf='nvim $HOME/.config/i3/config'
 
 #General Aliases
-alias jnb='jupyter notebook ~/Dev/Notebooks'
-alias dev='cd ~/Dev'
+alias jnb='jupyter notebook $HOME/Dev/Notebooks'
+alias dev='cd $HOME/Dev'
 #alias cat='bat'
 #alias emacs='emacsclient -nw'
 alias neofetch='neofetch --color_blocks off'
-alias grootfetch='neofetch --w3m /home/jonas/.config/neofetch/groot.jpg'
+alias grootfetch='neofetch --w3m $HOME/.config/neofetch/groot.jpg'
 alias tuxfetch='neofetch --ascii_distro tux'
 alias diskspace='ncdu'
 alias cb='clipboard'
 alias tb='nc termbin.com 9999'
-alias doomsync='~/.emacs.d/bin/doom sync && systemctl restart emacs --user'
+alias doomsync='$HOME/.emacs.d/bin/doom sync && systemctl restart emacs --user'
 alias vim='nvim'
-alias xup='xrdb ~/.Xresources'
+alias lua='lua5.4'
+alias python='python3'
+alias xup='xrdb $HOME/.Xresources'
 # alias grep='grep -rin --color'
 alias vd='python -m visidata'
-alias .scripts='cd ~/.local/bin/my_scripts; ls'
-alias .cnf='cd ~/.config; ls'
-alias .cnfa='cd ~/.config/awesome; ls'
-alias .cnfd='cd ~/.config/dwm; ls'
-alias .cnfdb='cd ~/.config/dwmblocks; ls'
-alias .cnfp='cd ~/.config/polybar; ls'
-alias .cnfh='cd ~/.config/hypr; ls'
-alias .pics='cd ~/Pictures; ls'
-alias .docs='cd ~/Documents; ls'
-alias .cdn='cd ~/Documents/my_notes; ls'
-alias .down='cd ~/Downloads; ls'
-alias .dots='cd ~/Downloads/dotfiles; ls'
-alias .ioq3='/home/jonas/Code2/C/ioq3/build/release-linux-x86_64/ioquake3.x86_64 +set sv_pure 0 +set vm_game 0 +set vm_cgame 0 +set vm_ui 0'
-alias .ioq32='/home/jonas/Code2/C/ioq3/build/release-linux-x86_64_golden/ioquake3.x86_64 +set sv_pure 0 +set vm_game 0 +set vm_cgame 0 +set vm_ui 0'
-alias .stk='/home/jonas/Code2/C++/stk-code/build/bin/supertuxkart'
-alias .openjk='/home/jonas/.local/share/openjk/JediAcademy/openjk.x86_64'
-alias .openjk_sp='/home/jonas/.local/share/openjk/JediAcademy/openjk_sp.x86_64'
-alias .openjo_sp='/home/jonas/.local/share/openjk/JediOutcast/openjo_sp.x86_64'
-alias .japlus='/home/jonas/.local/share/openjk/JediAcademy/openjk.x86_64 +set fs_game "japlus"'
-alias lf='/home/jonas/.local/bin/lfub'
-
-alias .acore='cd ~/acore/bin; pwd; ls'
-alias .tcore='cd ~/tcore/bin; pwd; ls'
+alias .scripts='cd $HOME/.local/bin/my_scripts; ls'
+alias .cnf='cd $HOME/.config; ls'
+alias .cnfa='cd $HOME/.config/awesome; ls'
+alias .cnfd='cd $HOME/.config/dwm; ls'
+alias .cnfdb='cd $HOME/.config/dwmblocks; ls'
+alias .cnfh='cd $HOME/.config/hypr; ls'
+alias .cnfi='cd $HOME/.config/i3; ls'
+alias .cnfp='cd $HOME/.config/picom; ls'
+alias .pics='cd $HOME/Pictures; ls'
+alias .docs='cd $HOME/Documents; ls'
+alias .cdc='cd $HOME/Code2; ls'
+alias .cdn='cd $HOME/Documents/my_notes; ls'
+alias .down='cd $HOME/Downloads; ls'
+alias .dots='cd $HOME/Downloads/dotfiles; ls'
+alias .ioq3='$HOME/Code2/C/ioq3/build/release-linux-x86_64/ioquake3.x86_64 +set sv_pure 0 +set vm_game 0 +set vm_cgame 0 +set vm_ui 0'
+alias .ioq32='$HOME/Code2/C/ioq3/build/release-linux-x86_64_golden/ioquake3.x86_64 +set sv_pure 0 +set vm_game 0 +set vm_cgame 0 +set vm_ui 0'
+alias .stk='$HOME/Code2/C++/stk-code/build/bin/supertuxkart'
+alias .openjk='$HOME/.local/share/openjk/JediAcademy/openjk.x86_64'
+alias .openjk_sp='$HOME/.local/share/openjk/JediAcademy/openjk_sp.x86_64'
+alias .openjo_sp='$HOME/.local/share/openjk/JediOutcast/openjo_sp.x86_64'
+alias .japp='$HOME/.local/share/openjk/JediAcademy/openjk.x86_64 +set fs_game "japlus"'
+alias lf='$HOME/.local/bin/lfub'
+alias .acore='cd $HOME/acore/bin; pwd; ls'
+alias .tcore='cd $HOME/tcore/bin; pwd; ls'
 alias .wow='wine /mnt/new/wow/Wow.exe'
 
 playermap ()
 {
     if [ -n "$1" ]; then
         echo "Launching tcore playermap: php -S localhost:8000"
-        #cd ~/Code2/Python/wander_nodes_util/tcore_map/playermap && php -S localhost:8000;
-        cd ~/Code2/Python/wander_nodes_util/tcore_map/playermap && php -S $(ip addr show | grep -v 'inet6' | grep -v 'inet 127' | grep 'inet' | head -n 1 | awk '{print $2}' | cut -d/ -f1):8000;
+        #cd $HOME/Code2/Python/wander_nodes_util/tcore_map/playermap && php -S localhost:8000;
+        cd $HOME/Code2/Python/wander_nodes_util/tcore_map/playermap && php -S $(ip addr show | grep -v 'inet6' | grep -v 'inet 127' | grep 'inet' | head -n 1 | awk '{print $2}' | cut -d/ -f1):8000;
     else
         echo "Launching acore playermap: php -S localhost:8000"
-        cd ~/Code2/Python/wander_nodes_util/acore_map/playermap && php -S $(ip addr show | grep -v 'inet6' | grep -v 'inet 127' | grep 'inet' | head -n 1 | awk '{print $2}' | cut -d/ -f1):8000;
+        cd $HOME/Code2/Python/wander_nodes_util/acore_map/playermap && php -S $(ip addr show | grep -v 'inet6' | grep -v 'inet 127' | grep 'inet' | head -n 1 | awk '{print $2}' | cut -d/ -f1):8000;
     fi
 }
 alias .playermap='playermap'
@@ -184,7 +187,7 @@ unsetopt BEEP
 #nvm 
 lazynvm() {
   unset -f nvm node npm npx
-  export NVM_DIR=~/.nvm
+  export NVM_DIR=$HOME/.nvm
   [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh" # This loads nvm
   if [ -f "$NVM_DIR/bash_completion" ]; then
     [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion" # This loads nvm bash_completion
@@ -236,7 +239,7 @@ if command -v fzf >/dev/null 2>&1; then
         [ -f /usr/share/doc/fzf/examples/completion.zsh ] && source /usr/share/doc/fzf/examples/completion.zsh
         [ -f /usr/share/doc/fzf/examples/key-bindings.zsh ] && source /usr/share/doc/fzf/examples/key-bindings.zsh
     else
-        [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
+        [ -f $HOME/.fzf.zsh ] && source $HOME/.fzf.zsh
     fi
 else
     echo "fzf is not installed"
@@ -263,6 +266,7 @@ export LC_ALL=en_US.UTF-8
 alias f='fuzzyfind'
 bindkey '^ ' autosuggest-accept
 LS_COLORS+=':ow=01;33'
-~/.local/bin/my_scripts/hello.sh
+$HOME/.local/bin/my_scripts/hello.sh
 
-source ~/.bash_profile
+source $HOME/.bash_profile
+#source $HOME/.cargo/env

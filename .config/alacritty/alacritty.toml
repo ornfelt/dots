@@ -36,17 +36,27 @@ style = "Regular"
 [[keyboard.bindings]]
 action = "ToggleViMode"
 key = "V"
-mods = "Alt|Shift"
+mods = "Alt"
 
 [[keyboard.bindings]]
 action = "Copy"
 key = "C"
-mods = "Alt|Control"
+mods = "Alt|Shift"
 
 [[keyboard.bindings]]
 action = "Paste"
 key = "V"
-mods = "Alt|Control"
+mods = "Alt|Shift"
+
+[[keyboard.bindings]]
+key = "J"
+mods = "Alt|Shift"
+action = "ScrollPageDown"
+
+[[keyboard.bindings]]
+key = "K"
+mods = "Alt|Shift"
+action = "ScrollPageUp"
 
 #[[key_bindings]]
 #action = "Command"

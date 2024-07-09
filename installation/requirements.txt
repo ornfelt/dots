@@ -20,6 +20,7 @@ cffi==1.16.0
 chardet==5.2.0
 charset-normalizer==3.3.2
 click==8.1.7
+cogapp==3.4.1
 colorama==0.4.6
 comm==0.2.2
 cryptography==42.0.6

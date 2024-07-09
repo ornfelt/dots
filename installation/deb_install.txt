@@ -1176,3 +1176,60 @@ zlib1g
 zlib1g-dev
 zsh 
 
+----------------------------------------------------------------------------------
+### USAGE
+
+# Exporting
+mysqldump -u root -p acore_world > acore_world.sql
+mysqldump -u root -p acore_characters > acore_characters.sql
+mysqldump -u root -p acore_auth > acore_auth.sql
+
+mysqldump -u root -p world > world.sql
+mysqldump -u root -p characters > characters.sql
+mysqldump -u root -p auth > auth.sql
+
+# Importing
+mysql -u root -p acore_world < acore_world.sql
+mysql -u root -p acore_characters < acore_characters.sql
+mysql -u root -p acore_auth < acore_auth.sql
+
+mysql -u root -p world < world.sql
+mysql -u root -p characters < characters.sql
+mysql -u root -p auth < auth.sql
+
+# Getting db via git-lfs:
+# sudo apt-get install git-lfs
+# git clone https://github.com/archornf/acore_db
+# git clone https://github.com/archornf/tcore_db
+
+******************************************
+GRANT ALL PRIVILEGES ON `ac_eluna` . * TO 'acore'@'localhost' WITH GRANT OPTION;
+GRANT ALL PRIVILEGES ON * . * TO 'acore'@'localhost' WITH GRANT OPTION;
+
+******************************************
+Wine issues:
+rm -rf $HOME/.wine
+wineboot --init
+
+https://wiki.debian.org/Wine
+
+https://www.rust-lang.org/tools/install
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+
+https://learn.microsoft.com/en-us/dotnet/core/install/linux-debian
+
+wget https://packages.microsoft.com/config/debian/12/packages-microsoft-prod.deb -O packages-microsoft-prod.deb
+sudo dpkg -i packages-microsoft-prod.deb
+rm packages-microsoft-prod.deb
+
+->
+
+sudo apt-get update && \
+  sudo apt-get install -y dotnet-sdk-8.0
+
+These may not work but you can try them as well:
+sudo apt-get update && \
+  sudo apt-get install -y aspnetcore-runtime-8.0
+
+sudo apt-get install -y dotnet-runtime-8.0
+

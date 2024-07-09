@@ -83,6 +83,7 @@ jupyter-notebook
 lf
 lib32-libpulse
 libcurl-openssl-1.0
+libmad
 light
 linux
 linux-firmware
@@ -92,4 +93,3 @@ lxappearance
 m4
 maim
 make
-mako

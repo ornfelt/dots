@@ -288,10 +288,13 @@ clone_projects() {
 
     print_and_cd_to_dir "$HOME/Code2/Wow/tools" "Cloning"
     clone_repo_if_missing "mpq" "https://github.com/Gophercraft/mpq"
+    clone_repo_if_missing "StormLib" "https://github.com/ladislav-zezula/StormLib"
+    clone_repo_if_missing "BLPConverter" "https://github.com/ornfelt/BLPConverter"
     clone_repo_if_missing "spelunker" "https://github.com/wowserhq/spelunker"
     clone_repo_if_missing "wowser" "https://github.com/ornfelt/wowser"
+    clone_repo_if_missing "wowmapview" "https://github.com/ornfelt/wowmapview" "linux"
     clone_repo_if_missing "wowmapviewer" "https://github.com/ornfelt/wowmapviewer" "linux"
-    clone_repo_if_missing "WebWoWViewer" "https://github.com/ornfelt/WebWoWViewer"
+    clone_repo_if_missing "WebWoWViewer" "https://github.com/ornfelt/WebWoWViewer" "new"
 
     architecture=$(uname -m)
     #if grep -q -i 'raspbian\|raspberry pi os' /etc/os-release; then
@@ -703,12 +706,13 @@ compile_projects() {
         if grep -qEi 'debian|raspbian' /etc/os-release; then
             echo "Running on Debian or Raspbian. Installing smpq package from tools script."
             sudo apt remove smpq -y
-            cd tools && ./build_and_install_smpq.sh
+            cd tools
+            source build_and_install_smpq.sh
             sudo cp /usr/local/bin/smpq /usr/bin/smpq
             cd ..
         fi
         if [[ "$architecture" == arm* ]] || [[ "$architecture" == aarch64* ]]; then
-            Packaging/nix/debian-cross-aarch64-prep.sh
+            source Packaging/nix/debian-cross-aarch64-prep.sh
             cmake -S. -Bbuild-aarch64-rel \
             -DCMAKE_TOOLCHAIN_FILE=../CMake/platforms/aarch64-linux-gnu.toolchain.cmake \
             -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DCPACK=ON \
@@ -722,7 +726,6 @@ compile_projects() {
     fi
 
     if check_file "crispy-doom" "src/crispy-doom"; then
-        cd crispy-doom
         autoreconf -fiv
         ./configure
         make -j$(nproc)
@@ -738,7 +741,6 @@ compile_projects() {
     print_and_cd_to_dir "$HOME/Code2/Wow/tools" "Compiling"
 
     if check_file "mpq" "gophercraft_mpq_set"; then
-        cd mpq
         go build github.com/Gophercraft/mpq/cmd/gophercraft_mpq_set
         cd ..
     fi
@@ -767,14 +769,28 @@ compile_projects() {
     fi
 
     if check_dir "wowser" "node_modules"; then
-        git checkout minimal
+        git checkout new
         npm install
         cd ..
     fi
 
+    if check_dir "wowmapview"; then
+        cmake .. && make -j$(nproc)
+        cd ..
+    fi
+
     if check_file "wowmapviewer" "bin/wowmapview"; then
-        cd wowmapviewer/src/stormlib && make -f Makefile.linux
-        cd .. && make
+        #cd src/stormlib && make -f Makefile.linux
+        #cd .. && make
+        #cd ..
+        cd src
+        mkdir build && cd build
+        cmake .. && make -j$(nproc)
+        cd ../../..
+    fi
+
+    if check_dir "WebWoWViewer" "node_modules"; then
+        npm install
         cd ..
     fi
 
