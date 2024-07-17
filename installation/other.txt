@@ -16,6 +16,7 @@ epub-thumbnailer-git 1:r75.debba5f-1
 eww 0.4.0-1
 gruvbox-dark-gtk 1.0.2-1
 jdtls 1.32.0-1
+js102 102.15.1-2
 libcurl-openssl-1.0 7.79.1-1
 libvterm01 0.1.4-2
 light 1.2.2-4
@@ -30,7 +31,6 @@ rtl8852be-dkms-git r28.28daf8c-1
 rtw89-dkms-git 1:r366.fce040c-1
 swaylock-effects-git r405.b2736c5-1
 swaylockd 0.1.0-1
-swww 0.8.2-2
 swww-debug 0.8.2-2
 tinyobjloader 2.0.0rc13-1
 tinyobjloader-debug 2.0.0rc13-1

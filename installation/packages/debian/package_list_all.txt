@@ -74,6 +74,8 @@ chromium-common
 chromium-sandbox
 clang
 clang-14
+clangd
+clangd-14
 cli-common
 cmake
 cmake-data
@@ -256,6 +258,7 @@ golang-doc
 golang-go
 golang-src
 googletest
+gopls
 gpg
 gpg-agent
 gpg-wks-client
@@ -995,6 +998,8 @@ libgraphene-1.0-0
 libgraphite2-3
 libgraphite2-3
 libgraphite2-dev
+libgrpc++1.51
+libgrpc29
 libgs-common
 libgs10
 libgs10-common

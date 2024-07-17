@@ -33,6 +33,7 @@ chafa
 checkinstall
 chromium
 clang
+clangd
 cmake
 cmdtest
 conky
@@ -98,6 +99,7 @@ git-man
 git
 gnuplot
 golang
+gopls
 gpg
 gpgv
 gradle
@@ -186,4 +188,3 @@ libcsfml-dev
 libcurl4-openssl-dev
 libdb5.3
 libdbus-1-dev
-libdebconfclient0

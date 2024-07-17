@@ -77,6 +77,8 @@ setup_lsp_if_available('lua_ls', lua_ls_config, 'lua-language-server')
 -- rust_analyzer isn't the executable, rust-analyzer is
 setup_lsp_if_available('rust_analyzer', lsp_attach_config, 'rust-analyzer')
 setup_lsp_if_available('fsautocomplete', lsp_attach_config)
+setup_lsp_if_available('jdtls', lsp_attach_config)
+setup_lsp_if_available('bashls', lsp_attach_config, 'bash-language-server')
 
 local omnisharp_path = os.getenv('OMNISHARP_PATH')
 if omnisharp_path then
@@ -130,6 +132,22 @@ if omnisharp_path then
             },
         },
     }
+end
+
+if vim.fn.has('win32') == 1 then
+    local binary_name = 'powershell.exe'
+    local user_profile = vim.loop.os_getenv("USERPROFILE")
+    local bundle_path = user_profile .. '/Downloads/PowerShellEditorServices'
+
+    local ps_attach_config = {
+        on_attach = on_attach,
+        bundle_path = bundle_path,
+        shell = binary_name,
+    }
+
+    if vim.fn.executable(binary_name) == 1 and vim.fn.isdirectory(bundle_path) == 1 then
+    lspconfig.powershell_es.setup(ps_attach_config)
+    end
 end
 
  -- Setup nvim-cmp.

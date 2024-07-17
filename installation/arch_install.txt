@@ -9,8 +9,8 @@ station wlan0 connect OWNIT-B1C0
 enter password...
 
 ******************************************
-curl -o install.txt https://raw.githubusercontent.com/archornf/dotfiles/master/installation/install.txt
-wget -O install.txt https://raw.githubusercontent.com/archornf/dotfiles/master/installation/install.txt
+curl -o arch_install.txt https://raw.githubusercontent.com/archornf/dotfiles/master/installation/arch_install.txt
+wget -O arch_install.txt https://raw.githubusercontent.com/archornf/dotfiles/master/installation/arch_install.txt
 ******************************************
 
 # Load the right keys
@@ -245,6 +245,9 @@ joypixels etc...
 
 mono dotnet-sdk jre-openjdk jdk-openjdk rust xfce4-power-manager go lm_sensors
 
+Try installing rust from site instead of through package... rust-analyzer
+compatible? Maybe the binary needs to be downloaded...
+
 zip unzip htop bashtop imagemagick tmux fuse perl ntfs-3g cronie scrot maim visidata cmake qrencode yad
 python-gobject sndio netctl dhcpcd
 sudo systemctl start dhcpcd.service
@@ -291,3 +294,4 @@ adblock plus
 gruvbox dark theme firefox
 vimium
 imagus
+

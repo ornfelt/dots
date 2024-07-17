@@ -55,6 +55,7 @@ scrot
 sdl12-compat
 sdl2_image
 sdl2_mixer
+sdl2_net
 sdl2_ttf
 semver
 sfml
@@ -92,4 +93,3 @@ texlive-plaingeneric
 texlive-pstricks
 texlive-publishers
 texlive-xetex
-the_silver_searcher

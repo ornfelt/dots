@@ -256,6 +256,7 @@ export PATH="${PATH}:${HOME}/.local/bin/my_scripts"
 #export PATH="${PATH}:${HOME}/.local/lib/"
 export PATH="${PATH}:/sbin"
 export PATH="${PATH}:${HOME}/Code/f#/FsAutoComplete/src/FsAutoComplete/bin/Release/net6.0"
+export PATH="${PATH}:/home/jonas/Downloads/lsp/jdtls/bin"
 export OMNISHARP_PATH="/usr/lib/omnisharp-roslyn/"
 
 export LANG=en_US.UTF-8

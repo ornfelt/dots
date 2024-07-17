@@ -8,7 +8,6 @@ if [ $# -eq 0 ]; then
     cd ~/Documents/installation && ./update.sh && cd - > /dev/null
     rm -rf installation
     cp -r ~/Documents/installation installation/
-    cp ~/Documents/help.txt installation/
 else
     if echo "$arg" | grep -q "no-pkg"; then
         echo "Skipping update due to 'no-pkg' argument."
