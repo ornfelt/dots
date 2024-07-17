@@ -43,8 +43,8 @@ validate_weather() {
 if validate_weather "$WEATHER_REPORT"; then
     #echo "$WEATHER_REPORT"
     #echo "$WEATHER_REPORT" > "$HOME/.local/share/weatherreport"
-    #echo "$WEATHER_REPORT" | tee "$HOME/.local/share/weatherreport"
-    echo "$CITY $WEATHER_REPORT" | tee "$HOME/.local/share/weatherreport"
+    echo "$WEATHER_REPORT" | tee "$HOME/.local/share/weatherreport"
+    #echo "$CITY $WEATHER_REPORT" | tee "$HOME/.local/share/weatherreport"
 else
     #echo "USING FALLBACK"
     #FALLBACK_OUTPUT=$(python ~/.local/bin/statusbar/weather_py.py)
@@ -53,7 +53,8 @@ else
     #python ~/.local/bin/statusbar/weather_py.py "$CITY" | tee "$HOME/.local/share/weatherreport"
     FALLBACK_OUTPUT=$(python ~/.local/bin/statusbar/weather_py.py "$CITY")
     if validate_weather "$FALLBACK_OUTPUT"; then
-        echo "$CITY $FALLBACK_OUTPUT" | tee "$HOME/.local/share/weatherreport"
+        echo "$FALLBACK_OUTPUT" | tee "$HOME/.local/share/weatherreport"
+        #echo "$CITY $FALLBACK_OUTPUT" | tee "$HOME/.local/share/weatherreport"
     else
         cat "$HOME/.local/share/weatherreport"
     fi
