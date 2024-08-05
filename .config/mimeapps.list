@@ -1,0 +1,21 @@
+[Added Associations]
+application/octet-stream=nvim.desktop;
+text/plain=userapp-urxvt -e nvim '%f'-XU4KW1.desktop;userapp-urxvt -e 'nvim %f'-GUWPW1.desktop;userapp-urxvt -e 'nvim %F'-5JVCW1.desktop;urxvt.desktop;nvim.desktop;
+application/x-desktop=userapp-urxvt -e nvim '%f'-XU4KW1.desktop;
+application/x-shellscript=userapp-urxvt -e nvim '%f'-XU4KW1.desktop;
+text/x-makefile=userapp-urxvt -e nvim '%f'-XU4KW1.desktop;
+image/png=gimp.desktop;sxiv.desktop;chromium.desktop;feh.desktop;
+text/html=firefox.desktop;
+text/x-java=userapp-urxvt -e nvim '%f'-XU4KW1.desktop;
+text/x-csrc=userapp-urxvt -e nvim '%f'-XU4KW1.desktop;
+
+[Default Applications]
+text/plain=userapp-urxvt -e nvim '%f'-XU4KW1.desktop
+application/x-shellscript=userapp-urxvt -e nvim '%f'-XU4KW1.desktop
+application/x-desktop=userapp-urxvt -e nvim '%f'-XU4KW1.desktop
+image/png=feh.desktop
+text/html=firefox.desktop
+x-scheme-handler/https=firefox.desktop
+x-scheme-handler/http=firefox.desktop
+application/xhtml+xml=firefox.desktop
+x-scheme-handler/eclipse+command x-scheme-handler/eclipse+mpc=_usr_lib_eclipse_.desktop

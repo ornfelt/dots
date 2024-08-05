@@ -12,7 +12,7 @@ static const Block blocks[] = {
     {"^6^  ",      "~/.local/bin/statusbar/sb-clock",              60,                     1},
 };
 
-/*Icons:            婢 墳  */
+/*Icons:            婢 墳     󱑔  󱑍 */
 
 //Sets delimiter between status commands. NULL character ('\0') means no delimiter.
 /* static char *delim = " | "; */

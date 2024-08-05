@@ -183,8 +183,10 @@ libxcb-util-dev
 libxcb-xfixes0-dev
 libxcb-xinerama0-dev
 libxcb1-dev
+libxcursor-dev
 libxdo-dev
 libxext-dev
 libxft-dev
+libxi-dev
 libxinerama-dev
-libxres-dev
+libxrandr-dev

@@ -1,4 +1,4 @@
-lspconfig = require'lspconfig'
+local lspconfig = require'lspconfig'
 
 local function go_to_definition_twice()
     vim.lsp.buf.definition()
@@ -79,6 +79,28 @@ setup_lsp_if_available('rust_analyzer', lsp_attach_config, 'rust-analyzer')
 setup_lsp_if_available('fsautocomplete', lsp_attach_config)
 setup_lsp_if_available('jdtls', lsp_attach_config)
 setup_lsp_if_available('bashls', lsp_attach_config, 'bash-language-server')
+
+if vim.fn.executable("sqls") == 1 then
+    lspconfig.sqls.setup{
+        on_attach = function(client, bufnr)
+            require('sqls').on_attach(client, bufnr)
+            on_attach(client, bufnr)
+        end
+    }
+end
+
+if vim.fn.executable("yaml-language-server") == 1 then
+    lspconfig.yamlls.setup {
+    settings = {
+        yaml = {
+        schemas = {
+            ["https://raw.githubusercontent.com/instrumenta/kubernetes-json-schema/master/v1.18.0-standalone-strict/all.json"] = "/*.k8s.yaml",
+            -- other schemas...
+        },
+        },
+    }
+    }
+end
 
 local omnisharp_path = os.getenv('OMNISHARP_PATH')
 if omnisharp_path then

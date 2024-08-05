@@ -53,4 +53,12 @@ esac
 #date "+%b %d (%a) $icon%I:%M%p "
 
 #date "+%a %d %b %I:%M%p (%V)"
-date "+%a %d %b %I:%M%p (%V) "
+#date "+%a %d %b %I:%M%p (%V) "
+
+if grep -qEi 'arch' /etc/os-release; then
+    echo " $(date -d "+4 minutes" "+%a %d %b %I:%M%p (%V) ")"
+else
+    #date -d "+4 minutes" "+%a %d %b %I:%M%p (%V) "
+    date "+%a %d %b %I:%M%p (%V) "
+fi
+

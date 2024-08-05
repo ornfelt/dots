@@ -1,3 +1,4 @@
+make
 mako
 mariadb
 meson
@@ -20,6 +21,7 @@ obs-studio
 omnisharp-roslyn
 onetbb
 openal
+opencv
 openscenegraph
 optipng
 os-prober
@@ -47,8 +49,6 @@ rofi
 rofi-greenclip
 rtl8852be-dkms-git
 rtw89-dkms-git
-rust-analyzer
-rustup
 rxvt-unicode
 scons
 scrot
@@ -93,3 +93,4 @@ texlive-plaingeneric
 texlive-pstricks
 texlive-publishers
 texlive-xetex
+the_silver_searcher

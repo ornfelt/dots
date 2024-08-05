@@ -11,7 +11,7 @@ usermod -aG sudo jonas
 Also do: usermod -aG audio,video,input jonas
 sudo nmcli device wifi connect OWNIT-B1C0 password XXX
 *OBS! If intel wifi, then you might have to:
-sudo apt install iwlwifi and reboot...
+sudo apt install iwlwifi (firmware-iwlwifi?) and reboot...
 
 EDITOR=nvim visudo
 At the end of the /etc/sudoers file add this line: 
@@ -36,6 +36,16 @@ it's not already installed:
 
 sudo apt-get install apt-transport-https
 
+mkdir ~/Downloads
+cd ~/Downloads
+git clone https://github.com/archornf/dotfiles
+Install packages with install.sh
+Run setup.sh to setup stuff and clone projects
+compile neovim and picom manually
+Do PackerInstall...
+Fetch .batch_profile from drive with firefox:
+Proceed with compiling rest with setup.sh
+
 Setup settings in xfce4-power-manager-settings (display should never sleep) 
 
 lxappearance -> set gruvbox-dark
@@ -50,19 +60,7 @@ https://github.com/pijulius/picom
 https://github.com/FT-Labs/picom
 
 firefox:
-imagus, vimium, adblock, js-injector?
-
-Clone dotfiles to Downloads dir
-git clone https://github.com/archornf/dotfiles
-Install packages with install.sh
-install dwm, dwmblocks (compile.sh), dmenu, st.
-fetch .batch_profile from drive with firefox
-run setup.sh to setup stuff and clone projects
-compile neovim and picom manually...
-Do PackerInstall...
-proceed with compiling rest...
-Rust version needs fix.
-* Update deb packages from other pc, qt5web was missing...
+imagus, vimium, adblock, js-injector
 
 Fix everything else, like game data files, dotnet and other stuff...
 
@@ -82,6 +80,9 @@ sudo DEBIAN_FRONTEND=noninteractive dpkg -i /tmp/mysql-apt-config_all.deb
 sudo update-alternatives --install /usr/bin/cc cc /usr/bin/clang 100
 sudo update-alternatives --install /usr/bin/c++ c++ /usr/bin/clang 100
 
+******************************************
+# Python configuration
+
 python3 -m venv .venv
 source .venv/bin/activate
 Then:
@@ -91,11 +92,13 @@ Or:
 pip install xyz --break-system-packages
 
 Or (use this):
-Add this to your ~/.config/pip/pip.conf file:
+mkdir -p ~/.config/pip/
+vim ~/.config/pip/pip.conf
+Add this:
 [global]
 break-system-packages = true
 
-pip3 install bs4 requests ocrspace pytesseract pynvim i3ipc pyperclip
+pip3 install bs4 requests ocrspace pytesseract pynvim i3ipc pyperclip cogapp
 
 ******************************************
 # Other stuff
@@ -163,14 +166,22 @@ And change scripts to /usr/bin/bash and /usr/bin/python3...
 
 ******************************************
 # wine
+sudo dpkg --add-architecture i386 && sudo apt-get update && sudo apt-get install wine32:i386
 
 https://wiki.debian.org/Wine
 
+Do this if needed:
 rm -rf $HOME/.wine
 wineboot --init
 
+******************************************
+# rust
+
 https://www.rust-lang.org/tools/install
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+
+******************************************
+# dotnet
 
 https://learn.microsoft.com/en-us/dotnet/core/install/linux-debian
 
@@ -189,15 +200,7 @@ sudo apt-get update && \
 
 sudo apt-get install -y dotnet-runtime-8.0
 
-******************************************
-Greenclip:
-
-wget https://github.com/erebe/greenclip/releases/download/v4.2/greenclip -O ~/.local/bin/greenclip
-
-* OBS: now included in dotfiles repo...
-
-******************************************
-# dotnet
+Old notes:
 
 See: https://learn.microsoft.com/en-us/dotnet/core/install/linux-debian
 Do this for Debian 12:
@@ -215,6 +218,13 @@ wget https://dot.net/v1/dotnet-install.sh -O dotnet-install.sh
 chmod +x ./dotnet-install.sh
 ./dotnet-install.sh --version latest
 ./dotnet-install.sh --version latest --runtime aspnetcore
+
+******************************************
+Greenclip:
+
+wget https://github.com/erebe/greenclip/releases/download/v4.2/greenclip -O ~/.local/bin/greenclip
+
+* OBS: now included in dotfiles repo...
 
 ******************************************
 # docker
@@ -250,7 +260,70 @@ Start picom with picom --animations
 
 https://wiki.debian.org/Eclipse
 
-Android studio:
+Download eclipse installer,
+tar -zxvf eclipse-inst-jre-linux64.tar.gz
+then:
+cd eclipse-installer && ./eclipse-inst
+https://wiki.debian.org/Eclipse
+
+Install path for binary is automatically:
+/home/jonas/eclipse/java-2024-06/eclipse
+And working dir:
+/home/jonas/eclipse-workspace
+
+Change to dark mode:
+Window -> Preferences -> General -> Appearance -> Theme: Dark
+
+Install vim:
+Help -> Eclipse marketplace
+Vrapper (vim)
+
+* Note on running jar files:
+When creating a runnable jar file in eclipse you might need to use the same
+java version as eclipse uses...
+since java --version is too low... See 'which java'.
+See: /home/jonas/eclipse/java-2024-06/eclipse/eclipse.ini
+
+which looks like this:
+
+-startup
+plugins/org.eclipse.equinox.launcher_1.6.800.v20240513-1750.jar
+--launcher.library
+/home/jonas/.p2/pool/plugins/org.eclipse.equinox.launcher.gtk.linux.x86_64_1.2.1000.v20240506-2123
+-product
+org.eclipse.epp.package.java.product
+-showsplash
+/home/jonas/.p2/pool/plugins/org.eclipse.epp.package.common_4.32.0.20240606-1231
+--launcher.defaultAction
+openFile
+--launcher.appendVmargs
+-vm
+/home/jonas/.p2/pool/plugins/org.eclipse.justj.openjdk.hotspot.jre.full.linux.x86_64_22.0.1.v20240426-1149/jre/bin/java
+-vmargs
+-Dorg.eclipse.ecf.provider.filetransfer.excludeContributors=org.eclipse.ecf.provider.filetransfer.httpclientjava
+-Dosgi.requiredJavaVersion=21
+-Dosgi.instance.area.default=@user.home/eclipse-workspace
+-Dosgi.dataAreaRequiresExplicitInit=true
+-Dorg.eclipse.swt.graphics.Resource.reportNonDisposed=true
+-Declipse.e4.inject.javax.warning=false
+-Dsun.java.command=Eclipse
+-Xms256m
+-Xmx2048m
+-XX:+UseG1GC
+-XX:+UseStringDeduplication
+--add-modules=ALL-SYSTEM
+-Djava.security.manager=allow
+-Declipse.p2.max.threads=10
+-Doomph.update.url=https://download.eclipse.org/oomph/updates/milestone/latest
+-Doomph.redirection.index.redirection=index:/->https://raw.githubusercontent.com/eclipse-oomph/oomph/master/setups/
+--add-opens=java.base/java.lang=ALL-UNNAMED
+
+Then to run wowbot for example:
+
+/home/jonas/.p2/pool/plugins/org.eclipse.justj.openjdk.hotspot.jre.full.linux.x86_64_22.0.1.v20240426-1149/jre/bin/java -jar wowbot.jar 1 1 "0,80"
+
+******************************************
+# Android studio
 https://wiki.debian.org/AndroidStudio
 
 Steam:

@@ -23,6 +23,7 @@ cava
 cglm
 chafa
 chromium
+cjson
 clang
 cmake
 conky
@@ -82,6 +83,7 @@ jq
 jupyter-notebook
 lf
 lib32-libpulse
+libb64
 libcurl-openssl-1.0
 libmad
 light
@@ -92,4 +94,3 @@ luarocks
 lxappearance
 m4
 maim
-make

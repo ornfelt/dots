@@ -34,7 +34,7 @@ font:
   bold:
     family: "JetBrainsMono Nerd Font"
     style: "Bold"
-  size: 11.0
+  size: 7.0
   #hinting: "Full"
 
 # Window Padding

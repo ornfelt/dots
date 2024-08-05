@@ -77,7 +77,9 @@ ffmpegthumbnailer
 file
 findutils
 firefox-esr
+firmware-iwlwifi
 firmware-misc-nonfree
+firmware-sof-signed
 fish
 flex
 fonts-font-awesome
@@ -373,10 +375,13 @@ libxcb-util-dev
 libxcb-xfixes0-dev
 libxcb-xinerama0-dev
 libxcb1-dev
+libxcursor-dev
 libxdo-dev
 libxext-dev
 libxft-dev
+libxi-dev
 libxinerama-dev
+libxrandr-dev
 libxres-dev
 libxtables12
 libxxf86vm-dev
@@ -443,6 +448,7 @@ openssh-client
 openssl
 optipng
 os-prober
+p7zip-full
 p7zip
 packages-microsoft-prod
 pamix
@@ -505,6 +511,7 @@ systemd
 sysvinit-utils
 tar
 task-english
+task-laptop
 task-ssh-server
 tasksel-data
 tasksel
@@ -540,6 +547,7 @@ wine32
 wine64
 wine
 wireless-tools
+wpasupplicant
 xawtv
 xclip
 xdg-utils

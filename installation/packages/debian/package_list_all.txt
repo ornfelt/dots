@@ -8,6 +8,7 @@ alacritty
 alsa-topology-conf
 alsa-ucm-conf
 alsa-utils
+anacron
 ant
 ant-optional
 anthy
@@ -34,6 +35,7 @@ automake
 autopkgtest
 autopoint
 autotools-dev
+avahi-autoipd
 avahi-daemon
 avahi-utils
 awesome
@@ -53,11 +55,11 @@ binutils-common
 binutils-x86-64-linux-gnu
 bison
 blt
+bluetooth
 bluez
 bnd
 bsdextrautils
 bsdutils
-bubblewrap
 build-essential
 busybox
 bzip2
@@ -169,8 +171,10 @@ ffmpegthumbnailer
 file
 findutils
 firefox-esr
+firmware-iwlwifi
 firmware-linux-free
 firmware-misc-nonfree
+firmware-sof-signed
 fish
 fish-common
 flex
@@ -278,7 +282,6 @@ grub-efi-amd64-signed
 grub2-common
 gsettings-desktop-schemas
 gsfonts
-gstreamer1.0-gl
 gstreamer1.0-plugins-base
 gstreamer1.0-plugins-base
 gstreamer1.0-plugins-good
@@ -994,7 +997,6 @@ libgpm2
 libgprofng0
 libgradle-core-java
 libgradle-plugins-java
-libgraphene-1.0-0
 libgraphite2-3
 libgraphite2-3
 libgraphite2-dev
@@ -1007,7 +1009,6 @@ libgsm1
 libgsm1
 libgssapi-krb5-2
 libgssapi-krb5-2
-libgstreamer-gl1.0-0
 libgstreamer-plugins-base1.0-0
 libgstreamer-plugins-base1.0-0
 libgstreamer1.0-0
@@ -1275,7 +1276,6 @@ libmagickcore-6.q16-6-extra
 libmagickwand-6.q16-6
 libmail-sendmail-perl
 libmailtools-perl
-libmanette-0.2-0
 libmariadb-dev
 libmariadb-dev-compat
 libmariadb3
@@ -1892,6 +1892,7 @@ libsort-versions-perl
 libsoup-3.0-0
 libsoup-3.0-common
 libsoup2.4-1
+libsoup2.4-1
 libsoup2.4-common
 libsource-highlight-common
 libsource-highlight4v5
@@ -2125,9 +2126,6 @@ libwine
 libwine
 libwmflite-0.2-7
 libwoff1
-libwpe-1.0-1
-libwpebackend-fdo-1.0-1
-libwpewebkit-1.1-0
 libwrap0
 libwww-mechanize-perl
 libwww-perl
@@ -2351,7 +2349,7 @@ light
 lintian
 linux-base
 linux-image-6.1.0-18-amd64
-linux-image-6.1.0-21-amd64
+linux-image-6.1.0-23-amd64
 linux-image-amd64
 linux-libc-dev
 lld-14
@@ -2852,6 +2850,7 @@ openssl
 optipng
 os-prober
 p7zip
+p7zip-full
 packagekit
 packagekit-tools
 packages-microsoft-prod
@@ -3140,6 +3139,7 @@ sysvinit-utils
 t1utils
 tar
 task-english
+task-laptop
 task-ssh-server
 tasksel
 tasksel-data
@@ -3258,7 +3258,6 @@ xclip
 xcvt
 xdelta
 xdelta3
-xdg-dbus-proxy
 xdg-user-dirs
 xdg-utils
 xdotool
@@ -3301,6 +3300,7 @@ xserver-xorg-video-radeon
 xserver-xorg-video-vesa
 xserver-xorg-video-vmware
 xss-lock
+xterm
 xtrans-dev
 xxd
 xz-utils

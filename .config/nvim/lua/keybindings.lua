@@ -65,21 +65,35 @@ map('n', '<leader>3', '"3p')
 map('n', '<leader>4', '"4p')
 map('n', '<leader>5', '"5p')
 
+-- NERDTree
 -- map('n', '<M-w>', ':NERDTreeToggle ~/<CR>')
 -- map('n', '<M-e>', ':NERDTreeToggle %:p<CR>')
 map('n', '<M-w>', ':silent! NERDTreeToggle ~/<CR>')
 map('n', '<M-e>', ':silent! NERDTreeToggle %:p<CR>')
---map('n', '<M-d>', ':FZF<CR>')
-map('n', '<M-a>', ':FZF ./<CR>')
-map('n', '<M-A>', ':FZF ~/<CR>')
+
+-- FZF
+----map('n', '<M-a>', ':FZF ./<CR>')
+--map('n', '<M-W>', ':FZF ./<CR>')
+--map('n', '<M-A>', ':FZF ~/<CR>')
 map('n', '<M-S>', ':FZF ' .. (vim.fn.has('unix') == 1 and '/' or 'C:/') .. '<CR>')
 
--- Function to start FZF from a given environment variable
+-- fzf-lua
+--local fzf_lua = require('fzf-lua')
+--local opts = { noremap = true, silent = true }
+--vim.api.nvim_set_keymap('n', '<M-a>', ":lua require('fzf-lua').git_files()<CR>", opts)
+--vim.api.nvim_set_keymap('n', '<M-A>', ":lua require('fzf-lua').files()<CR>", opts)
+----vim.api.nvim_set_keymap('n', 'M-W', ":lua require('fzf-lua').files({ cwd = os.getenv('HOME') })<CR>", opts)
+--map('n', '<M-W>', ":lua require('fzf-lua').files({ cwd = '~/' })<CR>")
+--local root_dir = vim.fn.has('unix') == 1 and '/' or 'C:/'
+--map('n', '<M-S>', ":lua require('fzf-lua').files({ cwd = '" .. root_dir .. "' })<CR>")
+
+-- Start FZF from a given environment variable
 local function FZFStart(env_var)
     local default_path = (env_var == "my_notes_path") and "~/Documents/my_notes" or "~"
     local path = os.getenv(env_var) or default_path
     path = path:gsub(" ", '\\ ')
     vim.cmd("FZF " .. path)
+    --fzf_lua.files({ cwd = path })
 end
 
 vim.api.nvim_create_user_command('RunFZFCodeRootDir', function() FZFStart("code_root_dir") end, {})
@@ -110,6 +124,7 @@ map('n', '<M-k>', '<Plug>WinMoveUp')
 map('n', '<M-l>', '<Plug>WinMoveRight')
 map('n', '<C-d>', '<C-d>zz')
 map('n', '<C-u>', '<C-u>zz')
+map('n', '<leader>l', ':Tabmerge right<CR>')
 
 -- Moving text
 map('x', 'J', ":move '>+1<CR>gv=gv")
@@ -181,6 +196,15 @@ vim.keymap.set("n", "<leader>r", [[:%s/\<<C-r><C-w>\>/<C-r><C-w>/gI<Left><Left><
 vim.keymap.set("n", "<leader>t", "<cmd>silent !tmux neww tmux-sessionizer<CR>") -- Start tmux-sessionizer
 vim.keymap.set('n', '<leader>df', '<cmd>lua vim.diagnostic.open_float()<CR>', { noremap = true, silent = true })
 vim.keymap.set('n', '<leader>db', '<cmd>lua vim.diagnostic.setqflist()<CR>', { noremap = true, silent = true })
+
+function ReplaceQuotes()
+  vim.cmd([[
+    %s/[‘’]/'/g
+    %s/[“”]/"/g
+  ]])
+end
+
+vim.api.nvim_set_keymap('n', '<leader>wr', ':lua ReplaceQuotes()<CR>', { noremap = true, silent = true })
 
 local function PythonCommand()
     local code_root_dir = os.getenv("code_root_dir") or "~/"
@@ -438,4 +462,26 @@ end
 
 vim.api.nvim_set_keymap('n', '<M-x>', '<Cmd>lua compile_run()<CR>', { noremap = true, silent = true })
 vim.api.nvim_set_keymap('n', '<M-S-X>', '<Cmd>!chmod +x %<CR>', { noremap = true, silent = true })
+
+-- " Execute line under the cursor
+-- nnoremap <leader>w yy:@"<CR>
+--vim.api.nvim_set_keymap('n', '<leader>w', 'yy:@"<CR>', { noremap = true, silent = true })
+--
+-- Function to execute command under cursor or highlighted text
+function execute_command()
+  local mode = vim.fn.mode()
+  local command
+
+  if mode == 'v' or mode == 'V' then
+    vim.cmd('normal! gv"xy')
+    command = vim.fn.getreg('x')
+  else
+    command = vim.fn.getline('.')
+  end
+
+  vim.cmd(command)
+end
+
+vim.api.nvim_set_keymap('n', '<leader>w', ':lua execute_command()<CR>', { noremap = true, silent = true })
+vim.api.nvim_set_keymap('v', '<leader>w', ':lua execute_command()<CR>', { noremap = true, silent = true })
 

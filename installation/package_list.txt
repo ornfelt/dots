@@ -23,6 +23,7 @@ cava
 cglm
 chafa
 chromium
+cjson
 clang
 cmake
 conky
@@ -82,6 +83,7 @@ jq
 jupyter-notebook
 lf
 lib32-libpulse
+libb64
 libcurl-openssl-1.0
 libmad
 light
@@ -115,6 +117,7 @@ obs-studio
 omnisharp-roslyn
 onetbb
 openal
+opencv
 openscenegraph
 optipng
 os-prober
@@ -142,8 +145,6 @@ rofi
 rofi-greenclip
 rtl8852be-dkms-git
 rtw89-dkms-git
-rust-analyzer
-rustup
 rxvt-unicode
 scons
 scrot
@@ -200,6 +201,7 @@ ttf-icomoon-feather
 ttf-iosevka-nerd
 ttf-jetbrains-mono-nerd
 ttf-joypixels
+ueberzug
 ufw
 unshield
 unzip
@@ -278,6 +280,7 @@ yaml-cpp
 yarn
 yay-bin
 yay-bin-debug
+yazi
 yq
 zathura
 zathura-pdf-poppler

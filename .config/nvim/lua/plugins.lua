@@ -22,7 +22,15 @@ return require('packer').startup(function()
   -- Productivity --
   use 'vimwiki/vimwiki'
   use 'tpope/vim-surround'
+
   use 'junegunn/fzf'
+  --use { "ibhagwan/fzf-lua"
+  -- optional for icon support
+  --requires = { "nvim-tree/nvim-web-devicons" }
+  -- or if using mini.icons/mini.nvim
+  -- requires = { "echasnovski/mini.icons" }
+  --}
+
   use 'tpope/vim-commentary'
   -- use 'junegunn/goyo.vim'
   -- use 'junegunn/limelight.vim'
@@ -51,6 +59,16 @@ return require('packer').startup(function()
 
   -- use("simrat39/rust-tools.nvim")
 
+  use {
+      'nvim-treesitter/nvim-treesitter',
+      build = ':TSUpdate'
+  }
+
+  use {
+    'nvim-telescope/telescope.nvim',
+    requires = { {'nvim-lua/plenary.nvim'} }
+  }
+
   use({
       "ornfelt/ChatGPT.nvim",
       --config = function()
@@ -58,9 +76,9 @@ return require('packer').startup(function()
       --end,
       requires = {
           "MunifTanjim/nui.nvim",
-          "nvim-lua/plenary.nvim",
+          --"nvim-lua/plenary.nvim",
           "folke/trouble.nvim",
-          "nvim-telescope/telescope.nvim"
+          --"nvim-telescope/telescope.nvim"
       }
   })
 
@@ -74,4 +92,7 @@ return require('packer').startup(function()
   --        shortcuts might be setup here (see Usage > Shortcuts in Readme)
   --    end,
   --})
+
+  use 'nanotee/sqls.nvim'
+
 end)

@@ -5,3 +5,5 @@
 
 # */2 * * * * sh /home/jonas/.local/bin/my_scripts/screenshot.sh
 # */3 * * * * python3 /home/jonas/Code2/Python/db_mail.py >> /home/jonas/pymail.log 2>&1
+# DO: sudo systemctl enable cron
+
