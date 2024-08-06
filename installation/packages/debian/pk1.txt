@@ -51,6 +51,8 @@ debhelper
 debian-archive-keyring
 debian-faq
 debianutils
+default-jdk
+default-jre
 default-libmysqlclient-dev
 devscripts
 dhcpcd
@@ -189,4 +191,3 @@ libcryptsetup12
 libcsfml-dev
 libcurl4-openssl-dev
 libdb5.3
-libdbus-1-dev

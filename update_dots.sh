@@ -113,7 +113,26 @@ rm --f .config/dwm/*.o
 rm --f .config/dwmblocks/*.o
 rm --f .config/st/*.o
 
-printf "Copied latest files...\n"
+# Update alacritty, preserving custom font size (if any)
+DEFAULT_FONT_SIZE="7.0"
+
+update_font_size() {
+  local file=$1
+  local new_size=$2
+  [[ $file == *.toml ]] && sed -i "s/size = .*/size = $new_size/" "$file" || sed -i "s/size: .*/size: $new_size/" "$file"
+}
+
+if ! grep -q "size: $DEFAULT_FONT_SIZE" "$HOME/.config/alacritty/alacritty.yml"; then
+  echo "Reverting font size in alacritty.yml to default size $DEFAULT_FONT_SIZE."
+  update_font_size ".config/alacritty/alacritty.yml" "$DEFAULT_FONT_SIZE"
+fi
+
+if ! grep -q "size = $DEFAULT_FONT_SIZE" "$HOME/.config/alacritty/alacritty.toml"; then
+  echo "Reverting font size in alacritty.toml to default size $DEFAULT_FONT_SIZE."
+  update_font_size ".config/alacritty/alacritty.toml" "$DEFAULT_FONT_SIZE"
+fi
+
+printf "\nCopied latest files...\n"
 
 #git add -A
 #git commit -m $1

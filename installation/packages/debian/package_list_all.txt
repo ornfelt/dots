@@ -114,6 +114,9 @@ debian-faq
 debian-keyring
 debianutils
 debootstrap
+default-jdk
+default-jdk-headless
+default-jre
 default-jre-headless
 default-libmysqlclient-dev
 desktop-file-utils
@@ -427,6 +430,8 @@ libatasmart4
 libatinject-jsr330-api-java
 libatk-bridge2.0-0
 libatk-bridge2.0-dev
+libatk-wrapper-java
+libatk-wrapper-java-jni
 libatk1.0-0
 libatk1.0-dev
 libatk1.0-doc
@@ -2839,6 +2844,9 @@ obs-plugins
 obs-studio
 ocl-icd-libopencl1
 ocl-icd-libopencl1
+openjdk-17-jdk
+openjdk-17-jdk-headless
+openjdk-17-jre
 openjdk-17-jre-headless
 openmpi-bin
 openmpi-common

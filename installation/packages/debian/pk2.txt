@@ -1,3 +1,4 @@
+libdbus-1-dev
 libdebconfclient0
 libdevmapper1.02.1
 libedit2

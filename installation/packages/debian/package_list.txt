@@ -51,6 +51,8 @@ debhelper
 debian-archive-keyring
 debian-faq
 debianutils
+default-jdk
+default-jre
 default-libmysqlclient-dev
 devscripts
 dhcpcd
