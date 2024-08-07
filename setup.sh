@@ -1173,6 +1173,21 @@ copy_dir_to_target() {
     fi
 }
 
+check_space() {
+  local dir=$1
+  local min_space_gb=40
+  local available_space_kb=$(df "$dir" --output=avail | tail -n 1)
+  local available_space_gb=$((available_space_kb / 1024 / 1024))
+
+  if (( available_space_gb > min_space_gb )); then
+    echo "Disk at $dir has more than $min_space_gb GB available. Space left: $available_space_gb GB"
+    return 0
+  else
+    echo "Disk at $dir does not have more than $min_space_gb GB available. Space left: $available_space_gb GB"
+    return 1
+  fi
+}
+
 copy_game_data() {
     printf "\n***** Copying game data! *****\n\n"
     fix_ownerships
@@ -1212,6 +1227,19 @@ copy_game_data() {
         DOWNLOADS_DIR="/mnt/new"
     else
         DOWNLOADS_DIR="$HOME/Downloads"
+    fi
+
+    # Check space 
+    if [ "$DOWNLOADS_DIR" = "/mnt/new" ]; then
+        if ! check_space "$DOWNLOADS_DIR"; then
+            echo "Not enough space on disk... Skipping."
+            return 1
+        fi
+    else
+        if ! check_space "/"; then
+            echo "Not enough space on disk... Skipping."
+            return 1
+        fi
     fi
 
     echo -e "\n***Copying wow, wow_classic, wow_retail and cata to $DOWNLOADS_DIR***"
@@ -1474,11 +1502,10 @@ copy_game_data() {
     copy_dir_to_target "$MEDIA_PATH/2024/jar_files" "$DOWNLOADS_DIR/jar_files"
 
     # TODO:
-    # Copy ollama models?
+    # Copy llama models?
     # baby-yoda and other joja mods...
     # star_wars_ja_mods
     # star_wars_jo_mods
-    # Maybe check storage based on DOWNLOADS_DIR and only continue if over x gb?
 }
 
 if $justDoIt; then
