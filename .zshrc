@@ -148,6 +148,7 @@ alias .pics='cd $HOME/Pictures; ls'
 alias .docs='cd $HOME/Documents; ls'
 alias .cdc='cd $HOME/Code2; ls'
 alias .cdn='cd $HOME/Documents/my_notes; ls'
+alias .cdp='cd $HOME/Documents/windows_dots; ls'
 alias .down='cd $HOME/Downloads; ls'
 alias .dots='cd $HOME/Downloads/dotfiles; ls'
 alias .ioq3='$HOME/Code2/C/ioq3/build/release-linux-x86_64/ioquake3.x86_64 +set sv_pure 0 +set vm_game 0 +set vm_cgame 0 +set vm_ui 0'
@@ -263,6 +264,8 @@ export PATH="${PATH}:${HOME}/Code/f#/FsAutoComplete/src/FsAutoComplete/bin/Relea
 export PATH="${PATH}:$HOME/Downloads/lsp/jdtls/bin"
 export PATH="${PATH}:$HOME/Downloads/lsp/lua/bin"
 export OMNISHARP_PATH="/usr/lib/omnisharp-roslyn/"
+export my_notes_path="$HOME/Documents/my_notes"
+export code_root_dir="$HOME"
 #export PATH="${PATH}:$HOME/.fzf/bin"
 
 export LANG=en_US.UTF-8
@@ -275,5 +278,7 @@ LS_COLORS+=':ow=01;33'
 $HOME/.local/bin/my_scripts/hello.sh
 
 source $HOME/.bash_profile
-#source $HOME/.cargo/env
+#if [ -f "$HOME/.cargo/env" ]; then
+#    source "$HOME/.cargo/env"
+#fi
 

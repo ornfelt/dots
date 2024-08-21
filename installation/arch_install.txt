@@ -94,6 +94,11 @@ passwd jonas
 usermod -aG wheel,audio,video,optical,storage jonas
 pacman -S sudo
 EDITOR=nvim visudo
+At the end of the /etc/sudoers file add this line: 
+jonas     ALL=(ALL) NOPASSWD:ALL
+* Important - add this as last line (but probably above @includedir ...)
+
+Old:
 Uncomment %wheel ... (Same thing without a password)
 # Add the below line which makes it so that you don't have to reinsert password in each terminal a user uses sudo in
 Defaults !tty_tickets

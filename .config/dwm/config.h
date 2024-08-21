@@ -5,8 +5,10 @@
 /* #define TERMCLASS "St" */
 /* #define TERMINAL "urxvt" */
 /* #define TERMCLASS "Urxvt" */
-#define TERMINAL "alacritty"
-#define TERMCLASS "alacritty"
+/* #define TERMINAL "alacritty" */
+/* #define TERMCLASS "alacritty" */
+#define TERMINAL "wezterm"
+#define TERMCLASS "wezterm"
 
 /* appearance */
 static unsigned int borderpx    = 3;        /* border pixel of windows */

@@ -203,6 +203,7 @@ ttf-jetbrains-mono-nerd
 ttf-joypixels
 ueberzug
 ufw
+unrar
 unshield
 unzip
 urxvt-resize-font-git

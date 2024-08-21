@@ -65,41 +65,86 @@ map('n', '<leader>3', '"3p')
 map('n', '<leader>4', '"4p')
 map('n', '<leader>5', '"5p')
 
--- NERDTree
--- map('n', '<M-w>', ':NERDTreeToggle ~/<CR>')
--- map('n', '<M-e>', ':NERDTreeToggle %:p<CR>')
-map('n', '<M-w>', ':silent! NERDTreeToggle ~/<CR>')
-map('n', '<M-e>', ':silent! NERDTreeToggle %:p<CR>')
-
--- FZF
-----map('n', '<M-a>', ':FZF ./<CR>')
---map('n', '<M-W>', ':FZF ./<CR>')
---map('n', '<M-A>', ':FZF ~/<CR>')
-map('n', '<M-S>', ':FZF ' .. (vim.fn.has('unix') == 1 and '/' or 'C:/') .. '<CR>')
-
--- fzf-lua
---local fzf_lua = require('fzf-lua')
---local opts = { noremap = true, silent = true }
---vim.api.nvim_set_keymap('n', '<M-a>', ":lua require('fzf-lua').git_files()<CR>", opts)
---vim.api.nvim_set_keymap('n', '<M-A>', ":lua require('fzf-lua').files()<CR>", opts)
-----vim.api.nvim_set_keymap('n', 'M-W', ":lua require('fzf-lua').files({ cwd = os.getenv('HOME') })<CR>", opts)
---map('n', '<M-W>', ":lua require('fzf-lua').files({ cwd = '~/' })<CR>")
---local root_dir = vim.fn.has('unix') == 1 and '/' or 'C:/'
---map('n', '<M-S>', ":lua require('fzf-lua').files({ cwd = '" .. root_dir .. "' })<CR>")
-
--- Start FZF from a given environment variable
-local function FZFStart(env_var)
-    local default_path = (env_var == "my_notes_path") and "~/Documents/my_notes" or "~"
-    local path = os.getenv(env_var) or default_path
-    path = path:gsub(" ", '\\ ')
-    vim.cmd("FZF " .. path)
-    --fzf_lua.files({ cwd = path })
+local function is_plugin_installed(plugin_name)
+    return vim.fn.exists(':' .. plugin_name) ~= 0
 end
 
-vim.api.nvim_create_user_command('RunFZFCodeRootDir', function() FZFStart("code_root_dir") end, {})
+-- NERDTree
+-- map('n', '<M-w>', ':NERDTreeToggle ~/<CR>')
+--map('n', '<M-e>', ':silent! NERDTreeToggle %:p<CR>')
+map('n', '<M-w>', ':silent! NERDTreeToggle ~/<CR>')
+
+function toggle_filetree()
+    if is_plugin_installed('NERDTreeToggle') then
+        -- Toggle NERDTree
+        local filepath = (vim.fn.expand('%:p') == '' and '~/' or vim.fn.expand('%:p'))
+        vim.cmd('silent! NERDTreeToggle ' .. filepath)
+    elseif pcall(require, 'mini.files') then
+        -- Toggle MiniFiles
+        require('mini.files').open()
+    else
+        print("No file tree plugin installed (NERDTree or MiniFiles).")
+    end
+end
+
+map('n', '<M-e>', ':lua toggle_filetree()<CR>')
+
+-- require("oil").setup()
+-- map('n', '<M-e>', ':Oil<CR>')
+-- require('mini.files').setup()
+-- map('n', '<M-e>', ':lua MiniFiles.open()<CR>')
+
+-- NERDCommenter
+map('n', '<C-k>', ':call nerdcommenter#Comment(0, "toggle")<CR>')
+map('v', '<C-k>', '<Plug>NERDCommenterToggle')
+
+-- fzf
+local fzf_vim_installed = pcall(function() return vim.fn['fzf#run'] end)
+if fzf_vim_installed then
+    ----map('n', '<M-a>', ':FZF ./<CR>')
+    --map('n', '<M-W>', ':FZF ./<CR>')
+    --map('n', '<M-A>', ':FZF ~/<CR>')
+    map('n', '<M-S>', ':FZF ' .. (vim.fn.has('unix') == 1 and '/' or 'C:/') .. '<CR>')
+end
+
+-- fzf-lua
+local fzf_lua_installed = pcall(require, 'fzf-lua')
+if fzf_lua_installed then
+    --local opts = { noremap = true, silent = true }
+    --vim.api.nvim_set_keymap('n', '<M-a>', ":lua require('fzf-lua').git_files()<CR>", opts)
+    --vim.api.nvim_set_keymap('n', '<M-A>', ":lua require('fzf-lua').files()<CR>", opts)
+    ----vim.api.nvim_set_keymap('n', 'M-W', ":lua require('fzf-lua').files({ cwd = os.getenv('HOME') })<CR>", opts)
+    --map('n', '<M-W>', ":lua require('fzf-lua').files({ cwd = '~/' })<CR>")
+    local root_dir = vim.fn.has('unix') == 1 and '/' or 'C:/'
+    map('n', '<M-S>', ":lua require('fzf-lua').files({ cwd = '" .. root_dir .. "' })<CR>")
+end
+
+-- Start fzf/telescope from a given environment variable
+function StartFinder(env_var)
+    local default_path = (env_var == "my_notes_path") and "~/Documents/my_notes" or "~"
+    local path = os.getenv(env_var) or default_path
+
+    -- Search using fzf.vim
+    --path = path:gsub(" ", '\\ ')
+    --vim.cmd("FZF " .. path)
+
+    -- Search using fzf.lua
+    --local fzf_lua = require('fzf-lua')
+    --fzf_lua.files({ cwd = path })
+
+    -- Search using telescope
+    local telescope_builtin = require('telescope.builtin')
+    telescope_builtin.find_files({
+        cwd = path,
+        hidden = env_var == "my_notes_path",
+        prompt_title = "Search in " .. path,
+    })
+end
+
+vim.api.nvim_create_user_command('RunFZFCodeRootDir', function() StartFinder("code_root_dir") end, {})
 vim.api.nvim_set_keymap('n', '<leader>a', '<cmd>RunFZFCodeRootDir<CR>', { noremap = true, silent = true })
 
-vim.api.nvim_create_user_command('RunFZFMyNotesPath', function() FZFStart("my_notes_path") end, {})
+vim.api.nvim_create_user_command('RunFZFMyNotesPath', function() StartFinder("my_notes_path") end, {})
 vim.api.nvim_set_keymap('n', '<leader>f', '<cmd>RunFZFMyNotesPath<CR>', { noremap = true, silent = true })
 
 -- Vimgrep and QuickFix Lists
@@ -125,6 +170,12 @@ map('n', '<M-l>', '<Plug>WinMoveRight')
 map('n', '<C-d>', '<C-d>zz')
 map('n', '<C-u>', '<C-u>zz')
 map('n', '<leader>l', ':Tabmerge right<CR>')
+-- Navigate between splits from terminal
+map('t', '<M-h>', [[<C-\><C-n><C-w>h]])
+map('t', '<M-j>', [[<C-\><C-n><C-w>j]])
+map('t', '<M-k>', [[<C-\><C-n><C-w>k]])
+map('t', '<M-l>', [[<C-\><C-n><C-w>l]])
+map('t', '<M-q>', [[<C-\><C-n>:q<CR>]])
 
 -- Moving text
 map('x', 'J', ":move '>+1<CR>gv=gv")
@@ -142,12 +193,13 @@ map('v', '>', '>gv')
 -- Tab keybinds
 map('n', '<M-t>', ':tabe<CR>')
 map('n', '<M-s>', ':split<CR>')
-map('n', '<M-Enter>', ':vsp<CR>')
-if vim.fn.has('win32') == 1 then
-    map('n', '<M-Enter>', ':10 sp :let $VIM_DIR=expand("%:p:h")<CR>:terminal<CR>cd $VIM_DIR<CR>')
-end
+map('n', '<M-Enter>', ':vsp | terminal ' .. (vim.loop.os_uname().sysname == "Windows_NT" and "powershell" or "") .. '<CR>')
+map('n', '<M-<>', ':split | terminal ' .. (vim.loop.os_uname().sysname == "Windows_NT" and "powershell" or "") .. '<CR>')
+--if vim.fn.has('win32') == 1 and vim.fn.exists('g:GuiLoaded') == 1 then
+--if vim.fn.has('win32') == 1 and vim.g.neovide then
+    --map('n', '<M-Enter>', ':10 sp :let $VIM_DIR=expand("%:p:h")<CR>:terminal<CR>cd $VIM_DIR<CR>')
+--end
 
-map('n', '<M-<>', ':vsp<CR>')
 -- Go to tab by number
 map('n', '<M-1>', '1gt')
 map('n', '<M-2>', '2gt')
@@ -163,9 +215,7 @@ map('n', '<M-0>', ':tablast<CR>')
 -- Session management
 map('n', '<leader>o', '<C-^>')
 map('n', '<leader>m', ':mks! ~/.vim/sessions/s.vim<CR>')
-map('n', '<leader>,', ':mks! ~/.vim/sessions/s2.vim<CR>')
 map('n', '<leader>.', ':silent so ~/.vim/sessions/s.vim<CR>')
-map('n', '<leader>-', ':so ~/.vim/sessions/s2.vim<CR>')
 
 -- Open new tabs
 map('n', '<M-m>', ':tabe ~/.config/nvim/init.lua<CR>')
@@ -299,10 +349,17 @@ local function llm()
 
     local curl_command = 'curl -k -s -X POST -H "Content-Type: application/json" -d @- ' .. url
     local response = vim.fn.system(curl_command, vim.fn.json_encode(json_payload))
+    --local content = vim.fn.json_decode(response).content
+    --local decoded_response = vim.fn.json_decode(response)
+    local success, decoded_response = pcall(vim.fn.json_decode, response)
+    if not success then
+        decoded_response = nil
+    end
 
-    local content = vim.fn.json_decode(response).content
+    local default_msg = "llama is sleeping"
+    local content = (decoded_response and decoded_response.content) or default_msg
+
     local split_newlines = vim.split(content, '\n', true)
-
     local line_num = vim.api.nvim_win_get_cursor(0)[1]
     local lines = vim.api.nvim_buf_get_lines(0, line_num - 1, line_num, false)
     lines[1] = lines[1] .. split_newlines[1]
@@ -311,17 +368,17 @@ local function llm()
 end
 
 vim.api.nvim_create_user_command('Llm', llm, {})
-vim.api.nvim_set_keymap('n', '<C-B>', '<Cmd>:Llm<CR>', {noremap = true, silent = true})
-vim.api.nvim_set_keymap('i', '<C-B>', '<Cmd>:Llm<CR>', {noremap = true, silent = true})
+-- TODO: visual bind?
+vim.api.nvim_set_keymap('n', '<M-->', '<Cmd>:Llm<CR>', {noremap = true, silent = true})
+vim.api.nvim_set_keymap('i', '<M-->', '<Cmd>:Llm<CR>', {noremap = true, silent = true})
 
 -- Helper function for setting key mappings for filetypes
-local function create_hellow_mapping(ft, template_file)
+local function create_hellow_mapping(ft, fe)
   local code_root_dir = os.getenv("code_root_dir") or "~/"
   code_root_dir = code_root_dir:gsub(" ", '" "')
-  if not template_file then
-    template_file = code_root_dir .. "Code2/General/utils/hellow/hellow." .. ft
-  else
-    template_file = code_root_dir .. "Code2/General/utils/hellow/hellow." .. template_file
+  local template_file = code_root_dir .. "Code2/General/utils/hellow/hellow." .. ft
+  if fe then
+      template_file = code_root_dir .. "Code2/General/utils/hellow/hellow." .. fe
   end
 
   vim.api.nvim_create_autocmd("FileType", {
@@ -464,8 +521,8 @@ vim.api.nvim_set_keymap('n', '<M-x>', '<Cmd>lua compile_run()<CR>', { noremap = 
 vim.api.nvim_set_keymap('n', '<M-S-X>', '<Cmd>!chmod +x %<CR>', { noremap = true, silent = true })
 
 -- " Execute line under the cursor
--- nnoremap <leader>w yy:@"<CR>
---vim.api.nvim_set_keymap('n', '<leader>w', 'yy:@"<CR>', { noremap = true, silent = true })
+-- nnoremap <leader>, yy:@"<CR>
+--vim.api.nvim_set_keymap('n', '<leader>,', 'yy:@"<CR>', { noremap = true, silent = true })
 --
 -- Function to execute command under cursor or highlighted text
 function execute_command()
@@ -479,9 +536,143 @@ function execute_command()
     command = vim.fn.getline('.')
   end
 
+  -- Copy to clipboard
+  --vim.fn.setreg('+', command)
+  --print("Copied to clipboard: " .. command)
+  -- Execute it
   vim.cmd(command)
 end
 
-vim.api.nvim_set_keymap('n', '<leader>w', ':lua execute_command()<CR>', { noremap = true, silent = true })
-vim.api.nvim_set_keymap('v', '<leader>w', ':lua execute_command()<CR>', { noremap = true, silent = true })
+vim.api.nvim_set_keymap('n', '<leader>,', ':lua execute_command()<CR>', { noremap = true, silent = true })
+vim.api.nvim_set_keymap('v', '<leader>,', ':lua execute_command()<CR>', { noremap = true, silent = true })
+
+--local actions_preview = require("actions-preview")
+-- pcall for checking requirement safely
+local actions_preview = pcall(require, "actions-preview") and require("actions-preview")
+if actions_preview then
+  vim.keymap.set({ "v", "n" }, "<leader>ca", require("actions-preview").code_actions)
+end
+
+local function replace_placeholders(line)
+  --  line = line:gsub("{code_root_dir}", vim.fn.getenv("code_root_dir") or "")
+  -- Use gsub to find and replace all occurrences of {ENV_VAR_NAME}
+  -- with corresponding environment variable value
+  line = line:gsub("{(.-)}", function(env_var)
+    return vim.fn.getenv(env_var) or ""
+  end)
+  return line
+end
+
+local function read_lines_from_file(file)
+  local lines = {}
+  for line in io.lines(file) do
+    line = replace_placeholders(line)
+    table.insert(lines, line)
+  end
+  return lines
+end
+
+function open_files_from_list()
+  local my_notes_path = vim.fn.getenv("my_notes_path")
+  local file_path = my_notes_path .. "/files.txt"
+  local files = read_lines_from_file(file_path)
+
+  ---- Use fzf file picker to display file paths (edit/tabedit)
+  --vim.fn['fzf#run']({
+  --  source = files,
+  --  sink = function(selected)
+  --    vim.cmd('edit ' .. selected)
+  --  end,
+  --  options = '--multi --prompt "Select a file to open> " --expect=ctrl-t',
+  --  sinklist = function(selected)
+  --    local key = selected[1]
+  --    local file = selected[2]
+  --    if key == "ctrl-t" then
+  --      vim.cmd('tabedit ' .. file)
+  --    else
+  --      vim.cmd('edit ' .. file)
+  --    end
+  --  end
+  --})
+
+  ---- Use fzf-lua file picker to display file paths
+  --require('fzf-lua').fzf_exec(files, {
+  --  prompt = 'Select a file: ',
+  --  actions = {
+  --    ['default'] = function(selected)
+  --      vim.cmd('edit ' .. selected[1])
+  --    end,
+  --    ['ctrl-t'] = function(selected)
+  --      vim.cmd('tabedit ' .. selected[1])
+  --    end,
+  --  }
+  --})
+
+  -- Use Telescope file picker to display file paths
+  require('telescope.pickers').new({}, {
+    prompt_title = "Select a file to open",
+    finder = require('telescope.finders').new_table({
+      results = files,
+    }),
+    sorter = require('telescope.config').values.generic_sorter({}),
+    attach_mappings = function(_, map)
+      local actions = require('telescope.actions')
+      local action_state = require('telescope.actions.state')
+
+      map('i', '<CR>', function(prompt_bufnr)
+        local selection = action_state.get_selected_entry()
+        actions.close(prompt_bufnr)
+        vim.cmd('edit ' .. selection.value)
+      end)
+
+      map('i', '<C-t>', function(prompt_bufnr)
+        local selection = action_state.get_selected_entry()
+        actions.close(prompt_bufnr)
+        vim.cmd('tabedit ' .. selection.value)
+      end)
+
+      map('n', '<CR>', function(prompt_bufnr)
+        local selection = action_state.get_selected_entry()
+        actions.close(prompt_bufnr)
+        vim.cmd('edit ' .. selection.value)
+      end)
+
+      map('n', '<C-t>', function(prompt_bufnr)
+        local selection = action_state.get_selected_entry()
+        actions.close(prompt_bufnr)
+        vim.cmd('tabedit ' .. selection.value)
+      end)
+
+      return true
+    end,
+  }):find()
+end
+
+vim.api.nvim_set_keymap('n', '<leader>w', ':lua open_files_from_list()<CR>', { noremap = true, silent = true })
+
+local function get_current_file_path()
+  local file_path = vim.api.nvim_buf_get_name(0) -- Name of current buffer
+  if file_path == "" then
+    return ""
+  else
+    return vim.fn.fnamemodify(file_path, ":p") -- Convert to full path
+  end
+  --return vim.fn.expand("%:p")
+end
+
+function print_current_file_path()
+  local path = get_current_file_path()
+  if path == "" then
+    print("No file in current buffer")
+  else
+    vim.fn.setreg('+', path)
+    print("Copied to clipboard: " .. path)
+  end
+end
+
+vim.api.nvim_set_keymap('n', '<leader>-', ':lua print_current_file_path()<CR>', { noremap = true, silent = true })
+
+vim.keymap.set('n', '<leader>gl', function()
+    require('gitgraph').draw({}, { all = true, max_count = 5000 })
+end, { desc = "GitGraph - Draw" })
 

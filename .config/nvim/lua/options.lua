@@ -145,9 +145,14 @@ vim.g['jedi#popup_on_dot'] = 1
 -- vim.g['syntastic_check_on_open'] = 1
 -- vim.g['syntastic_check_on_wq'] = 0
 
--- NERDTree Plugin Settings
+-- NERDTree
 vim.g['NERDTreeQuitOnOpen'] = 1
 vim.g['NERDTreeShowHidden'] = 1
+-- vim.g['NERDTreeFileLines'] = 1
+
+-- NERDCommenter
+vim.g.NERDCreateDefaultMappings = 0
+vim.g.NERDSpaceDelims = 1
 
 -- Vimwiki Plugin Settings
 vim.g['vimwiki_key_mappings'] = { table_mappings = 0 }

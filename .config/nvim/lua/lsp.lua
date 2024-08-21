@@ -70,15 +70,28 @@ local lua_ls_config = {
 setup_lsp_if_available('pyright', lsp_attach_config)
 setup_lsp_if_available('clangd', lsp_attach_config)
 setup_lsp_if_available('gopls', lsp_attach_config)
-setup_lsp_if_available('phpactor', lsp_attach_config)
 setup_lsp_if_available('tsserver', lsp_attach_config)
+setup_lsp_if_available('fsautocomplete', lsp_attach_config)
+setup_lsp_if_available('jdtls', lsp_attach_config)
 -- lua_ls isn't the executable, lua-language-server is
 setup_lsp_if_available('lua_ls', lua_ls_config, 'lua-language-server')
 -- rust_analyzer isn't the executable, rust-analyzer is
 setup_lsp_if_available('rust_analyzer', lsp_attach_config, 'rust-analyzer')
-setup_lsp_if_available('fsautocomplete', lsp_attach_config)
-setup_lsp_if_available('jdtls', lsp_attach_config)
+-- bashls isn't the executable, bash-language-server is
 setup_lsp_if_available('bashls', lsp_attach_config, 'bash-language-server')
+
+if vim.fn.has('win32') == 1 then
+    if vim.fn.executable('wsl') == 1 then
+        lspconfig.phpactor.setup{
+            --cmd = { "ssh", "user@remotehost", "phpactor", "language-server" },
+            --cmd = { "wsl", "-d", "arch", "alias C:='/mnt/c'", "phpactor", "language-server" },
+            cmd = { "wsl", "-d", "arch", "phpactor", "language-server" },
+            on_attach = on_attach
+        }
+    end
+else
+    setup_lsp_if_available('phpactor', lsp_attach_config)
+end
 
 if vim.fn.executable("sqls") == 1 then
     lspconfig.sqls.setup{

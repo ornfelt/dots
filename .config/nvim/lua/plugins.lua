@@ -6,58 +6,36 @@ return require('packer').startup(function()
   -- Packer can manage itself
   use 'wbthomason/packer.nvim'
 
-  -- A better status line
   use {
      'nvim-lualine/lualine.nvim',
      requires = { 'kyazdani42/nvim-web-devicons', opt = true }
   }
 
-  -- File management --
-  -- use 'scrooloose/nerdtree'
   use 'preservim/nerdtree'
-  use 'tiagofumo/vim-nerdtree-syntax-highlight'
-  -- use 'vifm/vifm.vim'
-  -- use 'ryanoasis/vim-devicons'
+  -- use 'stevearc/oil.nvim'
+  -- use 'echasnovski/mini.files'
 
-  -- Productivity --
   use 'vimwiki/vimwiki'
   use 'tpope/vim-surround'
-
-  use 'junegunn/fzf'
-  --use { "ibhagwan/fzf-lua"
-  -- optional for icon support
-  --requires = { "nvim-tree/nvim-web-devicons" }
-  -- or if using mini.icons/mini.nvim
-  -- requires = { "echasnovski/mini.icons" }
-  --}
+  -- use 'junegunn/fzf'
+  use 'ibhagwan/fzf-lua'
+  -- use { "ibhagwan/fzf-lua",
+   -- --requires = { "nvim-tree/nvim-web-devicons" } -- icon support
+   -- -- or if using mini.icons/mini.nvim
+   -- requires = { "echasnovski/mini.icons" }
+  -- }
 
   use 'tpope/vim-commentary'
-  -- use 'junegunn/goyo.vim'
-  -- use 'junegunn/limelight.vim'
   use 'junegunn/vim-emoji'
-  -- use 'jreybert/vimagit'
-
-  -- Syntax Highlighting and Colors --
   use 'vim-python/python-syntax'
   use 'norcalli/nvim-colorizer.lua'
-  -- use 'vim-syntastic/syntastic'
-  use 'neovim/nvim-lspconfig' -- Configurations for Nvim LSP
+  use 'neovim/nvim-lspconfig'
   use 'hrsh7th/cmp-nvim-lsp'
   use 'hrsh7th/cmp-buffer'
   use 'hrsh7th/cmp-path'
   use 'hrsh7th/cmp-cmdline'
   use 'hrsh7th/nvim-cmp'
-  -- use 'mechatroner/rainbow_csv'
-  -- use 'PotatoesMaster/i3-vim-syntax'
-  -- use 'kovetskiy/sxhkd-vim'
-
-  -- Colorschemes
   use("gruvbox-community/gruvbox")
-
-  -- Other stuff
-  -- use 'frazrepo/vim-rainbow'
-
-  -- use("simrat39/rust-tools.nvim")
 
   use {
       'nvim-treesitter/nvim-treesitter',
@@ -93,6 +71,49 @@ return require('packer').startup(function()
   --    end,
   --})
 
+  use {
+    "aznhe21/actions-preview.nvim",
+    config = function()
+      require("actions-preview").setup()
+    end,
+  }
   use 'nanotee/sqls.nvim'
+  use 'preservim/nerdcommenter'
+
+  use 'sindrets/diffview.nvim'
+  use {
+      'isakbm/gitgraph.nvim',
+      dependencies = { 'sindrets/diffview.nvim' },
+      opts = {
+          symbols = {
+              merge_commit = 'M',
+              commit = '*',
+          },
+          format = {
+              timestamp = '%H:%M:%S %d-%m-%Y',
+              fields = { 'hash', 'timestamp', 'author', 'branch_name', 'tag' },
+          },
+          hooks = {
+              on_select_commit = function(commit)
+                  vim.notify('DiffviewOpen ' .. commit.hash .. '^!')
+                  vim.cmd(':DiffviewOpen ' .. commit.hash .. '^!')
+              end,
+              on_select_range_commit = function(from, to)
+                  vim.notify('DiffviewOpen ' .. from.hash .. '~1..' .. to.hash)
+                  vim.cmd(':DiffviewOpen ' .. from.hash .. '~1..' .. to.hash)
+              end,
+          },
+      },
+  }
+
+  -- use 'alexghergh/nvim-tmux-navigation'
+  -- use 'mhinz/vim-startify'
+  -- use 'mistweaverco/kulala.nvim'
+  -- use '3rd/diagram.nvim'
+  -- use 'lewis6991/gitsigns.nvim'
+  -- use 'mechatroner/rainbow_csv'
+  -- use("simrat39/rust-tools.nvim")
+  -- use 'vim-syntastic/syntastic'
+  -- use 'neoclide/coc.nvim'
 
 end)

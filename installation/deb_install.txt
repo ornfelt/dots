@@ -16,6 +16,7 @@ sudo apt install iwlwifi (firmware-iwlwifi?) and reboot...
 EDITOR=nvim visudo
 At the end of the /etc/sudoers file add this line: 
 jonas     ALL=(ALL) NOPASSWD:ALL
+* Important - add this as last line (but probably above @includedir ...)
 exit
 reboot
 
@@ -35,6 +36,49 @@ Some sources might require HTTPS. Install the apt-transport-https package if
 it's not already installed:
 
 sudo apt-get install apt-transport-https
+
+sudo apt-get install libsdl2-mixer-dev
+
+******************************************
+# wezterm
+
+Install latest rust:
+sudo apt remove rustc
+
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+
+###curl https://sh.rustup.rs -sSf | sh -s
+git clone --depth=1 --branch=main --recursive https://github.com/wez/wezterm.git
+cd wezterm
+git submodule update --init --recursive
+./get-deps
+cargo build --release
+Running:
+cargo run --release --bin wezterm -- start
+no wayland support:
+cargo build --release --no-default-features --features vendored-fonts
+
+Copy files:
+source_dir="$CODE_ROOT_DIR/Code2/Rust/wezterm/target/release/"
+dest_dir="/usr/local/bin"
+
+# Use find to locate all files in the source dir (excluding dirs)
+# and then copy them to destination
+find "$source_dir" -type f -exec cp {} "$dest_dir" \;
+
+Do this instead:
+cd target/release
+mkdir -p /usr/local/bin /etc/profile.d
+sudo install -Dm755 assets/open-wezterm-here wezterm wezterm-gui wezterm-mux-server strip-ansi-escapes -t /usr/local/bin
+sudo install -Dm644 assets/shell-integration/* -t /etc/profile.d
+sudo install -Dm644 assets/shell-completion/zsh /usr/local/share/zsh/site-functions/_wezterm
+sudo install -Dm644 assets/shell-completion/bash /etc/bash_completion.d/wezterm
+
+******************************************
+Fix python config and packages!
+
+Install potentially missing packages via:
+./installation/packages/debian/deb_pkgs.txt
 
 mkdir ~/Downloads
 cd ~/Downloads
@@ -61,8 +105,6 @@ https://github.com/FT-Labs/picom
 
 firefox:
 imagus, vimium, adblock, js-injector
-
-Fix everything else, like game data files, dotnet and other stuff...
 
 ******************************************
 curl -o arch_install.txt https://raw.githubusercontent.com/archornf/dotfiles/master/installation/arch_install.txt
@@ -243,6 +285,11 @@ sudo apt install spotify-client
 
 # The spotify package is currently broken and installs files owned by uid 1000, fix it
 dpkg -L spotify-client | sudo xargs chown --no-dereference root:root
+
+Use this instead!
+https://github.com/Rigellute/spotify-tui
+Or:
+https://github.com/aome510/spotify-player
 
 ******************************************
 # picom

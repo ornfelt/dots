@@ -1,4 +1,3 @@
-make
 mako
 mariadb
 meson
@@ -94,3 +93,5 @@ texlive-pstricks
 texlive-publishers
 texlive-xetex
 the_silver_searcher
+thunar
+tinyobjloader

@@ -4,6 +4,7 @@ printf "\n***** Setting up config files! *****\n\n"
 
 # Setup required dirs
 mkdir -p $HOME/.config/
+mkdir -p $HOME/.config/wezterm
 mkdir -p $HOME/.local/bin/
 mkdir -p $HOME/Documents $HOME/Downloads $HOME/Pictures/Wallpapers
 mkdir -p $HOME/Code/c $HOME/Code/c++ $HOME/Code/c# $HOME/Code/go $HOME/Code/js $HOME/Code/python $HOME/Code/rust $HOME/Code2/C $HOME/Code2/C++ $HOME/Code2/C# $HOME/Code2/General $HOME/Code2/Go $HOME/Code2/Javascript $HOME/Code2/Lua $HOME/Code2/Python $HOME/Code2/Wow/tools
@@ -52,6 +53,7 @@ cp Screenshots/space.jpg $HOME/Pictures/Wallpapers/
 
 cp .bashrc $HOME/.bashrc
 cp .tmux.conf $HOME/.tmux.conf
+cp .wezterm.lua $HOME/.wezterm.lua
 cp .xinitrc $HOME/.xinitrc
 cp .Xresources $HOME/.Xresources
 cp .Xresources_cat $HOME/.Xresources_cat
@@ -64,10 +66,14 @@ CURRENT_FONT_SIZE=$(grep -oP 'size:\s*\K[0-9.]*' "$HOME/.config/alacritty/alacri
 update_font_size() {
   local file=$1
   local new_size=$2
-  [[ $file == *.toml ]] && sed -i "s/size = .*/size = $new_size/" "$file" || sed -i "s/size: .*/size: $new_size/" "$file"
+  #[[ $file == *.toml ]] && sed -i "s/size = .*/size = $new_size/" "$file" || sed -i "s/size: .*/size: $new_size/" "$file"
+  if [ "${file##*.}" = "toml" ]; then
+      sed -i "s/size = .*/size = $new_size/" "$file"
+  else
+      sed -i "s/size: .*/size: $new_size/" "$file"
+  fi
 }
-
-if [ "$CURRENT_FONT_SIZE" != "$DEFAULT_FONT_SIZE" ]; then
+if [ -n "$CURRENT_FONT_SIZE" ] && [ "$CURRENT_FONT_SIZE" != "$DEFAULT_FONT_SIZE" ]; then
   echo "Current font size is $CURRENT_FONT_SIZE. Updating to $CURRENT_FONT_SIZE in source configuration before copying alacritty files."
   update_font_size ".config/alacritty/alacritty.yml" "$CURRENT_FONT_SIZE"
   update_font_size ".config/alacritty/alacritty.toml" "$CURRENT_FONT_SIZE"
@@ -75,7 +81,7 @@ fi
 
 cp -r ".config/alacritty" "$HOME/.config/"
 
-if [ "$CURRENT_FONT_SIZE" != "$DEFAULT_FONT_SIZE" ]; then
+if [ -n "$CURRENT_FONT_SIZE" ] && [ "$CURRENT_FONT_SIZE" != "$DEFAULT_FONT_SIZE" ]; then
   echo "Reverting font size in alacritty configs to default size $DEFAULT_FONT_SIZE."
   update_font_size ".config/alacritty/alacritty.yml" "$DEFAULT_FONT_SIZE"
   update_font_size ".config/alacritty/alacritty.toml" "$DEFAULT_FONT_SIZE"
@@ -146,6 +152,14 @@ if [ ! -d "$HOME/.local/share/nvim/site/pack/packer/start/packer.nvim/.git" ]; t
     echo "Packer installed! Now open vim and do :PackerInstall and then move temp.lua to init.lua in $HOME/.config/nvim"
 else
     echo "packer already installed."
+fi
+
+# wezterm session manager
+if [ ! -d "$HOME/.config/wezterm/wezterm-session-manager" ]; then
+    git clone https://github.com/danielcopper/wezterm-session-manager.git $HOME/.config/wezterm/wezterm-session-manager
+    echo "wezterm-session-manager installed!"
+else
+    echo "wezterm-session-manager already installed."
 fi
 
 # jetbrains nerd fonts
@@ -563,6 +577,9 @@ fix_ownerships() {
         "$HOME/.local/share/openjk"
         "$HOME/cmangos"
         "$HOME/vmangos"
+        "$HOME/mangoszero"
+        "$HOME/acore"
+        "$HOME/tcore"
     )
 
     for dir in "${directories[@]}"; do
@@ -658,7 +675,7 @@ compile_projects() {
             cd "$HOME/Code/c++"
         fi
 
-        if check_dir "jk2mv.js" "build_new"; then
+        if check_dir "jk2mv" "build_new"; then
             cmake .. CMAKE_BUILD_TYPE=Release
             make -j$(nproc)
             sudo make install
@@ -712,13 +729,13 @@ compile_projects() {
         cd "$HOME/Code/c++"
     fi
 
-    if check_dir "reone"; then
-        cd ..
-        cmake -B build -S . -DCMAKE_BUILD_TYPE=RelWithDebInfo
-        cd build && make -j$(nproc)
-        sudo make install
-        cd "$HOME/Code/c++"
-    fi
+    #if check_dir "reone"; then
+    #    cd ..
+    #    cmake -B build -S . -DCMAKE_BUILD_TYPE=RelWithDebInfo
+    #    cd build && make -j$(nproc)
+    #    sudo make install
+    #    cd "$HOME/Code/c++"
+    #fi
 
     print_and_cd_to_dir "$HOME/Code/js" "Compiling"
 
@@ -1174,18 +1191,19 @@ copy_dir_to_target() {
 }
 
 check_space() {
-  local dir=$1
-  local min_space_gb=40
-  local available_space_kb=$(df "$dir" --output=avail | tail -n 1)
-  local available_space_gb=$((available_space_kb / 1024 / 1024))
+    printf "Checking disk space...\n"
+    local dir=$1
+    local min_space_gb=40
+    local available_space_kb=$(df "$dir" --output=avail | tail -n 1)
+    local available_space_gb=$((available_space_kb / 1024 / 1024))
 
-  if (( available_space_gb > min_space_gb )); then
-    echo "Disk at $dir has more than $min_space_gb GB available. Space left: $available_space_gb GB"
-    return 0
-  else
-    echo "Disk at $dir does not have more than $min_space_gb GB available. Space left: $available_space_gb GB"
-    return 1
-  fi
+    if (( available_space_gb > min_space_gb )); then
+        echo "Disk at $dir has more than $min_space_gb GB available. Space left: $available_space_gb GB"
+        return 0
+    else
+        echo "Disk at $dir does not have more than $min_space_gb GB available. Space left: $available_space_gb GB"
+        return 1
+    fi
 }
 
 copy_game_data() {
@@ -1210,7 +1228,7 @@ copy_game_data() {
     for path in "${MEDIA_PATHS[@]}"; do
         if [ -d "$path/2024/wow" ]; then
             MEDIA_PATH="$path"
-            echo "Found mounted hard drive at: $MEDIA_PATH"
+            echo -e "\nFound mounted hard drive at: $MEDIA_PATH\n"
             break
         fi
     done
@@ -1707,10 +1725,10 @@ fix_other_files() {
     if [ -d "$src_dir" ]; then
         if [ -d "$dest_dir" ]; then
             cp -r "$src_dir"/* "$dest_dir"
-            echo "All files copied from $src_dir to $dest_dir."
+            echo -e "\nAll files copied from $src_dir to $dest_dir."
         fi
     else
-        echo "$src_dir does NOT exist. Can't copy mangoszero sql files from it..."
+        echo -e "\n$src_dir does NOT exist. Can't copy mangoszero sql files from it..."
     fi
 
     # Fix liblua...
@@ -1719,13 +1737,13 @@ fix_other_files() {
             echo "/usr/lib/x86_64-linux-gnu/liblua5.2.so exists."
 
             if [ ! -f "/usr/lib/x86_64-linux-gnu/liblua52.so" ]; then
-                echo "/usr/lib/x86_64-linux-gnu/liblua52.so does NOT exist. Copying it."
+                echo -e "\n/usr/lib/x86_64-linux-gnu/liblua52.so does NOT exist. Copying it."
                 sudo cp /usr/lib/x86_64-linux-gnu/liblua5.2.so /usr/lib/x86_64-linux-gnu/liblua52.so
             else
-                echo "/usr/lib/x86_64-linux-gnu/liblua52.so already exists."
+                echo -e "\n/usr/lib/x86_64-linux-gnu/liblua52.so already exists."
             fi
         else
-            echo "/usr/lib/x86_64-linux-gnu/liblua5.2.so does NOT exist. Skipping."
+            echo -e "\n/usr/lib/x86_64-linux-gnu/liblua5.2.so does NOT exist. Skipping."
         fi
     fi
 
@@ -1789,7 +1807,7 @@ fix_other_files() {
             target_file="$target_dir/$file_name"
 
             if [ ! -f "$target_file" ]; then
-                cp "$source_file" "$target_file"
+                sudo cp "$source_file" "$target_file"
                 echo "Copied $source_file to $target_file"
             else
                 echo "$target_file already exists. Skipping."
