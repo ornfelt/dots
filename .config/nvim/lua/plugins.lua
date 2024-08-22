@@ -11,8 +11,8 @@ return require('packer').startup(function()
      requires = { 'kyazdani42/nvim-web-devicons', opt = true }
   }
 
-  use 'preservim/nerdtree'
-  -- use 'stevearc/oil.nvim'
+  -- use 'preservim/nerdtree'
+  use 'stevearc/oil.nvim'
   -- use 'echasnovski/mini.files'
 
   use 'vimwiki/vimwiki'
