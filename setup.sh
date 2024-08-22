@@ -1524,6 +1524,7 @@ copy_game_data() {
     # baby-yoda and other joja mods...
     # star_wars_ja_mods
     # star_wars_jo_mods
+    # wezterm compile for deb...
 }
 
 if $justDoIt; then
@@ -1771,24 +1772,6 @@ fix_other_files() {
         echo "$HOME/mangoszero/run/bin does NOT exist. Skipping."
     fi
 
-    # Check mpq exports
-    if [ -d "$HOME/Code2/wow/tools/mpq" ]; then
-        echo "$HOME/Code2/wow/tools/mpq exists."
-
-        dir_to_use="$HOME/Code2/wow/tools"
-        if [ -d "/mnt/new/wow" ]; then
-            dir_to_use="/mnt/new"
-        fi
-
-        if [ ! -d "$dir_to_use/mpq/Export" ]; then
-            printf "You should run: ./gophercraft_mpq_set export --chain-json docs/wotlk-chain.json --working-directory \"%s/wow/Data\" --export-directory \"%s/mpq/Export\"\n" "$dir_to_use" "$dir_to_use"
-        else
-            echo "$dir_to_use/mpq/Export already exists. All good!"
-        fi
-    else
-        echo "$HOME/Code2/wow/tools/mpq does NOT exist. Skipping."
-    fi
-
     # AzerothCore and TrinityCore
     SOURCE_FILES=(
         "$HOME/Documents/my_notes/scripts/wow/overwrite.py"
@@ -1821,6 +1804,28 @@ fix_other_files() {
     python3 $HOME/Documents/my_notes/scripts/wow/update_conf.py "tcore"
     # Follow acore / tcore install notes in setup_notes.txt or setup db from
     # existing dbs in db_bkp
+
+    echo -e "\nChecking mpq files\n"
+    # Check mpq exports
+    if [ -d "$HOME/Code2/Wow/tools/mpq" ]; then
+        echo "$HOME/Code2/Wow/tools/mpq exists."
+
+        dir_to_use="$HOME/Downloads"
+        export_dir="$HOME/Code2/Wow/tools/mpq"
+        if [ -d "/mnt/new/wow" ]; then
+            dir_to_use="/mnt/new"
+            export_dir="/mnt/new/mpq"
+            mkdir -p "$export_dir"
+        fi
+
+        if [ ! -d "$HOME/Code2/Wow/tools/mpq/Export" ]; then
+            printf "You should run: cd $HOME/Code2/Wow/tools/mpq && ./gophercraft_mpq_set export --chain-json docs/wotlk-chain.json --working-directory \"%s/wow/Data\" --export-directory \"%s/Export\"\n" "$dir_to_use" "$export_dir"
+        else
+            echo "$HOME/Code2/Wow/tools/mpq/Export already exists. All good!"
+        fi
+    else
+        echo "$HOME/Code2/Wow/tools/mpq does NOT exist. Skipping."
+    fi
 
     echo -e "\nChecking databases...\n"
     check_dbs
