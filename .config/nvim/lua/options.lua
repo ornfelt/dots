@@ -146,8 +146,8 @@ vim.g['jedi#popup_on_dot'] = 1
 -- vim.g['syntastic_check_on_wq'] = 0
 
 -- NERDTree
-vim.g['NERDTreeQuitOnOpen'] = 1
-vim.g['NERDTreeShowHidden'] = 1
+-- vim.g['NERDTreeQuitOnOpen'] = 1
+-- vim.g['NERDTreeShowHidden'] = 1
 -- vim.g['NERDTreeFileLines'] = 1
 
 -- NERDCommenter
