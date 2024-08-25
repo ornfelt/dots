@@ -148,6 +148,8 @@ keys=(
   "SYSTEMET_KEY"
   "GOOGLE_MAPS_KEY"
   "MYSQL_ROOT_PWD"
+  "ALPHAVANTAGE_API_KEY"
+  "HF_TOKEN"
 )
 
 # Overwrite content of ./bash_profile (shouldn't be copied)
@@ -162,7 +164,7 @@ keys=(
   echo ''
   echo '[[ -f ~/.bashrc ]] && . ~/.bashrc'
   echo ''
-  echo '. "$HOME/.cargo/env"'
+  echo '#. "$HOME/.cargo/env"'
 } > ./.bash_profile
 
 # Double check that all keys don't have any values (they should be empty "")

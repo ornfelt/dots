@@ -40,12 +40,21 @@ config.warn_about_missing_glyphs = false
 --config.window_decorations = 'TITLE | RESIZE'
 --config.window_decorations = 'NONE'
 config.window_decorations = 'RESIZE'
-config.window_padding = {
-    left = 15,
-    right = 5,
-    top = 20,
-    bottom = 10,
-}
+if wezterm.target_triple == 'x86_64-pc-windows-msvc' or wezterm.target_triple == 'x86_64-pc-windows-gnu' then
+    config.window_padding = {
+        left = 15,
+        right = 5,
+        top = 20,
+        bottom = 10,
+    }
+else
+    config.window_padding = {
+        left = 10,
+        right = -3,
+        top = 10,
+        bottom = 0,
+    }
+end
 
 -- Tab bar
 --config.use_fancy_tab_bar = true
@@ -69,6 +78,8 @@ config.unix_domains = {
   },
 }
 
+-- config.disable_default_key_bindings = true,
+
 -- Session manager
 wezterm.on("save_session", function(window) session_manager.save_state(window) end)
 wezterm.on("load_session", function(window) session_manager.load_state(window) end)
@@ -76,6 +87,9 @@ wezterm.on("restore_session", function(window) session_manager.restore_state(win
 
 -- Custom key bindings
 config.keys = {
+    -- Leader is defined as Ctrl-A but this allows it to be sent to programs like vim when pressed twice
+    { key = 'a', mods = 'LEADER|CTRL', action = wezterm.action.SendKey { key = 'a', mods = 'CTRL' }, },
+
     -- Copy/vim mode
     { key = 'v', mods = 'LEADER', action = act.ActivateCopyMode, },
     { key = 'f', mods = 'LEADER', action = wezterm.action.Search {CaseInSensitiveString = 'test' } },

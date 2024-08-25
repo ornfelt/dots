@@ -60,7 +60,7 @@ return require('packer').startup(function()
       }
   })
 
-  --use("robitx/gp.nvim")
+  use("robitx/gp.nvim")
   --use({
   --    "robitx/gp.nvim",
   --    config = function()
@@ -70,6 +70,8 @@ return require('packer').startup(function()
   --        shortcuts might be setup here (see Usage > Shortcuts in Readme)
   --    end,
   --})
+
+  use 'gsuuon/model.nvim'
 
   use {
     "aznhe21/actions-preview.nvim",

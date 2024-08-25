@@ -35,9 +35,9 @@ map('n', '<leader>b', togglebar) -- Toggle lualine
 map('i', '<C-E>', '<ESC>A')
 map('i', '<C-A>', '<ESC>I')
 map('i', '<C-v>', '<Esc>"+p')
-map('i', '<C-a>', '<Esc>gg"yG') -- Copy everything from file into clipboard
-map('i', '<C-BS>', '<C-W>a') -- Copy everything from file into clipboard
-map('i', '<S-Tab>', '<BS>')
+-- map('i', '<C-a>', '<Esc>gg"yG') -- Copy everything from file into clipboard
+-- map('i', '<C-BS>', '<C-W>a') -- Copy everything from file into clipboard
+-- map('i', '<S-Tab>', '<BS>')
 -- Undo break points
 -- map('i', ',', ',<c-g>u')
 -- map('i', '.', '.<c-g>u')
@@ -59,11 +59,16 @@ map('n', '<leader>d', '"_d') -- Delete to void
 map('v', '<leader>d', '"_d') -- Delete to void
 
 -- Paste from previous registers
-map('n', '<leader>1', '"1p')
-map('n', '<leader>2', '"2p')
-map('n', '<leader>3', '"3p')
-map('n', '<leader>4', '"4p')
-map('n', '<leader>5', '"5p')
+map('n', '<leader>1', '"0p')
+map('n', '<leader>2', '"1p')
+map('n', '<leader>3', ':reg<CR>')
+map('n', '<leader>4', ':put a<CR>')
+map('n', '<leader>5', '"ay$')
+map('v', '<leader>1', '"0p')
+map('v', '<leader>2', '"1p')
+map('v', '<leader>3', ':reg<CR>')
+map('v', '<leader>4', ':put a<CR>')
+map('v', '<leader>5', '"ay$')
 
 -- Helper functions
 local function is_vim_plugin_installed(plugin_name)
@@ -279,8 +284,8 @@ vim.keymap.set('n', '<leader>db', '<cmd>lua vim.diagnostic.setqflist()<CR>', { n
 
 function ReplaceQuotes()
   vim.cmd([[
-    %s/[‘’]/'/g
-    %s/[“”]/"/g
+    silent! %s/[’‘’]/'/g
+    silent! %s/[“”]/"/g
   ]])
 end
 
@@ -300,68 +305,87 @@ vim.api.nvim_create_user_command('RunPythonCommand', PythonCommand, {})
 vim.api.nvim_set_keymap('v', '<leader>h', '<cmd>RunPythonCommand<CR>', { noremap = true, silent = true })
 
 -- GPT binds
-local config = {
-     openai_api_key = os.getenv("OPENAI_API_KEY"),
-}
 
--- Model can be changed in actions for this plugin
-require("chatgpt").setup(config)
-map('n', '<leader>e', ':ChatGPTEditWithInstructions<CR>')
-map('v', '<leader>e', ':ChatGPTEditWithInstructions<CR>')
-map('n', '<leader>x', ':ChatGPTRun explain_code<CR>')
-map('v', '<leader>x', ':ChatGPTRun explain_code<CR>')
-map('n', '<leader>c', ':ChatGPTRun complete_code<CR>')
-map('v', '<leader>c', ':ChatGPTRun complete_code<CR>')
-map('n', '<leader>v', ':ChatGPTRun summarize<CR>')
-map('v', '<leader>v', ':ChatGPTRun summarize<CR>')
-map('n', '<leader>g', ':ChatGPTRun grammar_correction<CR>')
-map('v', '<leader>g', ':ChatGPTRun grammar_correction<CR>')
-map('n', '<leader>6', ':ChatGPTRun docstring<CR>')
-map('v', '<leader>6', ':ChatGPTRun docstring<CR>')
-map('n', '<leader>7', ':ChatGPTRun add_tests<CR>')
-map('v', '<leader>7', ':ChatGPTRun add_tests<CR>')
-map('n', '<leader>8', ':ChatGPTRun optimize_code<CR>')
-map('v', '<leader>8', ':ChatGPTRun optimize_code<CR>')
-map('n', '<leader>9', ':ChatGPTRun code_readability_analysis<CR>')
-map('v', '<leader>9', ':ChatGPTRun code_readability_analysis<CR>')
-map('n', '<leader>0', ':ChatGPT<CR>')
-map('v', '<leader>0', ':ChatGPT<CR>')
-map('n', '<M-c>', ':ChatGPTRun send_request<CR>')
-map('v', '<M-c>', ':ChatGPTRun send_request<CR>')
+if is_plugin_installed('chatgpt') then
+    local chatgpt_config = {
+        openai_api_key = os.getenv("OPENAI_API_KEY"),
+    }
+    -- Model can be changed in actions for this plugin
+    require("chatgpt").setup(chatgpt_config)
+    map('n', '<leader>e', ':ChatGPTEditWithInstructions<CR>')
+    map('v', '<leader>e', ':ChatGPTEditWithInstructions<CR>')
+    map('n', '<leader>x', ':ChatGPTRun explain_code<CR>')
+    map('v', '<leader>x', ':ChatGPTRun explain_code<CR>')
+    map('n', '<leader>c', ':ChatGPTRun complete_code<CR>')
+    map('v', '<leader>c', ':ChatGPTRun complete_code<CR>')
+    map('n', '<leader>v', ':ChatGPTRun summarize<CR>')
+    map('v', '<leader>v', ':ChatGPTRun summarize<CR>')
+    map('n', '<leader>g', ':ChatGPTRun grammar_correction<CR>')
+    map('v', '<leader>g', ':ChatGPTRun grammar_correction<CR>')
+    map('n', '<leader>6', ':ChatGPTRun docstring<CR>')
+    map('v', '<leader>6', ':ChatGPTRun docstring<CR>')
+    map('n', '<leader>7', ':ChatGPTRun add_tests<CR>')
+    map('v', '<leader>7', ':ChatGPTRun add_tests<CR>')
+    map('n', '<leader>8', ':ChatGPTRun optimize_code<CR>')
+    map('v', '<leader>8', ':ChatGPTRun optimize_code<CR>')
+    map('n', '<leader>9', ':ChatGPTRun code_readability_analysis<CR>')
+    map('v', '<leader>9', ':ChatGPTRun code_readability_analysis<CR>')
+    map('n', '<leader>0', ':ChatGPT<CR>')
+    map('v', '<leader>0', ':ChatGPT<CR>')
+    map('n', '<M-c>', ':ChatGPTRun send_request<CR>')
+    map('v', '<M-c>', ':ChatGPTRun send_request<CR>')
+end
 
---require("gp").setup({openai_api_key: os.getenv("OPENAI_API_KEY")})
---require("gp").setup(config)
---map('n', '<leader>e', ':GpAppend<CR>')
---map('v', '<leader>e', ':GpAppend<CR>')
---map('n', '<leader>x', ':GpTabnew<CR>')
---map('v', '<leader>x', ':GpTabnew<CR>')
---map('n', '<leader>c', ':GpNew<CR>')
---map('v', '<leader>c', ':GpNew<CR>')
---map('n', '<leader>v', ':GpVnew<CR>')
---map('v', '<leader>v', ':GpVnew<CR>')
---map('n', '<leader>g', ':GpRewrite<CR>')
---map('v', '<leader>g', ':GpRewrite<CR>')
---map('n', '<leader>6', ':GpImplement<CR>')
---map('v', '<leader>6', ':GpImplement<CR>')
---map('n', '<leader>7', ':GpChatRespond<CR>')
---map('v', '<leader>7', ':GpChatRespond<CR>')
-----map('n', '<leader>8', ':GpChatFinder<CR>')
-----map('v', '<leader>8', ':GpChatFinder<CR>')
---map('n', '<leader>8', ':GpContext<CR>')
---map('v', '<leader>8', ':GpContext<CR>')
---map('n', '<leader>9', ':GpChatNew<CR>')
---map('v', '<leader>9', ':GpChatNew<CR>')
---map('n', '<leader>0', ':GpChatToggle<CR>')
---map('v', '<leader>0', ':GpChatToggle<CR>')
---map('n', '<leader>h', ':GpNextAgent<CR>')
---map('v', '<leader>h', ':GpNextAgent<CR>')
--- There's also:
--- :GpAgent (for info)
--- :GpWhisper
--- :GpImage
--- :GpStop
--- etc.
+if is_plugin_installed('gp') then
+    local gp_config = {
+        openai_api_key = os.getenv("OPENAI_API_KEY"),
+        providers = {
+            ollama = {
+                disable = false,
+                endpoint = "http://localhost:11434/v1/chat/completions",
+                -- secret = "dummy_secret",
+            },
+        }
+    }
 
+    --require("gp").setup({openai_api_key: os.getenv("OPENAI_API_KEY")})
+    require("gp").setup(gp_config)
+    map('n', '<leader>e', ':GpAppend<CR>')
+    map('v', '<leader>e', ':GpAppend<CR>')
+    map('n', '<leader>x', ':GpTabnew<CR>')
+    map('v', '<leader>x', ':GpTabnew<CR>')
+    map('n', '<leader>c', ':GpNew<CR>')
+    map('v', '<leader>c', ':GpNew<CR>')
+    map('n', '<leader>v', ':GpVnew<CR>')
+    map('v', '<leader>v', ':GpVnew<CR>')
+    map('n', '<leader>g', ':GpRewrite<CR>')
+    map('v', '<leader>g', ':GpRewrite<CR>')
+    map('n', '<leader>6', ':GpImplement<CR>')
+    map('v', '<leader>6', ':GpImplement<CR>')
+    map('n', '<leader>7', ':GpChatRespond<CR>')
+    map('v', '<leader>7', ':GpChatRespond<CR>')
+    -- map('n', '<leader>8', ':GpChatFinder<CR>')
+    -- map('v', '<leader>8', ':GpChatFinder<CR>')
+    -- map('n', '<leader>8', ':GpContext<CR>')
+    -- map('v', '<leader>8', ':GpContext<CR>')
+    map('n', '<leader>8', ':GpNextAgent<CR>')
+    map('v', '<leader>8', ':GpNextAgent<CR>')
+    map('n', '<leader>9', ':GpChatNew<CR>')
+    map('v', '<leader>9', ':GpChatNew<CR>')
+    map('n', '<leader>0', ':GpChatToggle<CR>')
+    map('v', '<leader>0', ':GpChatToggle<CR>')
+    -- TODO:
+    --map('n', '<M-c>', ':ChatGPTRun send_request<CR>')
+    --map('v', '<M-c>', ':ChatGPTRun send_request<CR>')
+    -- There's also:
+    -- :GpAgent (for info)
+    -- :GpWhisper
+    -- :GpImage
+    -- :GpStop
+    -- etc.
+end
+
+-- basic llama.cpp example request (no streaming)
 local function llm()
     local url = "http://127.0.0.1:8080/completion"
     local buffer_content = table.concat(vim.api.nvim_buf_get_lines(0, 0, -1, false), "\n")
@@ -397,10 +421,36 @@ local function llm()
     vim.api.nvim_buf_set_lines(0, line_num, line_num, false, vim.list_slice(split_newlines, 2))
 end
 
-vim.api.nvim_create_user_command('Llm', llm, {})
--- TODO: visual bind?
-vim.api.nvim_set_keymap('n', '<M-->', '<Cmd>:Llm<CR>', {noremap = true, silent = true})
-vim.api.nvim_set_keymap('i', '<M-->', '<Cmd>:Llm<CR>', {noremap = true, silent = true})
+if is_plugin_installed('model') then
+    local llamacpp = require('model.providers.llamacpp')
+
+    require('model').setup({
+    prompts = {
+        zephyr = {
+        provider = llamacpp,
+        builder = function(input, context)
+            return {
+            prompt =
+                '<|system|>'
+                .. (context.args or 'You are a helpful assistant')
+                .. '\n</s>\n<|user|>\n'
+                .. input
+                .. '</s>\n<|assistant|>',
+            stop = { '</s>' }
+            }
+        end
+        }
+    }
+    })
+
+    vim.api.nvim_set_keymap('n', '<M-->', '<Cmd>:Model zephyr<CR>', {noremap = true, silent = true})
+    vim.api.nvim_set_keymap('i', '<M-->', '<Cmd>:Model zephyr<CR>', {noremap = true, silent = true})
+else
+    vim.api.nvim_create_user_command('Llm', llm, {})
+    -- TODO: visual bind?
+    vim.api.nvim_set_keymap('n', '<M-->', '<Cmd>:Llm<CR>', {noremap = true, silent = true})
+    vim.api.nvim_set_keymap('i', '<M-->', '<Cmd>:Llm<CR>', {noremap = true, silent = true})
+end
 
 -- Helper function for setting key mappings for filetypes
 local function create_hellow_mapping(ft, fe)

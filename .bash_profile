@@ -10,7 +10,9 @@ export OPENWEATHERMAP_KEY=""
 export SYSTEMET_KEY=""
 export GOOGLE_MAPS_KEY=""
 export MYSQL_ROOT_PWD=""
+export ALPHAVANTAGE_API_KEY=""
+export HF_TOKEN=""
 
 [[ -f ~/.bashrc ]] && . ~/.bashrc
 
-. "$HOME/.cargo/env"
+#. "$HOME/.cargo/env"
