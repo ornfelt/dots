@@ -32,14 +32,14 @@ is_excluded() {
 
 install_arch() {
     for file in pk1.txt pk2.txt pk3.txt; do
-    #for file in pk1.txt; do # One pkX file per run...
+    #for file in pk3.txt; do # One pkX file per run...
         while read -r pkg; do
             if ! is_excluded "$pkg"; then
                 if [ "$testing_mode" = true ]; then
                     echo "Testing mode: Installing $pkg"
                 else
                     sudo pacman -S --noconfirm "$pkg" 2>&1 | tee -a log.txt
-                    sleep 1
+                    sleep 3
                 fi
             fi
         done < "$file"
@@ -55,6 +55,7 @@ install_debian() {
                     echo "Testing mode: Installing $pkg"
                 else
                     sudo apt-get install -y "$pkg" 2>&1 | tee -a log.txt
+                    sleep 3
                 fi
             fi
         done < "$file"

@@ -82,9 +82,10 @@ return require('packer').startup(function()
   use 'nanotee/sqls.nvim'
   use 'preservim/nerdcommenter'
 
+  use 'tpope/vim-fugitive'
   use 'sindrets/diffview.nvim'
   use {
-      'isakbm/gitgraph.nvim',
+      'ornfelt/gitgraph.nvim',
       dependencies = { 'sindrets/diffview.nvim' },
       opts = {
           symbols = {
@@ -105,7 +106,7 @@ return require('packer').startup(function()
                   vim.cmd(':DiffviewOpen ' .. from.hash .. '~1..' .. to.hash)
               end,
           },
-      },
+      }
   }
 
   -- use 'alexghergh/nvim-tmux-navigation'

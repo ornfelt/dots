@@ -549,7 +549,8 @@ fix_ownerships() {
     sudo mkdir -p "$NPM_PREFIX/lib/node_modules"
 
     # Check ownership and change only if necessary
-    for dir in "$NPM_PREFIX/lib/node_modules" "$NPM_PREFIX/bin" "$NPM_PREFIX/share"; do
+    #for dir in "$NPM_PREFIX/lib/node_modules" "$NPM_PREFIX/bin" "$NPM_PREFIX/share"; do
+    for dir in "$NPM_PREFIX/lib/node_modules"; do
         if [ -d "$dir" ]; then
             # Get owner of dir
             local DIR_OWNER=$(stat -c '%U' "$dir")

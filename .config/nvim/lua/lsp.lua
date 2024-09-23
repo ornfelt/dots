@@ -70,7 +70,7 @@ local lua_ls_config = {
 setup_lsp_if_available('pyright', lsp_attach_config)
 setup_lsp_if_available('clangd', lsp_attach_config)
 setup_lsp_if_available('gopls', lsp_attach_config)
-setup_lsp_if_available('tsserver', lsp_attach_config)
+setup_lsp_if_available('ts_ls', lsp_attach_config, 'tsserver')
 setup_lsp_if_available('fsautocomplete', lsp_attach_config)
 setup_lsp_if_available('jdtls', lsp_attach_config)
 -- lua_ls isn't the executable, lua-language-server is

@@ -60,3 +60,6 @@ dkms.conf
 bin/my_scripts/x.txt
 .config/nvim/temp.lua
 
+installation/packages/log.txt
+installation/packages/debian/log.txt
+

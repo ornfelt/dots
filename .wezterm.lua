@@ -22,9 +22,6 @@ config.enable_wayland = true
 --config.font = wezterm.font('Monaspace Neon')
 config.font_size = 11.0
 config.hide_tab_bar_if_only_one_tab = true
--- The leader is similar to how tmux defines a set of keys to hit in order to
--- invoke tmux bindings. Binding to ctrl-a here to mimic tmux
-config.leader = { key = 'a', mods = 'CTRL', timeout_milliseconds = 1000 }
 config.mouse_bindings = {
     -- Open URLs with Ctrl+Click
     {
@@ -41,6 +38,10 @@ config.warn_about_missing_glyphs = false
 --config.window_decorations = 'NONE'
 config.window_decorations = 'RESIZE'
 if wezterm.target_triple == 'x86_64-pc-windows-msvc' or wezterm.target_triple == 'x86_64-pc-windows-gnu' then
+    -- The leader is similar to how tmux defines a set of keys to hit in order to
+    -- invoke tmux bindings. Binding to ctrl-a here to mimic tmux
+    config.leader = { key = 'a', mods = 'CTRL', timeout_milliseconds = 1000 }
+
     config.window_padding = {
         left = 15,
         right = 5,
@@ -48,6 +49,8 @@ if wezterm.target_triple == 'x86_64-pc-windows-msvc' or wezterm.target_triple ==
         bottom = 10,
     }
 else
+    config.leader = { key = 'b', mods = 'CTRL', timeout_milliseconds = 1000 }
+
     config.window_padding = {
         left = 10,
         right = -3,
@@ -176,6 +179,7 @@ config.keys = {
     { key = 'i', mods = 'LEADER', action = act.AdjustPaneSize { 'Up', 5 } },
     { key = 'o', mods = 'LEADER', action = act.AdjustPaneSize { 'Right', 5 }, },
     { key = "q", mods = "LEADER", action = act.CloseCurrentPane { confirm = false } },
+    { key = "q", mods = "LEADER|CTRL", action = act.CloseCurrentPane { confirm = false } },
 
     -- Swap active pane with another one
     {
@@ -278,7 +282,7 @@ config.keys = {
     { key = "9", mods = "LEADER", action = wezterm.action{ActivateTab=8}, },
     { key = "0", mods = "LEADER", action = wezterm.action{ActivateTab=9}, },
     { key = 't', mods = "LEADER", action = wezterm.action{SpawnTab="DefaultDomain"}, },
-    { key = 'q', mods = 'LEADER|CTRL', action = wezterm.action.QuitApplication },
+    { key = 'q', mods = 'LEADER|SHIFT', action = wezterm.action.QuitApplication },
 }
 
 --config.default_gui_startup_args = { 'connect', 'unix' }
@@ -369,6 +373,10 @@ end
 
 wezterm.on("format-tab-title", function(tab)
     local new_title = tostring(tab.active_pane.current_working_dir):gsub("^file:///", "")
+    local max_title_len = 20
+    if #new_title > max_title_len then
+        new_title = "..." .. new_title:sub(-(max_title_len-3))
+    end
     return {
         { Text = new_title }
     }

@@ -266,6 +266,8 @@ export PATH="${PATH}:$HOME/Downloads/lsp/lua/bin"
 export OMNISHARP_PATH="/usr/lib/omnisharp-roslyn/"
 export my_notes_path="$HOME/Documents/my_notes"
 export code_root_dir="$HOME"
+export wow_dir="/mnt/new/wow"
+export wow_classic_dir="/mnt/new/wow_classic"
 #export PATH="${PATH}:$HOME/.fzf/bin"
 
 export LANG=en_US.UTF-8

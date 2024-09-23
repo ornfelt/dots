@@ -101,20 +101,33 @@ elseif is_plugin_installed('oil') then
         prompt_save_on_select_new_entry = true,
     })
     -- map('n', '<M-w>', ':leftabove vsplit | vertical resize 40 | Oil ~/ <CR>')
-    map('n', '<M-w>', ':Oil ~/ <CR>')
+    -- map('n', '<M-w>', ':Oil ~/ <CR>')
+    vim.keymap.set('n', '<M-w>', function()
+    if vim.bo.filetype == 'oil' then
+        -- vim.cmd('bd')
+        vim.cmd('b#')
+    else
+        vim.cmd('Oil ~/')
+    end
+    end)
 elseif pcall(require, 'mini.files') then
     require('mini.files').setup()
     map('n', '<M-w>', ':lua MiniFiles.open("~/")<CR>')
 end
 
+-- vim.api.nvim_create_user_command('OilToggle', function()
+   -- vim.cmd((vim.bo.filetype == 'oil') and 'bd' or 'Oil')
+-- end, { nargs = 0 })
+
 function toggle_filetree()
     --local filepath = (vim.fn.expand('%:p') == '' and '~/' or vim.fn.expand('%:p'))
-    local filepath = vim.fn.expand('%:p') == '' and '~/' or vim.fn.expand('%:p:h') -- dir
+    local filepath = vim.fn.expand('%:p') == '' and '~/' or './' -- or vim.fn.expand('%:p:h') -- dir
     if is_vim_plugin_installed('NERDTreeToggle') then
         vim.cmd('silent! NERDTreeToggle ' .. filepath)
     elseif is_plugin_installed('oil') then
         -- vim.cmd('leftabove vsplit | vertical resize 40 | Oil ' .. filepath)
-        vim.cmd('Oil ' .. filepath)
+        -- vim.cmd('Oil ' .. filepath)
+        vim.cmd((vim.bo.filetype == 'oil') and 'b#' or 'Oil ' .. filepath)
     elseif pcall(require, 'mini.files') then
         require('mini.files').open(filepath)
     else
@@ -191,7 +204,26 @@ map('n', '<M-v>', ':cdo s///gc | update<C-f><Esc>0f/li')
 map('n', '<M-n>', ':cnext<CR>')
 map('n', '<M-p>', ':cprev<CR>')
 map('n', '<M-P>', ':clast<CR>')
-map('n', '<M-b>', ':copen<CR>')
+-- map('n', '<M-b>', ':copen<CR>')
+-- Function to toggle the quickfix list
+function ToggleQuickfix()
+    local is_open = false
+
+    -- Check if the quickfix window is open
+    for _, win in ipairs(vim.fn.getwininfo()) do
+        if win.quickfix == 1 then
+            is_open = true
+            break
+        end
+    end
+
+    if is_open then
+        vim.cmd("cclose")
+    else
+        vim.cmd("copen")
+    end
+end
+vim.api.nvim_set_keymap('n', '<M-b>', ':lua ToggleQuickfix()<CR>', { noremap = true, silent = true })
 
 -- Window management and movement
 map('n', '<M-u>', ':resize +2<CR>')
@@ -211,6 +243,7 @@ map('t', '<M-j>', [[<C-\><C-n><C-w>j]])
 map('t', '<M-k>', [[<C-\><C-n><C-w>k]])
 map('t', '<M-l>', [[<C-\><C-n><C-w>l]])
 map('t', '<M-q>', [[<C-\><C-n>:q<CR>]])
+map('t', '<Esc>', [[<C-\><C-n>]])
 
 -- Moving text
 map('x', 'J', ":move '>+1<CR>gv=gv")
@@ -246,11 +279,97 @@ map('n', '<M-7>', '7gt')
 map('n', '<M-8>', '8gt')
 map('n', '<M-9>', '9gt')
 map('n', '<M-0>', ':tablast<CR>')
+map('n', '<leader>o', '<C-^>')
 
 -- Session management
-map('n', '<leader>o', '<C-^>')
-map('n', '<leader>m', ':mks! ~/.vim/sessions/s.vim<CR>')
+-- map('n', '<leader>m', ':mks! ~/.vim/sessions/s.vim<CR>')
 map('n', '<leader>.', ':silent so ~/.vim/sessions/s.vim<CR>')
+
+function save_tabs_and_splits()
+  local tab_count = vim.fn.tabpagenr('$')
+  if tab_count > 2 then
+    local current_tab = vim.fn.tabpagenr()
+    local current_win = vim.fn.winnr()
+
+    local file = io.open(vim.fn.expand("~/.vim/sessions/s_layout.vim"), "w")
+    file:write(tab_count .. "\n")
+
+    for i = 1, tab_count do
+      vim.cmd(i .. "tabnext")
+
+      local win_count = vim.fn.winnr('$')
+      file:write(win_count .. "\n")
+
+      for j = 1, win_count do
+        vim.cmd(j .. "wincmd w")
+        local buf_name = vim.fn.bufname('%')
+        if buf_name ~= "" then
+          local full_path = vim.fn.fnamemodify(buf_name, ':p')
+          file:write(full_path .. "\n")
+        end
+      end
+    end
+
+    file:write("TAB:" .. current_tab .. "\n")
+    file:close()
+
+    vim.cmd(current_tab .. "tabnext")
+    vim.cmd(current_win .. "wincmd w")
+    print("Session data saved to ~/.vim/sessions/")
+
+    -- Call mks! to save the session
+    vim.cmd("mks! ~/.vim/sessions/s.vim")
+  else
+    print("Not saving: Less than 3 tabs are open.")
+  end
+end
+
+function load_tabs_and_splits()
+  local file = io.open(vim.fn.expand("~/.vim/sessions/s_layout.vim"), "r")
+
+  if file == nil then
+    print("No saved layout found!")
+    return
+  end
+
+  local tab_count = tonumber(file:read("*line"))
+  local saved_tab = 1
+
+  for i = 1, tab_count do
+    if i > 1 then
+      vim.cmd("tabnew")
+    end
+
+    local win_count = tonumber(file:read("*line"))
+
+    for j = 1, win_count do
+      if j > 1 then
+          -- vim.cmd("split")
+        vim.cmd("vsplit")
+      end
+
+      local buf_name = file:read("*line")
+      if buf_name and buf_name ~= "" and not buf_name:match("^term://") then
+        vim.cmd("edit " .. buf_name)
+      end
+    end
+  end
+
+  local last_line = file:read("*line")
+  if last_line and last_line:match("^TAB:") then
+    saved_tab = tonumber(last_line:sub(5))
+  end
+
+  file:close()
+
+  if tab_count > 1 then
+    -- vim.cmd("2tabnext")
+    vim.cmd(saved_tab .. "tabnext")
+  end
+end
+
+vim.api.nvim_set_keymap('n', '<leader>m', ':lua save_tabs_and_splits()<CR>', { noremap = true, silent = true })
+-- vim.api.nvim_set_keymap('n', '<leader>.', ':lua load_tabs_and_splits()<CR>', { noremap = true, silent = true })
 
 -- Open new tabs
 map('n', '<M-m>', ':tabe ~/.config/nvim/init.lua<CR>')
@@ -275,12 +394,37 @@ map('n', '<leader>wf', 'gqG<C-o>zz') -- Format rest of the text with vim formatt
 map('v', '<leader>gu', ':s/\\<./\\u&/g<CR>:noh<CR>:noh<CR>') -- Capitalize first letter of each word on visually selected line
 map('n', '<leader>*', [[:/^\*\*\*$<CR>]]) -- Search for my bookmark
 map('v', '<leader>%', '/\\%V') -- Search in highlighted text
-map('v', '<leader>/', '"3y/<C-R>3<CR>') -- Search for highlighted text
+-- map('v', '<leader>/', '"3y/<C-R>3<CR>') -- Search for highlighted text
+map('n', '<leader>/', function()
+    local clipboard_text = vim.fn.getreg('+')
+    if clipboard_text ~= "" then
+        vim.cmd('/' .. vim.fn.escape(clipboard_text, '\\/'))
+    else
+        vim.notify("Clipboard is empty!", vim.log.levels.WARN)
+    end
+end)
 map("n", "Q", "<nop>") -- Remove Ex Mode
 vim.keymap.set("n", "<leader>r", [[:%s/\<<C-r><C-w>\>/<C-r><C-w>/gI<Left><Left><Left>]]) -- Replace word under cursor
-vim.keymap.set("n", "<leader>t", "<cmd>silent !tmux neww tmux-sessionizer<CR>") -- Start tmux-sessionizer
+vim.keymap.set("n", "<leader>ts", "<cmd>silent !tmux neww tmux-sessionizer<CR>") -- Start tmux-sessionizer
 vim.keymap.set('n', '<leader>df', '<cmd>lua vim.diagnostic.open_float()<CR>', { noremap = true, silent = true })
 vim.keymap.set('n', '<leader>db', '<cmd>lua vim.diagnostic.setqflist()<CR>', { noremap = true, silent = true })
+
+-- au TabLeave * let g:lasttab = tabpagenr()
+vim.api.nvim_create_autocmd("TabLeave", {
+    pattern = "*",
+    callback = function()
+        vim.g.lasttab = vim.fn.tabpagenr()
+    end,
+})
+
+function goto_last_tab()
+    if vim.g.lasttab then
+        vim.cmd("tabn " .. vim.g.lasttab)
+    end
+end
+
+vim.api.nvim_set_keymap('n', '<leader>t', '<cmd>lua goto_last_tab()<CR>', { noremap = true, silent = true })
+vim.api.nvim_set_keymap('v', '<leader>t', '<cmd>lua goto_last_tab()<CR>', { noremap = true, silent = true })
 
 function ReplaceQuotes()
   vim.cmd([[
@@ -292,26 +436,57 @@ end
 vim.api.nvim_set_keymap('n', '<leader>wq', ':lua ReplaceQuotes()<CR>', { noremap = true, silent = true })
 
 local function PythonCommand()
+    vim.cmd('w') -- Save the file first
     local code_root_dir = os.getenv("code_root_dir") or "~/"
     code_root_dir = code_root_dir:gsub(" ", '" "')
+
     local command = "!python " .. code_root_dir .. "Code2/Python/my_py/scripts/"
-    --vim.cmd('normal gv')
-    vim.fn.feedkeys(":" .. command)
-    local pos = #command
-    vim.fn.setcmdpos(pos)
+    local mode = vim.fn.mode()
+
+    if mode == 'v' or mode == 'V' or mode == '^V' then
+        --vim.cmd('normal gv')
+        vim.fn.feedkeys(":" .. command)
+        -- local pos = #command
+        -- vim.fn.setcmdpos(pos)
+    else
+        local current_file = vim.fn.expand("%:p")
+        local current_line = vim.fn.line(".")
+
+        -- local send_file_end = true
+        local send_file_end = false
+        local last_line = send_file_end and vim.fn.line("$") or ""
+
+        local args = ' "' .. current_file .. '" ' .. current_line
+        if send_file_end then
+            args = args .. " " .. last_line
+        end
+
+        local full_command = command .. args
+        vim.fn.feedkeys(":" .. full_command)
+
+        -- vim.schedule(function()
+            -- -- local pos = #command + 1
+            -- vim.fn.setcmdpos(pos)
+        -- end)
+        local move_left_count = #args
+        local move_left_keys = vim.api.nvim_replace_termcodes(string.rep("<Left>", move_left_count), true, false, true)
+        vim.api.nvim_feedkeys(move_left_keys, "n", false)
+    end
 end
 
 vim.api.nvim_create_user_command('RunPythonCommand', PythonCommand, {})
 vim.api.nvim_set_keymap('v', '<leader>h', '<cmd>RunPythonCommand<CR>', { noremap = true, silent = true })
+vim.api.nvim_set_keymap('n', '<leader>h', '<cmd>RunPythonCommand<CR>', { noremap = true, silent = true })
 
 -- GPT binds
-
 if is_plugin_installed('chatgpt') then
     local chatgpt_config = {
         openai_api_key = os.getenv("OPENAI_API_KEY"),
     }
+
     -- Model can be changed in actions for this plugin
     require("chatgpt").setup(chatgpt_config)
+
     map('n', '<leader>e', ':ChatGPTEditWithInstructions<CR>')
     map('v', '<leader>e', ':ChatGPTEditWithInstructions<CR>')
     map('n', '<leader>x', ':ChatGPTRun explain_code<CR>')
@@ -334,6 +509,7 @@ if is_plugin_installed('chatgpt') then
     map('v', '<leader>0', ':ChatGPT<CR>')
     map('n', '<M-c>', ':ChatGPTRun send_request<CR>')
     map('v', '<M-c>', ':ChatGPTRun send_request<CR>')
+    map('i', '<M-c>', ':ChatGPTRun send_request<CR>')
 end
 
 if is_plugin_installed('gp') then
@@ -350,6 +526,7 @@ if is_plugin_installed('gp') then
 
     --require("gp").setup({openai_api_key: os.getenv("OPENAI_API_KEY")})
     require("gp").setup(gp_config)
+
     map('n', '<leader>e', ':GpAppend<CR>')
     map('v', '<leader>e', ':GpAppend<CR>')
     map('n', '<leader>x', ':GpTabnew<CR>')
@@ -374,9 +551,6 @@ if is_plugin_installed('gp') then
     map('v', '<leader>9', ':GpChatNew<CR>')
     map('n', '<leader>0', ':GpChatToggle<CR>')
     map('v', '<leader>0', ':GpChatToggle<CR>')
-    -- TODO:
-    --map('n', '<M-c>', ':ChatGPTRun send_request<CR>')
-    --map('v', '<M-c>', ':ChatGPTRun send_request<CR>')
     -- There's also:
     -- :GpAgent (for info)
     -- :GpWhisper
@@ -385,7 +559,7 @@ if is_plugin_installed('gp') then
     -- etc.
 end
 
--- basic llama.cpp example request (no streaming)
+-- Basic llama.cpp example request (no streaming)
 local function llm()
     local url = "http://127.0.0.1:8080/completion"
     local buffer_content = table.concat(vim.api.nvim_buf_get_lines(0, 0, -1, false), "\n")
@@ -445,11 +619,12 @@ if is_plugin_installed('model') then
 
     vim.api.nvim_set_keymap('n', '<M-->', '<Cmd>:Model zephyr<CR>', {noremap = true, silent = true})
     vim.api.nvim_set_keymap('i', '<M-->', '<Cmd>:Model zephyr<CR>', {noremap = true, silent = true})
+    vim.api.nvim_set_keymap('v', '<M-->', '<Cmd>:Model zephyr<CR>', {noremap = true, silent = true})
 else
     vim.api.nvim_create_user_command('Llm', llm, {})
-    -- TODO: visual bind?
     vim.api.nvim_set_keymap('n', '<M-->', '<Cmd>:Llm<CR>', {noremap = true, silent = true})
     vim.api.nvim_set_keymap('i', '<M-->', '<Cmd>:Llm<CR>', {noremap = true, silent = true})
+    vim.api.nvim_set_keymap('v', '<M-->', '<Cmd>:Llm<CR>', {noremap = true, silent = true})
 end
 
 -- Helper function for setting key mappings for filetypes
@@ -470,14 +645,43 @@ local function create_hellow_mapping(ft, fe)
   })
 end
 
-vim.keymap.set("i", "<m-,>", function()
-    print("hi")
+vim.keymap.set("i", "<m-+>", function()
     vim.ui.input({ prompt = "Calc: " }, function(input)
         local calc = load("return " .. (input or ""))()
         if (calc) then
             vim.api.nvim_feedkeys(tostring(calc), "i", true)
         end
     end)
+end)
+
+vim.keymap.set("v", "<m-+>", function()
+    -- local start_pos = vim.fn.getpos("'<")
+    -- local end_pos = vim.fn.getpos("'>")
+    local start_pos = vim.fn.getpos("v")
+    local end_pos = vim.fn.getpos(".")
+    local lines = vim.fn.getline(start_pos[2], end_pos[2])
+    local selected_text = table.concat(lines, "\n")
+    local calc = load("return " .. selected_text)()
+    if calc then
+        vim.fn.cursor(end_pos[2], end_pos[3])
+        vim.api.nvim_put({tostring(calc)}, 'l', true, true)
+        vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes('<Esc>k', true, false, true), 'n', true)
+    end
+end)
+
+vim.keymap.set("n", "<m-+>", function()
+    local current_line = vim.fn.getline('.')
+    local calc = load("return " .. current_line)()
+    if calc then
+        local line_num = vim.fn.line('.')
+        vim.fn.append(line_num, tostring(calc))
+        -- All of these work
+        -- vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes('j', true, false, true), 'n', true)
+        -- vim.fn.cursor(line_num + 1, 0)
+        vim.cmd('normal! j')
+        -- vim.api.nvim_exec('normal! j', false)
+        -- vim.api.nvim_command('normal! j')
+    end
 end)
 
 -- Set mappings for various filetypes
@@ -521,6 +725,47 @@ create_hellow_mapping("zig")
 map('n', '<F4>', '<Esc>:set cursorline!<CR>')
 map('n', '<F5>', '<Esc>:setlocal spell! spelllang=en_us<CR>')
 map('n', '<F6>', '<Esc>:setlocal spell! spelllang=sv<CR>')
+
+local function SqlExecCommand()
+    local code_root_dir = os.getenv("code_root_dir") or "~/"
+    code_root_dir = code_root_dir:gsub(" ", '" "') -- Handle spaces in the path
+    local executable = code_root_dir .. "Code2/Sql/my_sql/SqlExec/SqlExec/bin/Debug/net8.0/SqlExec.exe"
+    local current_file = vim.fn.expand('%:p') -- Full path of current file
+    local mode = vim.fn.mode()
+    local args = { '"' .. current_file .. '"' }
+
+    if mode == 'v' or mode == 'V' then
+        -- vim.cmd('normal! gv') -- Re-select last visual selection to ensure it's active
+        -- local start_pos = vim.fn.getpos("'<")
+        -- local end_pos = vim.fn.getpos("'>")
+        local start_pos = vim.fn.getpos("v")
+        local end_pos = vim.fn.getpos(".")
+
+        if start_pos[2] >= 1 and end_pos[2] >= 1 then
+            if start_pos[2] > end_pos[2] then
+                -- Visual select starts from bottom
+                table.insert(args, end_pos[2]) -- Start line number
+                table.insert(args, start_pos[2]) -- End line number
+            else
+                table.insert(args, start_pos[2]) -- Start line number
+                table.insert(args, end_pos[2]) -- End line number
+            end
+        else
+            print("Invalid visual selection range.")
+            return
+        end
+    else
+        local current_line = vim.fn.line(".")
+        table.insert(args, current_line)
+    end
+
+    local formatted_args = table.concat(args, " ")
+    local output = vim.fn.system(executable .. " " .. formatted_args)
+
+    vim.cmd('belowright 15new')
+    local new_buf = vim.api.nvim_get_current_buf()
+    vim.api.nvim_buf_set_lines(new_buf, 0, -1, false, vim.split(output, "\n"))
+end
 
 function compile_run()
     vim.cmd('w') -- Save the file first
@@ -592,12 +837,15 @@ function compile_run()
                 vim.cmd('!zathura ' .. pdf_path .. ' &')
             end
         end
+    elseif filetype == 'sql' then
+        SqlExecCommand()
     else
         print("Compilation of " .. filetype .. " extensions not configured..")
     end
 end
 
 vim.api.nvim_set_keymap('n', '<M-x>', '<Cmd>lua compile_run()<CR>', { noremap = true, silent = true })
+vim.api.nvim_set_keymap('v', '<M-x>', '<Cmd>lua compile_run()<CR>', { noremap = true, silent = true })
 vim.api.nvim_set_keymap('n', '<M-S-X>', '<Cmd>!chmod +x %<CR>', { noremap = true, silent = true })
 
 -- " Execute line under the cursor
@@ -606,21 +854,21 @@ vim.api.nvim_set_keymap('n', '<M-S-X>', '<Cmd>!chmod +x %<CR>', { noremap = true
 --
 -- Function to execute command under cursor or highlighted text
 function execute_command()
-  local mode = vim.fn.mode()
-  local command
+    local mode = vim.fn.mode()
+    local command
 
-  if mode == 'v' or mode == 'V' then
-    vim.cmd('normal! gv"xy')
-    command = vim.fn.getreg('x')
-  else
-    command = vim.fn.getline('.')
-  end
+    if mode == 'v' or mode == 'V' then
+        vim.cmd('normal! gv"xy')
+        command = vim.fn.getreg('x')
+    else
+        command = vim.fn.getline('.')
+    end
 
-  -- Copy to clipboard
-  --vim.fn.setreg('+', command)
-  --print("Copied to clipboard: " .. command)
-  -- Execute it
-  vim.cmd(command)
+    -- Copy to clipboard
+    --vim.fn.setreg('+', command)
+    --print("Copied to clipboard: " .. command)
+    -- Execute it
+    vim.cmd(command)
 end
 
 vim.api.nvim_set_keymap('n', '<leader>,', ':lua execute_command()<CR>', { noremap = true, silent = true })
@@ -630,129 +878,311 @@ vim.api.nvim_set_keymap('v', '<leader>,', ':lua execute_command()<CR>', { norema
 -- pcall for checking requirement safely
 local actions_preview = pcall(require, "actions-preview") and require("actions-preview")
 if actions_preview then
-  vim.keymap.set({ "v", "n" }, "<leader>ca", require("actions-preview").code_actions)
+    vim.keymap.set({ "v", "n" }, "<leader>ca", require("actions-preview").code_actions)
 end
 
 local function replace_placeholders(line)
-  --  line = line:gsub("{code_root_dir}", vim.fn.getenv("code_root_dir") or "")
-  -- Use gsub to find and replace all occurrences of {ENV_VAR_NAME}
-  -- with corresponding environment variable value
-  line = line:gsub("{(.-)}", function(env_var)
-    return vim.fn.getenv(env_var) or ""
-  end)
-  return line
+    --  line = line:gsub("{code_root_dir}", vim.fn.getenv("code_root_dir") or "")
+    -- Use gsub to find and replace all occurrences of {ENV_VAR_NAME}
+    -- with corresponding environment variable value
+    line = line:gsub("{(.-)}", function(env_var)
+        return vim.fn.getenv(env_var) or ""
+    end)
+    return line
 end
 
 local function read_lines_from_file(file)
-  local lines = {}
-  for line in io.lines(file) do
-    line = replace_placeholders(line)
-    table.insert(lines, line)
-  end
-  return lines
+    local lines = {}
+    for line in io.lines(file) do
+        line = replace_placeholders(line)
+        table.insert(lines, line)
+    end
+    return lines
 end
 
 function open_files_from_list()
-  local my_notes_path = vim.fn.getenv("my_notes_path")
-  local file_path = my_notes_path .. "/files.txt"
-  local files = read_lines_from_file(file_path)
+    local my_notes_path = vim.fn.getenv("my_notes_path")
+    local file_path = my_notes_path .. "/files.txt"
+    local files = read_lines_from_file(file_path)
 
-  ---- Use fzf file picker to display file paths (edit/tabedit)
-  --vim.fn['fzf#run']({
-  --  source = files,
-  --  sink = function(selected)
-  --    vim.cmd('edit ' .. selected)
-  --  end,
-  --  options = '--multi --prompt "Select a file to open> " --expect=ctrl-t',
-  --  sinklist = function(selected)
-  --    local key = selected[1]
-  --    local file = selected[2]
-  --    if key == "ctrl-t" then
-  --      vim.cmd('tabedit ' .. file)
-  --    else
-  --      vim.cmd('edit ' .. file)
-  --    end
-  --  end
-  --})
+    ---- Use fzf file picker to display file paths (edit/tabedit)
+    --vim.fn['fzf#run']({
+    --  source = files,
+    --  sink = function(selected)
+    --    vim.cmd('edit ' .. selected)
+    --  end,
+    --  options = '--multi --prompt "Select a file to open> " --expect=ctrl-t',
+    --  sinklist = function(selected)
+    --    local key = selected[1]
+    --    local file = selected[2]
+    --    if key == "ctrl-t" then
+    --      vim.cmd('tabedit ' .. file)
+    --    else
+    --      vim.cmd('edit ' .. file)
+    --    end
+    --  end
+    --})
 
-  ---- Use fzf-lua file picker to display file paths
-  --require('fzf-lua').fzf_exec(files, {
-  --  prompt = 'Select a file: ',
-  --  actions = {
-  --    ['default'] = function(selected)
-  --      vim.cmd('edit ' .. selected[1])
-  --    end,
-  --    ['ctrl-t'] = function(selected)
-  --      vim.cmd('tabedit ' .. selected[1])
-  --    end,
-  --  }
-  --})
+    ---- Use fzf-lua file picker to display file paths
+    --require('fzf-lua').fzf_exec(files, {
+    --  prompt = 'Select a file: ',
+    --  actions = {
+    --    ['default'] = function(selected)
+    --      vim.cmd('edit ' .. selected[1])
+    --    end,
+    --    ['ctrl-t'] = function(selected)
+    --      vim.cmd('tabedit ' .. selected[1])
+    --    end,
+    --  }
+    --})
 
-  -- Use Telescope file picker to display file paths
-  require('telescope.pickers').new({}, {
-    prompt_title = "Select a file to open",
-    finder = require('telescope.finders').new_table({
-      results = files,
-    }),
-    sorter = require('telescope.config').values.generic_sorter({}),
-    attach_mappings = function(_, map)
-      local actions = require('telescope.actions')
-      local action_state = require('telescope.actions.state')
+    -- Use Telescope file picker to display file paths
+    require('telescope.pickers').new({}, {
+        prompt_title = "Select a file to open",
+        finder = require('telescope.finders').new_table({
+            results = files,
+        }),
+        sorter = require('telescope.config').values.generic_sorter({}),
+        attach_mappings = function(_, map)
+            local actions = require('telescope.actions')
+            local action_state = require('telescope.actions.state')
 
-      map('i', '<CR>', function(prompt_bufnr)
-        local selection = action_state.get_selected_entry()
-        actions.close(prompt_bufnr)
-        vim.cmd('edit ' .. selection.value)
-      end)
+            map('i', '<CR>', function(prompt_bufnr)
+                local selection = action_state.get_selected_entry()
+                actions.close(prompt_bufnr)
+                vim.cmd('edit ' .. selection.value)
+            end)
 
-      map('i', '<C-t>', function(prompt_bufnr)
-        local selection = action_state.get_selected_entry()
-        actions.close(prompt_bufnr)
-        vim.cmd('tabedit ' .. selection.value)
-      end)
+            map('i', '<C-t>', function(prompt_bufnr)
+                local selection = action_state.get_selected_entry()
+                actions.close(prompt_bufnr)
+                vim.cmd('tabedit ' .. selection.value)
+            end)
 
-      map('n', '<CR>', function(prompt_bufnr)
-        local selection = action_state.get_selected_entry()
-        actions.close(prompt_bufnr)
-        vim.cmd('edit ' .. selection.value)
-      end)
+            map('n', '<CR>', function(prompt_bufnr)
+                local selection = action_state.get_selected_entry()
+                actions.close(prompt_bufnr)
+                vim.cmd('edit ' .. selection.value)
+            end)
 
-      map('n', '<C-t>', function(prompt_bufnr)
-        local selection = action_state.get_selected_entry()
-        actions.close(prompt_bufnr)
-        vim.cmd('tabedit ' .. selection.value)
-      end)
+            map('n', '<C-t>', function(prompt_bufnr)
+                local selection = action_state.get_selected_entry()
+                actions.close(prompt_bufnr)
+                vim.cmd('tabedit ' .. selection.value)
+            end)
 
-      return true
-    end,
-  }):find()
+            return true
+        end,
+    }):find()
 end
 
 vim.api.nvim_set_keymap('n', '<leader>w', ':lua open_files_from_list()<CR>', { noremap = true, silent = true })
 
 local function get_current_file_path()
-  local file_path = vim.api.nvim_buf_get_name(0) -- Name of current buffer
-  if file_path == "" then
-    return ""
-  else
-    return vim.fn.fnamemodify(file_path, ":p") -- Convert to full path
-  end
-  --return vim.fn.expand("%:p")
+    local file_path = vim.api.nvim_buf_get_name(0) -- Name of current buffer
+    if file_path == "" then
+        return ""
+    else
+        return vim.fn.fnamemodify(file_path, ":p") -- Convert to full path
+    end
+    --return vim.fn.expand("%:p")
 end
 
-function print_current_file_path()
-  local path = get_current_file_path()
-  if path == "" then
-    print("No file in current buffer")
-  else
-    vim.fn.setreg('+', path)
-    print("Copied to clipboard: " .. path)
-  end
+function copy_current_file_path()
+    local path = get_current_file_path()
+    if path == "" then
+        print("No file in current buffer")
+    else
+        vim.fn.setreg('+', path)
+        print("Copied to clipboard: " .. path)
+    end
 end
 
-vim.api.nvim_set_keymap('n', '<leader>-', ':lua print_current_file_path()<CR>', { noremap = true, silent = true })
+vim.api.nvim_set_keymap('n', '<leader>-', ':lua copy_current_file_path()<CR>', { noremap = true, silent = true })
 
 vim.keymap.set('n', '<leader>gl', function()
     require('gitgraph').draw({}, { all = true, max_count = 5000 })
 end, { desc = "GitGraph - Draw" })
+
+function PythonExecCommand()
+    vim.cmd('w') -- Save the file first
+    local code_root_dir = os.getenv("code_root_dir") or "~/"
+    code_root_dir = code_root_dir:gsub(" ", '" "')
+    -- local script_path = code_root_dir .. "Code2/Python/my_py/scripts/read_file.py"
+    local script_path = code_root_dir .. "Code2/Python/my_py/scripts/gpt.py"
+    -- local script_path = code_root_dir .. "Code2/Python/my_py/scripts/claude/claude.py"
+    -- local script_path = code_root_dir .. "Code2/Python/my_py/scripts/gemini/gemini.py"
+    -- local script_path = code_root_dir .. "Code2/Python/my_py/scripts/mistral/mistral.py"
+    local print_to_current_buffer = false
+    local current_file = vim.fn.expand('%:p')
+    local mode = vim.fn.mode()
+    local args = { '"' .. current_file .. '"' }
+
+    if mode == 'v' or mode == 'V' then
+        -- vim.cmd('normal! gv')
+        -- local start_pos = vim.fn.getpos("'<")
+        -- local end_pos = vim.fn.getpos("'>")
+        local start_pos = vim.fn.getpos("v")
+        local end_pos = vim.fn.getpos(".")
+
+        if start_pos[2] >= 1 and end_pos[2] >= 1 then
+            if start_pos[2] > end_pos[2] then
+                -- Visual select starts from bottom
+                table.insert(args, end_pos[2]) -- Start line number
+                table.insert(args, start_pos[2]) -- End line number
+            else
+                table.insert(args, start_pos[2]) -- Start line number
+                table.insert(args, end_pos[2]) -- End line number
+            end
+        else
+            print("Invalid visual selection range.")
+            return
+        end
+    elseif mode == 'i' then
+        local current_line = vim.fn.line(".")
+        table.insert(args, current_line)
+    else
+        local current_line = vim.fn.line(".")
+        table.insert(args, current_line)
+    end
+
+    local formatted_args = table.concat(args, " ")
+    local cmd = "python " .. script_path .. " " .. formatted_args
+    local output = vim.fn.system(cmd)
+    -- print("args: " .. formatted_args)
+
+    if print_to_current_buffer then
+        local current_buf = vim.api.nvim_get_current_buf()
+        local line_count = vim.api.nvim_buf_line_count(current_buf)
+        vim.api.nvim_buf_set_lines(current_buf, line_count, line_count, false, vim.split(output, "\n"))
+    else
+        vim.cmd('belowright 20new')
+        local new_buf = vim.api.nvim_get_current_buf()
+        vim.api.nvim_buf_set_lines(new_buf, 0, -1, false, vim.split(output, "\n"))
+        -- Testing args
+        -- vim.api.nvim_buf_set_lines(new_buf, 0, -1, false, vim.split(formatted_args, "\n"))
+    end
+end
+
+vim.api.nvim_set_keymap('n', '<M-c>', '<cmd>lua PythonExecCommand()<CR>', { noremap = true, silent = true })
+vim.api.nvim_set_keymap('v', '<M-c>', '<cmd>lua PythonExecCommand()<CR>', { noremap = true, silent = true })
+vim.api.nvim_set_keymap('i', '<M-c>', '<cmd>lua PythonExecCommand()<CR>', { noremap = true, silent = true })
+
+function open_file_with_env()
+    -- local cword = vim.fn.expand("<cfile>")
+    local cword = vim.fn.expand("<cWORD>")
+    -- Removes everything before drive letter (may appear in diff files)
+    local trimmed_cword = cword:match("([a-zA-Z]:.*)")
+    if trimmed_cword ~= nil then
+        cword = trimmed_cword
+    end
+    -- print("cword: " .. cword)
+
+    if cword:find("{") then
+        local new_cword = cword:gsub("{(.-)}", function(var)
+            local value = os.getenv(var)
+            if value then
+                return value
+            else
+                print("Environment variable " .. var .. " not found.")
+                return nil
+            end
+        end)
+
+        if new_cword == cword then
+            return
+        end
+        -- print("new_cword: " .. new_cword)
+
+        -- vim.cmd("edit " .. new_cword)
+        vim.cmd("tabe " .. new_cword)
+    else
+        -- vim.cmd("edit " .. cword)
+        vim.cmd("tabe " .. cword)
+    end
+end
+
+vim.api.nvim_set_keymap('n', 'gf', ':lua open_file_with_env()<CR>', { noremap = true, silent = true })
+-- vim.api.nvim_set_keymap('n', 'gx', ':!open <cWORD><CR>', { noremap = true, silent = true })
+vim.api.nvim_set_keymap('n', 'gx', ':!nohup firefox <cWORD> &<CR>', { noremap = true, silent = true })
+
+local function diff_copy()
+    local current_buf = vim.api.nvim_get_current_buf()
+
+    local windows = vim.api.nvim_list_wins()
+    local other_buf
+    for _, win in ipairs(windows) do
+        if vim.api.nvim_win_get_buf(win) ~= current_buf then
+            other_buf = vim.api.nvim_win_get_buf(win)
+            break
+        end
+    end
+
+    local file_paths = {}
+    if current_buf and vim.api.nvim_buf_is_loaded(current_buf) then
+        local path = vim.api.nvim_buf_get_name(current_buf)
+        if path ~= "" then
+            table.insert(file_paths, path)
+        end
+    end
+
+    if other_buf and vim.api.nvim_buf_is_loaded(other_buf) then
+        local path = vim.api.nvim_buf_get_name(other_buf)
+        if path ~= "" then
+            table.insert(file_paths, path)
+        end
+    end
+
+    if #file_paths < 2 then
+        print("Not enough files to copy.")
+        return
+    end
+
+    local target1 = "C:/local/testing_files/test1.txt"
+    local target2 = "C:/local/testing_files/test2.txt"
+
+    vim.cmd(string.format("silent !cp %s %s", file_paths[1], target1))
+    vim.cmd(string.format("silent !cp %s %s", file_paths[2], target2))
+    print("Files copied to C:/local/testing_files.")
+end
+
+vim.api.nvim_create_user_command('DiffCp', diff_copy, {})
+
+local function diff_current_lines()
+    local line_number = vim.fn.line('.')
+    local current_line = vim.fn.getline(line_number)
+    local next_line = vim.fn.getline(line_number + 1)
+
+    local file_paths = {}
+    for path in current_line:gmatch('"%s*(%S+)"%s*') do
+        table.insert(file_paths, path)
+    end
+
+    if #file_paths < 2 and next_line ~= "" then
+        for path in next_line:gmatch('"%s*(%S+)"%s*') do
+            table.insert(file_paths, path)
+            if #file_paths >= 2 then
+                break
+            end
+        end
+    end
+
+    if #file_paths < 2 then
+        print("Not enough file paths found for diff.")
+        return
+    end
+
+    for i, file_path in ipairs(file_paths) do
+        local trimmed_fp = file_path:match("([a-zA-Z]:.*)")
+        if trimmed_fp ~= nil then
+            file_paths[i] = trimmed_fp
+        end
+    end
+
+    vim.cmd(string.format("edit %s", file_paths[1]))
+    vim.cmd("diffthis")
+    vim.cmd(string.format("vert diffsplit %s", file_paths[2]))
+end
+
+vim.api.nvim_create_user_command('Diffi', diff_current_lines, {})
 
