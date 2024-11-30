@@ -418,7 +418,8 @@ local function split_to_directory_with_delay(win, pane)
     wezterm.sleep_ms(500)
 
     -- Open the saved dir in wezterm pane
-    local userprofile = os.getenv("USERPROFILE")
+    --local userprofile = os.getenv("USERPROFILE")
+    local userprofile = os.getenv("HOME")
     local file_path = userprofile .. "/new_wez_dir.txt"
 
     -- print("file_path:" .. file_path)

@@ -833,9 +833,8 @@ function ReplacePathBasedOnContext()
         return
     end
 
-    -- Normalize paths
-    my_notes_path = normalize_path(my_notes_path)
-    code_root_dir = normalize_path(code_root_dir)
+    my_notes_path = normalize_path(my_notes_path) .. "/"
+    code_root_dir = normalize_path(code_root_dir) .. "/"
 
     local line = vim.fn.getline(".")
 
@@ -2316,8 +2315,9 @@ function save_resolved_path_to_file()
     resolved_path = vim.fn.fnamemodify(resolved_path, ":p:h")
     resolved_path = resolved_path:gsub("\\", "/")
 
-    local userprofile = os.getenv("USERPROFILE")
-    local file_path = userprofile .. "/new_wez_dir.txt"
+    --local home_dir = os.getenv("USERPROFILE")
+    local home_dir = os.getenv("HOME")
+    local file_path = home_dir .. "/new_wez_dir.txt"
 
     local file = io.open(file_path, "w")
     if file then
