@@ -151,8 +151,12 @@ vim.g['jedi#popup_on_dot'] = 1
 -- vim.g['NERDTreeFileLines'] = 1
 
 -- NERDCommenter
-vim.g.NERDCreateDefaultMappings = 0
-vim.g.NERDSpaceDelims = 1
+-- vim.g.NERDCreateDefaultMappings = 0
+-- vim.g.NERDSpaceDelims = 1
+-- Add spaces after comment delimiters by default
+--vim.g.NERDSpaceDelims = 0
+-- Align line-wise comment delimiters flush left instead of following code indentation
+-- vim.g.NERDDefaultAlign = 'left'
 
 -- Vimwiki Plugin Settings
 vim.g['vimwiki_key_mappings'] = { table_mappings = 0 }
@@ -165,4 +169,31 @@ vim.cmd("colorscheme gruvbox")
 -- vim.g['python3_host_prog'] = '/path/to/python3'
 --vim.g.python3_host_prog = 'C:/Windows/python.exe'
 vim.g.python3_host_prog = os.getenv("PYTHON_PATH")
+
+-- Disable netrw (file explorer that comes with vim)
+vim.g.loaded_netrw = 1
+vim.g.loaded_netrwPlugin = 1
+
+--vim.opt.showtabline = 1
+vim.opt.tabline = "%!v:lua.TabLine()"
+
+-- Custom tabline
+_G.TabLine = function()
+    local s = ""
+    for i = 1, vim.fn.tabpagenr("$") do
+        -- Get tab label or buffer name
+        local tabname = vim.fn.gettabvar(i, "tablabel", vim.fn.bufname(vim.fn.tabpagebuflist(i)[1]))
+        if #tabname > 12 then
+            tabname = tabname:sub(-12) -- Negative index to get the last 12 characters
+        end
+
+        -- Highlight active tab
+        if i == vim.fn.tabpagenr() then
+            s = s .. "%#TabLineSel# " .. i .. " " .. tabname .. " "
+        else
+            s = s .. "%#TabLine# " .. i .. " " .. tabname .. " "
+        end
+    end
+    return s
+end
 

@@ -1,5 +1,7 @@
 mako
 mariadb
+mariadb-clients
+mariadb-libs
 meson
 mono
 mpv
@@ -32,6 +34,7 @@ php
 phpactor
 picom-pijulius-git
 pkgconf
+plocate
 pngquant
 polybar
 powertop
@@ -93,5 +96,3 @@ texlive-pstricks
 texlive-publishers
 texlive-xetex
 the_silver_searcher
-thunar
-tinyobjloader

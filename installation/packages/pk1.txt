@@ -79,6 +79,7 @@ imagemagick
 inetutils
 jdk-openjdk
 jdtls
+jemalloc
 jq
 jupyter-notebook
 lf

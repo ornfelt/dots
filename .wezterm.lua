@@ -20,7 +20,43 @@ config.enable_scroll_bar = true
 config.enable_wayland = true
 -- config.font = wezterm.font('Hack')
 --config.font = wezterm.font('Monaspace Neon')
-config.font_size = 11.0
+
+local user_domain = os.getenv("USERDOMAIN") or ""
+if string.lower(user_domain):find("lenovo2") then
+  config.font_size = 10.0
+else
+  config.font_size = 11.0
+end
+
+-- https://wezfurlong.org/wezterm/config/lua/config/max_fps.html
+config.max_fps = 240
+
+-- https://wezfurlong.org/wezterm/hyperlinks.html#implicit-hyperlinks
+config.hyperlink_rules = wezterm.default_hyperlink_rules()
+
+table.insert(config.hyperlink_rules, {
+  regex = [[\b[tt](\d+)\b]],
+  format = 'https://example.com/tasks/?t=$1',
+})
+
+table.insert(config.hyperlink_rules, {
+  regex = [[["]?([\w\d]{1}[-\w\d]+)(/){1}([-\w\d\.]+)["]?]],
+  format = 'https://www.github.com/$1/$3',
+})
+
+-- https://wezfurlong.org/wezterm/quickselect.html
+-- https://wezfurlong.org/wezterm/config/lua/keyassignment/QuickSelect.html
+-- config.quick_select_patterns = {
+--   -- match things that look like sha1 hashes
+--   -- (this is actually one of the default patterns)
+--   '[0-9a-f]{7,40}',
+-- }
+-- Filenames
+config.quick_select_patterns = {
+  -- Match filenames with an optional path (e.g., test.txt, /path/to/init.lua)
+  '[^\\s]+\\.[a-zA-Z0-9]+',
+}
+
 config.hide_tab_bar_if_only_one_tab = true
 config.mouse_bindings = {
     -- Open URLs with Ctrl+Click
@@ -38,6 +74,8 @@ config.warn_about_missing_glyphs = false
 --config.window_decorations = 'NONE'
 config.window_decorations = 'RESIZE'
 if wezterm.target_triple == 'x86_64-pc-windows-msvc' or wezterm.target_triple == 'x86_64-pc-windows-gnu' then
+    config.show_close_tab_button_in_tabs = false
+
     -- The leader is similar to how tmux defines a set of keys to hit in order to
     -- invoke tmux bindings. Binding to ctrl-a here to mimic tmux
     config.leader = { key = 'a', mods = 'CTRL', timeout_milliseconds = 1000 }
@@ -49,7 +87,8 @@ if wezterm.target_triple == 'x86_64-pc-windows-msvc' or wezterm.target_triple ==
         bottom = 10,
     }
 else
-    config.leader = { key = 'b', mods = 'CTRL', timeout_milliseconds = 1000 }
+    --config.leader = { key = 'b', mods = 'CTRL', timeout_milliseconds = 1000 }
+    config.leader = { key = 'a', mods = 'CTRL', timeout_milliseconds = 1000 }
 
     config.window_padding = {
         left = 10,
@@ -60,7 +99,7 @@ else
 end
 
 -- Tab bar
---config.use_fancy_tab_bar = true
+-- config.use_fancy_tab_bar = true
 config.tab_bar_at_bottom = true
 config.switch_to_last_active_tab_when_closing_tab = true
 config.tab_max_width = 15
@@ -87,6 +126,75 @@ config.unix_domains = {
 wezterm.on("save_session", function(window) session_manager.save_state(window) end)
 wezterm.on("load_session", function(window) session_manager.load_state(window) end)
 wezterm.on("restore_session", function(window) session_manager.restore_state(window) end)
+
+local direction_keys = {
+  h = "Left",
+  j = "Down",
+  k = "Up",
+  l = "Right",
+}
+-- Next and Prev is also available as dir keys
+
+local resize_keys = {
+  y = "Left",
+  u = "Down",
+  i = "Up",
+  o = "Right",
+}
+
+-- Handle pane split in wezterm or vim
+local function split_nav(key)
+  return {
+    key = key,
+    mods = "ALT",
+    action = wezterm.action_callback(function(win, pane)
+      -- Check if there are multiple panes to navigate
+      local dir = direction_keys[key]
+      local tab = pane:tab()
+
+      local opposite_dir = dir == "Left" and "Right" or dir == "Right" and "Left" or dir == "Up" and "Down" or "Up"
+
+      if tab:get_pane_direction(dir) then
+        win:perform_action({ ActivatePaneDirection = dir }, pane)
+      elseif tab:get_pane_direction(opposite_dir) then
+        win:perform_action({ ActivatePaneDirection = opposite_dir }, pane)
+      else
+        -- Send the key sequence to process, e.g., vim
+        -- win:perform_action({
+          -- SendKey = { key = key, mods = "ALT" }
+        -- }, pane)
+        win:perform_action({
+          SendKey = { key = "w", mods = "CTRL" },
+        }, pane)
+        win:perform_action({
+          SendKey = { key = key },
+        }, pane)
+      end
+    end),
+  }
+end
+
+-- Handle resize in wezterm or vim
+local function resize_pane(key)
+  return {
+    key = key,
+    mods = "ALT",
+    action = wezterm.action_callback(function(win, pane)
+      local dir = resize_keys[key]
+      local tab = pane:tab()
+
+      -- Check if there's a pane in either primary dir or opposite
+      local opposite_dir = dir == "Left" and "Right" or dir == "Right" and "Left" or dir == "Up" and "Down" or "Up"
+      if tab:get_pane_direction(dir) or tab:get_pane_direction(opposite_dir) then
+        win:perform_action(act.AdjustPaneSize { dir, 5 }, pane)
+      else
+        -- Send ALT + SHIFT + key to Vim for resizing inside Vim
+        -- win:perform_action({ SendKey = { key = key:upper(), mods = "ALT|SHIFT" } }, pane)
+        win:perform_action({ SendKey = { key = key, mods = "ALT|CTRL" } }, pane)
+      end
+    end),
+  }
+end
 
 -- Custom key bindings
 config.keys = {
@@ -283,7 +391,81 @@ config.keys = {
     { key = "0", mods = "LEADER", action = wezterm.action{ActivateTab=9}, },
     { key = 't', mods = "LEADER", action = wezterm.action{SpawnTab="DefaultDomain"}, },
     { key = 'q', mods = 'LEADER|SHIFT', action = wezterm.action.QuitApplication },
+    -- Seamless nvim pane integration
+    split_nav("h"),
+    split_nav("j"),
+    split_nav("k"),
+    split_nav("l"),
+    resize_pane("y"),
+    resize_pane("u"),
+    resize_pane("i"),
+    resize_pane("o"),
+    -- QuickSelect
+    -- { key = ' ', mods = 'SHIFT|CTRL', action = wezterm.action.QuickSelect },
+    { key = ' ', mods = 'ALT|SHIFT', action = wezterm.action.QuickSelect },
 }
+
+-- Read dir path and start a split pane
+local function split_to_directory_with_delay(win, pane)
+    -- Save dir under cursor into file in nvim...
+    win:perform_action({
+        SendKey = { key = "w", mods = "CTRL" },
+    }, pane)
+    win:perform_action({
+        SendKey = { key = "d" },
+    }, pane)
+
+    wezterm.sleep_ms(500)
+
+    -- Open the saved dir in wezterm pane
+    local userprofile = os.getenv("USERPROFILE")
+    local file_path = userprofile .. "/new_wez_dir.txt"
+
+    -- print("file_path:" .. file_path)
+    -- win:toast_notification("WezTerm Notification", "file_path: " .. file_path, nil, 4000)
+
+    local file = io.open(file_path, "r")
+    if not file then
+        -- wezterm.log_info("File not found: " .. file_path)
+        win:toast_notification("WezTerm Notification", "File not found: " .. file_path, nil, 4000)
+        return
+    end
+
+    -- Read dir path from file
+    local directory = file:read("*line")
+    file:close()
+
+    -- Validate path
+    -- Might be in: %TEMP%\wezterm.log or /tmp/wezterm.log
+    -- https://wezfurlong.org/wezterm/troubleshooting.html
+    if directory and directory ~= "" then --and wezterm.path.exists(directory) then
+        -- wezterm.log_info("Splitting to directory: " .. directory)
+        -- win:toast_notification("WezTerm Notification", "Splitting to dir: " .. directory, nil, 4000)
+
+        local command = {
+            cwd = directory
+        }
+
+        win:perform_action(
+        wezterm.action.SplitPane {
+            direction = "Right",
+            size = { Percent = 50 },
+            command = command
+            -- command = { cwd = directory }
+        },
+        pane
+        )
+    --else
+    --    wezterm.log_info("Invalid directory path: " .. (directory or "nil"))
+    --    win:toast_notification("WezTerm Notification", "Invalid directory path: " .. (directory or "nil"), nil, 4000)
+    end
+end
+
+table.insert(config.keys, {
+    key = "d",
+    mods = "LEADER",
+    action = wezterm.action_callback(split_to_directory_with_delay),
+})
 
 --config.default_gui_startup_args = { 'connect', 'unix' }
 if wezterm.target_triple == 'x86_64-pc-windows-msvc' or wezterm.target_triple == 'x86_64-pc-windows-gnu' then

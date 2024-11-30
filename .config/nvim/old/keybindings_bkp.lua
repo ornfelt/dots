@@ -70,16 +70,25 @@ map('v', '<leader>3', ':reg<CR>')
 map('v', '<leader>4', ':put a<CR>')
 map('v', '<leader>5', '"ay$')
 
+-- Helper functions
+local function is_vim_plugin_installed(plugin_name)
+    return vim.fn.exists(':' .. plugin_name) ~= 0
+end
+
 local function is_plugin_installed(plugin_name)
     local status, _ = pcall(require, plugin_name)
     return status
 end
 
+local has_nerdtree = is_vim_plugin_installed('NERDTreeToggle')
 local has_oil = is_plugin_installed('oil')
 local has_mini_files = pcall(require, 'mini.files')
 
 -- File tree
-if has_oil then
+-- map('n', '<M-e>', ':silent! NERDTreeToggle %:p<CR>')
+if has_nerdtree then
+    map('n', '<M-w>', ':silent! NERDTreeToggle ~/<CR>')
+elseif has_oil then
 	require('oil').setup({
         keymaps = {
             ["<C-s>"] = { "actions.select", opts = { vertical = true, close = true }, desc = "Open the entry in a vertical split" },
@@ -117,7 +126,9 @@ end
 function toggle_filetree()
     --local filepath = (vim.fn.expand('%:p') == '' and '~/' or vim.fn.expand('%:p'))
     local filepath = vim.fn.expand('%:p') == '' and '~/' or './' -- or vim.fn.expand('%:p:h') -- dir
-    if has_oil then
+    if has_nerdtree then
+        vim.cmd('silent! NERDTreeToggle ' .. filepath)
+    elseif has_oil then
         -- vim.cmd('leftabove vsplit | vertical resize 40 | Oil ' .. filepath)
         -- vim.cmd('Oil ' .. filepath)
         vim.cmd((vim.bo.filetype == 'oil') and 'b#' or 'Oil ' .. filepath)
@@ -130,8 +141,8 @@ end
 map('n', '<M-e>', ':lua toggle_filetree()<CR>')
 
 -- NERDCommenter
--- map('n', '<C-k>', ':call nerdcommenter#Comment(0, "toggle")<CR>')
--- map('v', '<C-k>', '<Plug>NERDCommenterToggle')
+map('n', '<C-k>', ':call nerdcommenter#Comment(0, "toggle")<CR>')
+map('v', '<C-k>', '<Plug>NERDCommenterToggle')
 
 -- fzf
 local fzf_vim_installed = pcall(function() return vim.fn['fzf#run'] end)
@@ -177,7 +188,6 @@ function StartFinder(env_var, additional_path)
         cwd = path,
         hidden = env_var == "my_notes_path",
         prompt_title = "Search in " .. path,
-        previewer = true,
     })
 end
 
@@ -308,38 +318,8 @@ local function get_git_root()
     return git_root, true
 end
 
-function enter_vimgrep_command(pattern, use_current_word)
-    -- local current_word = use_current_word and vim.fn.expand("<cword>") or ""
-
-    -- Support visual selection
-    local current_word = ""
-    if use_current_word then
-        if vim.fn.mode() == "v" or vim.fn.mode() == "V" then
-            -- current_word = vim.fn.getreg('"') -- Last yanked text
-            local start_pos = vim.fn.getpos("v")
-            local end_pos = vim.fn.getpos(".")
-            if start_pos[2] > end_pos[2] or (start_pos[2] == end_pos[2] and start_pos[3] > end_pos[3]) then
-                start_pos, end_pos = end_pos, start_pos
-            end
-
-            local lines = vim.fn.getline(start_pos[2], end_pos[2])
-
-            if #lines == 1 then
-                -- Single line selection
-                current_word = lines[1]:sub(start_pos[3], end_pos[3])
-            else
-                -- Multi-line selection, use only the last line
-                -- current_word = lines[#lines]:sub(1, end_pos[3])
-                -- Just take current word to simplify this
-                current_word = vim.fn.expand("<cword>")
-            end
-        else
-            current_word = vim.fn.expand("<cword>")
-        end
-    end
-
-    -- vim.ui.input({ prompt = 'vimgrep ' .. pattern .. ': ' }, function(input)
-    vim.ui.input({ prompt = 'vimgrep ' .. pattern .. ': ', default = current_word }, function(input)
+function enter_vimgrep_command(pattern)
+    vim.ui.input({ prompt = 'vimgrep ' .. pattern .. ': ' }, function(input)
 		if not input or input == '' then
 			-- vim.notify('No search keyword provided.', vim.log.levels.WARN)
 			return
@@ -384,25 +364,20 @@ end
 --    local pattern = '**/*.' .. extension
 --    enter_vimgrep_command(pattern)
 --end, { noremap = true, silent = true })
+vim.keymap.set('n', '<M-f>', function()
+    local extension = get_current_buffer_extension()
 
--- Helper function to set up vimgrep command
-local function setup_vimgrep_command(use_current_word)
-    local extension = get_current_buffer_extension() or 'txt'
+    if not extension then
+        extension = 'txt'
+    end
+
     local pattern = '**/*.' .. extension
-    enter_vimgrep_command(pattern, use_current_word)
-end
-
--- Key mappings
-vim.keymap.set({ 'n', 'v' }, '<M-f>', function()
-    setup_vimgrep_command(true)  -- Use word under cursor or selection
+    enter_vimgrep_command(pattern)
 end, { noremap = true, silent = true })
 
-vim.keymap.set('n', '<M-C-f>', function()
-    setup_vimgrep_command(false) -- Do not use word under cursor or selection
-end, { noremap = true, silent = true })
 
-vim.keymap.set( 'n', '<M-g>', function() enter_vimgrep_command('**/*.*', true) end, { noremap = true, silent = true })
-vim.keymap.set( 'n', '<M-G>', function() enter_vimgrep_command('**/.*', true) end, { noremap = true, silent = true })
+vim.keymap.set( 'n', '<M-g>', function() enter_vimgrep_command('**/*.*') end, { noremap = true, silent = true })
+vim.keymap.set( 'n', '<M-G>', function() enter_vimgrep_command('**/.*') end, { noremap = true, silent = true })
 
 -- :vimgrep /mypattern/j *.xml *.js
 -- :vimgrep /mypattern/g **/*.{c,cpp,cs}
@@ -415,7 +390,7 @@ end
 vim.keymap.set('n', '<M-F>', function()
     local extensions = { 'c', 'cpp', 'cs', 'css', 'go', 'h', 'hpp', 'html', 'java', 'js', 'jsx', 'json', 'lua', 'php', 'py', 'rs', 'sql', 'ts', 'tsx', 'xml', 'zig' }
     local pattern = construct_glob_pattern(extensions)
-    enter_vimgrep_command(pattern, true)
+    enter_vimgrep_command(pattern)
 end, { noremap = true, silent = true })
 
 map('n', '<M-v>', ':cdo s///gc | update<C-f><Esc>0f/li')
@@ -423,14 +398,12 @@ map('n', '<M-v>', ':cdo s///gc | update<C-f><Esc>0f/li')
 map('n', '<M-n>', ':cnext<CR>')
 map('n', '<M-p>', ':cprev<CR>')
 map('n', '<M-P>', ':clast<CR>')
-map('n', '<M-b>', ':copen<CR>')
-map('n', '<M-B>', ':cclose<CR>')
-
--- Function to toggle quickfix list
+-- map('n', '<M-b>', ':copen<CR>')
+-- Function to toggle the quickfix list
 function ToggleQuickfix()
     local is_open = false
 
-    -- Check if quickfix window is open
+    -- Check if the quickfix window is open
     for _, win in ipairs(vim.fn.getwininfo()) do
         if win.quickfix == 1 then
             is_open = true
@@ -444,29 +417,17 @@ function ToggleQuickfix()
         vim.cmd("copen")
     end
 end
--- vim.api.nvim_set_keymap('n', '<M-b>', ':lua ToggleQuickfix()<CR>', { noremap = true, silent = true })
+vim.api.nvim_set_keymap('n', '<M-b>', ':lua ToggleQuickfix()<CR>', { noremap = true, silent = true })
 
 -- Window management and movement
-local term_program = vim.fn.getenv("TERM_PROGRAM"):lower()
-if term_program == "wezterm" then
-    vim.api.nvim_set_keymap('n', '<C-w>h', '<Plug>WinMoveLeft', { noremap = false, silent = true })
-    vim.api.nvim_set_keymap('n', '<C-w>j', '<Plug>WinMoveDown', { noremap = false, silent = true })
-    vim.api.nvim_set_keymap('n', '<C-w>k', '<Plug>WinMoveUp', { noremap = false, silent = true })
-    vim.api.nvim_set_keymap('n', '<C-w>l', '<Plug>WinMoveRight', { noremap = false, silent = true })
-    map('n', '<M-c-u>', ':resize +2<CR>')
-    map('n', '<M-c-i>', ':resize -2<CR>')
-    map('n', '<M-c-o>', ':vertical resize +2<CR>')
-    map('n', '<M-c-y>', ':vertical resize -2<CR>')
-else
-    map('n', '<M-h>', '<Plug>WinMoveLeft')
-    map('n', '<M-j>', '<Plug>WinMoveDown')
-    map('n', '<M-k>', '<Plug>WinMoveUp')
-    map('n', '<M-l>', '<Plug>WinMoveRight')
-    map('n', '<M-u>', ':resize +2<CR>')
-    map('n', '<M-i>', ':resize -2<CR>')
-    map('n', '<M-o>', ':vertical resize +2<CR>')
-    map('n', '<M-y>', ':vertical resize -2<CR>')
-end
+map('n', '<M-u>', ':resize +2<CR>')
+map('n', '<M-i>', ':resize -2<CR>')
+map('n', '<M-o>', ':vertical resize +2<CR>')
+map('n', '<M-y>', ':vertical resize -2<CR>')
+map('n', '<M-h>', '<Plug>WinMoveLeft')
+map('n', '<M-j>', '<Plug>WinMoveDown')
+map('n', '<M-k>', '<Plug>WinMoveUp')
+map('n', '<M-l>', '<Plug>WinMoveRight')
 map('n', '<C-d>', '<C-d>zz')
 map('n', '<C-u>', '<C-u>zz')
 map('n', '<leader>l', ':Tabmerge right<CR>')
@@ -514,13 +475,6 @@ map('n', '<M-9>', '9gt')
 map('n', '<M-0>', ':tablast<CR>')
 map('n', '<leader>o', '<C-^>')
 
-local function normalize_slashes(path)
-    path = path:gsub("\\", "/")
-    path = path:gsub("/+", "/")
-    return path
-end
-
--- Session management
 function load_session()
   local session_dir = vim.fn.expand('~/.vim/sessions/')
   local pattern = 's*.vim'
@@ -531,14 +485,35 @@ function load_session()
     return
   end
 
-  -- Extract session and indices
+  -- Extract session indices, names, and paths
+  --local sessions = {}
+  --for _, filepath in ipairs(session_files) do
+  --  local filename = vim.fn.fnamemodify(filepath, ':t')
+  --  local index_str = filename:match('^s(%d*)%.vim$')
+  --  local index = tonumber(index_str)
+  --  if not index then
+  --    if index_str == '' then
+  --      index = 1 -- For 's.vim', set index to 1
+  --    else
+  --      index = math.huge -- For any other non-matching filename
+  --    end
+  --  end
+  --  table.insert(sessions, { index = index, name = filename, path = filepath })
+  --end
   local sessions = {}
-  local index = 0
   for _, filepath in ipairs(session_files) do
     local filename = vim.fn.fnamemodify(filepath, ':t')
     -- Exclude files with "layout" (case-insensitive)
     if not string.match(string.lower(filename), 'layout') then
-      index = index + 1
+      local index_str = filename:match('^s(%d*)%.vim$')
+      local index = tonumber(index_str)
+      if not index then
+        if index_str == '' then
+          index = 1 -- For 's.vim', set index to 1
+        else
+          index = math.huge -- For any other non-matching filename
+        end
+      end
       table.insert(sessions, { index = index, name = filename, path = filepath })
     end
   end
@@ -584,16 +559,22 @@ function load_session_also_works()
     return
   end
 
+  -- Extract session indices, names, and paths
+  --local sessions = {}
+  --local options = { 'Select a session to load:' }
+  --for idx, filepath in ipairs(session_files) do
+  --  local filename = vim.fn.fnamemodify(filepath, ':t')
+  --  table.insert(sessions, { idx = idx, name = filename, path = filepath })
+  --  table.insert(options, idx .. ': ' .. filename)
+  --end
   local sessions = {}
-  local index = 0
   local options = { 'Select a session to load:' }
   for idx, filepath in ipairs(session_files) do
     local filename = vim.fn.fnamemodify(filepath, ':t')
     -- Exclude files with "layout" (case-insensitive)
     if not string.match(string.lower(filename), 'layout') then
-      index = index + 1
-      table.insert(sessions, { idx = index, name = filename, path = filepath })
-      table.insert(options, index .. ': ' .. filename)
+      table.insert(sessions, { idx = idx, name = filename, path = filepath })
+      table.insert(options, idx .. ': ' .. filename)
     end
   end
 
@@ -602,11 +583,152 @@ function load_session_also_works()
   if choice > 0 and choice <= #sessions then
     local session = sessions[choice]
     vim.cmd('silent source ' .. session.path)
-    --print('Session loaded from ' .. session.path)
+    print('Session loaded from ' .. session.path)
   else
     print('No session selected.')
   end
 end
+
+
+
+-- Session management
+-- map('n', '<leader>m', ':mks! ~/.vim/sessions/s.vim<CR>')
+-- map('n', '<leader>.', ':silent so ~/.vim/sessions/s.vim<CR>')
+map('n', '<leader>.', ':lua load_session()<CR>', { noremap = true, silent = true })
+
+function save_tabs_and_splits_old()
+  local tab_count = vim.fn.tabpagenr('$')
+  if tab_count > 2 then
+    local current_tab = vim.fn.tabpagenr()
+    local current_win = vim.fn.winnr()
+
+    local file = io.open(vim.fn.expand("~/.vim/sessions/s_layout.vim"), "w")
+    file:write(tab_count .. "\n")
+
+    for i = 1, tab_count do
+      vim.cmd(i .. "tabnext")
+
+      local win_count = vim.fn.winnr('$')
+      file:write(win_count .. "\n")
+
+      for j = 1, win_count do
+        vim.cmd(j .. "wincmd w")
+        local buf_name = vim.fn.bufname('%')
+        if buf_name ~= "" then
+          local full_path = vim.fn.fnamemodify(buf_name, ':p')
+          file:write(full_path .. "\n")
+        end
+      end
+    end
+
+    file:write("TAB:" .. current_tab .. "\n")
+    file:close()
+
+    vim.cmd(current_tab .. "tabnext")
+    vim.cmd(current_win .. "wincmd w")
+    print("Session data saved to ~/.vim/sessions/")
+
+    -- Call mks! to save the session
+    vim.cmd("mks! ~/.vim/sessions/s.vim")
+  else
+    print("Not saving: Less than 3 tabs are open.")
+  end
+end
+
+function save_tabs_and_splits()
+  local tab_count = vim.fn.tabpagenr('$')
+  if tab_count > 2 then
+    local my_notes_tabs = {}
+    local current_tab = vim.fn.tabpagenr()
+    local current_win = vim.fn.winnr()
+
+    -- Iterate over tabs to count tabs containing "my_notes"
+    for i = 1, tab_count do
+      vim.cmd(i .. "tabnext")
+
+      local win_count = vim.fn.winnr('$')
+      local found_my_notes = false
+
+      for j = 1, win_count do
+        vim.cmd(j .. "wincmd w")
+        local buf_name = vim.fn.bufname('%')
+        if buf_name ~= "" then
+          local full_path = vim.fn.fnamemodify(buf_name, ':p')
+          if full_path:find("my_notes") then
+            found_my_notes = true
+            break  -- Found "my_notes" in this tab
+          end
+        end
+      end
+
+      if found_my_notes then
+        table.insert(my_notes_tabs, i)
+      end
+    end
+
+    -- Restore original tab and window
+    vim.cmd(current_tab .. "tabnext")
+    vim.cmd(current_win .. "wincmd w")
+
+    -- Determine session filenames
+    local session_dir = vim.fn.expand("~/.vim/sessions/")
+    local layout_filename
+    local session_filename
+
+    if #my_notes_tabs >= 2 then
+      -- Use default filenames
+      layout_filename = session_dir .. "s_layout.vim"
+      session_filename = session_dir .. "s.vim"
+    else
+      -- Find next available filenames
+      local index = 2
+      while true do
+        layout_filename = session_dir .. "s_layout_" .. index .. ".vim"
+        session_filename = session_dir .. "s" .. index .. ".vim"
+        if vim.fn.filereadable(layout_filename) == 0 and vim.fn.filereadable(session_filename) == 0 then
+          break
+        end
+        index = index + 1
+      end
+    end
+
+    -- Save tabs and splits layout
+    local file = io.open(layout_filename, "w")
+    file:write(tab_count .. "\n")
+
+    for i = 1, tab_count do
+      vim.cmd(i .. "tabnext")
+
+      local win_count = vim.fn.winnr('$')
+      file:write(win_count .. "\n")
+
+      for j = 1, win_count do
+        vim.cmd(j .. "wincmd w")
+        local buf_name = vim.fn.bufname('%')
+        if buf_name ~= "" then
+          local full_path = vim.fn.fnamemodify(buf_name, ':p')
+          file:write(full_path .. "\n")
+        end
+      end
+    end
+
+    file:write("TAB:" .. current_tab .. "\n")
+    file:close()
+
+    -- Restore original tab and window
+    vim.cmd(current_tab .. "tabnext")
+    vim.cmd(current_win .. "wincmd w")
+
+    print("Session data saved to " .. layout_filename)
+
+    -- Save the session
+    vim.cmd("mks! " .. session_filename)
+  else
+    print("Not saving: Less than 3 tabs are open.")
+  end
+end
+
+
 
 function load_tabs_and_splits()
   local file = io.open(vim.fn.expand("~/.vim/sessions/s_layout.vim"), "r")
@@ -652,141 +774,8 @@ function load_tabs_and_splits()
   end
 end
 
-function save_tabs_and_splits()
-    local my_notes_path = normalize_slashes(vim.env.my_notes_path or "")
-    local tab_count = vim.fn.tabpagenr('$')
-
-    local save_restriction = (#my_notes_path > 0 and tab_count > 2) or (tab_count > 1)
-    if not save_restriction then
-        print("Not saving: Less than required tabs are open.")
-        return
-    end
-
-    local my_notes_tabs = {}
-    local dir_counts = {}
-    local current_tab = vim.fn.tabpagenr()
-    local current_win = vim.fn.winnr()
-
-    -- Iterate over tabs to count tabs containing "my_notes_path"
-    for i = 1, tab_count do
-        vim.cmd(i .. "tabnext")
-
-        local win_count = vim.fn.winnr('$')
-        local found_my_notes = false
-
-        for j = 1, win_count do
-            vim.cmd(j .. "wincmd w")
-            local buf_name = vim.fn.bufname('%')
-            if buf_name ~= "" then
-                -- .* matches any characters up to the last /.
-                -- (.-) captures the smallest sequence of characters between the last two slashes, which is the parent directory name.
-                -- [^/]+$ ensures we're matching a file name (or final path component) after this last directory.
-                local full_path = normalize_slashes(vim.fn.fnamemodify(buf_name, ':p'))
-                -- local final_dir = full_path:match(".*/(.-)/[^/]+$") or ""
-                -- ([^/]+/[^/]+) captures two directory levels at the end of the path.
-                -- [^/]+$ matches the filename after the last directory.
-                local final_dir = full_path:match(".*/([^/]+/[^/]+)/[^/]+$") or ""
-                final_dir = final_dir:gsub("/", "_")
-
-                -- Count occurrences of the final directory
-                if final_dir ~= "" then
-                    dir_counts[final_dir] = (dir_counts[final_dir] or 0) + 1
-                end
-
-                if full_path:find(my_notes_path, 1, true) then
-                    found_my_notes = true
-                end
-            end
-        end
-
-        if found_my_notes then
-            table.insert(my_notes_tabs, i)
-        end
-    end
-
-    -- Restore original tab and window
-    vim.cmd(current_tab .. "tabnext")
-    vim.cmd(current_win .. "wincmd w")
-
-    -- Determine the most common final directory
-    local most_common_dir = nil
-    local max_count = 0
-    for dir, count in pairs(dir_counts) do
-        if count > max_count then
-            max_count = count
-            most_common_dir = dir
-        end
-    end
-
-    -- Determine session filenames
-    local session_dir = vim.fn.expand("~/.vim/sessions/")
-    local layout_filename
-    local session_filename
-
-    if #my_notes_tabs >= 2 then
-        -- Use default filenames if multiple my_notes_path tabs are found
-        layout_filename = session_dir .. "s_layout.vim"
-        session_filename = session_dir .. "s.vim"
-    else
-        -- Use most common directory or find next available filenames
-        if most_common_dir then
-            layout_filename = session_dir .. "s_layout_" .. most_common_dir .. ".vim"
-            session_filename = session_dir .. "s_" .. most_common_dir .. ".vim"
-        else
-            local index = 2
-            while true do
-                layout_filename = session_dir .. "s_layout_" .. index .. ".vim"
-                session_filename = session_dir .. "s" .. index .. ".vim"
-                if vim.fn.filereadable(layout_filename) == 0 and vim.fn.filereadable(session_filename) == 0 then
-                    break
-                end
-                index = index + 1
-            end
-        end
-    end
-
-    -- Save tabs and splits layout
-    local file = io.open(layout_filename, "w")
-    file:write(tab_count .. "\n")
-
-    for i = 1, tab_count do
-        vim.cmd(i .. "tabnext")
-
-        local win_count = vim.fn.winnr('$')
-        file:write(win_count .. "\n")
-
-        for j = 1, win_count do
-            vim.cmd(j .. "wincmd w")
-            local buf_name = vim.fn.bufname('%')
-            if buf_name ~= "" then
-                local full_path = normalize_slashes(vim.fn.fnamemodify(buf_name, ':p'))
-                file:write(full_path .. "\n")
-            end
-        end
-    end
-
-    file:write("TAB:" .. current_tab .. "\n")
-    file:close()
-
-    -- Restore original tab and window
-    vim.cmd(current_tab .. "tabnext")
-    vim.cmd(current_win .. "wincmd w")
-
-    print("Session data saved to " .. layout_filename)
-
-    -- Save the session
-    vim.cmd("mks! " .. session_filename)
-end
-
--- Load session keybind
--- map('n', '<leader>m', ':mks! ~/.vim/sessions/s.vim<CR>')
--- map('n', '<leader>.', ':silent so ~/.vim/sessions/s.vim<CR>')
-map('n', '<leader>.', ':lua load_session()<CR>')
---map('n', '<leader>.', ':lua load_session_also_works()<CR>')
- --vim.api.nvim_set_keymap('n', '<leader>.', ':lua load_tabs_and_splits()<CR>', { noremap = true, silent = true })
-
--- Save session keybind
 vim.api.nvim_set_keymap('n', '<leader>m', ':lua save_tabs_and_splits()<CR>', { noremap = true, silent = true })
+-- vim.api.nvim_set_keymap('n', '<leader>.', ':lua load_tabs_and_splits()<CR>', { noremap = true, silent = true })
 
 -- Open new tabs
 map('n', '<M-m>', ':tabe ~/.config/nvim/init.lua<CR>')
@@ -808,52 +797,7 @@ map('n', '<leader>wr', ':%s/\\s\\+$<CR>') -- Remove all extra whitespace
 map('n', '<leader>wu', ':%s/\\%u200b//g<CR>') -- Remove all extra unicode chars
 map('n', '<leader>wb', ':%s/[[:cntrl:]]//g<CR>') -- Remove all hidden characters
 map('n', '<leader>wf', 'gqG<C-o>zz') -- Format rest of the text with vim formatting, go back and center screen
--- map('n', '<leader>wp', ':s,\\\\,/,g<CR>') -- Normalize path
-function NormalizePath()
-    vim.cmd('normal! 0')
-    vim.cmd('silent! s,\\\\,/,g')
-    vim.cmd('silent! s,/\\+,/,g')
-    vim.cmd('silent! noh')
-end
-vim.api.nvim_set_keymap('n', '<leader>wp', ':lua NormalizePath()<CR>', { noremap = true, silent = true })
-
-local function normalize_path(path)
-    if not path then return nil end
-    -- Replace backslashes with forward slashes and remove duplicate forward slashes
-    path = path:gsub("\\", "/"):gsub("//+", "/")
-    return path
-end
-
-function ReplacePathBasedOnContext()
-    local my_notes_path = os.getenv("my_notes_path")
-    local code_root_dir = os.getenv("code_root_dir")
-
-    if not my_notes_path or not code_root_dir then
-        print("Environment variables 'my_notes_path' or 'code_root_dir' are not set.")
-        return
-    end
-
-    -- Normalize paths
-    my_notes_path = normalize_path(my_notes_path)
-    code_root_dir = normalize_path(code_root_dir)
-
-    local line = vim.fn.getline(".")
-
-    if line:find("{my_notes_path}/", 1, true) or line:find("{code_root_dir}/", 1, true) then
-        line = line:gsub("{my_notes_path}/", vim.pesc(my_notes_path))
-        line = line:gsub("{code_root_dir}/", vim.pesc(code_root_dir))
-    else
-        line = line:gsub(vim.pesc(my_notes_path), "{my_notes_path}/")
-        line = line:gsub(vim.pesc(code_root_dir), "{code_root_dir}/")
-    end
-
-    line = normalize_path(line) -- Just to replace any concecutive slashes again...
-    -- Update line in buffer
-    vim.fn.setline(".", line)
-end
-
-vim.api.nvim_set_keymap('n', '<leader>wo', ':lua ReplacePathBasedOnContext()<CR>', { noremap = true, silent = true })
-
+map('n', '<leader>wp', ':s,\\\\,/,g<CR>') -- Normalize path
 map('v', '<leader>gu', ':s/\\<./\\u&/g<CR>:noh<CR>:noh<CR>') -- Capitalize first letter of each word on visually selected line
 map('n', '<leader>*', [[:/^\*\*\*$<CR>]]) -- Search for my bookmark
 map('v', '<leader>%', '/\\%V') -- Search in highlighted text
@@ -1193,22 +1137,8 @@ local function SqlExecCommand()
     local code_root_dir = os.getenv("code_root_dir") or "~/"
     code_root_dir = code_root_dir:gsub(" ", '" "') -- Handle spaces in the path
 
-    -- Add '/' at the end if it doesn't exist
-    --if not code_root_dir:match("/$") then
-    --    code_root_dir = code_root_dir .. "/"
-    --end
-
-    -- Remove '/' at the end if it exists (not necessary really)
-    code_root_dir = code_root_dir:gsub("/$", "")
-
-    local executable_net8 = code_root_dir .. '/Code2/SQL/my_sql/SqlExec/SqlExec/bin/Debug/net8.0/SqlExec.exe'
-    local executable_net7 = code_root_dir .. '/Code2/SQL/my_sql/SqlExec/SqlExec/bin/Debug/net7.0/SqlExec.exe'
-
-    if vim.fn.has('win32') == 0 then
-        executable_net8 = executable_net8:gsub("%.exe$", "")
-        executable_net7 = executable_net7:gsub("%.exe$", "")
-    end
-
+    local executable_net8 = code_root_dir .. 'Code2/Sql/my_sql/SqlExec/SqlExec/bin/Debug/net8.0/SqlExec.exe'
+    local executable_net7 = code_root_dir .. 'Code2/Sql/my_sql/SqlExec/SqlExec/bin/Debug/net7.0/SqlExec.exe'
     local function file_exists(path)
         local stat = vim.loop.fs_stat(path)
         return stat ~= nil
@@ -1250,51 +1180,6 @@ local function SqlExecCommand()
     vim.cmd('belowright 15new')
     local new_buf = vim.api.nvim_get_current_buf()
     vim.api.nvim_buf_set_lines(new_buf, 0, -1, false, vim.split(output, "\n"))
-    --vim.api.nvim_buf_set_option(new_buf, "bufhidden", "wipe") -- Automatically wipe the buffer when closed
-end
-
-local function read_config(key, default_value)
-    local my_notes_path = os.getenv("my_notes_path")
-    local config_file_path = my_notes_path .. "/scripts/files/nvim_config.txt"
-    local value = default_value
-    local key_lower = key:lower()
-
-    for line in io.lines(config_file_path) do
-        local line_lower = line:lower()
-        if line_lower:match("^" .. key_lower .. ":") then
-            value = line:match(key .. ": (%S+)")
-            if value then
-                value = value:match("^%s*(.-)%s*$") -- Trim leading and trailing whitespace
-            end
-            if not value or value == "" then
-                value = default_value
-            end
-            break
-        end
-    end
-
-    return value
-end
-
--- Check if prioritizing build scripts is enabled
-local function should_prioritize_build_script()
-    local prioritize = read_config("PrioritizeBuildScript", "false")
-    return prioritize:lower() == "true"
-end
-
-local function is_prioritized_filetype(filetype)
-    local prioritized_filetypes = {
-        'c', 'cpp', 'cs', 'css', 'go', 'h', 'hpp', 'html',
-        'java', 'js', 'jsx', 'lua', 'php', 'py', 'python',
-        'rs', 'ts', 'tsx', 'zig'
-    }
-
-    for _, ft in ipairs(prioritized_filetypes) do
-        if ft == filetype then
-            return true
-        end
-    end
-    return false
 end
 
 function compile_run()
@@ -1302,19 +1187,6 @@ function compile_run()
 
     local filetype = vim.bo.filetype
     local is_windows = vim.fn.has('win32') == 1 -- or vim.fn.has('win16') == 1 or vim.fn.has('win64') == 1
-    local build_script = is_windows and './build.ps1' or './build.sh'
-
-    if should_prioritize_build_script() and is_prioritized_filetype(filetype) then
-        local build_script_exists = vim.fn.filereadable(build_script) == 1
-        if build_script_exists then
-            if is_windows then
-                vim.cmd('!powershell -ExecutionPolicy ByPass -File build.ps1')
-            else
-                vim.cmd('!bash ./build.sh')
-            end
-            return
-        end
-    end
 
     if filetype == 'c' then
         if is_windows then
@@ -1333,16 +1205,17 @@ function compile_run()
             vim.cmd('!time ./%:r')
         end
     elseif filetype == 'java' then
-        --local build_script = is_windows and './build.ps1' or './build.sh'
-        --local build_script_exists = vim.fn.filereadable(build_script) == 1
-        --if build_script_exists then
-        --    if is_windows then
-        --        vim.cmd('!powershell -ExecutionPolicy ByPass -File build.ps1')
-        --    else
-        --        vim.cmd('!bash ./build.sh')
-        --    end
-        --    return
-        --end
+        local build_script = is_windows and './build.ps1' or './build.sh'
+        local build_script_exists = vim.fn.filereadable(build_script) == 1
+        if build_script_exists then
+            if is_windows then
+                vim.cmd('!powershell -ExecutionPolicy ByPass -File build.ps1')
+            else
+                vim.cmd('!bash ./build.sh')
+            end
+            return
+        end
+
         if is_windows then
             vim.cmd('!javac %')
             vim.cmd('!java -cp %:p:h %:t:r')
@@ -1417,22 +1290,20 @@ function execute_command()
     local mode = vim.fn.mode()
     local command
 
-    if mode == "v" or mode == "V" or mode == "\22" then -- "\22" is for visual block mode
-        -- Yank selection to "v" register
-        vim.cmd('normal! "vy')
-        command = vim.fn.getreg("v")
+    if mode == 'v' or mode == 'V' then
+        vim.cmd('normal! gv"xy')
+        command = vim.fn.getreg('x')
     else
         command = vim.fn.getline('.')
     end
 
     -- Copy to clipboard
-    -- vim.fn.setreg('+', command)
-    -- print("Copied to clipboard: " .. command)
+    --vim.fn.setreg('+', command)
+    --print("Copied to clipboard: " .. command)
     -- Execute it
     vim.cmd(command)
 end
 
---
 vim.api.nvim_set_keymap('n', '<leader>,', ':lua execute_command()<CR>', { noremap = true, silent = true })
 vim.api.nvim_set_keymap('v', '<leader>,', ':lua execute_command()<CR>', { noremap = true, silent = true })
 
@@ -1463,6 +1334,12 @@ function copy_current_file_path()
     end
 end
 
+local function normalize_slashes(path)
+    path = path:gsub("\\", "/")
+    path = path:gsub("/+", "/")
+    return path
+end
+
 local function remove_file_name(path)
     -- Use a pattern to find the last `/`, including everything up to it but not beyond
     local directory_path = path:match("(.*/)")
@@ -1477,55 +1354,34 @@ function copy_current_file_path(replace_env)
     local path = get_current_file_path()
     if path == "" then
         print("No file in current buffer")
-        return
-    end
-
-    if replace_env then
-        -- Replace "my_notes_path"
-        local my_notes_path = vim.fn.getenv("my_notes_path")
-        if my_notes_path then
-            my_notes_path = normalize_slashes(my_notes_path)
-            path = normalize_slashes(path)
-
-            if my_notes_path:sub(-1) == "/" then
-                my_notes_path = my_notes_path:sub(1, -2)
-            end
-
-            local pattern = "^" .. vim.pesc(my_notes_path)
-            path = path:gsub(pattern, "{my_notes_path}")
-        end
-
-        -- Replace "code_root_dir"
-        local code_root_dir = vim.fn.getenv("code_root_dir")
-        if code_root_dir then
-            code_root_dir = normalize_slashes(code_root_dir)
-
-            if code_root_dir:sub(-1) == "/" then
-                code_root_dir = code_root_dir:sub(1, -2)
-            end
-
-            --local pattern = "^" .. vim.pesc(code_root_dir)
-            --path = path:gsub(pattern, "{code_root_dir}")
-            local pattern = "^" .. vim.pesc(code_root_dir .. "/Code")
-            path = path:gsub(pattern, "{code_root_dir}/Code")
-        end
     else
-        path = remove_file_name(path)
+        if replace_env then
+            local my_notes_path = vim.fn.getenv("my_notes_path")
+            if my_notes_path then
+                my_notes_path = normalize_slashes(my_notes_path)
+                path = normalize_slashes(path)
+
+                if my_notes_path:sub(-1) == "/" then
+                    my_notes_path = my_notes_path:sub(1, -2)
+                end
+
+                local pattern = "^" .. vim.pesc(my_notes_path)
+                path = path:gsub(pattern, "{my_notes_path}")
+
+            end
+        else
+            path = remove_file_name(path)
+        end
+
+        vim.fn.setreg('+', path)
+        print("Copied to clipboard: " .. path)
     end
-
-    vim.fn.setreg('+', path)
-    print("Copied to clipboard: " .. path)
 end
-
--- Keybindings
-vim.api.nvim_set_keymap('n', '<leader>-', ':lua copy_current_file_path(true)<CR>', { noremap = true, silent = true })
-vim.api.nvim_set_keymap('v', '<leader>-', ':lua copy_current_file_path(false)<CR>', { noremap = true, silent = true })
 
 vim.api.nvim_set_keymap('n', '<leader>-', ':lua copy_current_file_path(true)<CR>', { noremap = true, silent = true })
 vim.api.nvim_set_keymap('v', '<leader>-', ':lua copy_current_file_path(false)<CR>', { noremap = true, silent = true })
 
 vim.keymap.set('n', '<leader>gl', function()
-    vim.cmd('tabnew')
     require('gitgraph').draw({}, { all = true, max_count = 5000 })
 end, { desc = "GitGraph - Draw" })
 
@@ -1533,16 +1389,11 @@ function PythonExecCommand()
     vim.cmd('w') -- Save the file first
     local code_root_dir = os.getenv("code_root_dir") or "~/"
     code_root_dir = code_root_dir:gsub(" ", '" "')
-
-    --local script_path = code_root_dir .. "Code2/Python/my_py/scripts/read_file.py"
-    --local script_path = code_root_dir .. "Code2/Python/my_py/scripts/gpt.py"
-    --local script_path = code_root_dir .. "Code2/Python/my_py/scripts/claude/claude.py"
-    --local script_path = code_root_dir .. "Code2/Python/my_py/scripts/gemini/gemini.py"
-    --local script_path = code_root_dir .. "Code2/Python/my_py/scripts/mistral/mistral.py"
-    local command = read_config("PythonExecCommand", "gpt")
-    local script_path = code_root_dir .. "Code2/Python/my_py/scripts/" .. command .. ".py"
-    --print(script_path)
-
+    -- local script_path = code_root_dir .. "Code2/Python/my_py/scripts/read_file.py"
+    local script_path = code_root_dir .. "Code2/Python/my_py/scripts/gpt.py"
+    -- local script_path = code_root_dir .. "Code2/Python/my_py/scripts/claude/claude.py"
+    -- local script_path = code_root_dir .. "Code2/Python/my_py/scripts/gemini/gemini.py"
+    -- local script_path = code_root_dir .. "Code2/Python/my_py/scripts/mistral/mistral.py"
     local print_to_current_buffer = false
     local current_file = vim.fn.expand('%:p')
     local mode = vim.fn.mode()
@@ -1579,7 +1430,7 @@ function PythonExecCommand()
     local formatted_args = table.concat(args, " ")
     local cmd = "python " .. script_path .. " " .. formatted_args
     local output = vim.fn.system(cmd)
-    --print("args: " .. formatted_args)
+    -- print("args: " .. formatted_args)
 
     if print_to_current_buffer then
         local current_buf = vim.api.nvim_get_current_buf()
@@ -1598,91 +1449,6 @@ vim.api.nvim_set_keymap('n', '<M-c>', '<cmd>lua PythonExecCommand()<CR>', { nore
 vim.api.nvim_set_keymap('v', '<M-c>', '<cmd>lua PythonExecCommand()<CR>', { noremap = true, silent = true })
 vim.api.nvim_set_keymap('i', '<M-c>', '<cmd>lua PythonExecCommand()<CR>', { noremap = true, silent = true })
 
-function CyclePythonExecCommand()
-    local my_notes_path = os.getenv("my_notes_path")
-    local config_file_path = my_notes_path .. "/scripts/files/nvim_config.txt"
-    local possible_commands = { "read_file", "gpt", "claude", "gemini", "mistral" }
-    local current_command = read_config("PythonExecCommand", "gpt")
-
-    -- Identify current index, then rotate to the next
-    local current_index = nil
-    for i, cmd in ipairs(possible_commands) do
-        if cmd == current_command then
-            current_index = i
-            break
-        end
-    end
-
-    local next_index = current_index % #possible_commands + 1
-    local new_command = possible_commands[next_index]
-
-    -- Rewrite config file with the new command
-    local lines = {}
-    local command_updated = false
-
-    for line in io.lines(config_file_path) do
-        if line:match("^PythonExecCommand:") then
-            table.insert(lines, "PythonExecCommand: " .. new_command)
-            command_updated = true
-        else
-            table.insert(lines, line)
-        end
-    end
-
-    -- If there's no existing command, append it
-    if not command_updated then
-        table.insert(lines, "PythonExecCommand: " .. new_command)
-    end
-
-    -- Write changes back to the file
-    local file = io.open(config_file_path, "w")
-    for _, line in ipairs(lines) do
-        file:write(line .. "\n")
-    end
-    file:close()
-
-    print("New PythonExecCommand: " .. new_command)
-end
-
-function TogglePrioritizeBuildScript()
-    local my_notes_path = os.getenv("my_notes_path")
-    local config_file_path = my_notes_path .. "/scripts/files/nvim_config.txt"
-
-    local lines = {}
-    local current_value = "false"
-    local updated = false
-
-    for line in io.lines(config_file_path) do
-        if line:match("^PrioritizeBuildScript:") then
-            current_value = line:match("PrioritizeBuildScript: (%S+)")
-            local new_value = current_value:lower() == "true" and "false" or "true"
-            table.insert(lines, "PrioritizeBuildScript: " .. new_value)
-            updated = true
-        else
-            table.insert(lines, line)
-        end
-    end
-
-    -- If the key wasn't found, append it with the new value
-    if not updated then
-        table.insert(lines, "PrioritizeBuildScript: true")
-    end
-
-    -- Write changes back to file
-    local file = io.open(config_file_path, "w")
-    for _, line in ipairs(lines) do
-        file:write(line .. "\n")
-    end
-    file:close()
-
-    local new_value = current_value:lower() == "true" and "false" or "true"
-    print("PrioritizeBuildScript toggled to: " .. new_value)
-end
-
-vim.api.nvim_create_user_command('CyclePythonExecCommand', CyclePythonExecCommand, {})
-vim.api.nvim_create_user_command('TogglePrioritizeBuildScript', TogglePrioritizeBuildScript, {})
-
--- lua print(vim.fn.expand("<cWORD>"))
 function open_file_with_env()
     -- local cword = vim.fn.expand("<cfile>")
     local cword = vim.fn.expand("<cWORD>")
@@ -1691,8 +1457,6 @@ function open_file_with_env()
     if trimmed_cword ~= nil then
         cword = trimmed_cword
     end
-    -- hmmm
-    cword = cword:gsub("#", "\\#")
     -- print("cword: " .. cword)
 
     if cword:find("{") then
@@ -1720,23 +1484,9 @@ function open_file_with_env()
 end
 
 vim.api.nvim_set_keymap('n', 'gf', ':lua open_file_with_env()<CR>', { noremap = true, silent = true })
-
-function open_in_firefox()
-    local cword = vim.fn.expand("<cWORD>")
-    if cword:find("http") or cword:find(":") then
-        vim.fn.system("firefox " .. vim.fn.shellescape(cword) .. " &")
-    else
-        -- cword = cword:gsub('"', ''):gsub(',', ''):gsub("'", '')
-        cword = cword:match([["(.-)"]]) or cword:match([['(.-)']]) or cword
-        local url = "https://github.com/" .. cword
-        vim.fn.system("firefox " .. vim.fn.shellescape(url) .. " &")
-    end
-end
-
 -- vim.api.nvim_set_keymap('n', 'gx', ':!open <cWORD><CR>', { noremap = true, silent = true })
 -- vim.api.nvim_set_keymap('n', 'gx', ':!nohup firefox <cWORD> &<CR>', { noremap = true, silent = true })
--- vim.api.nvim_set_keymap('n', 'gx', ':!firefox <cWORD> &<CR>', { noremap = true, silent = true })
-vim.api.nvim_set_keymap('n', 'gx', ':lua open_in_firefox()<CR>', { noremap = true, silent = true })
+vim.api.nvim_set_keymap('n', 'gx', ':!firefox <cWORD> &<CR>', { noremap = true, silent = true })
 
 local function diff_copy()
     local current_buf = vim.api.nvim_get_current_buf()
@@ -1904,475 +1654,5 @@ vim.keymap.set('v', '<leader>r', function()
     VisualReplaceCommand()
 end, { noremap = true, silent = true })
 
--- Pick a comand to run via telescope
-local actions = require("telescope.actions")
-local action_state = require("telescope.actions.state")
-local pickers = require("telescope.pickers")
-local finders = require("telescope.finders")
-local conf = require("telescope.config").values
-
-vim.keymap.set('n', '<leader><leader>', function()
-    local commands = {
-        -- Packer
-        { label = "PackerUpdate", cmd = "PackerUpdate" },
-        { label = "PackerLoad", cmd = "PackerLoad" },
-        { label = "PackerSync", cmd = "PackerSync" },
-        -- Lazy
-        { label = "Lazy", cmd = "Lazy" },
-        -- Custom
-        { label = "Diffi", cmd = "Diffi" },
-        { label = "DiffCp", cmd = "DiffCp" },
-        { label = "MakefileTargets", cmd = "MakefileTargets" },
-        { label = "GoLangTestFiles", cmd = "GoLangTestFiles" },
-        { label = "Update Config - CyclePythonExecCommand", cmd = "CyclePythonExecCommand" },
-        { label = "Update Config - TogglePrioritizeBuildScript", cmd = "TogglePrioritizeBuildScript" },
-        -- SQL
-        { label = "SqlsExecuteQuery", cmd = "SqlsExecuteQuery" },
-        { label = "SqlsShowDatabases", cmd = "SqlsShowDatabases" },
-        { label = "SqlsShowSchemas", cmd = "SqlsShowSchemas" },
-        { label = "SqlsShowConnections", cmd = "SqlsShowConnections" },
-        { label = "SqlsSwitchDatabase", cmd = "SqlsSwitchDatabase" },
-        { label = "SqlsSwitchConnection", cmd = "SqlsSwitchConnection" },
-        -- GP
-        { label = "GpChatNew - New chat", cmd = "GpChatNew" },
-        { label = "GpChatPaste - Visual chat paste", cmd = "GpChatPaste" },
-        { label = "GpChatToggle - Toggle chat", cmd = "GpChatToggle" },
-        { label = "GpChatFinder - Find chat history", cmd = "GpChatFinder" },
-        { label = "GpChatRespond - Request a GPT response for current chat", cmd = "GpChatRespond" },
-        { label = "GpChatDelete - Delete the current chat", cmd = "GpChatDelete" },
-        { label = "GpRewrite - Rewrite using a prompt", cmd = "GpRewrite" },
-        { label = "GpAppend - Add GPT response after current content", cmd = "GpAppend" },
-        { label = "GpPrepend - Add GPT response before current content", cmd = "GpPrepend" },
-        { label = "GpEnew - Add GPT response into a new buffer", cmd = "GpEnew" },
-        { label = "GpNew - Add GPT response into a new horizontal split", cmd = "GpNew" },
-        { label = "GpVnew - Add GPT response into a new vertical split", cmd = "GpVnew" },
-        { label = "GpTabnew - Add GPT response into a new tab", cmd = "GpTabnew" },
-        { label = "GpPopup - Add GPT response into a pop-up window", cmd = "GpPopup" },
-        { label = "GpImplement - Use comments to develop code", cmd = "GpImplement" },
-        { label = "GpContext - Provide custom context per repository", cmd = "GpContext" },
-        { label = "GpWhisper - Transcribe and replace content", cmd = "GpWhisper" },
-        { label = "GpWhisperRewrite - Transcribe and rewrite content", cmd = "GpWhisperRewrite" },
-        { label = "GpWhisperAppend - Transcribe and append content", cmd = "GpWhisperAppend" },
-        { label = "GpWhisperPrepend - Transcribe and prepend content", cmd = "GpWhisperPrepend" },
-        { label = "GpWhisperEnew - Transcribe into a new buffer", cmd = "GpWhisperEnew" },
-        { label = "GpWhisperPopup - Transcribe into a pop-up window", cmd = "GpWhisperPopup" },
-        { label = "GpNextAgent - Switch to the next agent", cmd = "GpNextAgent" },
-        { label = "GpStop - Stop all ongoing responses", cmd = "GpStop" },
-        { label = "GpInspectPlugin - Inspect the GPT plugin object", cmd = "GpInspectPlugin" },
-        { label = "GpChatNew - Visual new chat for selected content", cmd = "GpChatNew" },
-        { label = "GpChatPaste - Visual chat paste for selection", cmd = "GpChatPaste" },
-        { label = "GpChatToggle - Visual toggle chat for selection", cmd = "GpChatToggle" },
-        { label = "GpRewrite - Rewrite content inline", cmd = "GpRewrite" },
-        { label = "GpAppend - Append content inline", cmd = "GpAppend" },
-        { label = "GpPrepend - Prepend content inline", cmd = "GpPrepend" },
-        { label = "GpRewrite - Rewrite selected content", cmd = "GpRewrite" },
-        { label = "GpAppend - Append after selected content", cmd = "GpAppend" },
-        { label = "GpPrepend - Prepend before selected content", cmd = "GpPrepend" },
-        { label = "GpPopup - Add GPT response to a visual pop-up window", cmd = "GpPopup" },
-        { label = "GpEnew - Add GPT response to a visual new buffer", cmd = "GpEnew" },
-        { label = "GpNew - Add GPT response to a visual horizontal split", cmd = "GpNew" },
-        { label = "GpVnew - Add GPT response to a visual vertical split", cmd = "GpVnew" },
-        { label = "GpTabnew - Add GPT response to a visual new tab", cmd = "GpTabnew" },
-        -- ChatGPT
-        { label = "ChatGPTRun Translate - Translate content", cmd = "ChatGPTRun translate" },
-        { label = "ChatGPTRun Keywords - Generate keywords", cmd = "ChatGPTRun keywords" },
-        { label = "ChatGPTRun Fix Bugs - Fix bugs in code", cmd = "ChatGPTRun fix_bugs" },
-        { label = "ChatGPTRun Roxygen Edit - Edit Roxygen comments", cmd = "ChatGPTRun roxygen_edit" },
-        { label = "ChatGPTEditWithInstructions - Edit with instructions", cmd = "ChatGPTEditWithInstructions" },
-        { label = "ChatGPTRun Explain Code - Explain the code", cmd = "ChatGPTRun explain_code" },
-        { label = "ChatGPTRun Complete Code - Complete selected code", cmd = "ChatGPTRun complete_code" },
-        { label = "ChatGPTRun Summarize - Summarize selected content", cmd = "ChatGPTRun summarize" },
-        { label = "ChatGPTRun Grammar Correction - Correct grammar", cmd = "ChatGPTRun grammar_correction" },
-        { label = "ChatGPTRun Docstring - Generate docstring", cmd = "ChatGPTRun docstring" },
-        { label = "ChatGPTRun Add Tests - Add tests for code", cmd = "ChatGPTRun add_tests" },
-        { label = "ChatGPTRun Optimize Code - Optimize the code", cmd = "ChatGPTRun optimize_code" },
-        { label = "ChatGPTRun Code Readability Analysis - Analyze code readability", cmd = "ChatGPTRun code_readability_analysis" },
-        { label = "ChatGPT - Run ChatGPT for selection", cmd = "ChatGPT" },
-        -- LSP
-        { label = "LSP Info", cmd = "LspInfo" },
-        { label = "LSP Log", cmd = "LspLog" },
-        { label = "LSP Document Symbols", cmd = "lua vim.lsp.buf.document_symbol()" },
-        { label = "LSP Client Attached", cmd = "lua print(vim.lsp.buf.server_ready())" },
-        { label = "LSP Client Capabilities", cmd = "lua print(vim.inspect(vim.lsp.get_active_clients()[1].server_capabilities))" },
-        { label = "LSP Client Name", cmd = "lua print(vim.lsp.get_active_clients()[1].name)" },
-        { label = "LSP Active Clients", cmd = "lua print(vim.inspect(vim.lsp.get_active_clients()))" },
-        { label = "LSP Start Client", cmd = "lua vim.lsp.start_client({ name = 'example', cmd = {'path/to/server'} })" },
-        { label = "LSP Stop Client", cmd = "lua vim.lsp.stop_client(vim.lsp.get_active_clients())" },
-        -- Telescope file pickers
-        { label = "Telescope Find files", cmd = "lua require('telescope.builtin').find_files()" },
-        { label = "Telescope Git files", cmd = "lua require('telescope.builtin').git_files()" },
-        { label = "Telescope Grep string", cmd = "lua require('telescope.builtin').grep_string()" },
-        { label = "Telescope Live grep", cmd = "lua require('telescope.builtin').live_grep()" },
-        -- Telescope vim pickers
-        { label = "Telescope Buffers", cmd = "lua require('telescope.builtin').buffers()" },
-        { label = "Telescope Old files", cmd = "lua require('telescope.builtin').oldfiles()" },
-        { label = "Telescope Commands", cmd = "lua require('telescope.builtin').commands()" },
-        { label = "Telescope Tags", cmd = "lua require('telescope.builtin').tags()" },
-        { label = "Telescope Command history", cmd = "lua require('telescope.builtin').command_history()" },
-        { label = "Telescope Search history", cmd = "lua require('telescope.builtin').search_history()" },
-        { label = "Telescope Help tags", cmd = "lua require('telescope.builtin').help_tags()" },
-        { label = "Telescope Man pages", cmd = "lua require('telescope.builtin').man_pages()" },
-        { label = "Telescope Marks", cmd = "lua require('telescope.builtin').marks()" },
-        { label = "Telescope Colorscheme", cmd = "lua require('telescope.builtin').colorscheme()" },
-        { label = "Telescope Quickfix", cmd = "lua require('telescope.builtin').quickfix()" },
-        { label = "Telescope Loclist", cmd = "lua require('telescope.builtin').loclist()" },
-        { label = "Telescope Jumplist", cmd = "lua require('telescope.builtin').jumplist()" },
-        { label = "Telescope Vim options", cmd = "lua require('telescope.builtin').vim_options()" },
-        { label = "Telescope Registers", cmd = "lua require('telescope.builtin').registers()" },
-        { label = "Telescope Keymaps", cmd = "lua require('telescope.builtin').keymaps()" },
-        { label = "Telescope Filetypes", cmd = "lua require('telescope.builtin').filetypes()" },
-        { label = "Telescope Highlights", cmd = "lua require('telescope.builtin').highlights()" },
-        { label = "Telescope Resume last picker", cmd = "lua require('telescope.builtin').resume()" }, -- Inception?
-        { label = "Telescope Pickers", cmd = "lua require('telescope.builtin').pickers()" },
-        -- Telescope LSP pickers
-        { label = "Telescope LSP references", cmd = "lua require('telescope.builtin').lsp_references()" },
-        { label = "Telescope LSP incoming calls", cmd = "lua require('telescope.builtin').lsp_incoming_calls()" },
-        { label = "Telescope LSP outgoing calls", cmd = "lua require('telescope.builtin').lsp_outgoing_calls()" },
-        { label = "Telescope LSP document symbols", cmd = "lua require('telescope.builtin').lsp_document_symbols()" },
-        { label = "Telescope LSP workspace symbols", cmd = "lua require('telescope.builtin').lsp_workspace_symbols()" },
-        { label = "Telescope LSP dynamic workspace symbols", cmd = "lua require('telescope.builtin').lsp_dynamic_workspace_symbols()" },
-        { label = "Telescope Diagnostics", cmd = "lua require('telescope.builtin').diagnostics()" },
-        { label = "Telescope LSP implementations", cmd = "lua require('telescope.builtin').lsp_implementations()" },
-        { label = "Telescope LSP definitions", cmd = "lua require('telescope.builtin').lsp_definitions()" },
-        { label = "Telescope LSP type definitions", cmd = "lua require('telescope.builtin').lsp_type_definitions()" },
-        -- Telescope git pickers
-        { label = "Telescope Git commits", cmd = "lua require('telescope.builtin').git_commits()" },
-        { label = "Telescope Git branches", cmd = "lua require('telescope.builtin').git_branches()" },
-        { label = "Telescope Git status", cmd = "lua require('telescope.builtin').git_status()" },
-        { label = "Telescope Git stash", cmd = "lua require('telescope.builtin').git_stash()" },
-        -- Telescope Treesitter pickers
-        { label = "Telescope Treesitter", cmd = "lua require('telescope.builtin').treesitter()" },
-        -- Telescope list pickers
-        { label = "Telescope Planets", cmd = "lua require('telescope.builtin').planets()" },
-        { label = "Telescope Built-in pickers", cmd = "lua require('telescope.builtin').builtin()" },
-        { label = "Telescope Lua reloader", cmd = "lua require('telescope.builtin').reloader()" },
-        { label = "Telescope Symbols", cmd = "lua require('telescope.builtin').symbols()" },
-        -- Treesitter
-        { label = "Treesitter Toggle Highlighting", cmd = "lua vim.cmd('TSBufToggle highlight')" },
-        { label = "Treesitter Inspect Tree", cmd = "InspectTree" },
-        { label = "Treesitter Install info", cmd = "TSInstallInfo" },
-        -- Diagnostics
-        { label = "Diagnostics Buffer ", cmd = "lua print(vim.inspect(vim.diagnostic.get(0)))" },
-        { label = "Diagnostics Workspace ", cmd = "lua print(vim.inspect(vim.diagnostic.get()))" },
-        { label = "Diagnostics Cursor ", cmd = "lua print(vim.inspect(vim.diagnostic.get_cursor()))" },
-        -- Trouble
-        { label = "Trouble diagnostics", cmd = "Trouble diagnostics" },
-        { label = "Trouble fzf", cmd = "Trouble fzf" },
-        { label = "Trouble fzf_files", cmd = "Trouble fzf" },
-        { label = "Trouble loclist", cmd = "Trouble loclist" },
-        { label = "Trouble lsp", cmd = "Trouble lsp" },
-        { label = "Trouble lsp_command", cmd = "Trouble lsp_command" },
-        { label = "Trouble lsp_declarations", cmd = "Trouble lsp_declarations" },
-        { label = "Trouble lsp_definitions", cmd = "Trouble lsp_definitions" },
-        { label = "Trouble lsp_document_symbols", cmd = "Trouble lsp_document_symbols" },
-        { label = "Trouble lsp_implementations", cmd = "Trouble lsp_implementations" },
-        { label = "Trouble lsp_incoming_calls", cmd = "Trouble lsp_incoming_calls" },
-        { label = "Trouble lsp_outgoing_calls", cmd = "Trouble lsp_outgoing_calls" },
-        { label = "Trouble lsp_references", cmd = "Trouble lsp_references" },
-        { label = "Trouble lsp_type_definitions", cmd = "Trouble lsp_type_definitions" },
-        { label = "Trouble qflist", cmd = "Trouble qflist" },
-        { label = "Trouble quickfix", cmd = "Trouble quickfix" },
-        { label = "Trouble symbols", cmd = "Trouble symbols" },
-        { label = "Trouble telescope", cmd = "Trouble telescope" },
-        { label = "Trouble telescope_files", cmd = "Trouble telescope_files" },
-        -- General
-        { label = "messages", cmd = "messages" },
-        { label = "Reload Configuration", cmd = "lua vim.cmd('source ' .. vim.env.MYVIMRC)" },
-        { label = "Inspect Current Line", cmd = "lua print(vim.inspect(vim.api.nvim_get_current_line()))" },
-        { label = "List Buffers", cmd = "lua print(vim.inspect(vim.api.nvim_list_bufs()))" },
-        { label = "Buffers", cmd = "buffers" },
-        { label = "undolist", cmd = "undolist" },
-        { label = "Toggle Relative Numbers", cmd = "lua vim.o.relativenumber = not vim.o.relativenumber" },
-        { label = "Neovim Log", cmd = "lua vim.cmd('tabedit ' .. vim.fn.stdpath('state') .. '/log')" },
-        { label = "Check Health", cmd = "lua vim.cmd('checkhealth')" },
-    }
-
-    local selections_to_print = {
-        ["messages"] = true,
-        ["CyclePythonExecCommand"] = true,
-        ["TogglePrioritizeBuildScript"] = true,
-    }
-
-    pickers.new({}, {
-        prompt_title = "Choose Command",
-        finder = finders.new_table({
-            results = commands,
-            entry_maker = function(entry)
-                return {
-                    value = entry.cmd,
-                    display = entry.label,
-                    ordinal = entry.label,
-                }
-            end,
-        }),
-        sorter = conf.generic_sorter({}),
-
-        -- Just run the command
-        --attach_mappings = function(prompt_bufnr, _)
-        --    actions.select_default:replace(function()
-        --        local selection = action_state.get_selected_entry()
-        --        actions.close(prompt_bufnr)
-        --        vim.cmd(selection.value)
-        --    end)
-        --    return true
-        --end,
-
-        -- Display in telescope if command starts with "lua print"
-        --attach_mappings = function(prompt_bufnr, _)
-        --    actions.select_default:replace(function()
-        --        local selection = action_state.get_selected_entry()
-        --        actions.close(prompt_bufnr)
-        --        if selections_to_print[selection.value] or selection.value:match("^lua print") then
-        --            local cmd_output = vim.fn.execute(selection.value)
-
-        --            require("telescope.pickers").new({}, {
-        --                prompt_title = "Command Output",
-        --                finder = require("telescope.finders").new_table({
-        --                    results = vim.split(cmd_output, "\n"),
-        --                }),
-        --                sorter = require("telescope.config").values.generic_sorter({}),
-        --            }):find()
-        --        else
-        --            vim.cmd(selection.value)
-        --        end
-        --    end)
-        --    return true
-        --end
-
-        -- Display in buffer below
-        attach_mappings = function(prompt_bufnr, _)
-            actions.select_default:replace(function()
-                local selection = action_state.get_selected_entry()
-                actions.close(prompt_bufnr)
-
-                if selections_to_print[selection.value] or selection.value:match("^lua print") then
-                    local cmd_output = vim.fn.execute(selection.value)
-
-                    vim.cmd("belowright 10split")
-                    local buf = vim.api.nvim_create_buf(false, true)
-                    vim.api.nvim_win_set_buf(0, buf)
-                    vim.api.nvim_buf_set_lines(buf, 0, -1, false, vim.split(cmd_output, "\n"))
-                    -- vim.api.nvim_buf_set_option(buf, "modifiable", false)
-                    -- vim.api.nvim_buf_set_option(buf, "filetype", "output") -- For syntax highlighting
-                    vim.api.nvim_buf_set_option(buf, "bufhidden", "wipe") -- Automatically wipe the buffer when closed
-                    -- vim.api.nvim_win_set_option(0, "number", false) -- Disable line numbers in the split
-                else
-                    vim.cmd(selection.value)
-                end
-            end)
-            return true
-        end
-
-    }):find()
-end, { noremap = true, silent = true })
-
--- Pick a comand to run via ui.select
--- vim.keymap.set('n', '<leader><leader>', function()
---     local commands = {
---         { label = "PackerUpdate", cmd = "PackerUpdate" },
---         { label = "PackerLoad", cmd = "PackerLoad" },
---         { label = "PackerSync", cmd = "PackerSync" },
---     }
--- 
---     local choices = {}
---     for _, item in ipairs(commands) do
---         table.insert(choices, item.label)
---     end
--- 
---     vim.ui.select(choices, { prompt = "Choose Command:" }, function(choice)
---         if choice then
---             for _, item in ipairs(commands) do
---                 if item.label == choice then
---                     vim.cmd(item.cmd)
---                     return
---                 end
---             end
---         end
---     end)
--- end, { noremap = true, silent = true })
-
--- Pick a comand to run via vim command menu
--- vim.keymap.set('n', '<leader><leader>', function()
---     local choice = vim.fn.inputlist({
---         "Choose Command:",
---         "1. PackerUpdate",
---         "2. PackerLoad",
---         "3. PackerSync",
---     })
--- 
---     if choice == 1 then
---         vim.cmd("PackerUpdate")
---     elseif choice == 2 then
---         vim.cmd("PackerLoad")
---     elseif choice == 3 then
---         vim.cmd("PackerSync")
---     end
--- end, { noremap = true, silent = true })
-
--- Read and display keybinds from a file
-local function read_lines_from_file(file_path)
-    local lines = {}
-    for line in io.lines(file_path) do
-        table.insert(lines, line)
-    end
-    return lines
-end
-
-vim.keymap.set('n', '<leader>?', function()
-    local my_notes_path = os.getenv("my_notes_path")  -- Make sure this environment variable is set
-    local file_path = my_notes_path .. "/scripts/files/nvim_keys.txt"
-    local lines = read_lines_from_file(file_path)
-
-    -- Use Telescope picker to display lines
-    require('telescope.pickers').new({}, {
-        prompt_title = "Choose Line",
-        finder = require('telescope.finders').new_table({
-            results = lines,
-            entry_maker = function(entry)
-                return {
-                    value = entry,
-                    display = entry,
-                    ordinal = entry,
-                }
-            end,
-        }),
-        sorter = require('telescope.config').values.generic_sorter({}),
-
-        attach_mappings = function(prompt_bufnr, _)
-            require('telescope.actions').select_default:replace(function()
-                local selection = require('telescope.actions.state').get_selected_entry()
-                require('telescope.actions').close(prompt_bufnr)
-                print(selection.value)
-            end)
-            return true
-        end
-
-    }):find()
-end, { noremap = true, silent = true })
-
-function count_characters()
-    local mode = vim.api.nvim_get_mode().mode
-    local text = ""
-
-    if mode == "v" or mode == "V" or mode == "\22" then -- "\22" is for visual block mode
-        -- Yank selection to "v" register
-        vim.cmd('normal! "vy')
-        text = vim.fn.getreg("v")
-    else
-        -- Word under cursor
-        text = vim.fn.expand("<cword>")
-    end
-
-    local char_count = #text
-    print("Character count: " .. char_count)
-end
-
--- Keybindings for counting characters
-vim.api.nvim_set_keymap("n", "<leader>cc", ":lua count_characters()<CR>", { noremap = true, silent = true })
-vim.api.nvim_set_keymap("v", "<leader>cc", "<cmd>lua count_characters()<CR>", { noremap = true, silent = true })
-
--- See: https://wezfurlong.org/wezterm/cli/cli/split-pane.html#synopsis
-function split_pane_in_wezterm()
-    local cword = vim.fn.expand("<cWORD>")
-    local trimmed_cword = cword:match("([a-zA-Z]:.*)") or cword
-
-    local function replace_env_vars(path)
-        return path:gsub("{(.-)}", function(var)
-            return os.getenv(var) or ""
-        end)
-    end
-
-    local resolved_path = replace_env_vars(trimmed_cword)
-    resolved_path = vim.fn.fnamemodify(resolved_path, ":p:h")
-    -- :p (full path) converts given path to an absolute (full) path
-    -- :h (head) returns the dir portion of the path (removes the file name)
-    -- resolved_path will default to current dir if invalid dir...
-    resolved_path = resolved_path:gsub("\\", "/")
-
-    -- Hmm... redundant, but whatever
-    -- if vim.fn.isdirectory(resolved_path) == 1 then
-    if resolved_path:find("/") then
-        local wezterm_command = "wezterm cli split-pane --right --percent 50 --cwd " .. vim.fn.shellescape(resolved_path)
-        -- print("wezterm_command: " .. wezterm_command)
-        os.execute(wezterm_command)
-    else
-        print("Error: Invalid directory path: " .. resolved_path)
-    end
-end
-
-vim.api.nvim_set_keymap('n', '<leader>dw', ':lua split_pane_in_wezterm()<CR>', { noremap = true, silent = true })
-
-function save_resolved_path_to_file()
-    local cword = vim.fn.expand("<cWORD>")
-    local trimmed_cword = cword:match("([a-zA-Z]:.*)") or cword
-
-    local function replace_env_vars(path)
-        return path:gsub("{(.-)}", function(var)
-            return os.getenv(var) or ""
-        end)
-    end
-
-    local resolved_path = replace_env_vars(trimmed_cword)
-    resolved_path = vim.fn.fnamemodify(resolved_path, ":p:h")
-    resolved_path = resolved_path:gsub("\\", "/")
-
-    local userprofile = os.getenv("USERPROFILE")
-    local file_path = userprofile .. "/new_wez_dir.txt"
-
-    local file = io.open(file_path, "w")
-    if file then
-        file:write(resolved_path .. "\n")
-        file:close()
-        print("Resolved path saved to: " .. file_path)
-    else
-        print("Error: Could not open file for writing: " .. file_path)
-    end
-end
-
-vim.api.nvim_set_keymap('n', '<C-w>d', ':lua save_resolved_path_to_file()<CR>', { noremap = true, silent = true })
-
-local treesitter_utils = require("treesitter_utils")
-
--- Add async to function if using await inside function
-local function add_async()
-  -- Feed the "t" key back as part of the operation
-  vim.api.nvim_feedkeys("t", "n", true)
-
-  -- Get the current buffer and text before the cursor
-  local buffer = vim.fn.bufnr()
-  local text_before_cursor = vim.fn.getline("."):sub(vim.fn.col(".") - 4, vim.fn.col(".") - 1)
-
-  -- Only proceed if the text before the cursor matches "awai"
-  if text_before_cursor ~= "awai" then
-    return
-  end
-
-  -- Get current Tree-sitter node, ignoring injections for embedded JS
-  local current_node = vim.treesitter.get_node { ignore_injections = false }
-  local function_node = treesitter_utils.find_node_ancestor(
-    { "arrow_function", "function_declaration", "function" },
-    current_node
-  )
-  if not function_node then
-    return
-  end
-
-  -- Check if function is already "async"
-  local function_text = vim.treesitter.get_node_text(function_node, 0)
-  if vim.startswith(function_text, "async") then
-    return
-  end
-
-  -- Add async at the start of the function
-  local start_row, start_col = function_node:start()
-  vim.api.nvim_buf_set_text(buffer, start_row, start_col, start_row, start_col, { "async " })
-end
-
--- Set keybinding for JavaScript and TypeScript
-vim.api.nvim_create_autocmd("FileType", {
-  pattern = { "javascript", "typescript" },
-  callback = function()
-    vim.keymap.set("i", "t", add_async, { buffer = true })
-  end,
-})
+-- Bind leader-leader?
 

@@ -1,3 +1,5 @@
+thunar
+tinyobjloader
 tk
 tlp
 tmux
@@ -85,8 +87,8 @@ xsel
 yad
 yaml-cpp
 yarn
-yay-bin
-yay-bin-debug
+yay
+yay-debug
 yazi
 yq
 zathura

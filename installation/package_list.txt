@@ -79,6 +79,7 @@ imagemagick
 inetutils
 jdk-openjdk
 jdtls
+jemalloc
 jq
 jupyter-notebook
 lf
@@ -97,6 +98,8 @@ maim
 make
 mako
 mariadb
+mariadb-clients
+mariadb-libs
 meson
 mono
 mpv
@@ -129,6 +132,7 @@ php
 phpactor
 picom-pijulius-git
 pkgconf
+plocate
 pngquant
 polybar
 powertop
@@ -279,8 +283,8 @@ xsel
 yad
 yaml-cpp
 yarn
-yay-bin
-yay-bin-debug
+yay
+yay-debug
 yazi
 yq
 zathura
