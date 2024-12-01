@@ -17,7 +17,8 @@ config.adjust_window_size_when_changing_font_size = false
 config.automatically_reload_config = true
 config.color_scheme = 'Gruvbox Dark (Gogh)'
 config.enable_scroll_bar = true
-config.enable_wayland = true
+--config.enable_wayland = true
+config.enable_wayland = false -- Required for hyprland?
 -- config.font = wezterm.font('Hack')
 --config.font = wezterm.font('Monaspace Neon')
 
@@ -96,6 +97,7 @@ else
         top = 10,
         bottom = 0,
     }
+    config.window_close_confirmation = "NeverPrompt"
 end
 
 -- Tab bar

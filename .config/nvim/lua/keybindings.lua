@@ -447,7 +447,8 @@ end
 -- vim.api.nvim_set_keymap('n', '<M-b>', ':lua ToggleQuickfix()<CR>', { noremap = true, silent = true })
 
 -- Window management and movement
-local term_program = vim.fn.getenv("TERM_PROGRAM"):lower()
+local term_program_raw = vim.fn.getenv("TERM_PROGRAM") or ""
+local term_program = tostring(term_program_raw):lower()
 if term_program == "wezterm" then
     vim.api.nvim_set_keymap('n', '<C-w>h', '<Plug>WinMoveLeft', { noremap = false, silent = true })
     vim.api.nvim_set_keymap('n', '<C-w>j', '<Plug>WinMoveDown', { noremap = false, silent = true })

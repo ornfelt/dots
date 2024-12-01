@@ -9,6 +9,11 @@
 /* #define TERMCLASS "alacritty" */
 #define TERMINAL "wezterm"
 #define TERMCLASS "wezterm"
+#define SECTERMINAL "st"
+
+#define FILES "thunar"
+//#define FILEX "ranger"
+#define FILEX "yazi"
 
 /* appearance */
 static unsigned int borderpx    = 3;        /* border pixel of windows */
@@ -222,8 +227,8 @@ static const Key keys[] = {
 
         { MODKEY|ShiftMask,         XK_x,               spawn,              SHCMD("i3lock") },
         { MODKEY|ControlMask,       XK_x,               spawn,              SHCMD("i3lock -i ~/Downloads/lock-wallpaper.png")},
-        { MODKEY,                   XK_w,               spawn,              SHCMD(TERMINAL " -e ranger ~/") },
-        { MODKEY,                   XK_e,               spawn,              SHCMD("~/.local/bin/my_scripts/ranger_wd.sh " TERMINAL) },
+        { MODKEY,                   XK_w,               spawn,              SHCMD(TERMINAL " -e " FILEX " " "~/") },
+        { MODKEY,                   XK_e,               spawn,              SHCMD("~/.local/bin/my_scripts/file_explorer_wd.sh " TERMINAL " " FILEX) },
         { MODKEY|ShiftMask,         XK_e,               spawn,              SHCMD("~/.local/bin/my_scripts/alert_exit.sh && ~/.config/polybar/forest/scripts/powermenu.sh") },
         { MODKEY|ShiftMask,         XK_s,               spawn,              SHCMD("import png:- | xclip -selection clipboard -t image/png") },
         { MODKEY|ControlMask,       XK_s,               spawn,              SHCMD("~/.local/bin/my_scripts/tesseract_ocr.sh") },
@@ -242,7 +247,7 @@ static const Key keys[] = {
         { MODKEY|ControlMask,       XK_b,               spawn,              SHCMD(TERMINAL " -e ytop") },
         { MODKEY,                   XK_p,               spawn,              SHCMD("~/.local/bin/my_scripts/xrandr_helper.sh") },
         { MODKEY,                   XK_n,               spawn,              SHCMD("~/.local/bin/my_scripts/nautilus_wd.sh") },
-        { MODKEY|ShiftMask,         XK_n,               spawn,              SHCMD("thunar") },
+        { MODKEY|ShiftMask,         XK_n,               spawn,              SHCMD(FILES) },
         { MODKEY|ControlMask,       XK_n,               spawn,              SHCMD("~/.local/bin/my_scripts/open_notes.sh 1 " TERMINAL) },
         { MODKEY,                   XK_m,               spawn,              SHCMD("nm-connection-editor") },
         { MODKEY|ShiftMask,         XK_m,               spawn,              SHCMD("spotify") },
@@ -262,7 +267,7 @@ static const Key keys[] = {
         /* { MODKEY|ShiftMask,         XK_BackSpace,       spawn,              SHCMD("sysact") }, */
         { MODKEY,                   XK_Return,          spawn,              SHCMD("~/.local/bin/my_scripts/term_wd.sh " TERMINAL) },
         { MODKEY|ShiftMask,         XK_Return,          spawn,              {.v = termcmd } },
-        { MODKEY|ControlMask,       XK_Return,          spawn,              SHCMD("~/.local/bin/my_scripts/term_wd.sh urxvt") },
+        { MODKEY|ControlMask,       XK_Return,          spawn,              SHCMD("~/.local/bin/my_scripts/term_wd.sh " SECTERMINAL) },
 
         /* { MODKEY,                   XK_bracketleft,     spawn,              SHCMD("mpc seek -10") }, */
         /* { MODKEY|ShiftMask,         XK_bracketleft,     spawn,              SHCMD("mpc seek -60") }, */

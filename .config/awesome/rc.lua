@@ -85,6 +85,8 @@ awful.util.tagnames = { "1", "2", "3", "4", "5", "6", "7", "8", "9" }
 -- awful.util.tagnames = { "", "", "", "", " ", " ", " ", " ", " " }
 awful.layout.suit.tile.left.mirror = true
 awful.layout.layouts = {
+    awful.layout.suit.spiral,
+    --awful.layout.suit.spiral.dwindle,
     awful.layout.suit.tile,
     awful.layout.suit.floating,
     --awful.layout.suit.tile.left,
@@ -92,8 +94,6 @@ awful.layout.layouts = {
     --awful.layout.suit.tile.top,
     --awful.layout.suit.fair,
     --awful.layout.suit.fair.horizontal,
-    --awful.layout.suit.spiral,
-    --awful.layout.suit.spiral.dwindle,
     awful.layout.suit.max,
     --awful.layout.suit.max.fullscreen,
     -- awful.layout.suit.magnifier,
@@ -911,3 +911,4 @@ awful.spawn.with_shell("diodon")
 -- awful.spawn.with_shell("feh --bg-fill --randomize ~/Pictures/Wallpapers/*")
 --awful.spawn.with_shell("feh --randomize --bg-fill /usr/share/backgrounds/dtos-backgrounds/*") -- feh sets random wallpaper
 --awful.spawn.with_shell("nitrogen --restore") -- if you prefer nitrogen to feh/xwallpaper
+
