@@ -87,9 +87,10 @@ if wezterm.target_triple == 'x86_64-pc-windows-msvc' or wezterm.target_triple ==
         top = 20,
         bottom = 10,
     }
+    config.use_fancy_tab_bar = true
 else
-    --config.leader = { key = 'b', mods = 'CTRL', timeout_milliseconds = 1000 }
-    config.leader = { key = 'a', mods = 'CTRL', timeout_milliseconds = 1000 }
+    config.leader = { key = 'b', mods = 'CTRL', timeout_milliseconds = 1000 }
+    --config.leader = { key = 'a', mods = 'CTRL', timeout_milliseconds = 1000 }
 
     config.window_padding = {
         left = 10,
@@ -98,10 +99,11 @@ else
         bottom = 0,
     }
     config.window_close_confirmation = "NeverPrompt"
+    --config.enable_tab_bar = false
+    config.use_fancy_tab_bar = false
 end
 
 -- Tab bar
--- config.use_fancy_tab_bar = true
 config.tab_bar_at_bottom = true
 config.switch_to_last_active_tab_when_closing_tab = true
 config.tab_max_width = 15
@@ -405,6 +407,25 @@ config.keys = {
     -- QuickSelect
     -- { key = ' ', mods = 'SHIFT|CTRL', action = wezterm.action.QuickSelect },
     { key = ' ', mods = 'ALT|SHIFT', action = wezterm.action.QuickSelect },
+
+    -- Make ctrl-tab cycle tabs / windows for both wezterm and tmux
+    {
+      key = "Tab",
+      mods = "CTRL",
+      action = wezterm.action.Multiple({
+        act.ActivateTabRelative(1),
+        wezterm.action.SendKey({ key = "Tab", mods = "CTRL" }),
+      }),
+    },
+
+    {
+      key = "Tab",
+      mods = "CTRL|SHIFT",
+      action = wezterm.action.Multiple({
+        act.ActivateTabRelative(-1),
+        wezterm.action.SendKey({ key = "Tab", mods = "CTRL|SHIFT" }),
+      }),
+    },
 }
 
 -- Read dir path and start a split pane

@@ -82,3 +82,32 @@ action = "ScrollPageUp"
 [window.padding]
 x = 13
 y = 13
+
+# https://github.com/Piotr1215/dotfiles/blob/master/.config/alacritty/alacritty.toml
+[[hints.enabled]]
+command = "xdg-open"
+hyperlinks = true
+post_processing = true
+persist = false
+mouse.enabled = true
+binding = { key = "Space", mods = "Control|Shift" }
+regex = "(ipfs:|ipns:|magnet:|mailto:|gemini://|gopher://|https://|http://|news:|file:|git://|ssh:|ftp://)[^\u0000-\u001F\u007F-\u009F<>\"\\s{-}\\^⟨⟩`]+"
+
+[[hints.enabled]]
+regex = '[^ ]+(?:\s*)$' 
+command = { program = "/usr/bin/tmux", args = ["split-window", "-h", "-c", "#{pane_current_path}", "sh", "-c", "nvim \"$0\""] }
+binding = { key = "Space", mods = "Alt|Shift" }
+
+# Enable undercurl and true color (when using alacritty)
+if -F "#{==:$TERM,alacritty}" {
+  set -g default-terminal "alacritty"
+  set -ga terminal-features ",alacritty:RGB:usstyle"
+}
+
+# Enable statusbar only, if there are multiple tabs (https://redd.it/6lwb07)
+if -F "#{==:#{session_windows},1}" "set -g status off" "set -g status on"
+set-hook -g window-linked 'if -F "#{==:#{session_windows},1}" \
+  "set -g status off" "set -g status on"'
+set-hook -g window-unlinked 'if -F "#{==:#{session_windows},1}" \
+  "set -g status off" "set -g status on"'
+
