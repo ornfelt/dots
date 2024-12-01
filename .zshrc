@@ -163,8 +163,10 @@ alias .openjo_sp='$HOME/.local/share/openjk/JediOutcast/openjo_sp.x86_64'
 alias .japp='$HOME/.local/share/openjk/JediAcademy/openjk.x86_64 +set fs_game "japlus"'
 alias .acore='cd $HOME/acore/bin; pwd; ls'
 alias .acore_update='cd $HOME/Code2/C++/AzerothCore-wotlk-with-NPCBots && git pull && cd modules/mod-eluna && git pull && cd ../..'
+alias .tcore_update='cd $HOME/Code2/C++/Trinitycore-3.3.5-with-NPCBots && git pull'
 alias .tcore='cd $HOME/tcore/bin; pwd; ls'
 alias .wow='sh $HOME/.local/bin/my_scripts/wow.sh'
+alias .llama="$HOME/.local/bin/my_scripts/llama.sh"
 
 playermap ()
 {

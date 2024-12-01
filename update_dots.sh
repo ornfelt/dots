@@ -36,6 +36,7 @@ rm -rf .config/nvim
 rm -rf .config/picom
 rm -rf .config/polybar
 rm -rf .config/ranger
+rm -rf .config/yazi
 rm -rf .config/rofi
 rm -rf .config/st
 rm -rf .config/st_git
@@ -73,6 +74,7 @@ cp -r $HOME/.config/nvim .config/nvim/
 cp -r $HOME/.config/picom .config/picom/
 cp -r $HOME/.config/polybar .config/polybar/
 cp -r $HOME/.config/ranger .config/ranger/
+cp -r $HOME/.config/yazi .config/yazi/
 cp -r $HOME/.config/rofi .config/rofi/
 cp -r $HOME/.config/st .config/st/
 cp -r $HOME/.config/st_git .config/st_git/
