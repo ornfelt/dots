@@ -45,10 +45,12 @@ bindsym $mod+Shift+dead_acute exec --no-startup-id pactl set-sink-volume @DEFAUL
 floating_modifier $mod
 
 # start a terminal in wd
-bindsym $mod+Return exec --no-startup-id ~/.local/bin/my_scripts/term_wd.sh urxvt
+# wezterm / alacritty / st / urxvt
+#bindsym $mod+Return exec --no-startup-id ~/.local/bin/my_scripts/term_wd.sh urxvt
+bindsym $mod+Return exec --no-startup-id ~/.local/bin/my_scripts/term_wd.sh wezterm
 # start a terminal
-bindsym $mod+Shift+Return exec --no-startup-id urxvt
-bindsym $mod+Control+Return exec --no-startup-id ~/.local/bin/my_scripts/term_wd.sh st
+bindsym $mod+Shift+Return exec --no-startup-id wezterm
+bindsym $mod+Control+Return exec --no-startup-id st
 
 # kill focused window
 bindsym $mod+q kill
@@ -128,10 +130,13 @@ bindsym $mod+n exec ~/.local/bin/my_scripts/nautilus_wd.sh
 bindsym $mod+Shift+n exec nautilus -w --no-desktop
 bindsym $mod+Control+n exec --no-startup-id ~/.local/bin/my_scripts/open_notes.sh 1
 
-# open ranger
-bindsym $mod+w exec urxvt -e ranger ~/
-# open ranger from wd
-bindsym $mod+e exec ~/.local/bin/my_scripts/ranger_wd.sh urxvt
+# open file explorer
+#bindsym $mod+w exec urxvt -e ranger ~/
+#bindsym $mod+w exec wezterm -e ranger ~/
+bindsym $mod+w exec wezterm -e yazi ~/
+# open file explorer from wd
+#bindsym $mod+e exec ~/.local/bin/my_scripts/ranger_wd.sh wezterm ranger
+bindsym $mod+e exec ~/.local/bin/my_scripts/file_explorer_wd.sh wezterm yazi
 
 # Define names for default workspaces for which we configure key bindings later on.
 # We use variables to avoid repeating the names in multiple places.
@@ -351,3 +356,4 @@ bindsym $mod+Control+aring floating enable, resize set 30 ppt 30 ppt, move posit
 bindsym $mod+apostrophe exec --no-startup-id ~/.local/bin/my_scripts/i3_scratchpad.sh
 bindsym $mod+Shift+a exec --no-startup-id picom-trans -c -5
 bindsym $mod+Control+a exec --no-startup-id picom-trans -c +5
+
