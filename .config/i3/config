@@ -44,61 +44,60 @@ bindsym $mod+Shift+dead_acute exec --no-startup-id pactl set-sink-volume @DEFAUL
 # Use Mouse+$mod to drag floating windows to their wanted position
 floating_modifier $mod
 
-# start a terminal in wd
+# Start terminal in wd
 # wezterm / alacritty / st / urxvt
 #bindsym $mod+Return exec --no-startup-id ~/.local/bin/my_scripts/term_wd.sh urxvt
 bindsym $mod+Return exec --no-startup-id ~/.local/bin/my_scripts/term_wd.sh wezterm
-# start a terminal
 bindsym $mod+Shift+Return exec --no-startup-id wezterm
 bindsym $mod+Control+Return exec --no-startup-id st
 
-# kill focused window
+# Kill focused window
 bindsym $mod+q kill
 
-# start dmenu (a program launcher)
+# Start dmenu
 bindsym $mod+r exec --no-startup-id dmenu_run -fn 'Linux Libertine Mono'
 bindsym $mod+d exec --no-startup-id rofi -show run -theme ~/.config/rofi/themes/gruvbox/gruvbox-dark.rasi
-# There also is the (new) i3-dmenu-desktop which only displays applications
+# There's also the (new) i3-dmenu-desktop which only displays applications
 # shipping a .desktop file. It is a wrapper around dmenu, so you need that
 # installed.
 #bindsym $mod+d exec --no-startup-id i3-dmenu-desktop
 
-# change focus
+# Change focus
 bindsym $mod+h focus left
 bindsym $mod+j focus down
 bindsym $mod+k focus up
 bindsym $mod+l focus right
 
-# alternatively, you can use the cursor keys:
+# Alternatively, use cursor keys:
 bindsym $mod+Left focus left
 bindsym $mod+Down focus down
 bindsym $mod+Up focus up
 bindsym $mod+Right focus right
 
-# move focused window
+# Move focused window
 bindsym $mod+Shift+h move left
 bindsym $mod+Shift+j move down
 bindsym $mod+Shift+k move up
 bindsym $mod+Shift+l move right
 
-# alternatively, you can use the cursor keys:
+# Alternatively, use cursor keys:
 bindsym $mod+Shift+Left move left
 bindsym $mod+Shift+Down move down
 bindsym $mod+Shift+Up move up
 bindsym $mod+Shift+Right move right
 
-# alt tab to go to next workspace
+# Alt tab to go to next workspace
 bindsym Mod1+Tab workspace next
 bindsym Mod1+Shift+Tab workspace prev
 
-# split in vertical orientation
+# Split in vertical orientation
 bindsym $mod+s split v
 # Switch between split orientation
 bindsym $mod+Shift+less split h
 
-# enter fullscreen mode for the focused container
+# Enter fullscreen mode for the focused container
 bindsym $mod+f fullscreen toggle
-# change container layout (stacked, tabbed, toggle split)
+# Change container layout (stacked, tabbed, toggle split)
 bindsym $mod+Shift+z layout stacked
 bindsym $mod+Control+t layout tabbed
 bindsym $mod+less layout toggle split
@@ -110,31 +109,41 @@ bindsym $mod+minus gaps inner current minus 5
 bindsym $mod+Shift+plus	gaps outer current plus 5
 bindsym $mod+Shift+minus gaps outer current minus 5
 
-# toggle tiling / floating
+# Toggle tiling / floating
 bindsym $mod+space floating toggle
-# change focus between tiling / floating windows
+# Change focus between tiling / floating windows
 bindsym $mod+Shift+space focus mode_toggle
 
-# focus the child container
+# Focus the child container
 #bindsym $mod+Shift+Control+a focus child
-# focus the parent container
+# Focus the parent container
 #bindsym $mod+Shift+Control+d focus parent
 
-# open tmux
+# i3 is meh since I don't like polybar that much, no fibonacci spiral and alternating_layouts.py...
+
+# TODO:
+# { MODKEY,                   XK_a,               spawn,              SHCMD("~/.local/bin/my_scripts/tmux_attach.sh " TERMINAL) },
+
+# Open tmux
 #bindsym $mod+a exec i3-sensible-terminal -e bash -c "tmux attach || tmux"
-bindsym $mod+a exec urxvt -e bash -c "tmux attach || tmux"
-# Open nautilus in wd
+#bindsym $mod+a exec urxvt -e bash -c "tmux attach || tmux"
+bindsym $mod+a exec wezterm -e bash -c "tmux attach || tmux"
+
+# TODO
+#{ MODKEY,                   XK_n,               spawn,              SHCMD("~/.local/bin/my_scripts/nautilus_wd.sh") },
+#{ MODKEY|ShiftMask,         XK_n,               spawn,              SHCMD(FILES) },
+
+# Open file explorer in wd
 #bindsym $mod+w exec nautilus --no-desktop
 bindsym $mod+n exec ~/.local/bin/my_scripts/nautilus_wd.sh
-# Open nautilus at home
+# Open file explorer at home
 bindsym $mod+Shift+n exec nautilus -w --no-desktop
 bindsym $mod+Control+n exec --no-startup-id ~/.local/bin/my_scripts/open_notes.sh 1
 
-# open file explorer
+# Open file explorer (terminal)
 #bindsym $mod+w exec urxvt -e ranger ~/
 #bindsym $mod+w exec wezterm -e ranger ~/
 bindsym $mod+w exec wezterm -e yazi ~/
-# open file explorer from wd
 #bindsym $mod+e exec ~/.local/bin/my_scripts/ranger_wd.sh wezterm ranger
 bindsym $mod+e exec ~/.local/bin/my_scripts/file_explorer_wd.sh wezterm yazi
 
@@ -151,7 +160,7 @@ set $ws8 "8"
 set $ws9 "9"
 set $ws10 "10"
 
-# switch to workspace
+# Switch to workspace
 bindsym $mod+1 workspace number $ws1
 bindsym $mod+2 workspace number $ws2
 bindsym $mod+3 workspace number $ws3
@@ -163,7 +172,7 @@ bindsym $mod+8 workspace number $ws8
 bindsym $mod+9 workspace number $ws9
 bindsym $mod+0 workspace number $ws10
 
-# move focused container to workspace, then goto that workspace
+# Move focused container to workspace, then goto that workspace
 bindsym $mod+Shift+1 move container to workspace number $ws1; workspace $ws1
 bindsym $mod+Shift+2 move container to workspace number $ws2; workspace $ws2
 bindsym $mod+Shift+3 move container to workspace number $ws3; workspace $ws3
@@ -175,7 +184,7 @@ bindsym $mod+Shift+8 move container to workspace number $ws8; workspace $ws8
 bindsym $mod+Shift+9 move container to workspace number $ws9; workspace $ws9
 bindsym $mod+Shift+0 move container to workspace number $ws10; workspace $ws10
 
-# move focused container to workspace
+# Move focused container to workspace
 bindsym $mod+Control+1 move container to workspace number $ws1
 bindsym $mod+Control+2 move container to workspace number $ws2
 bindsym $mod+Control+3 move container to workspace number $ws3
@@ -187,7 +196,7 @@ bindsym $mod+Control+8 move container to workspace number $ws8
 bindsym $mod+Control+9 move container to workspace number $ws9
 bindsym $mod+Control+0 move container to workspace number $ws10
 
-# Program specific window change
+# Program specific window settings
 assign [class="studio"] $ws3
 assign [class="Eclipse"] $ws3
 assign [class="Code"] $ws3
@@ -208,12 +217,12 @@ bindsym $mod+Shift+c exec ~/.local/bin/my_scripts/code_helper.sh new
 bindsym $mod+Shift+d exec ~/.local/bin/my_scripts/code_helper.sh old 
 bindsym F1 exec --no-startup-id ~/.local/bin/my_scripts/show_keys.sh i3
 bindsym Shift+F1 exec --no-startup-id ~/.local/bin/my_scripts/show_keys.sh vim
-# reload the configuration file
+# Reload config
 bindsym $mod+Control+r reload
-# restart i3 inplace (preserves your layout/session, can be used to upgrade i3)
+# Restart i3 inplace (preserves layout/session, can be used to upgrade i3)
 bindsym $mod+Shift+r restart
 
-# New way to logout, rebott or shutdown
+# New way to logout, reboot or shutdown
 mode "exit: [l]ogout, [r]eboot, [s]hutdown" {
   bindsym l exec i3-msg exit
   bindsym r exec systemctl reboot
@@ -226,11 +235,11 @@ bindsym $mod+Shift+e exec --no-startup-id ~/.local/bin/my_scripts/alert_exit.sh;
 bindsym $mod+p exec --no-startup-id ~/.local/bin/my_scripts/xrandr_helper.sh
 bindsym $mod+shift+p exec --no-startup-id ~/.local/bin/my_scripts/toggle_polybar.sh
 
-#BRIGHTNESS KEYS
+# Brightness keys
 bindsym XF86MonBrightnessUp exec --no-startup-id ~/.local/bin/my_scripts/brightness.sh +10
 bindsym XF86MonBrightnessDown exec --no-startup-id ~/.local/bin/my_scripts/brightness.sh -10
 
-# resize window (you can also use the mouse for that)
+# Resize window (you can also use the mouse for that)
 mode "resize" {
         # These bindings trigger as soon as you enter the resize mode
 
@@ -256,7 +265,7 @@ mode "resize" {
 }
 
 # bindsym $mod+r mode "resize"
-#Other way to resize, without resize mode
+# Other way to resize, without resize mode
 bindsym $mod+y resize shrink width 10 px or 1 ppt
 bindsym $mod+u resize grow height 10 px or 1 ppt
 bindsym $mod+i resize shrink height 10 px or 1 ppt
@@ -279,7 +288,7 @@ bindsym $mod+o resize grow width 10 px or 1 ppt
 #        status_command i3status
 #}
 
-# Diodon scripts and emojipick
+# Clipboard manager scripts and emojipick
 bindsym $mod+v exec ~/.local/bin/my_scripts/clip_history.sh
 bindsym $mod+Shift+v exec --no-startup-id ~/.local/bin/my_scripts/qr_clip.sh
 bindsym $mod+period exec --no-startup-id ~/.local/bin/my_scripts/emojipick/emojipick
@@ -291,20 +300,23 @@ bindsym $mod+m exec --no-startup-id ~/.local/bin/my_scripts/tstock.sh
 bindsym $mod+Shift+m exec --no-startup-id spotify
 bindsym $mod+Control+m exec --no-startup-id ~/.local/bin/my_scripts/open_notes.sh 2
 
-# Print screen keybinds
+# Print screen
 bindsym $mod+Shift+s --release exec --no-startup-id import png:- | xclip -selection clipboard -t image/png
 bindsym $mod+Control+s --release exec --no-startup-id ~/.local/bin/my_scripts/tesseract_ocr.sh
 bindsym Print --release exec --no-startup-id ~/.local/bin/my_scripts/screenshot_select.sh
 bindsym Shift+Print --release exec --no-startup-id ~/.local/bin/my_scripts/screenshot.sh
 bindsym Control+Print --release exec --no-startup-id ~/.local/bin/my_scripts/screenshot_ocr.sh
 bindsym $mod+section exec --no-startup-id ~/.local/bin/my_scripts/loadEww.sh
+
 # Lock screen 
 bindsym $mod+Shift+x exec --no-startup-id i3lock-fancy
 bindsym $mod+Control+x exec --no-startup-id i3lock -t -i ~/Downloads/lock-wallpaper.png 
 bindsym $mod+Control+Shift+x exec --no-startup-id i3lock -t -i ~/Downloads/lock-wallpaper-win.png
-#Suspend 
+
+# Suspend 
 bindsym $mod+Shift+comma exec --no-startup-id ~/.local/bin/my_scripts/alert_exit.sh; exec --no-startup-id ~/.local/bin/my_scripts/suspend.sh
 bindsym $mod+Shift+period exec --no-startup-id i3lock-fancy; exec --no-startup-id ~/.local/bin/my_scripts/alert_exit.sh; exec --no-startup-id systemctl suspend
+
 # Open FZF in neovim
 bindsym $mod+g exec urxvt -e bash -c 'nvim -c "FZF ~"'
 
