@@ -63,11 +63,11 @@ local lua_ls_config = {
       diagnostics = {
         globals = { 'vim', 'use' }
       },
-      workspace = {
-        -- Make the server aware of Neovim runtime files and plugins
-        library = { vim.env.VIMRUNTIME },
-        checkThirdParty = false,
-      },
+      --workspace = {
+      --  -- Make the server aware of Neovim runtime files and plugins
+      --  library = { vim.env.VIMRUNTIME },
+      --  checkThirdParty = false,
+      --},
     },
   }
 }

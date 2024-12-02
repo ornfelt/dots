@@ -2426,8 +2426,7 @@ function save_resolved_path_to_file()
     resolved_path = vim.fn.fnamemodify(resolved_path, ":p:h")
     resolved_path = resolved_path:gsub("\\", "/")
 
-    --local home_dir = os.getenv("USERPROFILE")
-    local home_dir = os.getenv("HOME")
+    local home_dir = os.getenv("HOME") or os.getenv("USERPROFILE")
     local file_path = home_dir .. "/new_wez_dir.txt"
 
     local file = io.open(file_path, "w")

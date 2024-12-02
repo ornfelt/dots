@@ -124,6 +124,7 @@ config.unix_domains = {
   },
 }
 
+-- https://wezfurlong.org/wezterm/config/default-keys.html
 -- config.disable_default_key_bindings = true,
 
 -- Session manager
@@ -131,13 +132,19 @@ wezterm.on("save_session", function(window) session_manager.save_state(window) e
 wezterm.on("load_session", function(window) session_manager.load_state(window) end)
 wezterm.on("restore_session", function(window) session_manager.restore_state(window) end)
 
+-- Seamless vim pane integration
+-- I have a somewhat customized version of these that 
+-- enable me to navigate panes via wezterm-tmux-nvim
+-- https://github.com/letieu/wezterm-move.nvim
+-- https://github.com/mrjones2014/smart-splits.nvim
+
+-- Next and Prev is also available as dir keys
 local direction_keys = {
   h = "Left",
   j = "Down",
   k = "Up",
   l = "Right",
 }
--- Next and Prev is also available as dir keys
 
 local resize_keys = {
   y = "Left",
@@ -147,7 +154,7 @@ local resize_keys = {
 }
 
 -- Log to a simple file
-local log_file = os.getenv("HOME") .. "/wez_test.txt"
+local log_file = (os.getenv("HOME") or os.getenv("USERPROFILE")) .. "/wez_test.txt"
 local function log_to_file(message)
   local file = io.open(log_file, "a") -- Open in append mode
   if file then
@@ -176,7 +183,7 @@ local function is_tmux(pane)
   return process_name and string.find(process_name, "tmux", 1, true) ~= nil
 end
 
--- Handle pane split in wezterm or vim
+-- Handle pane split in wezterm, tmux, or vim
 local function split_nav(key)
   return {
     key = key,
@@ -212,7 +219,7 @@ local function split_nav(key)
   }
 end
 
--- Handle resize in wezterm or vim
+-- Handle resize in wezterm, tmux or vim
 local function resize_pane(key)
   return {
     key = key,
@@ -220,6 +227,11 @@ local function resize_pane(key)
     action = wezterm.action_callback(function(win, pane)
       local dir = resize_keys[key]
       local tab = pane:tab()
+
+      if is_tmux(pane) then
+        win:perform_action({ SendKey = { key = key, mods = "ALT" } }, pane)
+        return
+      end
 
       -- Check if there's a pane in either primary dir or opposite
       local opposite_dir = dir == "Left" and "Right" or dir == "Right" and "Left" or dir == "Up" and "Down" or "Up"
@@ -429,7 +441,7 @@ config.keys = {
     { key = "0", mods = "LEADER", action = wezterm.action{ActivateTab=9}, },
     { key = 't', mods = "LEADER", action = wezterm.action{SpawnTab="DefaultDomain"}, },
     { key = 'q', mods = 'LEADER|SHIFT', action = wezterm.action.QuitApplication },
-    -- Seamless nvim pane integration
+    -- Seamless vim pane integration
     split_nav("h"),
     split_nav("j"),
     split_nav("k"),
@@ -464,7 +476,7 @@ config.keys = {
 
 -- Read dir path and start a split pane
 local function split_to_directory_with_delay(win, pane)
-    -- Save dir under cursor into file in nvim...
+    -- Save dir under cursor into file in vim...
     win:perform_action({
         SendKey = { key = "w", mods = "CTRL" },
     }, pane)
@@ -475,8 +487,7 @@ local function split_to_directory_with_delay(win, pane)
     wezterm.sleep_ms(500)
 
     -- Open the saved dir in wezterm pane
-    --local userprofile = os.getenv("USERPROFILE")
-    local userprofile = os.getenv("HOME")
+    local userprofile = os.getenv("HOME") or os.getenv("USERPROFILE")
     local file_path = userprofile .. "/new_wez_dir.txt"
 
     -- print("file_path:" .. file_path)
@@ -564,8 +575,6 @@ if wezterm.target_triple == 'x86_64-pc-windows-msvc' or wezterm.target_triple ==
         ---- We want to startup in the coding workspace
         --mux.set_active_workspace 'coding'
 
-
-
         -- Try to attach...
         -- Check if the workspace 'coding' exists
         --local workspace_name = 'coding'
@@ -607,7 +616,6 @@ if wezterm.target_triple == 'x86_64-pc-windows-msvc' or wezterm.target_triple ==
         --end
 
         --session_manager.restore_state(window)
-
     end)
 end
 
