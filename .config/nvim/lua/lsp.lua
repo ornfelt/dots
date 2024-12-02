@@ -53,18 +53,23 @@ local function setup_lsp_if_available(server_name, config, binary_name)
 end
 
 local lsp_attach_config = {
-    on_attach = on_attach,
+  on_attach = on_attach,
 }
 
 local lua_ls_config = {
-    on_attach = on_attach,
-    settings = {
-        Lua = {
-            diagnostics = {
-                globals = { 'vim', 'use' }
-            },
-        },
-    }
+  on_attach = on_attach,
+  settings = {
+    Lua = {
+      diagnostics = {
+        globals = { 'vim', 'use' }
+      },
+      workspace = {
+        -- Make the server aware of Neovim runtime files and plugins
+        library = { vim.env.VIMRUNTIME },
+        checkThirdParty = false,
+      },
+    },
+  }
 }
 
 setup_lsp_if_available('pyright', lsp_attach_config)

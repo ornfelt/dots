@@ -175,25 +175,25 @@ vim.g.loaded_netrw = 1
 vim.g.loaded_netrwPlugin = 1
 
 --vim.opt.showtabline = 1
-vim.opt.tabline = "%!v:lua.TabLine()"
+--vim.opt.tabline = "%!v:lua.TabLine()"
 
 -- Custom tabline
-_G.TabLine = function()
-    local s = ""
-    for i = 1, vim.fn.tabpagenr("$") do
-        -- Get tab label or buffer name
-        local tabname = vim.fn.gettabvar(i, "tablabel", vim.fn.bufname(vim.fn.tabpagebuflist(i)[1]))
-        if #tabname > 12 then
-            tabname = tabname:sub(-12) -- Negative index to get the last 12 characters
-        end
-
-        -- Highlight active tab
-        if i == vim.fn.tabpagenr() then
-            s = s .. "%#TabLineSel# " .. i .. " " .. tabname .. " "
-        else
-            s = s .. "%#TabLine# " .. i .. " " .. tabname .. " "
-        end
-    end
-    return s
-end
+--_G.TabLine = function()
+--    local s = ""
+--    for i = 1, vim.fn.tabpagenr("$") do
+--        -- Get tab label or buffer name
+--        local tabname = vim.fn.gettabvar(i, "tablabel", vim.fn.bufname(vim.fn.tabpagebuflist(i)[1]))
+--        if #tabname > 12 then
+--            tabname = tabname:sub(-12) -- Negative index to get the last 12 characters
+--        end
+--
+--        -- Highlight active tab
+--        if i == vim.fn.tabpagenr() then
+--            s = s .. "%#TabLineSel# " .. i .. " " .. tabname .. " "
+--        else
+--            s = s .. "%#TabLine# " .. i .. " " .. tabname .. " "
+--        end
+--    end
+--    return s
+--end
 

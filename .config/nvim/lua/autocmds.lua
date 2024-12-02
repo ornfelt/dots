@@ -774,3 +774,14 @@ vim.api.nvim_create_autocmd("FileType", {
     end,
 })
 
+-- 2 spaces for tabs in Lua files
+vim.api.nvim_create_autocmd("FileType", {
+  pattern = "lua",
+  callback = function()
+    vim.bo.shiftwidth = 2  -- Number of spaces to use for each step of (auto)indent
+    vim.bo.tabstop = 2     -- Number of spaces that a <Tab> counts for
+    vim.bo.softtabstop = 2 -- Number of spaces that a <Tab> inserts
+    vim.bo.expandtab = true -- Use spaces instead of tabs
+  end,
+})
+

@@ -146,6 +146,36 @@ local resize_keys = {
   o = "Right",
 }
 
+-- Log to a simple file
+local log_file = os.getenv("HOME") .. "/wez_test.txt"
+local function log_to_file(message)
+  local file = io.open(log_file, "a") -- Open in append mode
+  if file then
+    file:write(message .. "\n")
+    file:close()
+  else
+    wezterm.log_error("Failed to open log file: " .. log_file)
+  end
+end
+
+local function is_vim(pane)
+  local process_info = pane:get_foreground_process_info()
+  local process_name = process_info and process_info.name
+  --wezterm.log_info("process_name: " .. (process_name or "nil"))
+  --log_to_file("process_name: " .. (process_name or "nil"))
+
+  return process_name == "nvim" or process_name == "vim"
+end
+
+local function is_tmux(pane)
+  local process_info = pane:get_foreground_process_info()
+  local process_name = process_info and process_info.name
+  --wezterm.log_info("process_name: " .. (process_name or "nil"))
+  --log_to_file("process_name: " .. (process_name or "nil"))
+
+  return process_name and string.find(process_name, "tmux", 1, true) ~= nil
+end
+
 -- Handle pane split in wezterm or vim
 local function split_nav(key)
   return {
@@ -155,6 +185,10 @@ local function split_nav(key)
       -- Check if there are multiple panes to navigate
       local dir = direction_keys[key]
       local tab = pane:tab()
+      if is_tmux(pane) then
+        win:perform_action({ SendKey = { key = key, mods = "ALT" } }, pane)
+        return
+      end
 
       local opposite_dir = dir == "Left" and "Right" or dir == "Right" and "Left" or dir == "Up" and "Down" or "Up"
 

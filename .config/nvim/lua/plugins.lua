@@ -8,10 +8,15 @@ require("lazy").setup({
         "stevearc/oil.nvim",
         lazy = true,
     },
+
     -- "echasnovski/mini.files",
     -- "vimwiki/vimwiki",
     -- "tpope/vim-surround",
-    -- "junegunn/fzf",
+
+    {
+        "junegunn/fzf",
+        lazy = false,
+    },
     {
         "ibhagwan/fzf-lua",
         lazy = true,
