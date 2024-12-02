@@ -7,8 +7,8 @@ return require('packer').startup(function()
   use 'wbthomason/packer.nvim'
 
   use {
-     'nvim-lualine/lualine.nvim',
-     requires = { 'kyazdani42/nvim-web-devicons', opt = true }
+    'nvim-lualine/lualine.nvim',
+    requires = { 'kyazdani42/nvim-web-devicons', opt = true }
   }
 
   -- use 'preservim/nerdtree'
@@ -20,11 +20,11 @@ return require('packer').startup(function()
 
   -- use 'junegunn/fzf'
   use 'ibhagwan/fzf-lua'
-  -- use { "ibhagwan/fzf-lua",
-   -- --requires = { "nvim-tree/nvim-web-devicons" } -- icon support
-   -- -- or if using mini.icons/mini.nvim
-   -- requires = { "echasnovski/mini.icons" }
-  -- }
+  --use { "ibhagwan/fzf-lua",
+  --  --requires = { "nvim-tree/nvim-web-devicons" } -- icon support
+  --  -- or if using mini.icons/mini.nvim
+  --  requires = { "echasnovski/mini.icons" }
+  --}
 
   use 'tpope/vim-commentary'
   use 'junegunn/vim-emoji'
@@ -39,18 +39,18 @@ return require('packer').startup(function()
   use("gruvbox-community/gruvbox")
 
   use {
-      'nvim-treesitter/nvim-treesitter',
-      build = ':TSUpdate'
+    'nvim-treesitter/nvim-treesitter',
+    build = ':TSUpdate'
   }
 
   --use({
-  --    "nvim-treesitter/nvim-treesitter-textobjects",
-  --    after = "nvim-treesitter",
-  --    requires = "nvim-treesitter/nvim-treesitter",
+  --  "nvim-treesitter/nvim-treesitter-textobjects",
+  --  after = "nvim-treesitter",
+  --  requires = "nvim-treesitter/nvim-treesitter",
   --})
   use({
-      "nvim-treesitter/nvim-treesitter-textobjects",
-      requires = "nvim-treesitter/nvim-treesitter",
+    "nvim-treesitter/nvim-treesitter-textobjects",
+    requires = "nvim-treesitter/nvim-treesitter",
   })
 
   use {
@@ -59,39 +59,36 @@ return require('packer').startup(function()
   }
 
   --use {
-  --    'letieu/wezterm-move.nvim',
-  --    config = function()
+  --  'letieu/wezterm-move.nvim',
+  --  config = function()
   --    local _ = require("wezterm-move")
   --    vim.api.nvim_set_keymap('n', '<m-h>', '<cmd>lua require("wezterm-move").move("h")<CR>', { noremap = true, silent = true })
   --    vim.api.nvim_set_keymap('n', '<m-j>', '<cmd>lua require("wezterm-move").move("j")<CR>', { noremap = true, silent = true })
   --    vim.api.nvim_set_keymap('n', '<m-k>', '<cmd>lua require("wezterm-move").move("k")<CR>', { noremap = true, silent = true })
   --    vim.api.nvim_set_keymap('n', '<m-l>', '<cmd>lua require("wezterm-move").move("l")<CR>', { noremap = true, silent = true })
-  --    end
+  --  end
   --}
 
   -- AI
   use({
-      "ornfelt/ChatGPT.nvim",
-      --config = function()
-      --    require("chatgpt").setup()
-      --end,
-      requires = {
-          "MunifTanjim/nui.nvim",
-          --"nvim-lua/plenary.nvim",
-          "folke/trouble.nvim",
-          --"nvim-telescope/telescope.nvim"
-      }
+    "ornfelt/ChatGPT.nvim",
+    requires = {
+      "MunifTanjim/nui.nvim",
+      --"nvim-lua/plenary.nvim",
+      "folke/trouble.nvim",
+      --"nvim-telescope/telescope.nvim"
+    }
   })
 
   use("robitx/gp.nvim")
   --use({
-  --    "robitx/gp.nvim",
-  --    config = function()
-  --        require("gp").setup()
-  --        or setup with your own config (see Install > Configuration in Readme)
-  --        require("gp").setup(config)
-  --        shortcuts might be setup here (see Usage > Shortcuts in Readme)
-  --    end,
+  --  "robitx/gp.nvim",
+  --  config = function()
+  --    require("gp").setup()
+  --    or setup with your own config (see Install > Configuration in Readme)
+  --    require("gp").setup(config)
+  --    shortcuts might be setup here (see Usage > Shortcuts in Readme)
+  --  end,
   --})
 
   -- use 'github/copilot.vim'
@@ -126,46 +123,46 @@ return require('packer').startup(function()
   use 'tpope/vim-fugitive'
   use 'sindrets/diffview.nvim'
   use {
-      'ornfelt/gitgraph.nvim',
-      dependencies = { 'sindrets/diffview.nvim' },
-      opts = {
-          symbols = {
-              merge_commit = 'M',
-              commit = '*',
-          },
-          format = {
-              timestamp = '%H:%M:%S %d-%m-%Y',
-              fields = { 'hash', 'timestamp', 'author', 'branch_name', 'tag' },
-          },
-          hooks = {
-              on_select_commit = function(commit)
-                  vim.notify('DiffviewOpen ' .. commit.hash .. '^!')
-                  vim.cmd(':DiffviewOpen ' .. commit.hash .. '^!')
-              end,
-              on_select_range_commit = function(from, to)
-                  vim.notify('DiffviewOpen ' .. from.hash .. '~1..' .. to.hash)
-                  vim.cmd(':DiffviewOpen ' .. from.hash .. '~1..' .. to.hash)
-              end,
-          },
-      }
+    'ornfelt/gitgraph.nvim',
+    dependencies = { 'sindrets/diffview.nvim' },
+    opts = {
+      symbols = {
+        merge_commit = 'M',
+        commit = '*',
+      },
+      format = {
+        timestamp = '%H:%M:%S %d-%m-%Y',
+        fields = { 'hash', 'timestamp', 'author', 'branch_name', 'tag' },
+      },
+      hooks = {
+        on_select_commit = function(commit)
+          vim.notify('DiffviewOpen ' .. commit.hash .. '^!')
+          vim.cmd(':DiffviewOpen ' .. commit.hash .. '^!')
+        end,
+        on_select_range_commit = function(from, to)
+          vim.notify('DiffviewOpen ' .. from.hash .. '~1..' .. to.hash)
+          vim.cmd(':DiffviewOpen ' .. from.hash .. '~1..' .. to.hash)
+        end,
+      },
+    }
   }
 
   -- use({
-      -- 'MeanderingProgrammer/render-markdown.nvim',
-      -- after = { 'nvim-treesitter' },
-      -- -- requires = { 'echasnovski/mini.nvim', opt = true }, -- if you use the mini.nvim suite
-      -- -- requires = { 'echasnovski/mini.icons', opt = true }, -- if you use standalone mini plugins
-      -- -- requires = { 'nvim-tree/nvim-web-devicons', opt = true }, -- if you prefer nvim-web-devicons
-      -- config = function()
-          -- require('render-markdown').setup({})
-      -- end,
+  -- 'MeanderingProgrammer/render-markdown.nvim',
+  -- after = { 'nvim-treesitter' },
+  -- -- requires = { 'echasnovski/mini.nvim', opt = true }, -- if you use the mini.nvim suite
+  -- -- requires = { 'echasnovski/mini.icons', opt = true }, -- if you use standalone mini plugins
+  -- -- requires = { 'nvim-tree/nvim-web-devicons', opt = true }, -- if you prefer nvim-web-devicons
+  -- config = function()
+  -- require('render-markdown').setup({})
+  -- end,
   -- })
   use ({
-      "OXY2DEV/markview.nvim",
-      dependencies = {
-          "nvim-treesitter/nvim-treesitter",
-          "nvim-tree/nvim-web-devicons"
-      }
+    "OXY2DEV/markview.nvim",
+    dependencies = {
+      "nvim-treesitter/nvim-treesitter",
+      "nvim-tree/nvim-web-devicons"
+    }
   })
 
   -- use 'alexghergh/nvim-tmux-navigation',

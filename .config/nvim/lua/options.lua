@@ -59,12 +59,12 @@ o.swapfile = false
 o.undofile = true
 local undodir
 if vim.fn.has('win32') == 1 or vim.fn.has('win64') == 1 then
-    undodir = vim.fn.expand('$USERPROFILE') .. '\\.vim\\undodir'
+  undodir = vim.fn.expand('$USERPROFILE') .. '\\.vim\\undodir'
 else
-    undodir = vim.fn.expand('$HOME') .. '/.vim/undodir'
+  undodir = vim.fn.expand('$HOME') .. '/.vim/undodir'
 end
 if vim.fn.isdirectory(undodir) == 0 then
-    vim.fn.mkdir(undodir, 'p')
+  vim.fn.mkdir(undodir, 'p')
 end
 vim.o.undodir = undodir
 
@@ -179,21 +179,21 @@ vim.g.loaded_netrwPlugin = 1
 
 -- Custom tabline
 --_G.TabLine = function()
---    local s = ""
---    for i = 1, vim.fn.tabpagenr("$") do
---        -- Get tab label or buffer name
---        local tabname = vim.fn.gettabvar(i, "tablabel", vim.fn.bufname(vim.fn.tabpagebuflist(i)[1]))
---        if #tabname > 12 then
---            tabname = tabname:sub(-12) -- Negative index to get the last 12 characters
---        end
---
---        -- Highlight active tab
---        if i == vim.fn.tabpagenr() then
---            s = s .. "%#TabLineSel# " .. i .. " " .. tabname .. " "
---        else
---            s = s .. "%#TabLine# " .. i .. " " .. tabname .. " "
---        end
+--  local s = ""
+--  for i = 1, vim.fn.tabpagenr("$") do
+--    -- Get tab label or buffer name
+--    local tabname = vim.fn.gettabvar(i, "tablabel", vim.fn.bufname(vim.fn.tabpagebuflist(i)[1]))
+--    if #tabname > 12 then
+--      tabname = tabname:sub(-12) -- Negative index to get the last 12 characters
 --    end
---    return s
+--
+--    -- Highlight active tab
+--    if i == vim.fn.tabpagenr() then
+--      s = s .. "%#TabLineSel# " .. i .. " " .. tabname .. " "
+--    else
+--      s = s .. "%#TabLine# " .. i .. " " .. tabname .. " "
+--    end
+--  end
+--  return s
 --end
 

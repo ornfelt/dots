@@ -4,7 +4,7 @@ local function get_language_tree_for_cursor_location()
   local bufnr = 0
   local cursor = vim.api.nvim_win_get_cursor(bufnr)
   local language_tree =
-    vim.treesitter.get_parser(bufnr):language_for_range { cursor[1], cursor[2], cursor[1], cursor[2] }
+  vim.treesitter.get_parser(bufnr):language_for_range { cursor[1], cursor[2], cursor[1], cursor[2] }
 
   return language_tree
 end

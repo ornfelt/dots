@@ -60,12 +60,12 @@ config.quick_select_patterns = {
 
 config.hide_tab_bar_if_only_one_tab = true
 config.mouse_bindings = {
-    -- Open URLs with Ctrl+Click
-    {
-        event = { Up = { streak = 1, button = 'Left' } },
-        mods = 'CTRL',
-        action = act.OpenLinkAtMouseCursor,
-    }
+  -- Open URLs with Ctrl+Click
+  {
+    event = { Up = { streak = 1, button = 'Left' } },
+    mods = 'CTRL',
+    action = act.OpenLinkAtMouseCursor,
+  }
 }
 config.pane_focus_follows_mouse = false
 config.scrollback_lines = 5000 -- Default is 3500
@@ -75,32 +75,32 @@ config.warn_about_missing_glyphs = false
 --config.window_decorations = 'NONE'
 config.window_decorations = 'RESIZE'
 if wezterm.target_triple == 'x86_64-pc-windows-msvc' or wezterm.target_triple == 'x86_64-pc-windows-gnu' then
-    config.show_close_tab_button_in_tabs = false
+  config.show_close_tab_button_in_tabs = false
 
-    -- The leader is similar to how tmux defines a set of keys to hit in order to
-    -- invoke tmux bindings. Binding to ctrl-a here to mimic tmux
-    config.leader = { key = 'a', mods = 'CTRL', timeout_milliseconds = 1000 }
+  -- The leader is similar to how tmux defines a set of keys to hit in order to
+  -- invoke tmux bindings. Binding to ctrl-a here to mimic tmux
+  config.leader = { key = 'a', mods = 'CTRL', timeout_milliseconds = 1000 }
 
-    config.window_padding = {
-        left = 15,
-        right = 5,
-        top = 20,
-        bottom = 10,
-    }
-    config.use_fancy_tab_bar = true
+  config.window_padding = {
+    left = 15,
+    right = 5,
+    top = 20,
+    bottom = 10,
+  }
+  config.use_fancy_tab_bar = true
 else
-    config.leader = { key = 'b', mods = 'CTRL', timeout_milliseconds = 1000 }
-    --config.leader = { key = 'a', mods = 'CTRL', timeout_milliseconds = 1000 }
+  config.leader = { key = 'b', mods = 'CTRL', timeout_milliseconds = 1000 }
+  --config.leader = { key = 'a', mods = 'CTRL', timeout_milliseconds = 1000 }
 
-    config.window_padding = {
-        left = 10,
-        right = -3,
-        top = 10,
-        bottom = 0,
-    }
-    config.window_close_confirmation = "NeverPrompt"
-    --config.enable_tab_bar = false
-    config.use_fancy_tab_bar = false
+  config.window_padding = {
+    left = 10,
+    right = -3,
+    top = 10,
+    bottom = 0,
+  }
+  config.window_close_confirmation = "NeverPrompt"
+  --config.enable_tab_bar = false
+  config.use_fancy_tab_bar = false
 end
 
 -- Tab bar
@@ -108,13 +108,13 @@ config.tab_bar_at_bottom = true
 config.switch_to_last_active_tab_when_closing_tab = true
 config.tab_max_width = 15
 config.colors = {
-    tab_bar = {
-        active_tab = {
-            fg_color = '#3c3836',
-            --bg_color = '#8ec07c',
-            bg_color = '#458588',
-        }
+  tab_bar = {
+    active_tab = {
+      fg_color = '#3c3836',
+      --bg_color = '#8ec07c',
+      bg_color = '#458588',
     }
+  }
 }
 
 -- Setup muxing by default
@@ -206,7 +206,7 @@ local function split_nav(key)
       else
         -- Send the key sequence to process, e.g., vim
         -- win:perform_action({
-          -- SendKey = { key = key, mods = "ALT" }
+        -- SendKey = { key = key, mods = "ALT" }
         -- }, pane)
         win:perform_action({
           SendKey = { key = "w", mods = "CTRL" },
@@ -248,386 +248,386 @@ end
 
 -- Custom key bindings
 config.keys = {
-    -- Leader is defined as Ctrl-A but this allows it to be sent to programs like vim when pressed twice
-    { key = 'a', mods = 'LEADER|CTRL', action = wezterm.action.SendKey { key = 'a', mods = 'CTRL' }, },
+  -- Leader is defined as Ctrl-A but this allows it to be sent to programs like vim when pressed twice
+  { key = 'a', mods = 'LEADER|CTRL', action = wezterm.action.SendKey { key = 'a', mods = 'CTRL' }, },
 
-    -- Copy/vim mode
-    { key = 'v', mods = 'LEADER', action = act.ActivateCopyMode, },
-    { key = 'f', mods = 'LEADER', action = wezterm.action.Search {CaseInSensitiveString = 'test' } },
-    { key = 'f', mods = 'LEADER|CTRL', action = wezterm.action.Search {CaseSensitiveString = 'test' } },
-    { key = 'g', mods = 'LEADER', action = wezterm.action.Search {Regex = 'test'} },
+  -- Copy/vim mode
+  { key = 'v', mods = 'LEADER', action = act.ActivateCopyMode, },
+  { key = 'f', mods = 'LEADER', action = wezterm.action.Search {CaseInSensitiveString = 'test' } },
+  { key = 'f', mods = 'LEADER|CTRL', action = wezterm.action.Search {CaseSensitiveString = 'test' } },
+  { key = 'g', mods = 'LEADER', action = wezterm.action.Search {Regex = 'test'} },
 
-    -- ----------------------------------------------------------------
-    -- TABS
-    --
-    -- Where possible, I'm using the same combinations as I would in tmux
-    -- ----------------------------------------------------------------
+  -- ----------------------------------------------------------------
+  -- TABS
+  --
+  -- Where possible, I'm using the same combinations as I would in tmux
+  -- ----------------------------------------------------------------
 
-    -- Show tab navigator; similar to listing panes in tmux
-    {
-        key = 'w',
-        mods = 'LEADER',
-        action = act.ShowTabNavigator,
+  -- Show tab navigator; similar to listing panes in tmux
+  {
+    key = 'w',
+    mods = 'LEADER',
+    action = act.ShowTabNavigator,
+  },
+  -- Rename current tab; analagous to command in tmux
+  {
+    key = ',',
+    mods = 'LEADER|ALT',
+    action = act.PromptInputLine {
+      description = 'Enter new name for tab',
+      action = wezterm.action_callback(
+        function(window, pane, line)
+          if line then
+            window:active_tab():set_title(line)
+          end
+        end
+      ),
     },
-    -- Rename current tab; analagous to command in tmux
-    {
-        key = ',',
-        mods = 'LEADER|ALT',
-        action = act.PromptInputLine {
-            description = 'Enter new name for tab',
-            action = wezterm.action_callback(
-                function(window, pane, line)
-                    if line then
-                        window:active_tab():set_title(line)
-                    end
-                end
-            ),
-        },
-    },
-    -- Move to next/previous TAB
-    --{
-    --    key = 'n',
-    --    mods = 'LEADER',
-    --    action = act.ActivateTabRelative(1),
-    --},
-    --{
-    --    key = 'p',
-    --    mods = 'LEADER',
-    --    action = act.ActivateTabRelative(-1),
-    --},
-    -- Close tab
-    {
-        key = 'q',
-        mods = 'LEADER|SHIFT',
-        action = act.CloseCurrentTab{ confirm = true },
-    },
+  },
+  -- Move to next/previous TAB
+  --{
+  --    key = 'n',
+  --    mods = 'LEADER',
+  --    action = act.ActivateTabRelative(1),
+  --},
+  --{
+  --    key = 'p',
+  --    mods = 'LEADER',
+  --    action = act.ActivateTabRelative(-1),
+  --},
+  -- Close tab
+  {
+    key = 'q',
+    mods = 'LEADER|SHIFT',
+    action = act.CloseCurrentTab{ confirm = true },
+  },
 
-    -- ----------------------------------------------------------------
-    -- PANES
-    --
-    -- These are great and get me most of the way to replacing tmux
-    -- entirely, particularly as you can use "wezterm ssh" to ssh to another
-    -- server, and still retain Wezterm as your terminal there.
-    -- ----------------------------------------------------------------
+  -- ----------------------------------------------------------------
+  -- PANES
+  --
+  -- These are great and get me most of the way to replacing tmux
+  -- entirely, particularly as you can use "wezterm ssh" to ssh to another
+  -- server, and still retain Wezterm as your terminal there.
+  -- ----------------------------------------------------------------
 
-    -- Vertical split
-    {
-        key = 'Enter',
-        mods = 'LEADER',
-        action = act.SplitPane {
-            direction = 'Right',
-            size = { Percent = 50 },
-        },
+  -- Vertical split
+  {
+    key = 'Enter',
+    mods = 'LEADER',
+    action = act.SplitPane {
+      direction = 'Right',
+      size = { Percent = 50 },
     },
-    -- Horizontal split
-    {
-        key = '<',
-        mods = 'LEADER',
-        action = act.SplitPane {
-            direction = 'Down',
-            size = { Percent = 50 },
-        },
+  },
+  -- Horizontal split
+  {
+    key = '<',
+    mods = 'LEADER',
+    action = act.SplitPane {
+      direction = 'Down',
+      size = { Percent = 50 },
     },
-    { key = "h", mods = "LEADER", action = act.ActivatePaneDirection("Left") },
-    { key = "j", mods = "LEADER", action = act.ActivatePaneDirection("Down") },
-    { key = "k", mods = "LEADER", action = act.ActivatePaneDirection("Up") },
-    { key = "l", mods = "LEADER", action = act.ActivatePaneDirection("Right") },
-    { key = 'y', mods = 'LEADER', action = act.AdjustPaneSize { 'Left', 5 }, },
-    { key = 'u', mods = 'LEADER', action = act.AdjustPaneSize { 'Down', 5 }, },
-    { key = 'i', mods = 'LEADER', action = act.AdjustPaneSize { 'Up', 5 } },
-    { key = 'o', mods = 'LEADER', action = act.AdjustPaneSize { 'Right', 5 }, },
-    { key = "q", mods = "LEADER", action = act.CloseCurrentPane { confirm = false } },
-    { key = "q", mods = "LEADER|CTRL", action = act.CloseCurrentPane { confirm = false } },
+  },
+  { key = "h", mods = "LEADER", action = act.ActivatePaneDirection("Left") },
+  { key = "j", mods = "LEADER", action = act.ActivatePaneDirection("Down") },
+  { key = "k", mods = "LEADER", action = act.ActivatePaneDirection("Up") },
+  { key = "l", mods = "LEADER", action = act.ActivatePaneDirection("Right") },
+  { key = 'y', mods = 'LEADER', action = act.AdjustPaneSize { 'Left', 5 }, },
+  { key = 'u', mods = 'LEADER', action = act.AdjustPaneSize { 'Down', 5 }, },
+  { key = 'i', mods = 'LEADER', action = act.AdjustPaneSize { 'Up', 5 } },
+  { key = 'o', mods = 'LEADER', action = act.AdjustPaneSize { 'Right', 5 }, },
+  { key = "q", mods = "LEADER", action = act.CloseCurrentPane { confirm = false } },
+  { key = "q", mods = "LEADER|CTRL", action = act.CloseCurrentPane { confirm = false } },
 
-    -- Swap active pane with another one
-    {
-        key = 'T',
-        mods = 'LEADER|SHIFT',
-        action = act.PaneSelect { mode = "SwapWithActiveKeepFocus" },
+  -- Swap active pane with another one
+  {
+    key = 'T',
+    mods = 'LEADER|SHIFT',
+    action = act.PaneSelect { mode = "SwapWithActiveKeepFocus" },
+  },
+  -- Zoom current pane (toggle)
+  {
+    key = 'z',
+    mods = 'LEADER',
+    action = act.TogglePaneZoomState,
+  },
+  {
+    key = 'f',
+    mods = 'LEADER|SHIFT',
+    action = act.TogglePaneZoomState,
+  },
+  -- Move to next/previous pane
+  --{
+  --    key = ';',
+  --    mods = 'LEADER',
+  --    action = act.ActivatePaneDirection('Prev'),
+  --},
+  --{
+  --    key = 'o',
+  --    mods = 'LEADER',
+  --    action = act.ActivatePaneDirection('Next'),
+  --},
+
+  ---- Attach to muxer
+  {
+    key = 'a',
+    mods = 'LEADER',
+    action = act.AttachDomain 'unix',
+  },
+
+  -- Detach from muxer
+  {
+    key = 'd',
+    mods = 'LEADER',
+    action = act.DetachDomain { DomainName = 'unix' },
+  },
+
+  -- Show list of workspaces
+  {
+    key = 's',
+    mods = 'LEADER',
+    action = act.ShowLauncherArgs { flags = 'WORKSPACES' },
+  },
+  -- Rename current session; analagous to command in tmux
+  {
+    key = '-',
+    mods = 'LEADER|ALT',
+    action = act.PromptInputLine {
+      description = 'Enter new name for session',
+      action = wezterm.action_callback(
+        function(window, pane, line)
+          if line then
+            mux.rename_workspace(
+              window:mux_window():get_workspace(),
+              line
+            )
+          end
+        end
+      ),
     },
-    -- Zoom current pane (toggle)
-    {
-        key = 'z',
-        mods = 'LEADER',
-        action = act.TogglePaneZoomState,
-    },
-    {
-        key = 'f',
-        mods = 'LEADER|SHIFT',
-        action = act.TogglePaneZoomState,
-    },
-    -- Move to next/previous pane
-    --{
-    --    key = ';',
-    --    mods = 'LEADER',
-    --    action = act.ActivatePaneDirection('Prev'),
-    --},
-    --{
-    --    key = 'o',
-    --    mods = 'LEADER',
-    --    action = act.ActivatePaneDirection('Next'),
-    --},
+  },
 
-    ---- Attach to muxer
-    {
-        key = 'a',
-        mods = 'LEADER',
-        action = act.AttachDomain 'unix',
-    },
+  -- Scroll
+  { key = 'J', mods = 'ALT|SHIFT', action = wezterm.action.ScrollByLine(1), },
+  { key = 'K', mods = 'ALT|SHIFT', action = wezterm.action.ScrollByLine(-1), },
 
-    -- Detach from muxer
-    {
-        key = 'd',
-        mods = 'LEADER',
-        action = act.DetachDomain { DomainName = 'unix' },
-    },
+  -- Copying
+  --if wezterm.target_triple ~= "x86_64-pc-windows-msvc" and wezterm.target_triple ~= "x86_64-pc-windows-gnu" then
+  { key = 'C', mods = 'ALT|SHIFT', action = wezterm.action.CopyTo 'ClipboardAndPrimarySelection', },
+  { key = 'V', mods = 'ALT|SHIFT', action = wezterm.action.PasteFrom 'Clipboard', },
 
-    -- Show list of workspaces
-    {
-        key = 's',
-        mods = 'LEADER',
-        action = act.ShowLauncherArgs { flags = 'WORKSPACES' },
-    },
-    -- Rename current session; analagous to command in tmux
-    {
-        key = '-',
-        mods = 'LEADER|ALT',
-        action = act.PromptInputLine {
-            description = 'Enter new name for session',
-            action = wezterm.action_callback(
-                function(window, pane, line)
-                    if line then
-                        mux.rename_workspace(
-                            window:mux_window():get_workspace(),
-                            line
-                        )
-                    end
-                end
-            ),
-        },
-    },
+  -- Session manager
+  {key = "m", mods = "LEADER", action = wezterm.action{EmitEvent = "save_session"}},
+  {key = ".", mods = "LEADER", action = wezterm.action{EmitEvent = "restore_session"}},
+  --{key = "p", mods = "LEADER", action = wezterm.action{EmitEvent = "load_session"}},
 
-    -- Scroll
-    { key = 'J', mods = 'ALT|SHIFT', action = wezterm.action.ScrollByLine(1), },
-    { key = 'K', mods = 'ALT|SHIFT', action = wezterm.action.ScrollByLine(-1), },
+  -- Disable default
+  { key = 'Enter', mods = 'ALT', action = wezterm.action.DisableDefaultAssignment, },
+  { key = 'l', mods = 'ALT', action = wezterm.action.DisableDefaultAssignment, },
+  { key = 'h', mods = 'ALT', action = wezterm.action.DisableDefaultAssignment, },
+  { key = 'j', mods = 'ALT', action = wezterm.action.DisableDefaultAssignment, },
+  { key = 'k', mods = 'ALT', action = wezterm.action.DisableDefaultAssignment, },
 
-    -- Copying
-    --if wezterm.target_triple ~= "x86_64-pc-windows-msvc" and wezterm.target_triple ~= "x86_64-pc-windows-gnu" then
-    { key = 'C', mods = 'ALT|SHIFT', action = wezterm.action.CopyTo 'ClipboardAndPrimarySelection', },
-    { key = 'V', mods = 'ALT|SHIFT', action = wezterm.action.PasteFrom 'Clipboard', },
+  -- Tabs
+  { key = "1", mods = "LEADER", action = wezterm.action{ActivateTab=0}, },
+  { key = "2", mods = "LEADER", action = wezterm.action{ActivateTab=1}, },
+  { key = "3", mods = "LEADER", action = wezterm.action{ActivateTab=2}, },
+  { key = "4", mods = "LEADER", action = wezterm.action{ActivateTab=3}, },
+  { key = "5", mods = "LEADER", action = wezterm.action{ActivateTab=4}, },
+  { key = "6", mods = "LEADER", action = wezterm.action{ActivateTab=5}, },
+  { key = "7", mods = "LEADER", action = wezterm.action{ActivateTab=6}, },
+  { key = "8", mods = "LEADER", action = wezterm.action{ActivateTab=7}, },
+  { key = "9", mods = "LEADER", action = wezterm.action{ActivateTab=8}, },
+  { key = "0", mods = "LEADER", action = wezterm.action{ActivateTab=9}, },
+  { key = 't', mods = "LEADER", action = wezterm.action{SpawnTab="DefaultDomain"}, },
+  { key = 'q', mods = 'LEADER|SHIFT', action = wezterm.action.QuitApplication },
+  -- Seamless vim pane integration
+  split_nav("h"),
+  split_nav("j"),
+  split_nav("k"),
+  split_nav("l"),
+  resize_pane("y"),
+  resize_pane("u"),
+  resize_pane("i"),
+  resize_pane("o"),
+  -- QuickSelect
+  -- { key = ' ', mods = 'SHIFT|CTRL', action = wezterm.action.QuickSelect },
+  { key = ' ', mods = 'ALT|SHIFT', action = wezterm.action.QuickSelect },
 
-    -- Session manager
-    {key = "m", mods = "LEADER", action = wezterm.action{EmitEvent = "save_session"}},
-    {key = ".", mods = "LEADER", action = wezterm.action{EmitEvent = "restore_session"}},
-    --{key = "p", mods = "LEADER", action = wezterm.action{EmitEvent = "load_session"}},
+  -- Make ctrl-tab cycle tabs / windows for both wezterm and tmux
+  {
+    key = "Tab",
+    mods = "CTRL",
+    action = wezterm.action.Multiple({
+      act.ActivateTabRelative(1),
+      wezterm.action.SendKey({ key = "Tab", mods = "CTRL" }),
+    }),
+  },
 
-    -- Disable default
-    { key = 'Enter', mods = 'ALT', action = wezterm.action.DisableDefaultAssignment, },
-    { key = 'l', mods = 'ALT', action = wezterm.action.DisableDefaultAssignment, },
-    { key = 'h', mods = 'ALT', action = wezterm.action.DisableDefaultAssignment, },
-    { key = 'j', mods = 'ALT', action = wezterm.action.DisableDefaultAssignment, },
-    { key = 'k', mods = 'ALT', action = wezterm.action.DisableDefaultAssignment, },
-
-    -- Tabs
-    { key = "1", mods = "LEADER", action = wezterm.action{ActivateTab=0}, },
-    { key = "2", mods = "LEADER", action = wezterm.action{ActivateTab=1}, },
-    { key = "3", mods = "LEADER", action = wezterm.action{ActivateTab=2}, },
-    { key = "4", mods = "LEADER", action = wezterm.action{ActivateTab=3}, },
-    { key = "5", mods = "LEADER", action = wezterm.action{ActivateTab=4}, },
-    { key = "6", mods = "LEADER", action = wezterm.action{ActivateTab=5}, },
-    { key = "7", mods = "LEADER", action = wezterm.action{ActivateTab=6}, },
-    { key = "8", mods = "LEADER", action = wezterm.action{ActivateTab=7}, },
-    { key = "9", mods = "LEADER", action = wezterm.action{ActivateTab=8}, },
-    { key = "0", mods = "LEADER", action = wezterm.action{ActivateTab=9}, },
-    { key = 't', mods = "LEADER", action = wezterm.action{SpawnTab="DefaultDomain"}, },
-    { key = 'q', mods = 'LEADER|SHIFT', action = wezterm.action.QuitApplication },
-    -- Seamless vim pane integration
-    split_nav("h"),
-    split_nav("j"),
-    split_nav("k"),
-    split_nav("l"),
-    resize_pane("y"),
-    resize_pane("u"),
-    resize_pane("i"),
-    resize_pane("o"),
-    -- QuickSelect
-    -- { key = ' ', mods = 'SHIFT|CTRL', action = wezterm.action.QuickSelect },
-    { key = ' ', mods = 'ALT|SHIFT', action = wezterm.action.QuickSelect },
-
-    -- Make ctrl-tab cycle tabs / windows for both wezterm and tmux
-    {
-      key = "Tab",
-      mods = "CTRL",
-      action = wezterm.action.Multiple({
-        act.ActivateTabRelative(1),
-        wezterm.action.SendKey({ key = "Tab", mods = "CTRL" }),
-      }),
-    },
-
-    {
-      key = "Tab",
-      mods = "CTRL|SHIFT",
-      action = wezterm.action.Multiple({
-        act.ActivateTabRelative(-1),
-        wezterm.action.SendKey({ key = "Tab", mods = "CTRL|SHIFT" }),
-      }),
-    },
+  {
+    key = "Tab",
+    mods = "CTRL|SHIFT",
+    action = wezterm.action.Multiple({
+      act.ActivateTabRelative(-1),
+      wezterm.action.SendKey({ key = "Tab", mods = "CTRL|SHIFT" }),
+    }),
+  },
 }
 
 -- Read dir path and start a split pane
 local function split_to_directory_with_delay(win, pane)
-    -- Save dir under cursor into file in vim...
-    win:perform_action({
-        SendKey = { key = "w", mods = "CTRL" },
-    }, pane)
-    win:perform_action({
-        SendKey = { key = "d" },
-    }, pane)
+  -- Save dir under cursor into file in vim...
+  win:perform_action({
+    SendKey = { key = "w", mods = "CTRL" },
+  }, pane)
+  win:perform_action({
+    SendKey = { key = "d" },
+  }, pane)
 
-    wezterm.sleep_ms(500)
+  wezterm.sleep_ms(500)
 
-    -- Open the saved dir in wezterm pane
-    local userprofile = os.getenv("HOME") or os.getenv("USERPROFILE")
-    local file_path = userprofile .. "/new_wez_dir.txt"
+  -- Open the saved dir in wezterm pane
+  local userprofile = os.getenv("HOME") or os.getenv("USERPROFILE")
+  local file_path = userprofile .. "/new_wez_dir.txt"
 
-    -- print("file_path:" .. file_path)
-    -- win:toast_notification("WezTerm Notification", "file_path: " .. file_path, nil, 4000)
+  -- print("file_path:" .. file_path)
+  -- win:toast_notification("WezTerm Notification", "file_path: " .. file_path, nil, 4000)
 
-    local file = io.open(file_path, "r")
-    if not file then
-        -- wezterm.log_info("File not found: " .. file_path)
-        win:toast_notification("WezTerm Notification", "File not found: " .. file_path, nil, 4000)
-        return
-    end
+  local file = io.open(file_path, "r")
+  if not file then
+    -- wezterm.log_info("File not found: " .. file_path)
+    win:toast_notification("WezTerm Notification", "File not found: " .. file_path, nil, 4000)
+    return
+  end
 
-    -- Read dir path from file
-    local directory = file:read("*line")
-    file:close()
+  -- Read dir path from file
+  local directory = file:read("*line")
+  file:close()
 
-    -- Validate path
-    -- Might be in: %TEMP%\wezterm.log or /tmp/wezterm.log
-    -- https://wezfurlong.org/wezterm/troubleshooting.html
-    if directory and directory ~= "" then --and wezterm.path.exists(directory) then
-        -- wezterm.log_info("Splitting to directory: " .. directory)
-        -- win:toast_notification("WezTerm Notification", "Splitting to dir: " .. directory, nil, 4000)
+  -- Validate path
+  -- Might be in: %TEMP%\wezterm.log or /tmp/wezterm.log
+  -- https://wezfurlong.org/wezterm/troubleshooting.html
+  if directory and directory ~= "" then --and wezterm.path.exists(directory) then
+    -- wezterm.log_info("Splitting to directory: " .. directory)
+    -- win:toast_notification("WezTerm Notification", "Splitting to dir: " .. directory, nil, 4000)
 
-        local command = {
-            cwd = directory
-        }
+    local command = {
+      cwd = directory
+    }
 
-        win:perform_action(
-        wezterm.action.SplitPane {
-            direction = "Right",
-            size = { Percent = 50 },
-            command = command
-            -- command = { cwd = directory }
-        },
-        pane
-        )
+    win:perform_action(
+      wezterm.action.SplitPane {
+        direction = "Right",
+        size = { Percent = 50 },
+        command = command
+        -- command = { cwd = directory }
+      },
+      pane
+    )
     --else
     --    wezterm.log_info("Invalid directory path: " .. (directory or "nil"))
     --    win:toast_notification("WezTerm Notification", "Invalid directory path: " .. (directory or "nil"), nil, 4000)
-    end
+  end
 end
 
 table.insert(config.keys, {
-    key = "d",
-    mods = "LEADER",
-    action = wezterm.action_callback(split_to_directory_with_delay),
+  key = "d",
+  mods = "LEADER",
+  action = wezterm.action_callback(split_to_directory_with_delay),
 })
 
 --config.default_gui_startup_args = { 'connect', 'unix' }
 if wezterm.target_triple == 'x86_64-pc-windows-msvc' or wezterm.target_triple == 'x86_64-pc-windows-gnu' then
-    --config.default_prog = { 'pwsh.exe', '-NoLogo' }
-    config.default_prog = { 'powershell.exe' }
+  --config.default_prog = { 'pwsh.exe', '-NoLogo' }
+  config.default_prog = { 'powershell.exe' }
 
-    wezterm.on('gui-startup', function(cmd)
-        -- allow `wezterm start -- something` to affect what we spawn
-        -- in our initial window
-        local args = {}
-        if cmd then
-            args = cmd.args
-        end
+  wezterm.on('gui-startup', function(cmd)
+    -- allow `wezterm start -- something` to affect what we spawn
+    -- in our initial window
+    local args = {}
+    if cmd then
+      args = cmd.args
+    end
 
-        ---- Set a workspace for coding on a current project
-        ---- Top pane is for the editor, bottom pane is for the build tool
-        --local project_dir = wezterm.home_dir .. '/wezterm'
-        --local tab, build_pane, window = mux.spawn_window {
-        --  workspace = 'coding',
-        --  cwd = project_dir,
-        --  args = args,
-        --}
-        --local editor_pane = build_pane:split {
-        --  direction = 'Top',
-        --  size = 0.6,
-        --  cwd = project_dir,
-        --}
-        ---- may as well kick off a build in that pane
-        --build_pane:send_text 'cargo build\n'
+    ---- Set a workspace for coding on a current project
+    ---- Top pane is for the editor, bottom pane is for the build tool
+    --local project_dir = wezterm.home_dir .. '/wezterm'
+    --local tab, build_pane, window = mux.spawn_window {
+    --  workspace = 'coding',
+    --  cwd = project_dir,
+    --  args = args,
+    --}
+    --local editor_pane = build_pane:split {
+    --  direction = 'Top',
+    --  size = 0.6,
+    --  cwd = project_dir,
+    --}
+    ---- may as well kick off a build in that pane
+    --build_pane:send_text 'cargo build\n'
 
-        ---- A workspace for interacting with a local machine that
-        ---- runs some docker containners for home automation
-        ----local tab, pane, window = mux.spawn_window {
-        ----  workspace = 'automation',
-        ----  args = { 'ssh', 'vault' },
-        ----}
+    ---- A workspace for interacting with a local machine that
+    ---- runs some docker containners for home automation
+    ----local tab, pane, window = mux.spawn_window {
+    ----  workspace = 'automation',
+    ----  args = { 'ssh', 'vault' },
+    ----}
 
-        ---- We want to startup in the coding workspace
-        --mux.set_active_workspace 'coding'
+    ---- We want to startup in the coding workspace
+    --mux.set_active_workspace 'coding'
 
-        -- Try to attach...
-        -- Check if the workspace 'coding' exists
-        --local workspace_name = 'coding'
-        --local existing_workspace = false
-        --for _, workspace in ipairs(mux.get_workspaces()) do
-        --  if workspace == workspace_name then
-        --    existing_workspace = true
-        --    break
-        --  end
-        --end
+    -- Try to attach...
+    -- Check if the workspace 'coding' exists
+    --local workspace_name = 'coding'
+    --local existing_workspace = false
+    --for _, workspace in ipairs(mux.get_workspaces()) do
+    --  if workspace == workspace_name then
+    --    existing_workspace = true
+    --    break
+    --  end
+    --end
 
-        --if existing_workspace then
-        --    window = mux.attach_workspace(workspace_name)
-        --else
+    --if existing_workspace then
+    --    window = mux.attach_workspace(workspace_name)
+    --else
 
-        --local unix = mux.get_domain("unix")
-        --mux.set_default_domain(unix)
-        --unix:attach()
-        --mux.set_active_workspace 'coding'
+    --local unix = mux.get_domain("unix")
+    --mux.set_default_domain(unix)
+    --unix:attach()
+    --mux.set_active_workspace 'coding'
 
-        --local code_root_dir = os.getenv("code_root_dir")
-        --local full_path = code_root_dir .. "/Code2/C++"
-        ----local tab1, pane, window = mux.spawn_window(cmd or {})
-        local tab1, pane, window = mux.spawn_window{cwd = full_path, workspace = 'coding' }
-        window:gui_window():maximize()
-        --tab1:set_title("one - pwsh")
+    --local code_root_dir = os.getenv("code_root_dir")
+    --local full_path = code_root_dir .. "/Code2/C++"
+    ----local tab1, pane, window = mux.spawn_window(cmd or {})
+    local tab1, pane, window = mux.spawn_window{cwd = full_path, workspace = 'coding' }
+    window:gui_window():maximize()
+    --tab1:set_title("one - pwsh")
 
-        --local code_root_dir = "~/"
-        --local tab2, second_pane, _ = window:spawn_tab { cwd = code_root_dir, workspace = 'coding' }
-        --tab2:set_title("two - pwsh")
-        --local tab3, third_pane, _ = window:spawn_tab { cwd = "C:\\", workspace = 'coding' }
-        --tab3:set_title("three - pwsh")
-        ----third_pane:send_text ".cdc\n"
-        --local tab4, fourth_pane, _ = window:spawn_tab { cwd = "~/", workspace = 'coding' }
-        --tab4:set_title("four - pwsh")
-        ----fourth_pane:send_text ".cdp\n"
+    --local code_root_dir = "~/"
+    --local tab2, second_pane, _ = window:spawn_tab { cwd = code_root_dir, workspace = 'coding' }
+    --tab2:set_title("two - pwsh")
+    --local tab3, third_pane, _ = window:spawn_tab { cwd = "C:\\", workspace = 'coding' }
+    --tab3:set_title("three - pwsh")
+    ----third_pane:send_text ".cdc\n"
+    --local tab4, fourth_pane, _ = window:spawn_tab { cwd = "~/", workspace = 'coding' }
+    --tab4:set_title("four - pwsh")
+    ----fourth_pane:send_text ".cdp\n"
 
-        --tab1:activate()
-        --end
+    --tab1:activate()
+    --end
 
-        --session_manager.restore_state(window)
-    end)
+    --session_manager.restore_state(window)
+  end)
 end
 
 wezterm.on("format-tab-title", function(tab)
-    local new_title = tostring(tab.active_pane.current_working_dir):gsub("^file:///", "")
-    local max_title_len = 20
-    if #new_title > max_title_len then
-        new_title = "..." .. new_title:sub(-(max_title_len-3))
-    end
-    return {
-        { Text = new_title }
-    }
+  local new_title = tostring(tab.active_pane.current_working_dir):gsub("^file:///", "")
+  local max_title_len = 20
+  if #new_title > max_title_len then
+    new_title = "..." .. new_title:sub(-(max_title_len-3))
+  end
+  return {
+    { Text = new_title }
+  }
 end)
 
 -- Return config to wezterm

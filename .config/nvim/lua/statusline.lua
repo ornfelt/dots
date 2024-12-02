@@ -7,18 +7,18 @@ local function getWords()
 end
 
 local options = {
-    icons_enabled = true,
-    theme = 'gruvbox',
-    -- globalstatus = true,
-    refresh = {
-      statusline = 1000,
-      tabline = 1000,
-      winbar = 1000,
-    }
+  icons_enabled = true,
+  theme = 'gruvbox',
+  -- globalstatus = true,
+  refresh = {
+    statusline = 1000,
+    tabline = 1000,
+    winbar = 1000,
+  }
 }
 
 if vim.fn.has('win32') == 1 then
-    options.component_separators = { left = '', right = '|' }
+  options.component_separators = { left = '', right = '|' }
 end
 
 require('lualine').setup {
