@@ -134,7 +134,7 @@ map('n', '<M-e>', ':lua toggle_filetree()<CR>')
 -- map('v', '<C-k>', '<Plug>NERDCommenterToggle')
 
 ---- fzf
---local fzf_vim_installed = pcall(function() return vim.fn['fzf#run'] end)
+local fzf_vim_installed = pcall(function() return vim.fn['fzf#run'] end)
 --if fzf_vim_installed then
 --    ----map('n', '<M-a>', ':FZF ./<CR>')
 --    --map('n', '<M-W>', ':FZF ./<CR>')
@@ -143,7 +143,7 @@ map('n', '<M-e>', ':lua toggle_filetree()<CR>')
 --end
 --
 ---- fzf-lua
---local fzf_lua_installed = pcall(require, 'fzf-lua')
+local fzf_lua_installed = pcall(require, 'fzf-lua')
 --if fzf_lua_installed then
 --    --local opts = { noremap = true, silent = true }
 --    --vim.api.nvim_set_keymap('n', '<M-a>', ":lua require('fzf-lua').git_files()<CR>", opts)
@@ -157,12 +157,12 @@ map('n', '<M-e>', ':lua toggle_filetree()<CR>')
 local use_fzf = false
 local use_fzf_lua = false
 
-if use_fzf then
+if use_fzf and fzf_vim_installed then
   map('n', '<M-S>', ':FZF ' .. (vim.fn.has('unix') == 1 and '/' or 'C:/') .. '<CR>')
 end
 
 -- fzf-lua
-if use_fzf_lua or not use_fzf then
+if (use_fzf_lua or not use_fzf) and fzf_lua_installed then
   local root_dir = vim.fn.has('unix') == 1 and '/' or 'C:/'
   map('n', '<M-S>', ":lua require('fzf-lua').files({ cwd = '" .. root_dir .. "' })<CR>")
 end
@@ -1164,6 +1164,8 @@ local function llm()
   vim.api.nvim_buf_set_lines(0, line_num, line_num, false, vim.list_slice(split_newlines, 2))
 end
 
+vim.api.nvim_create_user_command('Llm', llm, {})
+
 if is_plugin_installed('model') then
   local llamacpp = require('model.providers.llamacpp')
 
@@ -1190,7 +1192,6 @@ if is_plugin_installed('model') then
   vim.api.nvim_set_keymap('i', '<M-->', '<Cmd>:Model zephyr<CR>', {noremap = true, silent = true})
   vim.api.nvim_set_keymap('v', '<M-->', '<Cmd>:Model zephyr<CR>', {noremap = true, silent = true})
 else
-  vim.api.nvim_create_user_command('Llm', llm, {})
   vim.api.nvim_set_keymap('n', '<M-->', '<Cmd>:Llm<CR>', {noremap = true, silent = true})
   vim.api.nvim_set_keymap('i', '<M-->', '<Cmd>:Llm<CR>', {noremap = true, silent = true})
   vim.api.nvim_set_keymap('v', '<M-->', '<Cmd>:Llm<CR>', {noremap = true, silent = true})
@@ -2045,6 +2046,7 @@ vim.keymap.set('n', '<leader><leader>', function()
     { label = "GoLangTestFiles", cmd = "GoLangTestFiles" },
     { label = "Update Config - CyclePythonExecCommand", cmd = "CyclePythonExecCommand" },
     { label = "Update Config - TogglePrioritizeBuildScript", cmd = "TogglePrioritizeBuildScript" },
+    { label = "Llama", cmd = "Llm" },
     -- SQL
     { label = "SqlsExecuteQuery", cmd = "SqlsExecuteQuery" },
     { label = "SqlsShowDatabases", cmd = "SqlsShowDatabases" },
