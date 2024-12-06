@@ -53,6 +53,13 @@ map('n', '<S-Insert>', '<MiddleMouse>')
 local last_closed_tab = nil
 
 local function save_and_close_tab()
+  local tab_count = vim.fn.tabpagenr('$')
+  if tab_count <= 1 then
+    --print("Cannot save tab state: only one tab open.")
+    vim.cmd("q")
+    return
+  end
+
   local tabpage = vim.api.nvim_get_current_tabpage()
   local windows = vim.api.nvim_tabpage_list_wins(tabpage)
   local buffers = {}
@@ -66,7 +73,6 @@ local function save_and_close_tab()
   end
 
   last_closed_tab = buffers
-
   vim.cmd("tabclose")
 end
 
