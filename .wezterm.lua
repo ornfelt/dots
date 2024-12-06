@@ -67,6 +67,8 @@ config.mouse_bindings = {
     action = act.OpenLinkAtMouseCursor,
   }
 }
+
+config.unzoom_on_switch_pane = true
 config.pane_focus_follows_mouse = false
 config.scrollback_lines = 5000 -- Default is 3500
 config.use_dead_keys = false
@@ -87,7 +89,8 @@ if wezterm.target_triple == 'x86_64-pc-windows-msvc' or wezterm.target_triple ==
     top = 20,
     bottom = 10,
   }
-  config.use_fancy_tab_bar = true
+  --config.use_fancy_tab_bar = true
+  config.use_fancy_tab_bar = false
 else
   config.leader = { key = 'b', mods = 'CTRL', timeout_milliseconds = 1000 }
   --config.leader = { key = 'a', mods = 'CTRL', timeout_milliseconds = 1000 }
@@ -105,6 +108,7 @@ end
 
 -- Tab bar
 config.tab_bar_at_bottom = true
+config.show_new_tab_button_in_tab_bar = false
 config.switch_to_last_active_tab_when_closing_tab = true
 config.tab_max_width = 15
 config.colors = {
@@ -192,6 +196,7 @@ local function split_nav(key)
       -- Check if there are multiple panes to navigate
       local dir = direction_keys[key]
       local tab = pane:tab()
+
       if is_tmux(pane) then
         win:perform_action({ SendKey = { key = key, mods = "ALT" } }, pane)
         return
@@ -199,9 +204,20 @@ local function split_nav(key)
 
       local opposite_dir = dir == "Left" and "Right" or dir == "Right" and "Left" or dir == "Up" and "Down" or "Up"
 
-      if tab:get_pane_direction(dir) then
+      -- Use nvim pane switching if pane is zoomed
+      -- https://wezfurlong.org/wezterm/config/lua/MuxTab/panes_with_info.html
+      --local is_zoomed = pane.is_zoomed
+      local is_zoomed = false
+      for _, pane_info in ipairs(tab:panes_with_info()) do
+        if pane_info.is_zoomed then
+          is_zoomed = true
+          break
+        end
+      end
+
+      if tab:get_pane_direction(dir) and not is_zoomed then
         win:perform_action({ ActivatePaneDirection = dir }, pane)
-      elseif tab:get_pane_direction(opposite_dir) then
+      elseif tab:get_pane_direction(opposite_dir) and not is_zoomed then
         win:perform_action({ ActivatePaneDirection = opposite_dir }, pane)
       else
         -- Send the key sequence to process, e.g., vim
@@ -233,9 +249,17 @@ local function resize_pane(key)
         return
       end
 
+      local is_zoomed = false
+      for _, pane_info in ipairs(tab:panes_with_info()) do
+        if pane_info.is_zoomed then
+          is_zoomed = true
+          break
+        end
+      end
+
       -- Check if there's a pane in either primary dir or opposite
       local opposite_dir = dir == "Left" and "Right" or dir == "Right" and "Left" or dir == "Up" and "Down" or "Up"
-      if tab:get_pane_direction(dir) or tab:get_pane_direction(opposite_dir) then
+      if (tab:get_pane_direction(dir) or tab:get_pane_direction(opposite_dir)) and not is_zoomed then
         win:perform_action(act.AdjustPaneSize { dir, 5 }, pane)
       else
         -- Send ALT + SHIFT + key to Vim for resizing inside Vim
@@ -621,9 +645,11 @@ end
 
 wezterm.on("format-tab-title", function(tab)
   local new_title = tostring(tab.active_pane.current_working_dir):gsub("^file:///", "")
-  local max_title_len = 20
+  --local max_title_len = 20 -- If use_fancy_tab_bar
+  local max_title_len = 15
   if #new_title > max_title_len then
-    new_title = "..." .. new_title:sub(-(max_title_len-3))
+    --new_title = ".." .. new_title:sub(-(max_title_len-3)) -- If use_fancy_tab_bar
+    new_title = ".." .. new_title:sub(-(max_title_len-3)) .. " "
   end
   return {
     { Text = new_title }

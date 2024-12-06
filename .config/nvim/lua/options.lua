@@ -145,19 +145,6 @@ vim.g['jedi#popup_on_dot'] = 1
 -- vim.g['syntastic_check_on_open'] = 1
 -- vim.g['syntastic_check_on_wq'] = 0
 
--- NERDTree
--- vim.g['NERDTreeQuitOnOpen'] = 1
--- vim.g['NERDTreeShowHidden'] = 1
--- vim.g['NERDTreeFileLines'] = 1
-
--- NERDCommenter
--- vim.g.NERDCreateDefaultMappings = 0
--- vim.g.NERDSpaceDelims = 1
--- Add spaces after comment delimiters by default
---vim.g.NERDSpaceDelims = 0
--- Align line-wise comment delimiters flush left instead of following code indentation
--- vim.g.NERDDefaultAlign = 'left'
-
 -- Vimwiki Plugin Settings
 vim.g['vimwiki_key_mappings'] = { table_mappings = 0 }
 
@@ -173,6 +160,8 @@ vim.g.python3_host_prog = os.getenv("PYTHON_PATH")
 -- Disable netrw (file explorer that comes with vim)
 vim.g.loaded_netrw = 1
 vim.g.loaded_netrwPlugin = 1
+
+vim.env.LANG = "en_US.UTF-8"
 
 --vim.opt.showtabline = 1
 --vim.opt.tabline = "%!v:lua.TabLine()"

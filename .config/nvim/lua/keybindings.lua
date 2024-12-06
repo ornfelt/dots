@@ -48,7 +48,56 @@ map('i', '<C-v>', '<Esc>"+p')
 map('i', '<S-Insert>', '<Esc><MiddleMouse>A')
 map('n', '<S-Insert>', '<MiddleMouse>')
 
-map('n', '<M-q>', ':q<CR>') -- Quit
+--map('n', '<M-q>', ':q<CR>') -- Quit
+-- Close and restore tab
+local last_closed_tab = nil
+
+local function save_and_close_tab()
+  local tabpage = vim.api.nvim_get_current_tabpage()
+  local windows = vim.api.nvim_tabpage_list_wins(tabpage)
+  local buffers = {}
+
+  for _, win in ipairs(windows) do
+    local buf = vim.api.nvim_win_get_buf(win)
+    table.insert(buffers, {
+      name = vim.api.nvim_buf_get_name(buf),
+      position = vim.api.nvim_win_get_cursor(win),
+    })
+  end
+
+  last_closed_tab = buffers
+
+  vim.cmd("tabclose")
+end
+
+local function restore_tab()
+  if not last_closed_tab or #last_closed_tab == 0 then
+    print("No closed tab to restore.")
+    return
+  end
+
+  vim.cmd("tabnew")
+
+  local current_tab_index = vim.fn.tabpagenr()
+  local total_tabs = vim.fn.tabpagenr("$")
+
+  if current_tab_index < total_tabs then
+    vim.cmd("tabmove -1")
+  end
+
+  for _, buf_data in ipairs(last_closed_tab) do
+    if buf_data.name ~= "" then
+      vim.cmd("edit " .. buf_data.name)
+      vim.api.nvim_win_set_cursor(0, buf_data.position)
+    end
+  end
+
+  last_closed_tab = nil
+end
+
+vim.keymap.set("n", "<M-q>", save_and_close_tab, { noremap = true, silent = true })
+vim.keymap.set("n", "<M-S-T>", restore_tab, { noremap = true, silent = true })
+
 map('n', '<M-z>', ':noh<CR>')
 map('n', 'Y', 'y$') -- Yank till end of line
 
@@ -128,10 +177,6 @@ function toggle_filetree()
   end
 end
 map('n', '<M-e>', ':lua toggle_filetree()<CR>')
-
--- NERDCommenter
--- map('n', '<C-k>', ':call nerdcommenter#Comment(0, "toggle")<CR>')
--- map('v', '<C-k>', '<Plug>NERDCommenterToggle')
 
 ---- fzf
 local fzf_vim_installed = pcall(function() return vim.fn['fzf#run'] end)
@@ -497,6 +542,9 @@ map('t', '<M-k>', [[<C-\><C-n><C-w>k]])
 map('t', '<M-l>', [[<C-\><C-n><C-w>l]])
 map('t', '<M-q>', [[<C-\><C-n>:q<CR>]])
 map('t', '<Esc>', [[<C-\><C-n>]])
+
+vim.api.nvim_set_keymap('n', '<C-Tab>', '', { noremap = true, silent = true })
+vim.api.nvim_set_keymap('n', '<C-S-Tab>', '', { noremap = true, silent = true })
 
 -- Moving text
 map('x', 'J', ":move '>+1<CR>gv=gv")
@@ -1476,8 +1524,25 @@ function compile_run()
   elseif filetype == 'typescript' or filetype == 'tsx' then
     local ts_file = vim.fn.expand('%:p')
     local js_file = ts_file:gsub('%.ts$', '.js')
+
     --vim.cmd(is_windows and '!tsc %; node ' .. js_file or '!tsc % && time node ' .. js_file)
-    vim.cmd(is_windows and '!tsc; node ' .. js_file or '!tsc && time node ' .. js_file)
+    --vim.cmd(is_windows and '!tsc; node ' .. js_file or '!tsc && time node ' .. js_file)
+
+    local package_json_exists = vim.fn.filereadable('./package.json') == 1
+
+    if package_json_exists then
+      vim.cmd(is_windows and '!npm start' or '!time npm start')
+    else
+      local js_file_in_dist = "dist/" .. vim.fn.fnamemodify(js_file, ":t")
+
+      if is_windows then
+        vim.cmd('!tsc')
+        vim.cmd('!node ' .. js_file_in_dist)
+      else
+        vim.cmd('!tsc && time node ' .. js_file_in_dist)
+      end
+    end
+
   elseif filetype == 'go' then
     vim.cmd('!go build %<')
     vim.cmd(is_windows and '!go run %' or '!time go run %')
@@ -1588,6 +1653,8 @@ function copy_current_file_path(replace_env)
   end
 
   path = normalize_slashes(path)
+  path = path:gsub("oil:", "")
+
   if replace_env then
     -- Replace "my_notes_path"
     local my_notes_path = vim.fn.getenv("my_notes_path")
@@ -2199,7 +2266,6 @@ vim.keymap.set('n', '<leader><leader>', function()
     -- General
     { label = "messages", cmd = "messages" },
     { label = "Reload Configuration", cmd = "lua vim.cmd('source ' .. vim.env.MYVIMRC)" },
-    { label = "Inspect Current Line", cmd = "lua print(vim.inspect(vim.api.nvim_get_current_line()))" },
     { label = "List Buffers", cmd = "lua print(vim.inspect(vim.api.nvim_list_bufs()))" },
     { label = "Buffers", cmd = "buffers" },
     { label = "undolist", cmd = "undolist" },

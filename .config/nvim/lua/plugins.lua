@@ -86,17 +86,6 @@ require("lazy").setup({
     event = "VeryLazy",
   },
 
-  --{
-  --  "letieu/wezterm-move.nvim",
-  --  config = function()
-  --    local wezterm_move = require("wezterm-move")
-  --    vim.api.nvim_set_keymap('n', '<m-h>', '<cmd>lua wezterm_move.move("h")<CR>', { noremap = true, silent = true })
-  --    vim.api.nvim_set_keymap('n', '<m-j>', '<cmd>lua wezterm_move.move("j")<CR>', { noremap = true, silent = true })
-  --    vim.api.nvim_set_keymap('n', '<m-k>', '<cmd>lua wezterm_move.move("k")<CR>', { noremap = true, silent = true })
-  --    vim.api.nvim_set_keymap('n', '<m-l>', '<cmd>lua wezterm_move.move("l")<CR>', { noremap = true, silent = true })
-  --  end,
-  --},
-
   {
     "ornfelt/ChatGPT.nvim",
     dependencies = {
@@ -183,10 +172,6 @@ require("lazy").setup({
     lazy = true,
   },
 
-  --{
-  --  "preservim/nerdcommenter",
-  --  lazy = false,
-  --},
   {
     "numToStr/Comment.nvim",
     lazy = false,

@@ -31,19 +31,6 @@ create_mappings("vtxt,vimwiki,wiki,text,md,markdown", {
   ["date<Tab>"] = '<-- <C-R>=strftime("%Y-%m-%d %a")<CR><Esc>A -->'
 })
 
--- SQL
-create_mappings("sql", {
-  ["sout<Tab>"] = 'SET @x = 42;<Enter>SET @s = "Hello";<Enter>SELECT @x AS x, @s AS s;<Enter>', -- Basic print
-  ["souti<Tab>"] = 'SET @intVar = 100;<Enter>SELECT @intVar AS intVar;<Enter>', -- Print integer
-  ["souts<Tab>"] = 'SET @strVar = "World";<Enter>SELECT @strVar AS strVar;<Enter>', -- Print string
-  ["soutb<Tab>"] = 'SET @boolVar = TRUE;<Enter>SELECT @boolVar AS boolVar;<Enter>', -- Print boolean
-  ["soutf<Tab>"] = 'SET @floatVar = 3.14;<Enter>SELECT @floatVar AS floatVar;<Enter>', -- Print float
-  ["soutd<Tab>"] = 'SET @doubleVar = 3.14159265359;<Enter>SELECT @doubleVar AS doubleVar;<Enter>', -- Print double
-  ["fun<Tab>"] = 'delimiter //<Enter>create function x ()<Enter>returns int<Enter>no sql<Enter>begin<Enter><Enter><Enter>end //<Enter>delimiter ;<Esc>/x<Enter>GN',
-  ["pro<Tab>"] = 'delimiter //<Enter>create procedure x ()<Enter>begin<Enter><Enter><Enter>end //<Enter>delimiter ;<Esc>/x<Enter>GN',
-  ["vie<Tab>"] = 'create view x as<Enter>select <Esc>/x<Enter>GN'
-})
-
 -- HTML
 create_mappings("html", {
   ["<i<Tab>"] = '<em></em> <Space><++><Esc>/<<Enter>GNi',
@@ -473,7 +460,7 @@ local function parse_db_files(path)
     local db_name = file:match("([^/\\]+)%.txt$"):lower()
     local engine = db_name:match("^(%w+)_")
     if engine == "sqlserver" then
-      engine = "sql_server" -- Convert sqlserver to sql_server
+      engine = "sql_server"
     end
 
     -- Map engine and environment to file name
@@ -705,7 +692,6 @@ function insert_select_statements_from_db()
   local file_path = db_path .. "/" .. db_name .. ".txt"
   -- print("file_path: " .. file_path)
 
-  -- Generate select statements
   local statements = generate_select_statements(file_path, engine)
   if #statements == 0 then
     print("No table data found in the database file.")
@@ -735,6 +721,228 @@ vim.api.nvim_create_autocmd("FileType", {
     vim.bo.tabstop = 2     -- Number of spaces that a <Tab> counts for
     vim.bo.softtabstop = 2 -- Number of spaces that a <Tab> inserts
     vim.bo.expandtab = true -- Use spaces instead of tabs
+  end,
+})
+
+-- Simple sql queries
+local function get_engine()
+  local default_engine = "mysql" -- Default to MySQL
+  local lines = vim.api.nvim_buf_get_lines(0, 0, 3, false) -- Read first 3 lines
+  for _, line in ipairs(lines) do
+    local engine = line:match("^%-%-engine:%s*([%w_]+)")
+    if engine then
+      return engine:lower()
+    end
+  end
+  return default_engine
+end
+
+function func_mapping()
+  local engine = get_engine()
+  if engine == "sqlite" then
+    return {
+      "CREATE FUNCTION x () RETURNS INT BEGIN RETURN 1; END;",
+      "SELECT x();"
+    }
+  elseif engine == "sql_server" then
+    return {
+      "CREATE FUNCTION x () RETURNS INT AS BEGIN RETURN 1; END;",
+      "SELECT dbo.x();"
+    }
+  elseif engine == "oracle" then
+    return {
+      "CREATE FUNCTION x RETURN NUMBER IS BEGIN RETURN 1; END;",
+      "BEGIN DBMS_OUTPUT.PUT_LINE(x); END;"
+    }
+  else
+    return {
+      "DELIMITER //",
+      "CREATE FUNCTION x () RETURNS INT NO SQL BEGIN RETURN 1; END //",
+      "DELIMITER ;",
+      "SELECT x();"
+    }
+  end
+end
+
+function proc_mapping()
+  local engine = get_engine()
+  if engine == "sqlite" then
+    return {
+      "-- SQLite does not support stored procedures"
+    }
+  elseif engine == "sql_server" then
+    return {
+      "CREATE PROCEDURE x AS BEGIN PRINT 'Hello'; END;",
+      "EXEC x;"
+    }
+  elseif engine == "oracle" then
+    return {
+      "CREATE PROCEDURE x IS BEGIN NULL; END;",
+      "BEGIN x; END;"
+    }
+  else
+    return {
+      "DELIMITER //",
+      "CREATE PROCEDURE x () BEGIN SELECT 'Hello'; END //",
+      "DELIMITER ;",
+      "CALL x();"
+    }
+  end
+end
+
+function view_mapping()
+  local engine = get_engine()
+  if engine == "sqlite" then
+    return {
+      "CREATE VIEW x AS SELECT 1 AS col;",
+      "SELECT * FROM x;"
+    }
+  elseif engine == "sql_server" then
+    return {
+      "CREATE VIEW x AS SELECT 1 AS col;",
+      "SELECT * FROM x;"
+    }
+  elseif engine == "oracle" then
+    return {
+      "CREATE OR REPLACE VIEW x AS SELECT 1 AS col;",
+      "SELECT * FROM x;"
+    }
+  else
+    return {
+      "CREATE VIEW x AS SELECT 1 AS col;",
+      "SELECT * FROM x;"
+    }
+  end
+end
+
+function sout_mapping()
+  local engine = get_engine()
+  --print("Detected Engine:", engine)
+
+  if engine == "sqlite" then
+    return { "PRAGMA x = 42;", "PRAGMA s = 'Hello';", "SELECT x, s;" }
+  elseif engine == "sql_server" then
+    return { "DECLARE @x INT = 42;", "DECLARE @s NVARCHAR(50) = 'Hello';", "SELECT @x AS x, @s AS s;" }
+  elseif engine == "oracle" then
+    return {
+      "DECLARE x NUMBER := 42;",
+      "DECLARE s VARCHAR2(50) := 'Hello';",
+      "BEGIN DBMS_OUTPUT.PUT_LINE(x || ' ' || s); END;"
+    }
+  else
+    return { "SET @x = 42;", "SET @s = 'Hello';", "SELECT @x AS x, @s AS s;" }
+  end
+end
+
+function souti_mapping()
+  local engine = get_engine()
+  if engine == "sqlite" then
+    return { "PRAGMA intVar = 100;", "SELECT intVar;" }
+  elseif engine == "sql_server" then
+    return { "DECLARE @intVar INT = 100;", "SELECT @intVar AS intVar;" }
+  elseif engine == "oracle" then
+    return {
+      "DECLARE intVar NUMBER := 100;",
+      "BEGIN DBMS_OUTPUT.PUT_LINE(intVar); END;"
+    }
+  else
+    return { "SET @intVar = 100;", "SELECT @intVar AS intVar;" }
+  end
+end
+
+function souts_mapping()
+  local engine = get_engine()
+  if engine == "sqlite" then
+    return { "PRAGMA strVar = 'World';", "SELECT strVar;" }
+  elseif engine == "sql_server" then
+    return { "DECLARE @strVar NVARCHAR(50) = 'World';", "SELECT @strVar AS strVar;" }
+  elseif engine == "oracle" then
+    return {
+      "DECLARE strVar VARCHAR2(50) := 'World';",
+      "BEGIN DBMS_OUTPUT.PUT_LINE(strVar); END;"
+    }
+  else
+    return { "SET @strVar = 'World';", "SELECT @strVar AS strVar;" }
+  end
+end
+
+function soutb_mapping()
+  local engine = get_engine()
+  if engine == "sqlite" then
+    return { "PRAGMA boolVar = TRUE;", "SELECT boolVar;" }
+  elseif engine == "sql_server" then
+    return { "DECLARE @boolVar BIT = 1;", "SELECT @boolVar AS boolVar;" }
+  elseif engine == "oracle" then
+    return {
+      "DECLARE boolVar BOOLEAN := TRUE;",
+      "BEGIN DBMS_OUTPUT.PUT_LINE(boolVar); END;"
+    }
+  else
+    return { "SET @boolVar = TRUE;", "SELECT @boolVar AS boolVar;" }
+  end
+end
+
+function soutf_mapping()
+  local engine = get_engine()
+  if engine == "sqlite" then
+    return { "PRAGMA floatVar = 3.14;", "SELECT floatVar;" }
+  elseif engine == "sql_server" then
+    return { "DECLARE @floatVar FLOAT = 3.14;", "SELECT @floatVar AS floatVar;" }
+  elseif engine == "oracle" then
+    return {
+      "DECLARE floatVar NUMBER := 3.14;",
+      "BEGIN DBMS_OUTPUT.PUT_LINE(floatVar); END;"
+    }
+  else
+    return { "SET @floatVar = 3.14;", "SELECT @floatVar AS floatVar;" }
+  end
+end
+
+function soutd_mapping()
+  local engine = get_engine()
+  if engine == "sqlite" then
+    return { "PRAGMA doubleVar = 3.14159265359;", "SELECT doubleVar;" }
+  elseif engine == "sql_server" then
+    return { "DECLARE @doubleVar FLOAT = 3.14159265359;", "SELECT @doubleVar AS doubleVar;" }
+  elseif engine == "oracle" then
+    return {
+      "DECLARE doubleVar NUMBER := 3.14159265359;",
+      "BEGIN DBMS_OUTPUT.PUT_LINE(doubleVar); END;"
+    }
+  else
+    return { "SET @doubleVar = 3.14159265359;", "SELECT @doubleVar AS doubleVar;" }
+  end
+end
+
+function insert_dynamic_sql(mapping_func)
+  local statements = mapping_func()
+  if not statements or type(statements) ~= "table" or #statements == 0 then
+    print("No SQL statements generated or invalid output.")
+    return
+  end
+
+  -- Insert statements into buffer
+  local row, _ = unpack(vim.api.nvim_win_get_cursor(0))
+  vim.api.nvim_buf_set_lines(0, row, row, false, statements)
+  -- Place blank line and move cursor to it
+  vim.api.nvim_buf_set_lines(0, row + #statements, row + #statements, false, { "" })
+  vim.api.nvim_win_set_cursor(0, { row + #statements + 1, 0 })
+end
+
+vim.api.nvim_create_autocmd("FileType", {
+  pattern = "sql",
+  callback = function()
+    local bufnr = vim.api.nvim_get_current_buf()
+
+    vim.api.nvim_buf_set_keymap(bufnr, "i", "sout<Tab>", "<cmd>lua insert_dynamic_sql(sout_mapping)<CR>", { noremap = true, silent = true })
+    vim.api.nvim_buf_set_keymap(bufnr, "i", "soutf<Tab>", "<cmd>lua insert_dynamic_sql(soutf_mapping)<CR>", { noremap = true, silent = true })
+    vim.api.nvim_buf_set_keymap(bufnr, "i", "soutd<Tab>", "<cmd>lua insert_dynamic_sql(soutd_mapping)<CR>", { noremap = true, silent = true })
+    vim.api.nvim_buf_set_keymap(bufnr, "i", "souti<Tab>", "<cmd>lua insert_dynamic_sql(souti_mapping)<CR>", { noremap = true, silent = true })
+    vim.api.nvim_buf_set_keymap(bufnr, "i", "souts<Tab>", "<cmd>lua insert_dynamic_sql(souts_mapping)<CR>", { noremap = true, silent = true })
+    vim.api.nvim_buf_set_keymap(bufnr, "i", "soutb<Tab>", "<cmd>lua insert_dynamic_sql(soutb_mapping)<CR>", { noremap = true, silent = true })
+    vim.api.nvim_buf_set_keymap(bufnr, "i", "func<Tab>", "<cmd>lua insert_dynamic_sql(func_mapping)<CR>", { noremap = true, silent = true })
+    vim.api.nvim_buf_set_keymap(bufnr, "i", "proc<Tab>", "<cmd>lua insert_dynamic_sql(proc_mapping)<CR>", { noremap = true, silent = true })
+    vim.api.nvim_buf_set_keymap(bufnr, "i", "view<Tab>", "<cmd>lua insert_dynamic_sql(view_mapping)<CR>", { noremap = true, silent = true })
   end,
 })
 
