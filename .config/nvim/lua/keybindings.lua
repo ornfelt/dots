@@ -2094,6 +2094,8 @@ local function diffg_command()
   end
 
   local checkout_command = string.format("git show %s:%s > %s", branch_name, relative_path, target_file2)
+  checkout_command = checkout_command:gsub("\\", "/"):gsub("//+", "/")
+  --print(checkout_command)
   vim.fn.system(checkout_command)
   if vim.v.shell_error ~= 0 then
     print("Failed to checkout file from branch: " .. branch_name)

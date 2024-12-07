@@ -329,7 +329,7 @@ function theme.at_screen_connect(s)
         buttons = taglist_buttons
     }
 
-    local distro_box = wibox.widget.imagebox("/home/jonas/Downloads/arch.png")
+    --local distro_box = wibox.widget.imagebox("/home/jonas/Downloads/arch.png")
     -- Create a tasklist widget
     s.mytasklist = awful.widget.tasklist(s, awful.widget.tasklist.filter.currenttags, awful.util.tasklist_buttons)
 
@@ -343,7 +343,7 @@ function theme.at_screen_connect(s)
         { -- Left widgets
             layout = wibox.layout.fixed.horizontal,
             -- s.mylayoutbox,
-            distro_box,
+            --distro_box,
             s.mytaglist,
             s.mypromptbox,
         },

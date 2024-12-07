@@ -1,3 +1,7 @@
+-- https://awesomewm.org/doc/api/sample%20files/rc.lua.html
+-- https://github.com/lcpz/awesome-freedesktop
+-- https://github.com/lcpz/lain
+-- TODO: fix keybinds, fix thunar being fullscreen... Fix firefox being fullscreened if only client...
 local awesome, client, mouse, screen, tag = awesome, client, mouse, screen, tag
 local ipairs, string, os, table, tostring, tonumber, type = ipairs, string, os, table, tostring, tonumber, type
 
@@ -54,7 +58,7 @@ local function run_once(cmd_arr)
     end
 end
 
-run_once({ "unclutter -root" }) -- entries must be comma-separated
+--run_once({ "unclutter -root" }) -- entries must be comma-separated
 
 local themes = {
     "powerarrow-blue", -- 1
