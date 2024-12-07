@@ -1,0 +1,5 @@
+[plugin]
+deps = [{ use = "lpnh/fg", rev = "a7e1a82" }]
+
+[flavor]
+deps = []

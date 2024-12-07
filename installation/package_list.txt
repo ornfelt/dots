@@ -145,6 +145,7 @@ python-pyaudio
 qrencode
 qt5-webengine
 ranger
+ripgrep
 rofi
 rofi-greenclip
 rtl8852be-dkms-git

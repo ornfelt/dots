@@ -1,52 +1,224 @@
+# https://github.com/sxyazi/yazi/blob/main/yazi-config/preset/keymap-default.toml
 # https://github.com/sxyazi/yazi/blob/shipped/yazi-config/preset/keymap.toml
-[manager]
-prepend_keymap = [
-    # Shell command
-    { on = [ "S" ], run = 'shell "$SHELL" --block --confirm', desc = "Open shell here" },
+# https://yazi-rs.github.io/docs/tips/
 
-    # Custom navigation
-    { on = [ "g", "e" ], run = "cd /etc", desc = "cd to /etc" },
-    { on = [ "g", "h" ], run = "cd /home/jonas", desc = "cd to /home/jonas" },
-    { on = [ "g", "u" ], run = "cd /usr", desc = "cd to /usr" },
-    { on = [ "g", "L" ], run = "cd -r {{f}}", desc = "cd to selected file's directory" },
-    { on = [ "g", "M" ], run = "cd /mnt", desc = "cd to /mnt" },
-    { on = [ "g", "r" ], run = "cd /", desc = "cd to root" },
-    { on = [ "g", "?" ], run = "cd /usr/share/doc/ranger", desc = "cd to ranger docs" },
-    { on = [ "g", "d" ], run = "cd ~/Documents", desc = "cd to ~/Documents" },
-    { on = [ "g", "w" ], run = "cd ~/Pictures/Wallpapers", desc = "cd to Wallpapers" },
-    { on = [ "g", "c" ], run = "cd ~/Code", desc = "cd to ~/Code" },
-    { on = [ "g", "m" ], run = "cd /media/data/Movies", desc = "cd to Movies" },
-    { on = [ "g", "f" ], run = "cd /media/data/Files", desc = "cd to Files" },
-    { on = [ "g", "." ], run = "cd ~/.config", desc = "cd to ~/.config" },
-    { on = [ "g", "a" ], run = "cd ~/Downloads", desc = "cd to ~/Downloads" },
+#[manager]
+#prepend_keymap = [
+#    { on = [ "g", "e" ], run = "cd /etc", desc = "cd to /etc" },
+#]
 
-    # File permissions
-    { on = [ "x", "-" ], run = "shell chmod -x {{s}}", desc = "Remove execute permissions" },
-    { on = [ "x", "+" ], run = "shell chmod +x {{s}}", desc = "Add execute permissions" },
+[[manager.prepend_keymap]]
+on   = "S"
+run  = 'shell "$SHELL" --block --confirm'
+desc = "Open shell here"
 
-    # Open with editor
-    { on = [ "V" ], run = "shell nvim -o {{s}}", desc = "Open in nvim" },
-
-    # Bulk rename
-    { on = [ "c", "W" ], run = "bulkrename {{s}}", desc = "Bulk rename" },
-    { on = [ "m", "k", "d" ], run = "mkdir", desc = "Create a directory" },
-    { on = [ "Ctrl-N" ], run = "mkdir", desc = "Create a directory (Ctrl+N)" },
-
-    # Delete files
-    { on = [ "D" ], run = "delete", desc = "Delete file or directory" },
-
-    # Archive and extract
-    { on = [ "X" ], run = "shell tar -zxvf {{f}}", desc = "Extract tar.gz" },
-    #{ on = [ "Z" ], run = "shell tar -cvzf {{f}}.tar.gz {{f}}", desc = "Create tar.gz" },
-
-    # Search
-    { on = [ "Ctrl-f" ], run = "fzf_search", desc = "Search files" },
-    { on = [ "Ctrl-g" ], run = "fzf_search_dirs", desc = "Search directories" },
-
-    # Wallpaper and image manipulation
-    { on = [ "b", "g" ], run = "shell --confirm cp {{f}} ~/.config/wall.png && feh --bg-scale {{f}} && rm -rf ~/.cache/wal/schemes && wal -i ~/.config/wall.png", desc = "Set current image as background" },
-    { on = [ "b", "w" ], run = "shell wal -c -i {{f}} && cp {{f}} ~/.config/wall.png", desc = "Set permanent wallpaper" },
-    { on = [ "C" ], run = "shell killall w3mimgdisplay && convert -rotate 90 {{s}} {{s}}", desc = "Rotate image" },
-    { on = [ "b", "l" ], run = "shell killall w3mimgdisplay && convert {{s}} -resize 1440x1080\\> bl_{{s}}", desc = "Resize image" },
-    { on = [ "T", "R" ], run = "shell convert {{s}} -transparent white {{s}}", desc = "Make image background transparent" }
+[[manager.prepend_keymap]]
+on = "y"
+#run = [
+#  '''
+#  shell 'echo "$@" > ~/.config/yazi/test.txt' --confirm
+#  '''
+#]
+run = [
+ '''
+	shell 'echo "$@" | xclip -i -selection clipboard' --confirm
+'''
 ]
+desc = "Copy selection to clipboard"
+
+[[manager.prepend_keymap]]
+on = "S"
+run = [ '''shell "$SHELL" --block --confirm''' ]
+desc = "Open shell here"
+
+[[manager.prepend_keymap]]
+on = ["g", "e"]
+run = [ '''cd /etc''' ]
+desc = "cd to /etc"
+
+[[manager.prepend_keymap]]
+on = ["g", "h"]
+run = [ '''cd /home/jonas''' ]
+desc = "cd to /home/jonas"
+
+[[manager.prepend_keymap]]
+on = ["g", "u"]
+run = [ '''cd /usr''' ]
+desc = "cd to /usr"
+
+[[manager.prepend_keymap]]
+on = ["g", "L"]
+run = [ '''cd -r {{f}}''' ]
+desc = "cd to selected file's directory"
+
+[[manager.prepend_keymap]]
+on = ["g", "M"]
+run = [ '''cd /mnt''' ]
+desc = "cd to /mnt"
+
+#[[manager.prepend_keymap]]
+#on = ["g", "r"]
+#run = [ '''cd /''' ]
+#desc = "cd to root"
+
+[[manager.prepend_keymap]]
+on = [ "g", "r" ]
+run = '''
+	shell 'ya pub dds-cd --str "$(git rev-parse --show-toplevel)"' --confirm
+'''
+
+[[manager.prepend_keymap]]
+on = ["g", "?"]
+run = [ '''cd /usr/share/doc/ranger''' ]
+desc = "cd to ranger docs"
+
+[[manager.prepend_keymap]]
+on = ["g", "d"]
+run = [ '''cd ~/Documents''' ]
+desc = "cd to ~/Documents"
+
+[[manager.prepend_keymap]]
+on = ["g", "w"]
+run = [ '''cd ~/Pictures/Wallpapers''' ]
+desc = "cd to Wallpapers"
+
+[[manager.prepend_keymap]]
+on = ["g", "c"]
+run = [ '''cd ~/Code''' ]
+desc = "cd to ~/Code"
+
+[[manager.prepend_keymap]]
+on = ["g", "m"]
+run = [ '''cd /media/data/Movies''' ]
+desc = "cd to Movies"
+
+[[manager.prepend_keymap]]
+on = ["g", "f"]
+run = [ '''cd /media/data/Files''' ]
+desc = "cd to Files"
+
+[[manager.prepend_keymap]]
+on = ["g", "."]
+run = [ '''cd ~/.config''' ]
+desc = "cd to ~/.config"
+
+[[manager.prepend_keymap]]
+on = ["g", "a"]
+run = [ '''cd ~/Downloads''' ]
+desc = "cd to ~/Downloads"
+
+[[manager.prepend_keymap]]
+on = ["x", "-"]
+run = [ '''shell chmod -x {{s}}''' ]
+desc = "Remove execute permissions"
+
+[[manager.prepend_keymap]]
+on = ["x", "+"]
+run = [ '''shell chmod +x {{s}}''' ]
+desc = "Add execute permissions"
+
+[[manager.prepend_keymap]]
+on = "V"
+run = [ '''shell nvim -o {{s}}''' ]
+desc = "Open in nvim"
+
+[[manager.prepend_keymap]]
+on = ["c", "W"]
+run = [ '''bulkrename {{s}}''' ]
+desc = "Bulk rename"
+
+[[manager.prepend_keymap]]
+on = ["m", "k", "d"]
+run = [ '''mkdir''' ]
+desc = "Create a directory"
+
+[[manager.prepend_keymap]]
+on = "Ctrl-N"
+run = [ '''mkdir''' ]
+desc = "Create a directory (Ctrl+N)"
+
+[[manager.prepend_keymap]]
+on = "D"
+run = [ '''delete''' ]
+desc = "Delete file or directory"
+
+[[manager.prepend_keymap]]
+on = "X"
+run = [ '''shell tar -zxvf {{f}}''' ]
+desc = "Extract tar.gz"
+
+#[[manager.prepend_keymap]]
+#on = "Ctrl-f"
+#run = [ '''fzf_search''' ]
+#desc = "Search files"
+#
+#[[manager.prepend_keymap]]
+#on = "Ctrl-g"
+#run = [ '''fzf_search_dirs''' ]
+#desc = "Search directories"
+
+[[manager.prepend_keymap]]
+on = "<C-f>"
+run = [ '''plugin fzf''' ]
+desc = "Jump to a file/directory via fzf"
+
+[[manager.prepend_keymap]]
+on = ["b", "g"]
+run = [ 
+'''
+    shell 'feh --bg-scale "$0"' --confirm 
+'''
+]
+desc = "Set current image as background"
+
+[[manager.prepend_keymap]]
+on = ["b", "w"]
+run = [ '''shell --confirm wal -c -i {{f}} && cp {{f}} ~/.config/wall.png''' ]
+desc = "Set permanent wallpaper"
+
+[[manager.prepend_keymap]]
+on = "C"
+run = [ '''shell killall w3mimgdisplay && convert -rotate 90 {{s}} {{s}}''' ]
+desc = "Rotate image"
+
+[[manager.prepend_keymap]]
+on = ["b", "l"]
+run = [ '''shell killall w3mimgdisplay && convert {{s}} -resize 1440x1080\\> bl_{{s}}''' ]
+desc = "Resize image"
+
+[[manager.prepend_keymap]]
+on = ["T", "R"]
+run = [ '''shell convert {{s}} -transparent white {{s}}''' ]
+desc = "Make image background transparent"
+
+###
+# https://github.com/lpnh/fg.yazi
+# Add the plugin
+#ya pack -a lpnh/fg
+# Install the plugin
+#ya pack -i
+# Upgrade the plugin
+#ya pack -u
+
+[[manager.prepend_keymap]]
+on   = [ "f","g" ]
+run  = "plugin fg"
+desc = "find file by content (fuzzy match)"
+
+[[manager.prepend_keymap]]
+on   = [ "f","G" ]
+run  = "plugin fg --args='rg'"
+desc = "find file by content (ripgrep match)"
+
+[[manager.prepend_keymap]]
+on   = [ "f","a" ]
+run  = "plugin fg --args='rga'"
+desc = "find file by content (ripgrep-all)"
+
+[[manager.prepend_keymap]]
+on   = [ "f","f" ]
+run  = "plugin fg --args='fzf'"
+desc = "find file by filename"
+
+###
+
