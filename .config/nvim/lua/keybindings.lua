@@ -1884,9 +1884,21 @@ function open_file_with_env()
   if trimmed_cword ~= nil then
     cword = trimmed_cword
   end
+
   -- hmmm
   cword = cword:gsub("#", "\\#")
   -- print("cword: " .. cword)
+
+  if cword:match("^a/") or cword:match("^b/") then
+    local git_root = vim.fn.system("git rev-parse --show-toplevel 2>/dev/null"):gsub("\n", "")
+    if git_root == "" then
+      print("Current file is not in a Git repository.")
+      return
+    end
+
+    -- Replace 'a/' or 'b/' with git root dir
+    cword = cword:gsub("^[ab]/", git_root .. "/")
+  end
 
   if cword:find("{") then
     local new_cword = cword:gsub("{(.-)}", function(var)
@@ -1963,12 +1975,22 @@ local function diff_copy()
     return
   end
 
-  local target1 = "C:/local/testing_files/test1.txt"
-  local target2 = "C:/local/testing_files/test2.txt"
+  local target_dir
+  if vim.loop.os_uname().sysname == "Windows_NT" then
+    target_dir = "C:/local/testing_files"
+  else
+    target_dir = os.getenv("HOME") .. "/Documents/local/testing_files"
+  end
 
-  vim.cmd(string.format("silent !cp %s %s", file_paths[1], target1))
-  vim.cmd(string.format("silent !cp %s %s", file_paths[2], target2))
-  print("Files copied to C:/local/testing_files.")
+  vim.fn.mkdir(target_dir, "p")
+
+  local target1 = target_dir .. "/test1.txt"
+  local target2 = target_dir .. "/test2.txt"
+
+  vim.cmd(string.format("silent !cp %s %s", vim.fn.shellescape(file_paths[1]), vim.fn.shellescape(target1)))
+  vim.cmd(string.format("silent !cp %s %s", vim.fn.shellescape(file_paths[2]), vim.fn.shellescape(target2)))
+
+  print("Files copied to " .. target_dir)
 end
 
 vim.api.nvim_create_user_command('DiffCp', diff_copy, {})
@@ -1977,20 +1999,36 @@ local function diff_current_lines()
   local line_number = vim.fn.line('.')
   local current_line = vim.fn.getline(line_number)
   local next_line = vim.fn.getline(line_number + 1)
+  local third_line = vim.fn.getline(line_number + 2)
+  local combined_lines = current_line .. "\n" .. next_line .. "\n" .. third_line
 
   local file_paths = {}
-  for path in current_line:gmatch('"%s*(%S+)"%s*') do
-    table.insert(file_paths, path)
-  end
+  local unique_paths = {}
 
-  if #file_paths < 2 and next_line ~= "" then
-    for path in next_line:gmatch('"%s*(%S+)"%s*') do
-      table.insert(file_paths, path)
-      if #file_paths >= 2 then
-        break
+  for prefix, path in combined_lines:gmatch('([ab])/([^\n%s]+)') do
+    local full_path = path
+    if vim.loop.os_uname().sysname == "Windows_NT" then
+      full_path = full_path:gsub("/", "\\")
+    else
+      if not full_path:match("^/") then
+        full_path = "/" .. full_path -- Add '/' prefix for Linux paths
       end
     end
+
+    if not unique_paths[full_path] then
+      table.insert(file_paths, full_path)
+      unique_paths[full_path] = true
+    end
+
+    if #file_paths >= 2 then
+      break
+    end
   end
+
+  --print("File paths read:")
+  --for i, file_path in ipairs(file_paths) do
+  --  print(string.format("File %d: %s", i, file_path))
+  --end
 
   if #file_paths < 2 then
     print("Not enough file paths found for diff.")
@@ -2010,6 +2048,63 @@ local function diff_current_lines()
 end
 
 vim.api.nvim_create_user_command('Diffi', diff_current_lines, {})
+
+local function diffg_command()
+  local current_file = vim.fn.expand('%:p')
+  if current_file == "" then
+    print("No file is currently open.")
+    return
+  end
+
+  local git_root = vim.fn.system("git rev-parse --show-toplevel 2>/dev/null"):gsub("\n", "")
+  if git_root == "" then
+    print("Current file is not in a Git repository.")
+    return
+  end
+
+  local relative_path = current_file:sub(#git_root + 2) -- Remove git_root and the trailing '/'
+
+  local default_branch = "upstream/npcbots_3.3.5"
+  local branch_name = vim.fn.input("Enter the Git branch name: ", default_branch)
+  if branch_name == "" then
+    print("Branch name cannot be empty.")
+    return
+  end
+
+  -- Comment for now since I sometimes want to diff upstream branch
+  --local _ = vim.fn.system("git show-ref --verify --quiet refs/heads/" .. branch_name)
+  --if vim.v.shell_error ~= 0 then
+  --  print("Branch does not exist: " .. branch_name)
+  --  return
+  --end
+
+  local target_dir = vim.loop.os_uname().sysname == "Windows_NT"
+      and "C:/local/testing_files"
+      or os.getenv("HOME") .. "/Documents/local/testing_files"
+  vim.fn.mkdir(target_dir, "p")
+
+  local target_file1 = target_dir .. "/test1.txt"
+  local target_file2 = target_dir .. "/test2.txt"
+
+  local copy_command = string.format("cp %s %s", vim.fn.shellescape(current_file), vim.fn.shellescape(target_file1))
+  vim.fn.system(copy_command)
+  if vim.v.shell_error ~= 0 then
+    print("Failed to copy the current file to: " .. target_file1)
+    return
+  end
+
+  local checkout_command = string.format("git show %s:%s > %s", branch_name, relative_path, target_file2)
+  vim.fn.system(checkout_command)
+  if vim.v.shell_error ~= 0 then
+    print("Failed to checkout file from branch: " .. branch_name)
+    return
+  end
+
+  --print("File checked out to: " .. target_file2)
+  vim.cmd("vert diffsplit " .. vim.fn.fnameescape(target_file2))
+end
+
+vim.api.nvim_create_user_command('Diffg', diffg_command, {})
 
 local function is_callable(cmd)
   return vim.fn.executable(cmd) == 1
@@ -2114,6 +2209,7 @@ vim.keymap.set('n', '<leader><leader>', function()
     { label = "Lazy", cmd = "Lazy" },
     -- Custom
     { label = "Diffi", cmd = "Diffi" },
+    { label = "Diffg", cmd = "Diffg" },
     { label = "DiffCp", cmd = "DiffCp" },
     { label = "MakefileTargets", cmd = "MakefileTargets" },
     { label = "GoLangTestFiles", cmd = "GoLangTestFiles" },
