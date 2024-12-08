@@ -2,6 +2,7 @@
 -- https://github.com/lcpz/awesome-freedesktop
 -- https://github.com/lcpz/lain
 -- TODO: fix keybinds, fix thunar being fullscreen... Fix firefox being fullscreened if only client...
+-- keybind for showing more on bar... Binary tags for awesomewm multiple monitor... (tag 1 -> monitor 1 etc.) 
 local awesome, client, mouse, screen, tag = awesome, client, mouse, screen, tag
 local ipairs, string, os, table, tostring, tonumber, type = ipairs, string, os, table, tostring, tonumber, type
 
