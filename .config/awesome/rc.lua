@@ -1,8 +1,13 @@
 -- https://awesomewm.org/doc/api/sample%20files/rc.lua.html
+-- /etc/xdg/awesome/rc.lua
 -- https://github.com/lcpz/awesome-freedesktop
 -- https://github.com/lcpz/lain
 -- TODO: fix keybinds, fix thunar being fullscreen... Fix firefox being fullscreened if only client...
 -- keybind for showing more on bar... Binary tags for awesomewm multiple monitor... (tag 1 -> monitor 1 etc.) 
+
+-- See Rainbow and Multicolor themes: (add to my_dots)
+-- https://github.com/lcpz/awesome-copycats
+
 local awesome, client, mouse, screen, tag = awesome, client, mouse, screen, tag
 local ipairs, string, os, table, tostring, tonumber, type = ipairs, string, os, table, tostring, tonumber, type
 
