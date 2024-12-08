@@ -560,6 +560,93 @@ table.insert(config.keys, {
   action = wezterm.action_callback(split_to_directory_with_delay),
 })
 
+-- Open github repo in firefox
+local function open_github_repo(win, pane)
+  local cwd_uri = tostring(pane:get_current_working_dir())
+  if not cwd_uri then
+    wezterm.log_error("Failed to determine current working directory.")
+    return
+  end
+
+  local cwd = cwd_uri:gsub("file:///", "")
+  cwd = cwd_uri:gsub("file://ornf", "")
+
+  -- Debug
+  --log_to_file(cwd)
+  -- See file logs via:
+  -- vim $env:USERPROFILE/wez_test.txt
+
+  local is_windows = wezterm.target_triple:find("windows") ~= nil
+  local git_remote_cmd, git_branch_cmd
+
+  if is_windows then
+    -- ps
+    --git_remote_cmd = string.format('cd "%s"; git remote get-url origin', cwd)
+    --git_branch_cmd = string.format('cd "%s"; git rev-parse --abbrev-ref HEAD', cwd)
+    -- cmd
+    git_remote_cmd = string.format('cd /d %s & git remote get-url origin', cwd)
+    git_branch_cmd = string.format('cd /d %s & git rev-parse --abbrev-ref HEAD', cwd)
+  else
+    git_remote_cmd = string.format('cd %s && git remote get-url origin 2>/dev/null', cwd)
+    git_branch_cmd = string.format('cd %s && git rev-parse --abbrev-ref HEAD 2>/dev/null', cwd)
+  end
+
+  -- Debug
+  --log_to_file("git_remote_cmd: " .. (git_remote_cmd or "nil"))
+
+  local success, stdout, stderr = wezterm.run_child_process({
+    -- ps
+    --is_windows and "powershell.exe" or "bash",
+    --is_windows and "-Command" or "-c",
+    -- cmd
+    is_windows and "cmd.exe" or "bash",
+    is_windows and "/c" or "-c",
+    git_remote_cmd,
+  })
+  -- Debug
+  --log_to_file("success: " .. (tostring(success) or "nil"))
+  --log_to_file("stdout: " .. (tostring(stdout) or "nil"))
+  --log_to_file("stderr: " .. (tostring(stderr) or "nil"))
+  local remote = stdout
+
+  success, stdout, stderr = wezterm.run_child_process({
+    -- ps
+    --is_windows and "powershell.exe" or "bash",
+    --is_windows and "-Command" or "-c",
+    -- cmd
+    is_windows and "cmd.exe" or "bash",
+    is_windows and "/c" or "-c",
+    git_branch_cmd,
+  })
+  -- Debug
+  --log_to_file("success: " .. (tostring(success) or "nil"))
+  --log_to_file("stdout: " .. (tostring(stdout) or "nil"))
+  --log_to_file("stderr: " .. (tostring(stderr) or "nil"))
+  local branch = stdout
+
+  if not remote or not branch or remote == "" or branch == "" then
+    --wezterm.log_error("Failed to determine Git repository or branch.")
+    win:toast_notification("WezTerm Notification", "Failed to determine Git repository or branch.", nil, 4000)
+    return
+  end
+
+  remote = remote:gsub("%.git$", ""):gsub("^git@github%.com:", "https://github.com/"):gsub("\r", ""):gsub("\n", "")
+  remote = remote:gsub("%.git$", "")
+  branch = branch:gsub("\r", ""):gsub("\n", "")
+  local github_url = remote .. "/tree/" .. branch
+
+  -- Debug
+  --log_to_file("github_url: " .. (git_remote_cmd or "nil"))
+
+  wezterm.run_child_process({ "firefox", github_url })
+end
+
+table.insert(config.keys, {
+  key = "g",
+  mods = "LEADER",
+  action = wezterm.action_callback(open_github_repo),
+})
+
 --config.default_gui_startup_args = { 'connect', 'unix' }
 if wezterm.target_triple == 'x86_64-pc-windows-msvc' or wezterm.target_triple == 'x86_64-pc-windows-gnu' then
   --config.default_prog = { 'pwsh.exe', '-NoLogo' }

@@ -2056,7 +2056,11 @@ local function get_default_branch()
     if vim.v.shell_error ~= 0 or output == "" then
       return ""
     end
-    return "upstream/" .. output
+    -- Extract last word (branch name)
+    local branch_name = output:match("%S+$") or ""
+    -- Remove any quotes or single quotes (')
+    branch_name = branch_name:gsub("[\"']", "")
+    return "upstream/" .. branch_name
   else
     local cmd = "git remote show upstream | grep 'HEAD branch' | awk '{print $NF}'"
     local output = vim.fn.system(cmd):gsub("\n", "")
