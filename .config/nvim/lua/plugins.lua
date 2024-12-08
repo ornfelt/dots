@@ -1,18 +1,17 @@
-require("lazy").setup({
+local is_raspbian = vim.loop.os_uname().sysname == "Linux" and vim.fn.system("lsb_release -is"):gsub("\n", "") == "Raspbian"
+
+local my_plugins = {
   {
     "nvim-lualine/lualine.nvim",
     dependencies = { "kyazdani42/nvim-web-devicons" }
   },
-
   {
     "stevearc/oil.nvim",
     lazy = true,
   },
-
   -- "echasnovski/mini.files",
   -- "vimwiki/vimwiki",
   -- "tpope/vim-surround",
-
   {
     "junegunn/fzf",
     lazy = false,
@@ -65,27 +64,23 @@ require("lazy").setup({
     "gruvbox-community/gruvbox",
     lazy = true,
   },
-
   {
     "nvim-treesitter/nvim-treesitter",
     build = ":TSUpdate",
     lazy = false,
     --event = "VeryLazy",
   },
-
   {
     "nvim-treesitter/nvim-treesitter-textobjects",
     dependencies = { "nvim-treesitter/nvim-treesitter" },
     lazy = false,
     --event = "VeryLazy",
   },
-
   {
     "nvim-telescope/telescope.nvim",
     dependencies = { "nvim-lua/plenary.nvim" },
     event = "VeryLazy",
   },
-
   {
     "ornfelt/ChatGPT.nvim",
     dependencies = {
@@ -96,12 +91,10 @@ require("lazy").setup({
     },
     event = "VeryLazy",
   },
-
   {
     "robitx/gp.nvim",
     lazy = true,
   },
-
   --{
   --  "github/copilot.vim",
   --  lazy = true,
@@ -111,12 +104,10 @@ require("lazy").setup({
   --  "David-Kunz/gen.nvim",
   --  lazy = true,
   --},
-
   {
     "gsuuon/model.nvim",
     lazy = true,
   },
-
   -- avante (cursor-like)
   --{
   --  "stevearc/dressing.nvim",
@@ -158,7 +149,6 @@ require("lazy").setup({
   --  end,
   --},
   -- end avante
-
   {
     "aznhe21/actions-preview.nvim",
     config = function()
@@ -166,12 +156,10 @@ require("lazy").setup({
     end,
     lazy = true,
   },
-
   {
     "nanotee/sqls.nvim",
     lazy = true,
   },
-
   {
     "numToStr/Comment.nvim",
     lazy = false,
@@ -217,12 +205,10 @@ require("lazy").setup({
       post_hook = nil,
     },
   },
-
   {
     "tpope/vim-fugitive",
     lazy = true,
   },
-
   {
     "ornfelt/gitgraph.nvim",
     dependencies = {
@@ -252,14 +238,13 @@ require("lazy").setup({
     end,
     lazy = true,
   },
-
   {
     "OXY2DEV/markview.nvim",
     dependencies = {
       "nvim-treesitter/nvim-treesitter",
       "nvim-tree/nvim-web-devicons",
     },
-    lazy = false,
+    lazy = is_raspbian,
   },
   -- "alexghergh/nvim-tmux-navigation"
   -- "mhinz/vim-startify"
@@ -275,7 +260,15 @@ require("lazy").setup({
   -- "folke/persistence.nvim"
   -- "denisenkom/go-mssqldb"
   -- "folke/which-key.nvim"
-}, {
+}
+
+if is_raspbian then
+  my_plugins = vim.tbl_filter(function(plugin)
+    return plugin[1] ~= "OXY2DEV/markview.nvim"
+  end, my_plugins)
+end
+
+require("lazy").setup(my_plugins , {
     install = {
       missing = true,
       colorscheme = { "gruvbox", "default" }, -- Fallback to default

@@ -2049,6 +2049,24 @@ end
 
 vim.api.nvim_create_user_command('Diffi', diff_current_lines, {})
 
+local function get_default_branch()
+  if vim.loop.os_uname().sysname == "Windows_NT" then
+    local cmd = [[powershell -Command "(git remote show upstream | Select-String -Pattern 'HEAD branch' | ForEach-Object { $_.Line }) -replace '^.*HEAD branch: ', ''''"]]
+    local output = vim.fn.system(cmd):gsub("\n", "")
+    if vim.v.shell_error ~= 0 or output == "" then
+      return ""
+    end
+    return "upstream/" .. output
+  else
+    local cmd = "git remote show upstream | grep 'HEAD branch' | awk '{print $NF}'"
+    local output = vim.fn.system(cmd):gsub("\n", "")
+    if vim.v.shell_error ~= 0 or output == "" or output:find("does not appear to be a git repo") then
+      return ""
+    end
+    return "upstream/" .. output
+  end
+end
+
 local function diffg_command()
   local current_file = vim.fn.expand('%:p')
   if current_file == "" then
@@ -2064,7 +2082,8 @@ local function diffg_command()
 
   local relative_path = current_file:sub(#git_root + 2) -- Remove git_root and the trailing '/'
 
-  local default_branch = "upstream/npcbots_3.3.5"
+  --local default_branch = "upstream/npcbots_3.3.5"
+  local default_branch = get_default_branch()
   local branch_name = vim.fn.input("Enter the Git branch name: ", default_branch)
   if branch_name == "" then
     print("Branch name cannot be empty.")
