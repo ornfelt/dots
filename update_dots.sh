@@ -115,6 +115,22 @@ rm --f .config/dwm/*.o
 rm --f .config/dwmblocks/*.o
 rm --f .config/st/*.o
 
+# Remove .git dirs from dmenu, dwm and st
+dirs=(
+  ".config/dmenu/.git"
+  ".config/dwm/.git"
+  ".config/st/.git"
+)
+
+for dir in "${dirs[@]}"; do
+  if [ -d "$dir" ]; then
+    echo "Removing $dir"
+    rm -rf "$dir"
+  else
+    echo "$dir does not exist, skipping."
+  fi
+done
+
 # Update alacritty, preserving custom font size (if any)
 DEFAULT_FONT_SIZE="7.0"
 
