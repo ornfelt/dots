@@ -922,3 +922,41 @@ awful.spawn.with_shell("diodon")
 --awful.spawn.with_shell("feh --randomize --bg-fill /usr/share/backgrounds/dtos-backgrounds/*") -- feh sets random wallpaper
 --awful.spawn.with_shell("nitrogen --restore") -- if you prefer nitrogen to feh/xwallpaper
 
+client.connect_signal("tagged", function(c)
+    if c.class == "firefox" then
+        local t = c.first_tag
+        if t then
+            local clients = t:clients()
+            if #clients == 1 then
+                -- Maximize Firefox if it's the only client
+                c.maximized = true
+                c.border_width = 0 -- Remove border to eliminate gaps
+            else
+                -- Unmaximize Firefox if other clients are added
+                c.maximized = false
+                c.border_width = beautiful.border_width or 1 -- Restore border width
+                awful.layout.arrange(t) -- Rearrange the layout for the tag
+            end
+        end
+    end
+end)
+
+client.connect_signal("untagged", function(c)
+    if c.class == "firefox" then
+        local t = c.first_tag
+        if t then
+            local clients = t:clients()
+            if #clients > 0 then
+                -- Ensure Firefox is unmaximized if sharing the tag
+                for _, cl in ipairs(clients) do
+                    if cl.class == "firefox" then
+                        cl.maximized = false
+                        cl.border_width = beautiful.border_width or 1 -- Restore border width
+                    end
+                end
+                awful.layout.arrange(t) -- Rearrange the layout for the tag
+            end
+        end
+    end
+end)
+

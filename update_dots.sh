@@ -119,6 +119,7 @@ rm --f .config/st/*.o
 dirs=(
   ".config/dmenu/.git"
   ".config/dwm/.git"
+  ".config/dwmblocks/.git"
   ".config/st/.git"
 )
 

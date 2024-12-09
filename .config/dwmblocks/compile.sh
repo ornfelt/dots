@@ -8,7 +8,7 @@ BACKUP_FILE="./config_backup.h"
 # Backup original config.h
 cp "$CONFIG_FILE" "$BACKUP_FILE"
 
-# Check for the presence of a battery
+# Check battery presence
 battery_present=false
 for battery in /sys/class/power_supply/BAT?*; do
     if [ -e "$battery" ]; then

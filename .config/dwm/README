@@ -20,17 +20,22 @@ https://dwm.suckless.org/patches/hide_vacant_tags/dwm-hide_vacant_tags-6.3.diff
 https://dwm.suckless.org/patches/stacker/dwm-stacker-6.2.diff
 https://dwm.suckless.org/patches/scratchpad/
 https://dwm.suckless.org/patches/vanitygaps/dwm-vanitygaps-6.2.diff
+
 Also see:
 https://dwm.suckless.org/patches/vanitygaps/dwm-cfacts-vanitygaps-6.4_combo.diff
 or:
 https://dwm.suckless.org/patches/vanitygaps/dwm-cfacts-vanitygaps-6.2.diff
 
-I've added the patches to patches dir (although im not 100% sure that those are the exact patches used, they are mostly based on the description below)
+See generated patches in dir 'patches'.
 
-I also continously add fixes from suckless git log.
+I also continously add fixes from suckless git log:
+https://git.suckless.org/
+https://dwm.suckless.org/
 
+============================
 dwm - dynamic window manager
 ============================
+
 dwm is an extremely fast, small, and dynamic window manager for X.
 
 
