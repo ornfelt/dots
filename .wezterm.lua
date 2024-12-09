@@ -568,8 +568,9 @@ local function open_github_repo(win, pane)
     return
   end
 
-  local cwd = cwd_uri:gsub("file:///", "")
-  cwd = cwd_uri:gsub("file://ornf", "")
+  local cwd = cwd_uri:gsub("file://ornf", "")
+  cwd = cwd:gsub("file://", "")
+  cwd = cwd:gsub("^/([A-Za-z]:)", "%1")
 
   -- Debug
   --log_to_file(cwd)
@@ -741,6 +742,59 @@ wezterm.on("format-tab-title", function(tab)
   return {
     { Text = new_title }
   }
+end)
+
+-- Testing right-status: https://wezfurlong.org/wezterm/config/lua/window/set_right_status.html
+--wezterm.on('update-right-status', function(window, pane)
+--  local date = wezterm.strftime '%Y-%m-%d %H:%M:%S'
+--  -- Make it italic and underlined
+--  window:set_right_status(wezterm.format {
+--    { Attribute = { Underline = 'Single' } },
+--    { Attribute = { Italic = true } },
+--    { Text = date },
+--  })
+--end)
+
+wezterm.on("update-right-status", function(window, pane)
+  local cwd_uri = tostring(pane:get_current_working_dir())
+
+  local cwd = cwd_uri:gsub("file://ornf", "")
+  cwd = cwd:gsub("file://", "")
+  cwd = cwd:gsub("^/([A-Za-z]:)", "%1")
+
+  local git_branch = nil
+  local is_windows = wezterm.target_triple:find("windows") ~= nil
+
+  if cwd then
+    local git_cmd
+    if is_windows then
+      git_cmd = string.format(
+        'cd "%s"; git rev-parse --abbrev-ref HEAD 2>$null',
+        cwd:gsub("\\", "/")
+      )
+    else
+      git_cmd = string.format(
+        "cd '%s' && git rev-parse --abbrev-ref HEAD 2>/dev/null",
+        cwd
+      )
+    end
+
+    local success, stdout, stderr = wezterm.run_child_process({
+      is_windows and "powershell" or "bash",
+      is_windows and "-Command" or "-c",
+      git_cmd,
+    })
+
+    if success and stdout and stdout:match("%S") then
+      git_branch = stdout:gsub("%s+$", "") -- Trim trailing whitespace
+    end
+  end
+
+  local right_status = git_branch or wezterm.hostname()
+
+  window:set_right_status(wezterm.format({
+    { Text = right_status },
+  }))
 end)
 
 -- Return config to wezterm

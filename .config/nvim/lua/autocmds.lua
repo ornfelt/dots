@@ -56,7 +56,7 @@ create_mappings("c", {
 
 -- C++
 create_mappings("cpp,c++", {
-  ["sout<Tab>"] = 'std::cout << ""; std::endl;<Esc>?""<Enter>li',
+  ["sout<Tab>"] = 'std::cout << "" << std::endl;<Esc>?""<Enter>li',
   ["souti<Tab>"] = 'std::cout << "x: " << x << std::endl;<Esc>Fxciw',
   ["souts<Tab>"] = 'std::cout << "x: " << x << std::endl;<Esc>Fxciw',
   ["soutb<Tab>"] = 'std::cout << "x: " << (x ? "true" : "false") << std::endl;<Esc>Fxciw',

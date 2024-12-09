@@ -908,11 +908,13 @@ function ReplacePathBasedOnContext()
     return
   end
 
-  my_notes_path = normalize_path(my_notes_path) .. "/"
-  code_root_dir = normalize_path(code_root_dir) .. "/"
+  my_notes_path = normalize_path(my_notes_path .. "/")
+  code_root_dir = normalize_path(code_root_dir .. "/")
 
   local line = vim.fn.getline(".")
 
+  -- vim.pesc will escape the string for use in Vim regular expressions
+  -- It adds necessary backslashes to special chars etc.
   if line:find("{my_notes_path}/", 1, true) or line:find("{code_root_dir}/", 1, true) then
     line = line:gsub("{my_notes_path}/", vim.pesc(my_notes_path))
     line = line:gsub("{code_root_dir}/", vim.pesc(code_root_dir))
