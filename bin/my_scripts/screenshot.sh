@@ -1,11 +1,13 @@
 #! /usr/bin/bash
-export DISPLAY=:0
 
-if [ -n "$(ls -A /mnt/new 2>/dev/null)" ]; then
-    target_dir="/mnt/new/Pictures/Screenshots"
-else
-    target_dir="$HOME/Pictures/Screenshots"
-fi
+export DISPLAY=:0
+target_dir="$HOME/Pictures/Screenshots"
+
+#if [ -n "$(ls -A /mnt/new 2>/dev/null)" ]; then
+#    target_dir="/mnt/new/Pictures/Screenshots"
+#else
+#    target_dir="$HOME/Pictures/Screenshots"
+#fi
 
 # Check if the target directory exists and create it if it doesn't
 if [ ! -d "$target_dir" ]; then
