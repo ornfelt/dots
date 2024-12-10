@@ -1,13 +1,3 @@
--- https://awesomewm.org/doc/api/sample%20files/rc.lua.html
--- /etc/xdg/awesome/rc.lua
--- https://github.com/lcpz/awesome-freedesktop
--- https://github.com/lcpz/lain
--- TODO: fix keybinds, fix thunar being fullscreen... Fix firefox being fullscreened if only client...
--- keybind for showing more on bar... Binary tags for awesomewm multiple monitor... (tag 1 -> monitor 1 etc.) 
-
--- See Rainbow and Multicolor themes: (add to my_dots)
--- https://github.com/lcpz/awesome-copycats
-
 local awesome, client, mouse, screen, tag = awesome, client, mouse, screen, tag
 local ipairs, string, os, table, tostring, tonumber, type = ipairs, string, os, table, tostring, tonumber, type
 
@@ -83,11 +73,16 @@ local ctrlkey     = "Control"
 -- local terminal    = "urxvt"
 -- local terminal    = "st"
 local terminal    = "wezterm"
+local secterminal    = "alacritty"
+--local filex    = "ranger"
+local filex    = "yazi"
+local files    = "thunar"
 local browser     = "firefox"
-local editor      = os.getenv("EDITOR") or "vim"
-local emacs       = "emacsclient -c -a 'emacs' "
-local mediaplayer = "mpv"
-local soundplayer = "ffplay -nodisp -autoexit " -- The program that will play system sounds
+
+--local editor      = os.getenv("EDITOR") or "vim"
+--local emacs       = "emacsclient -c -a 'emacs' "
+--local mediaplayer = "mpv"
+--local soundplayer = "ffplay -nodisp -autoexit " -- The program that will play system sounds
 
 -- awesome variables
 awful.util.terminal = terminal
@@ -95,8 +90,8 @@ awful.util.tagnames = { "1", "2", "3", "4", "5", "6", "7", "8", "9" }
 -- awful.util.tagnames = { "", "", "", "", " ", " ", " ", " ", " " }
 awful.layout.suit.tile.left.mirror = true
 awful.layout.layouts = {
-    awful.layout.suit.spiral,
-    --awful.layout.suit.spiral.dwindle,
+    --awful.layout.suit.spiral,
+    awful.layout.suit.spiral.dwindle,
     awful.layout.suit.tile,
     awful.layout.suit.floating,
     --awful.layout.suit.tile.left,
@@ -216,6 +211,7 @@ screen.connect_signal("property::geometry", function(s)
         gears.wallpaper.maximized(wallpaper, s, true)
     end
 end)
+
 -- Create a wibox for each screen and add it
 awful.screen.connect_for_each_screen(function(s) beautiful.at_screen_connect(s) end)
 
@@ -226,24 +222,27 @@ root.buttons(my_table.join(
 ))
 
 globalkeys = my_table.join(
-
     -- {{{ Personal keybindings
 
     -- Awesome keybindings
-    awful.key({ modkey,         }, "Return", function () awful.spawn.with_shell( "~/.local/bin/my_scripts/term_wd.sh "..terminal ) end,
+    awful.key({ modkey,         }, "Return", function () awful.spawn.with_shell( "~/.local/bin/my_scripts/term_wd.sh ".. terminal) end,
               {description = "Launch terminal wd", group = "awesome"}),
     awful.key({ modkey, "Shift" }, "Return", function () awful.spawn( terminal ) end,
               {description = "Launch terminal", group = "awesome"}),
-    awful.key({ modkey, ctrlkey }, "Return", function () awful.spawn.with_shell( "~/.local/bin/my_scripts/term_wd.sh urxvt" ) end,
+    awful.key({ modkey, ctrlkey }, "Return", function () awful.spawn.with_shell( "~/.local/bin/my_scripts/term_wd.sh " .. secterminal ) end,
               {description = "Launch terminal", group = "awesome"}),
+
     awful.key({ modkey, "Shift" }, "r", awesome.restart,
               {description = "Reload awesome", group = "awesome"}),
+
     awful.key({ modkey, "Shift" }, "q",   awesome.quit,
               {description = "Quit awesome", group = "awesome"}),
+
     awful.key({ }, "F1",      hotkeys_popup.show_help,
         {description = "Show help", group="awesome"}),
-    awful.key({ modkey, "Shift" }, "w", function () awful.spawn( browser ) end,
-              {description = "Launch firefox", group = "awesome"}),
+
+    --awful.key({ modkey, "Shift" }, "w", function () awful.spawn( browser ) end,
+    --          {description = "Launch firefox", group = "awesome"}),
     -- awful.key({ modkey, ctrlkey }, "w", function () awful.util.mymainmenu:show() end,
     --     {description = "Show main menu", group = "awesome"}),
     awful.key({ modkey, "Shift" }, "p", function ()
@@ -282,7 +281,7 @@ globalkeys = my_table.join(
               {description = "calendar", group = "launcher"}),
 
     awful.key({ modkey, "Shift" },            "d",     function ()
-    awful.util.spawn("/home/jonas/.local/bin/my_scripts/code_helper.sh old "..terminal)   end,
+    awful.util.spawn("/home/jonas/.local/bin/my_scripts/code_helper.sh old " .. terminal)   end,
               {description = "code launcher", group = "launcher"}),
 
     awful.key({ modkey },            "r",     function ()
@@ -290,11 +289,11 @@ globalkeys = my_table.join(
               {description = "run dmenu", group = "launcher"}),
 
     awful.key({ modkey },            "w",     function ()
-    awful.util.spawn(terminal.. " -e sh ranger")    end,
+    awful.util.spawn(terminal.. " -e " .. filex .. " ~/")    end,
               {description = "run ranger", group = "launcher"}),
 
     awful.key({ modkey },            "e",        function ()
-    awful.util.spawn("/home/jonas/.local/bin/my_scripts/ranger_wd.sh "..terminal )   end,
+    awful.util.spawn("/home/jonas/.local/bin/my_scripts/file_explorer_wd.sh " .. terminal .. " " .. filex )   end,
               {description = "run ranger in wd", group = "launcher"}),
 
     awful.key({ modkey, "Shift"     },            "e",        function ()
@@ -328,7 +327,7 @@ globalkeys = my_table.join(
 
 	-- Nice things
     awful.key({modkey},            "v",        function ()
-    awful.util.spawn("/home/jonas/.local/bin/my_scripts/clip_history.sh")   end,
+    awful.util.spawn("/home/jonas/.local/bin/my_scripts/clip_history.sh greenclip")   end,
               {description = "clip_history", group = "launcher"}),
 
     awful.key({modkey},            "period",     function ()
@@ -345,11 +344,11 @@ globalkeys = my_table.join(
               {description = "Bashtop", group = "launcher"}),
 
     awful.key({ modkey, "Control"    },            "b",     function ()
-    awful.util.spawn(terminal.. " -e sudo ytop")    end,
+    awful.util.spawn(terminal .. " -e sudo ytop")    end,
               {description = "Ytop", group = "launcher"}),
 
     awful.key({ modkey },            "n",     function ()
-    awful.util.spawn("sh /home/jonas/.local/bin/my_scripts/nautilus_wd.sh")     end,
+    awful.util.spawn("/home/jonas/.local/bin/my_scripts/files_wd.sh")     end,
               {description = "run file manager in wd", group = "launcher"}),
 
     awful.key({ modkey, "Shift"    },            "n",     function ()
@@ -417,16 +416,16 @@ globalkeys = my_table.join(
     --     {description = "go back", group = "tag"}),
 
      -- Tag browsing ALT+TAB (ALT+SHIFT+TAB)
-    awful.key({ altkey,         }, "Tab", awful.tag.viewnext,
-        {description = "view next", group = "tag"}),
-    awful.key({ altkey, "Shift" }, "Tab", awful.tag.viewprev,
-        {description = "view previous", group = "tag"}),
+    --awful.key({ altkey,         }, "Tab", awful.tag.viewnext,
+    --    {description = "view next", group = "tag"}),
+    --awful.key({ altkey, "Shift" }, "Tab", awful.tag.viewprev,
+    --    {description = "view previous", group = "tag"}),
 
     -- Non-empty tag browsing CTRL+TAB (CTRL+SHIFT+TAB)
-    -- awful.key({ ctrlkey }, "Tab", function () lain.util.tag_view_nonempty(-1) end,
-    --           {description = "view  previous nonempty", group = "tag"}),
-    -- awful.key({ ctrlkey, "Shift" }, "Tab", function () lain.util.tag_view_nonempty(1) end,
-    --           {description = "view  previous nonempty", group = "tag"}),
+     awful.key({ altkey }, "Tab", function () lain.util.tag_view_nonempty(-1) end,
+               {description = "view  previous nonempty", group = "tag"}),
+     awful.key({ altkey, "Shift" }, "Tab", function () lain.util.tag_view_nonempty(1) end,
+               {description = "view  previous nonempty", group = "tag"}),
 
     -- Default client focus
     awful.key({ modkey,         }, "j", function () awful.client.focus.byidx( 1) end,
@@ -508,14 +507,14 @@ globalkeys = my_table.join(
     --     {description = "increase master width factor", group = "layout"}),
     -- awful.key({ modkey, "Shift" }, "h", function () awful.tag.incmwfact(-0.05) end,
     --     {description = "decrease master width factor", group = "layout"}),
-    awful.key({ modkey, "Shift" }, "Up", function () awful.tag.incnmaster( 1, nil, true) end,
-        {description = "increase the number of master clients", group = "layout"}),
-    awful.key({ modkey, "Shift" }, "Down", function () awful.tag.incnmaster(-1, nil, true) end,
-        {description = "decrease the number of master clients", group = "layout"}),
-    awful.key({ modkey, ctrlkey }, "h", function () awful.tag.incncol( 1, nil, true) end,
-        {description = "increase the number of columns", group = "layout"}),
-    awful.key({ modkey, ctrlkey }, "l", function () awful.tag.incncol(-1, nil, true) end,
-        {description = "decrease the number of columns", group = "layout"}),
+    -- awful.key({ modkey, "Shift" }, "Up", function () awful.tag.incnmaster( 1, nil, true) end,
+    --     {description = "increase the number of master clients", group = "layout"}),
+    -- awful.key({ modkey, "Shift" }, "Down", function () awful.tag.incnmaster(-1, nil, true) end,
+    --     {description = "decrease the number of master clients", group = "layout"}),
+    -- awful.key({ modkey, ctrlkey }, "h", function () awful.tag.incncol( 1, nil, true) end,
+    --     {description = "increase the number of columns", group = "layout"}),
+    -- awful.key({ modkey, ctrlkey }, "l", function () awful.tag.incncol(-1, nil, true) end,
+    --     {description = "decrease the number of columns", group = "layout"}),
     -- awful.key({ modkey,         }, "Tab", function () awful.layout.inc( 1) end,
     --     {description = "select next", group = "layout"}),
     -- awful.key({ modkey, "Shift" }, "Tab", function () awful.layout.inc(-1) end,
@@ -597,19 +596,24 @@ clientkeys = my_table.join(
             c:raise()
         end,
         {description = "toggle fullscreen", group = "client"}),
+
     awful.key({ modkey }, "q", function (c) c:kill() end,
       {description = "close", group = "hotkeys"}),
+
     awful.key({ modkey,         }, "space", awful.client.floating.toggle,
       {description = "toggle floating", group = "client"}),
+
     -- awful.key({ modkey, ctrlkey }, "Return", function (c) c:swap(awful.client.getmaster()) end,
     --   {description = "move to master", group = "client"}),
     -- awful.key({ modkey, "Shift" }, "t", function (c) c.ontop = not c.ontop end,
     --   {description = "toggle keep on top", group = "client"}),
+
     awful.key({ modkey, "Shift"}, "l",
         function ()
             local c = client.focus
             if c then c:move_to_screen() end
         end, {description = "move client to next screen", group = "client"}),
+
     awful.key({ modkey, "Shift"}, "h",
         function ()
             local c = client.focus
@@ -791,43 +795,42 @@ awful.rules.rules = {
 
 
     -- Floating clients.
-    { rule_any = {
-        instance = {
-          "DTA",  -- Firefox addon DownThemAll.
-          "copyq",  -- Includes session name in class.
-        },
-        class = {
-          "Arandr",
-          "Blueberry",
-          "Galculator",
-          "Gnome-font-viewer",
-          "Gpick",
-          "Imagewriter",
-          "Font-manager",
-          "Kruler",
-          "MessageWin",  -- kalarm.
-          "Oblogout",
-          "Peek",
-          "Skype",
-          "System-config-printer.py",
-          "Sxiv",
-          "Unetbootin.elf",
-          "Wpa_gui",
-          "pinentry",
-          "veromix",
-          "xtightvncviewer"},
+    --{ rule_any = {
+    --    instance = {
+    --      "DTA",  -- Firefox addon DownThemAll.
+    --      "copyq",  -- Includes session name in class.
+    --    },
+    --    class = {
+    --      "Arandr",
+    --      "Blueberry",
+    --      "Galculator",
+    --      "Gnome-font-viewer",
+    --      "Gpick",
+    --      "Imagewriter",
+    --      "Font-manager",
+    --      "Kruler",
+    --      "MessageWin",  -- kalarm.
+    --      "Oblogout",
+    --      "Peek",
+    --      "Skype",
+    --      "System-config-printer.py",
+    --      "Sxiv",
+    --      "Unetbootin.elf",
+    --      "Wpa_gui",
+    --      "pinentry",
+    --      "veromix",
+    --      "xtightvncviewer"},
 
-        name = {
-          "Event Tester",  -- xev.
-        },
-        role = {
-          "AlarmWindow",  -- Thunderbird's calendar.
-          "pop-up",       -- e.g. Google Chrome's (detached) Developer Tools.
-          "Preferences",
-          "setup",
-        }
-      }, properties = { floating = true }},
-
+    --    name = {
+    --      "Event Tester",  -- xev.
+    --    },
+    --    role = {
+    --      "AlarmWindow",  -- Thunderbird's calendar.
+    --      "pop-up",       -- e.g. Google Chrome's (detached) Developer Tools.
+    --      "Preferences",
+    --      "setup",
+    --    }
+    --  }, properties = { floating = true }},
 }
 
 -- Signal function to execute when a new client appears.
@@ -896,23 +899,23 @@ client.connect_signal("mouse::enter", function(c)
 end)
 
 -- No border for maximized clients
-function border_adjust(c)
-    if c.maximized then -- no borders if only 1 client visible
-        c.border_width = 0
-    elseif #awful.screen.focused().clients > 1 then
-        c.border_width = beautiful.border_width
-        c.border_color = beautiful.border_focus
-    end
-end
-
-client.connect_signal("focus", border_adjust)
-client.connect_signal("property::maximized", border_adjust)
-client.connect_signal("unfocus", function(c) c.border_color = beautiful.border_normal end)
+--function border_adjust(c)
+--    if c.maximized then -- no borders if only 1 client visible
+--        c.border_width = 0
+--    elseif #awful.screen.focused().clients > 1 then
+--        c.border_width = beautiful.border_width
+--        c.border_color = beautiful.border_focus
+--    end
+--end
+--
+--client.connect_signal("focus", border_adjust)
+--client.connect_signal("property::maximized", border_adjust)
+--client.connect_signal("unfocus", function(c) c.border_color = beautiful.border_normal end)
 
 -- awful.spawn.with_shell(soundplayer .. startupSound)
 -- awful.spawn.with_shell("lxsession")
 awful.spawn.with_shell("picom")
-awful.spawn.with_shell("diodon")
+--awful.spawn.with_shell("diodon")
 -- awful.spawn.with_shell("nm-applet")
 -- awful.spawn.with_shell("volumeicon")
 -- awful.spawn.with_shell("sleep 2 && conky -c $HOME/.config/conky/awesome/" .. "doom-one" .. "-01.conkyrc")
@@ -922,41 +925,41 @@ awful.spawn.with_shell("diodon")
 --awful.spawn.with_shell("feh --randomize --bg-fill /usr/share/backgrounds/dtos-backgrounds/*") -- feh sets random wallpaper
 --awful.spawn.with_shell("nitrogen --restore") -- if you prefer nitrogen to feh/xwallpaper
 
-client.connect_signal("tagged", function(c)
-    if c.class == "firefox" then
-        local t = c.first_tag
-        if t then
-            local clients = t:clients()
-            if #clients == 1 then
-                -- Maximize Firefox if it's the only client
-                c.maximized = true
-                c.border_width = 0 -- Remove border to eliminate gaps
-            else
-                -- Unmaximize Firefox if other clients are added
-                c.maximized = false
-                c.border_width = beautiful.border_width or 1 -- Restore border width
-                awful.layout.arrange(t) -- Rearrange the layout for the tag
-            end
-        end
-    end
-end)
-
-client.connect_signal("untagged", function(c)
-    if c.class == "firefox" then
-        local t = c.first_tag
-        if t then
-            local clients = t:clients()
-            if #clients > 0 then
-                -- Ensure Firefox is unmaximized if sharing the tag
-                for _, cl in ipairs(clients) do
-                    if cl.class == "firefox" then
-                        cl.maximized = false
-                        cl.border_width = beautiful.border_width or 1 -- Restore border width
-                    end
-                end
-                awful.layout.arrange(t) -- Rearrange the layout for the tag
-            end
-        end
-    end
-end)
+--client.connect_signal("tagged", function(c)
+--    if c.class == "firefox" then
+--        local t = c.first_tag
+--        if t then
+--            local clients = t:clients()
+--            if #clients == 1 then
+--                -- Maximize Firefox if it's the only client
+--                c.maximized = true
+--                c.border_width = 0 -- Remove border to eliminate gaps
+--            else
+--                -- Unmaximize Firefox if other clients are added
+--                c.maximized = false
+--                c.border_width = beautiful.border_width or 1 -- Restore border width
+--                awful.layout.arrange(t) -- Rearrange the layout for the tag
+--            end
+--        end
+--    end
+--end)
+--
+--client.connect_signal("untagged", function(c)
+--    if c.class == "firefox" then
+--        local t = c.first_tag
+--        if t then
+--            local clients = t:clients()
+--            if #clients > 0 then
+--                -- Ensure Firefox is unmaximized if sharing the tag
+--                for _, cl in ipairs(clients) do
+--                    if cl.class == "firefox" then
+--                        cl.maximized = false
+--                        cl.border_width = beautiful.border_width or 1 -- Restore border width
+--                    end
+--                end
+--                awful.layout.arrange(t) -- Rearrange the layout for the tag
+--            end
+--        end
+--    end
+--end)
 

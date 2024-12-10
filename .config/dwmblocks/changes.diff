@@ -1,0 +1,745 @@
+diff --git a/.gitignore b/.gitignore
+index b6605b4..da15777 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -1,6 +1,3 @@
+-# Custom blocks file
+-blocks.h
+-
+ # Prerequisites
+ *.d
+ 
+@@ -38,7 +35,6 @@ blocks.h
+ *.i*86
+ *.x86_64
+ *.hex
+-dwmblocks
+ 
+ # Debug files
+ *.dSYM/
+@@ -54,3 +50,5 @@ modules.order
+ Module.symvers
+ Mkfile.old
+ dkms.conf
++a.out
++dwmblocks
+diff --git a/Makefile b/Makefile
+index 75109ac..5cfbb5a 100644
+--- a/Makefile
++++ b/Makefile
+@@ -1,36 +1,19 @@
+-PREFIX  := /usr/local
+-CC      := cc
+-CFLAGS  := -pedantic -Wall -Wno-deprecated-declarations -Os
+-LDFLAGS := -lX11
++.POSIX:
+ 
+-# FreeBSD (uncomment)
+-#LDFLAGS += -L/usr/local/lib -I/usr/local/include
+-# # OpenBSD (uncomment)
+-#LDFLAGS += -L/usr/X11R6/lib -I/usr/X11R6/include
+-
+-all: options dwmblocks
+-
+-options:
+-	@echo dwmblocks build options:
+-	@echo "CFLAGS  = ${CFLAGS}"
+-	@echo "LDFLAGS = ${LDFLAGS}"
+-	@echo "CC      = ${CC}"
+-
+-dwmblocks: dwmblocks.c blocks.def.h blocks.h
+-	${CC} -o dwmblocks dwmblocks.c ${CFLAGS} ${LDFLAGS}
+-
+-blocks.h:
+-	cp blocks.def.h $@
++PREFIX = /usr/local
++CC = gcc
+ 
++dwmblocks: dwmblocks.o
++	$(CC) dwmblocks.o -lX11 -o dwmblocks
++dwmblocks.o: dwmblocks.c config.h
++	$(CC) -c dwmblocks.c
+ clean:
+ 	rm -f *.o *.gch dwmblocks
+-
+ install: dwmblocks
+-	mkdir -p ${DESTDIR}${PREFIX}/bin
+-	cp -f dwmblocks ${DESTDIR}${PREFIX}/bin
+-	chmod 755 ${DESTDIR}${PREFIX}/bin/dwmblocks
+-
++	mkdir -p $(DESTDIR)$(PREFIX)/bin
++	cp -f dwmblocks $(DESTDIR)$(PREFIX)/bin
++	chmod 755 $(DESTDIR)$(PREFIX)/bin/dwmblocks
+ uninstall:
+-	rm -f ${DESTDIR}${PREFIX}/bin/dwmblocks
++	rm -f $(DESTDIR)$(PREFIX)/bin/dwmblocks
+ 
+-.PHONY: all options clean install uninstall
++.PHONY: clean install uninstall
+diff --git a/compile.sh b/compile.sh
+new file mode 100755
+index 0000000..ab0dd7e
+--- /dev/null
++++ b/compile.sh
+@@ -0,0 +1,42 @@
++#!/bin/bash
++
++# Paths
++CONFIG_FILE="./config.h"
++TEMP_FILE="./config_temp.h"
++BACKUP_FILE="./config_backup.h"
++
++# Backup original config.h
++cp "$CONFIG_FILE" "$BACKUP_FILE"
++
++# Check battery presence
++battery_present=false
++for battery in /sys/class/power_supply/BAT?*; do
++    if [ -e "$battery" ]; then
++        battery_present=true
++        break
++    fi
++done
++
++# If no battery is found, use internet cmd in statusbar instead
++if ! $battery_present; then
++    echo "No battery found. Modifying config.h..."
++
++    sed 's/\(^.*sb-battery.*$\)/\/\* \1 \*\//' "$CONFIG_FILE" > "$TEMP_FILE"
++    sed -i 's/\/\* \(.*sb-internet.*\) \*\//\1/' "$TEMP_FILE"
++
++    mv "$TEMP_FILE" "$CONFIG_FILE"
++fi
++
++# Compile
++sudo make clean install
++
++# If no battery was found, revert config.h to its original state
++if ! $battery_present; then
++    mv "$BACKUP_FILE" "$CONFIG_FILE"
++    echo "config.h reverted to its original state."
++fi
++
++rm -f "$BACKUP_FILE"
++
++echo "Script execution completed."
++
+diff --git a/config.h b/config.h
+new file mode 100644
+index 0000000..5623e2e
+--- /dev/null
++++ b/config.h
+@@ -0,0 +1,23 @@
++//Modify this file to change what commands output to your statusbar, and recompile using the make command.
++
++static const Block blocks[] = {
++    /*Icon*/        /*Command*/                                     /*Update Interval*/     /*Update Signal*/
++    /* {"^c1^",        "~/.local/bin/my_scripts/spotify_dwmblocks.sh", 5,                      12}, */
++    {"",            "~/.local/bin/my_scripts/spotify_dwmblocks.sh", 5,                      12},
++    {"^2^  ",      "~/.local/bin/statusbar/weather",               1800,                   5},
++    {"^3^  ",      "~/.local/bin/statusbar/cputemp",               5,                      4},
++    {"^4^ ",        "~/.local/bin/statusbar/sb-volume",             0,                      10},
++    /* {"^5^ ",        "~/.local/bin/statusbar/sb-internet",           5,                      3}, */
++    {"^5^ ",        "~/.local/bin/statusbar/sb-battery",            5,                      3},
++    {"^6^  ",      "~/.local/bin/statusbar/sb-clock",              60,                     1},
++};
++
++/*Icons:            婢 墳     󱑔  󱑍 */
++
++//Sets delimiter between status commands. NULL character ('\0') means no delimiter.
++/* static char *delim = " | "; */
++static char *delim = " ";
++
++// Have dwmblocks automatically recompile and run when you edit this file in
++// vim with the following line in your vimrc/init.vim:
++// autocmd BufWritePost ~/.local/src/dwmblocks/config.h !cd ~/.local/src/dwmblocks/; sudo make install && { killall -q dwmblocks;setsid dwmblocks & }
+diff --git a/dwmblocks.c b/dwmblocks.c
+index c8f77b7..0d569c8 100644
+--- a/dwmblocks.c
++++ b/dwmblocks.c
+@@ -1,22 +1,13 @@
+-#include<stdlib.h>
+-#include<stdio.h>
+-#include<string.h>
+-#include<unistd.h>
+-#include<signal.h>
+-#ifndef NO_X
+-#include<X11/Xlib.h>
+-#endif
+-#ifdef __OpenBSD__
+-#define SIGPLUS			SIGUSR1+1
+-#define SIGMINUS		SIGUSR1-1
+-#else
+-#define SIGPLUS			SIGRTMIN
+-#define SIGMINUS		SIGRTMIN
+-#endif
+-#define LENGTH(X)               (sizeof(X) / sizeof (X[0]))
++#include <stdlib.h>
++#include <stdio.h>
++#include <string.h>
++#include <unistd.h>
++#include <time.h>
++#include <signal.h>
++#include <errno.h>
++#include <X11/Xlib.h>
++#define LENGTH(X) (sizeof(X) / sizeof (X[0]))
+ #define CMDLENGTH		50
+-#define MIN( a, b ) ( ( a < b) ? a : b )
+-#define STATUSLENGTH (LENGTH(blocks) * CMDLENGTH + 1)
+ 
+ typedef struct {
+ 	char* icon;
+@@ -24,129 +15,185 @@ typedef struct {
+ 	unsigned int interval;
+ 	unsigned int signal;
+ } Block;
+-#ifndef __OpenBSD__
+-void dummysighandler(int num);
+-#endif
+ void sighandler(int num);
++void buttonhandler(int sig, siginfo_t *si, void *ucontext);
++void replace(char *str, char old, char new);
++void remove_all(char *str, char to_remove);
+ void getcmds(int time);
+-void getsigcmds(unsigned int signal);
++#ifndef __OpenBSD__
++void getsigcmds(int signal);
+ void setupsignals();
+ void sighandler(int signum);
++#endif
+ int getstatus(char *str, char *last);
+-void statusloop();
+-void termhandler();
+-void pstdout();
+-#ifndef NO_X
+ void setroot();
+-static void (*writestatus) () = setroot;
+-static int setupX();
++void statusloop();
++void termhandler(int signum);
++
++
++#include "config.h"
++
+ static Display *dpy;
+ static int screen;
+ static Window root;
+-#else
+-static void (*writestatus) () = pstdout;
+-#endif
++static char statusbar[LENGTH(blocks)][CMDLENGTH] = {0};
++static char statusstr[2][256];
++static int statusContinue = 1;
++static void (*writestatus) () = setroot;
+ 
++void replace(char *str, char old, char new)
++{
++	for(char * c = str; *c; c++)
++		if(*c == old)
++			*c = new;
++}
+ 
+-#include "blocks.h"
++// the previous function looked nice but unfortunately it didnt work if to_remove was in any position other than the last character
++// theres probably still a better way of doing this
++void remove_all(char *str, char to_remove) {
++	char *read = str;
++	char *write = str;
++	while (*read) {
++		if (*read != to_remove) {
++			*write++ = *read;
++		}
++		++read;
++	}
++	*write = '\0';
++}
++
++int gcd(int a, int b)
++{
++	int temp;
++	while (b > 0){
++		temp = a % b;
++
++		a = b;
++		b = temp;
++	}
++	return a;
++}
+ 
+-static char statusbar[LENGTH(blocks)][CMDLENGTH] = {0};
+-static char statusstr[2][STATUSLENGTH];
+-static int statusContinue = 1;
+-static int returnStatus = 0;
+ 
+ //opens process *cmd and stores output in *output
+ void getcmd(const Block *block, char *output)
+ {
+-	//make sure status is same until output is ready
+-	char tempstatus[CMDLENGTH] = {0};
+-	strcpy(tempstatus, block->icon);
+-	FILE *cmdf = popen(block->command, "r");
+-	if (!cmdf)
+-		return;
+-	int i = strlen(block->icon);
+-	fgets(tempstatus+i, CMDLENGTH-i-delimLen, cmdf);
+-	i = strlen(tempstatus);
+-	//if block and command output are both not empty
+-	if (i != 0) {
+-		//only chop off newline if one is present at the end
+-		i = tempstatus[i-1] == '\n' ? i-1 : i;
+-		if (delim[0] != '\0') {
+-			strncpy(tempstatus+i, delim, delimLen);
+-		}
+-		else
+-			tempstatus[i++] = '\0';
++	if (block->signal)
++	{
++		output[0] = block->signal;
++		output++;
+ 	}
+-	strcpy(output, tempstatus);
++	char *cmd = block->command;
++	FILE *cmdf = popen(cmd,"r");
++	if (!cmdf){
++        //printf("failed to run: %s, %d\n", block->command, errno);
++		return;
++    }
++    char tmpstr[CMDLENGTH] = "";
++    // TODO decide whether its better to use the last value till next time or just keep trying while the error was the interrupt
++    // this keeps trying to read if it got nothing and the error was an interrupt
++    //  could also just read to a separate buffer and not move the data over if interrupted
++    //  this way will take longer trying to complete 1 thing but will get it done
++    //  the other way will move on to keep going with everything and the part that failed to read will be wrong till its updated again
++    // either way you have to save the data to a temp buffer because when it fails it writes nothing and then then it gets displayed before this finishes
++	char * s;
++    int e;
++    do {
++        errno = 0;
++        s = fgets(tmpstr, CMDLENGTH-(strlen(delim)+1), cmdf);
++        e = errno;
++    } while (!s && e == EINTR);
+ 	pclose(cmdf);
++	int i = strlen(block->icon);
++	strcpy(output, block->icon);
++    strcpy(output+i, tmpstr);
++	remove_all(output, '\n');
++	i = strlen(output);
++    if ((i > 0 && block != &blocks[LENGTH(blocks) - 1])){
++        strcat(output, delim);
++    }
++    i+=strlen(delim);
++	output[i++] = '\0';
+ }
+ 
+ void getcmds(int time)
+ {
+ 	const Block* current;
+-	for (unsigned int i = 0; i < LENGTH(blocks); i++) {
++	for(int i = 0; i < LENGTH(blocks); i++)
++	{
+ 		current = blocks + i;
+-		if ((current->interval != 0 && time % current->interval == 0) || time == -1)
++		if ((current->interval != 0 && time % current->interval == 0) || time == -1){
+ 			getcmd(current,statusbar[i]);
++        }
+ 	}
+ }
+ 
+-void getsigcmds(unsigned int signal)
++#ifndef __OpenBSD__
++void getsigcmds(int signal)
+ {
+ 	const Block *current;
+-	for (unsigned int i = 0; i < LENGTH(blocks); i++) {
++	for (int i = 0; i < LENGTH(blocks); i++)
++	{
+ 		current = blocks + i;
+-		if (current->signal == signal)
++		if (current->signal == signal){
+ 			getcmd(current,statusbar[i]);
++        }
+ 	}
+ }
+ 
+ void setupsignals()
+ {
+-#ifndef __OpenBSD__
+-	    /* initialize all real time signals with dummy handler */
+-    for (int i = SIGRTMIN; i <= SIGRTMAX; i++)
+-        signal(i, dummysighandler);
+-#endif
++    struct sigaction sa;
+ 
+-	for (unsigned int i = 0; i < LENGTH(blocks); i++) {
+-		if (blocks[i].signal > 0)
+-			signal(SIGMINUS+blocks[i].signal, sighandler);
+-	}
++    for(int i = SIGRTMIN; i <= SIGRTMAX; i++)
++        signal(i, SIG_IGN);
++
++    for(int i = 0; i < LENGTH(blocks); i++)
++    {
++        if (blocks[i].signal > 0)
++        {
++            signal(SIGRTMIN+blocks[i].signal, sighandler);
++            sigaddset(&sa.sa_mask, SIGRTMIN+blocks[i].signal);
++        }
++    }
++    sa.sa_sigaction = buttonhandler;
++    sa.sa_flags = SA_SIGINFO;
++    sigaction(SIGUSR1, &sa, NULL);
++    struct sigaction sigchld_action = {
++        .sa_handler = SIG_DFL,
++        .sa_flags = SA_NOCLDWAIT
++    };
++    sigaction(SIGCHLD, &sigchld_action, NULL);
+ 
+ }
++#endif
+ 
+ int getstatus(char *str, char *last)
+ {
+ 	strcpy(last, str);
+ 	str[0] = '\0';
+-	for (unsigned int i = 0; i < LENGTH(blocks); i++)
++    for(int i = 0; i < LENGTH(blocks); i++) {
+ 		strcat(str, statusbar[i]);
+-	str[strlen(str)-strlen(delim)] = '\0';
++        if (i == LENGTH(blocks) - 1)
++            strcat(str, " ");
++    }
++	str[strlen(str)-1] = '\0';
+ 	return strcmp(str, last);//0 if they are the same
+ }
+ 
+-#ifndef NO_X
+ void setroot()
+ {
+ 	if (!getstatus(statusstr[0], statusstr[1]))//Only set root if text has changed.
+ 		return;
+-	XStoreName(dpy, root, statusstr[0]);
+-	XFlush(dpy);
+-}
+-
+-int setupX()
+-{
+-	dpy = XOpenDisplay(NULL);
+-	if (!dpy) {
+-		fprintf(stderr, "dwmblocks: Failed to open display\n");
+-		return 0;
++	Display *d = XOpenDisplay(NULL);
++	if (d) {
++		dpy = d;
+ 	}
+ 	screen = DefaultScreen(dpy);
+ 	root = RootWindow(dpy, screen);
+-	return 1;
++	XStoreName(dpy, root, statusstr[0]);
++	XCloseDisplay(dpy);
+ }
+-#endif
+ 
+ void pstdout()
+ {
+@@ -159,56 +206,88 @@ void pstdout()
+ 
+ void statusloop()
+ {
+-	setupsignals();
+-	int i = 0;
+-	getcmds(-1);
+-	while (1) {
+-		getcmds(i++);
+-		writestatus();
+-		if (!statusContinue)
+-			break;
+-		sleep(1.0);
+-	}
++#ifndef __OpenBSD__
++    setupsignals();
++#endif
++    // first figure out the default wait interval by finding the
++    // greatest common denominator of the intervals
++    unsigned int interval = -1;
++    for(int i = 0; i < LENGTH(blocks); i++){
++        if(blocks[i].interval){
++            interval = gcd(blocks[i].interval, interval);
++        }
++    }
++    unsigned int i = 0;
++    int interrupted = 0;
++    const struct timespec sleeptime = {interval, 0};
++    struct timespec tosleep = sleeptime;
++    getcmds(-1);
++    while(statusContinue)
++    {
++        // sleep for tosleep (should be a sleeptime of interval seconds) and put what was left if interrupted back into tosleep
++        interrupted = nanosleep(&tosleep, &tosleep);
++        // if interrupted then just go sleep again for the remaining time
++        if(interrupted == -1){
++            continue;
++        }
++        // if not interrupted then do the calling and writing
++        getcmds(i);
++        writestatus();
++        // then increment since its actually been a second (plus the time it took the commands to run)
++        i += interval;
++        // set the time to sleep back to the sleeptime of 1s
++        tosleep = sleeptime;
++    }
+ }
+ 
+ #ifndef __OpenBSD__
+-/* this signal handler should do nothing */
+-void dummysighandler(int signum)
++void sighandler(int signum)
+ {
+-    return;
++    getsigcmds(signum-SIGRTMIN);
++	writestatus();
+ }
+-#endif
+ 
+-void sighandler(int signum)
++void buttonhandler(int sig, siginfo_t *si, void *ucontext)
+ {
+-	getsigcmds(signum-SIGPLUS);
+-	writestatus();
++    char button[2] = {'0' + si->si_value.sival_int & 0xff, '\0'};
++    pid_t process_id = getpid();
++    sig = si->si_value.sival_int >> 8;
++    if (fork() == 0)
++    {
++        const Block *current;
++        for (int i = 0; i < LENGTH(blocks); i++)
++        {
++            current = blocks + i;
++            if (current->signal == sig)
++                break;
++        }
++        char shcmd[1024];
++        sprintf(shcmd,"%s && kill -%d %d",current->command, current->signal+34,process_id);
++        char *command[] = { "/bin/sh", "-c", shcmd, NULL };
++        setenv("BLOCK_BUTTON", button, 1);
++        setsid();
++        execvp(command[0], command);
++        exit(EXIT_SUCCESS);
++    }
+ }
++#endif
+ 
+-void termhandler()
++void termhandler(int signum)
+ {
+ 	statusContinue = 0;
++    exit(0);
+ }
+ 
+ int main(int argc, char** argv)
+ {
+-	for (int i = 0; i < argc; i++) {//Handle command line arguments
++	for(int i = 0; i < argc; i++)
++	{
+ 		if (!strcmp("-d",argv[i]))
+-			strncpy(delim, argv[++i], delimLen);
+-		else if (!strcmp("-p",argv[i]))
++			delim = argv[++i];
++		else if(!strcmp("-p",argv[i]))
+ 			writestatus = pstdout;
+ 	}
+-#ifndef NO_X
+-	if (!setupX())
+-		return 1;
+-#endif
+-	delimLen = MIN(delimLen, strlen(delim));
+-	delim[delimLen++] = '\0';
+ 	signal(SIGTERM, termhandler);
+ 	signal(SIGINT, termhandler);
+ 	statusloop();
+-#ifndef NO_X
+-	XCloseDisplay(dpy);
+-#endif
+-	return 0;
+ }
+diff --git a/patches/dwmblocks-statuscmd-fork.diff b/patches/dwmblocks-statuscmd-fork.diff
+new file mode 100644
+index 0000000..1ae7d7a
+--- /dev/null
++++ b/patches/dwmblocks-statuscmd-fork.diff
+@@ -0,0 +1,77 @@
++diff --git a/dwmblocks.c b/dwmblocks.c
++index 7d7a564..e2c5dd0 100644
++--- a/dwmblocks.c
+++++ b/dwmblocks.c
++@@ -34,8 +34,6 @@ static int screen;
++ static Window root;
++ static char statusbar[LENGTH(blocks)][CMDLENGTH] = {0};
++ static char statusstr[2][256];
++-static char exportstring[CMDLENGTH + 22] = "export BLOCK_BUTTON=-;";
++-static int button = 0;
++ static int statusContinue = 1;
++ static void (*writestatus) () = setroot;
++ 
++@@ -55,21 +53,8 @@ void getcmd(const Block *block, char *output)
++ 		output[0] = block->signal;
++ 		output++;
++ 	}
++-	char* cmd;
++-	FILE *cmdf;
++-	if (button)
++-	{
++-		cmd = strcat(exportstring, block->command);
++-		cmd[20] = '0' + button;
++-		button = 0;
++-		cmdf = popen(cmd,"r");
++-		cmd[22] = '\0';
++-	}
++-	else
++-	{
++-		cmd = block->command;
++-		cmdf = popen(cmd,"r");
++-	}
+++	char *cmd = block->command;
+++	FILE *cmdf = popen(cmd,"r");
++ 	if (!cmdf)
++ 		return;
++ 	fgets(output, CMDLENGTH, cmdf);
++@@ -117,6 +102,7 @@ void setupsignals()
++ 	sa.sa_sigaction = buttonhandler;
++ 	sa.sa_flags = SA_SIGINFO;
++ 	sigaction(SIGUSR1, &sa, NULL);
+++	signal(SIGCHLD, SIG_IGN);
++ 
++ }
++ #endif
++@@ -179,9 +165,29 @@ void sighandler(int signum)
++ 
++ void buttonhandler(int sig, siginfo_t *si, void *ucontext)
++ {
++-	button = si->si_value.sival_int & 0xff;
++-	getsigcmds(si->si_value.sival_int >> 8);
+++	int button = si->si_value.sival_int & 0xff;
+++	sig = si->si_value.sival_int >> 8;
+++	getsigcmds(sig);
++ 	writestatus();
+++	if (fork() == 0)
+++	{
+++		static char exportstring[CMDLENGTH + 22] = "export BLOCK_BUTTON=-;";
+++		const Block *current;
+++		int i;
+++		for (i = 0; i < LENGTH(blocks); i++)
+++		{
+++			current = blocks + i;
+++			if (current->signal == sig)
+++				break;
+++		}
+++		char *cmd = strcat(exportstring, blocks[i].command);
+++		cmd[20] = '0' + button;
+++		char *command[] = { "/bin/sh", "-c", cmd, NULL };
+++		setsid();
+++		execvp(command[0], command);
+++		exit(EXIT_SUCCESS);
+++		cmd[22] = '\0';
+++	}
++ }
++ 
++ #endif
+diff --git a/patches/dwmblocks-statuscmd-signal.diff b/patches/dwmblocks-statuscmd-signal.diff
+new file mode 100644
+index 0000000..c2092e7
+--- /dev/null
++++ b/patches/dwmblocks-statuscmd-signal.diff
+@@ -0,0 +1,93 @@
++diff --git a/dwmblocks.c b/dwmblocks.c
++index 88bdfb0..7bd14df 100644
++--- a/dwmblocks.c
+++++ b/dwmblocks.c
++@@ -14,6 +14,7 @@ typedef struct {
++ 	unsigned int signal;
++ } Block;
++ void sighandler(int num);
+++void buttonhandler(int sig, siginfo_t *si, void *ucontext);
++ void replace(char *str, char old, char new);
++ void getcmds(int time);
++ #ifndef __OpenBSD__
++@@ -34,6 +35,8 @@ static int screen;
++ static Window root;
++ static char statusbar[LENGTH(blocks)][CMDLENGTH] = {0};
++ static char statusstr[2][256];
+++static char exportstring[CMDLENGTH + 16] = "export BUTTON=-;";
+++static int button = 0;
++ static int statusContinue = 1;
++ static void (*writestatus) () = setroot;
++
++@@ -48,16 +51,34 @@ void replace(char *str, char old, char new)
++ //opens process *cmd and stores output in *output
++ void getcmd(const Block *block, char *output)
++ {
+++	if (block->signal)
+++	{
+++		output[0] = block->signal;
+++		output++;
+++	}
++ 	strcpy(output, block->icon);
++-	char *cmd = block->command;
++-	FILE *cmdf = popen(cmd,"r");
+++	char* cmd;
+++	FILE *cmdf;
+++	if (button)
+++	{
+++		cmd = strcat(exportstring, block->command);
+++		cmd[14] = '0' + button;
+++		button = 0;
+++		cmdf = popen(cmd,"r");
+++		cmd[16] = '\0';
+++	}
+++	else
+++	{
+++		cmd = block->command;
+++		cmdf = popen(cmd,"r");
+++	}
++ 	if (!cmdf)
++ 		return;
++ 	char c;
++ 	int i = strlen(block->icon);
++ 	fgets(output+i, CMDLENGTH-i, cmdf);
++ 	i = strlen(output);
++-	if (delim != '\0' && --i)
+++	if (delim != '\0' && i)
++ 		output[i++] = delim;
++ 	output[i++] = '\0';
++ 	pclose(cmdf);
++@@ -88,11 +106,18 @@ void getsigcmds(int signal)
++
++ void setupsignals()
++ {
+++	struct sigaction sa;
++ 	for(int i = 0; i < LENGTH(blocks); i++)
++ 	{
++ 		if (blocks[i].signal > 0)
+++		{
++ 			signal(SIGRTMIN+blocks[i].signal, sighandler);
+++			sigaddset(&sa.sa_mask, SIGRTMIN+blocks[i].signal);
+++		}
++ 	}
+++	sa.sa_sigaction = buttonhandler;
+++	sa.sa_flags = SA_SIGINFO;
+++	sigaction(SIGUSR1, &sa, NULL);
++
++ }
++ #endif
++@@ -152,6 +177,14 @@ void sighandler(int signum)
++ 	getsigcmds(signum-SIGRTMIN);
++ 	writestatus();
++ }
+++
+++void buttonhandler(int sig, siginfo_t *si, void *ucontext)
+++{
+++	button = si->si_value.sival_int & 0xff;
+++	getsigcmds(si->si_value.sival_int >> 8);
+++	writestatus();
+++}
+++
++ #endif
++
++ void termhandler(int signum)

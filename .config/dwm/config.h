@@ -246,7 +246,7 @@ static const Key keys[] = {
         { MODKEY|ShiftMask,         XK_b,               spawn,              SHCMD(TERMINAL " -e bashtop") },
         { MODKEY|ControlMask,       XK_b,               spawn,              SHCMD(TERMINAL " -e ytop") },
         { MODKEY,                   XK_p,               spawn,              SHCMD("~/.local/bin/my_scripts/xrandr_helper.sh") },
-        { MODKEY,                   XK_n,               spawn,              SHCMD("~/.local/bin/my_scripts/nautilus_wd.sh") },
+        { MODKEY,                   XK_n,               spawn,              SHCMD("~/.local/bin/my_scripts/files_wd.sh") },
         { MODKEY|ShiftMask,         XK_n,               spawn,              SHCMD(FILES) },
         { MODKEY|ControlMask,       XK_n,               spawn,              SHCMD("~/.local/bin/my_scripts/open_notes.sh 1 " TERMINAL) },
         { MODKEY,                   XK_m,               spawn,              SHCMD("nm-connection-editor") },
