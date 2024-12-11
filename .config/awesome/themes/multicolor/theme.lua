@@ -151,14 +151,14 @@ local function update_clock_widget()
 
     awful.spawn.easy_async_with_shell(script_path, function(stdout, stderr)
         if stderr and #stderr > 0 then
-            mytextclock:set_markup(markup.fontfg(theme.font, "#fb4934", "Error")) -- Red for errors
-            log_clock_update("Error: " .. stderr)
+            mytextclock:set_markup(markup.fontfg(theme.font, "#fb4934", "Error"))
+            --log_clock_update("Error: " .. stderr)
             return
         end
 
         local output = stdout:gsub("^%s*(.-)%s*$", "%1") -- Trim whitespace
-        mytextclock:set_markup(markup.fontfg(theme.font, "#8ec07c", output)) -- Green for normal output
-        log_clock_update("Clock output updated: " .. output)
+        mytextclock:set_markup(markup.fontfg(theme.font, "#8ec07c", output .. " "))
+        --log_clock_update("Clock output updated: " .. output)
     end)
 end
 
@@ -279,7 +279,7 @@ local function update_weather_widget()
         end
 
         local log_message = "Weather output updated: " .. output
-        log_weather_update(log_message)
+        --log_weather_update(log_message)
     end)
 end
 
