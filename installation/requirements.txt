@@ -100,6 +100,7 @@ nspektr==0.5.0
 numba==0.60.0
 numpy==1.26.4
 oauthlib==3.2.2
+ocrspace==2.3.0
 openai-whisper @ git+https://github.com/openai/whisper@90db0de1896c23cbfaf0c58bc2d30665f709f170
 ordered-set==4.1.0
 overrides==7.7.0
@@ -131,9 +132,11 @@ PyGObject==3.50.0
 pynvim==0.5.0
 PyOpenGL==3.1.7
 pyparsing==3.1.2
+pyperclip==1.9.0
 pyrsistent==0.20.0
 PySDL2==0.9.16
 pysdl2-dll==2.30.2
+pytesseract==0.3.13
 pytest==8.3.3
 python-dateutil==2.9.0
 python-json-logger==2.0.7

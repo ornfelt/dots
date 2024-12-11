@@ -2,6 +2,8 @@
 import ocrspace
 import requests
 
+# pip install ocrspace requests
+
 api = ocrspace.API()
 
 TEST_FILENAME = '/home/jonas/Pictures/Screenshots/ocr.png'
