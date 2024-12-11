@@ -4,9 +4,9 @@
 
 ### Description
 
-Provides current weather status widgets and X-days forecast popup notifications.
+Provides current weather status widgets and X-days forecast pop-up notifications.
 
-Powered by [OpenWeatherMap](http://openweathermap.org/api) API.
+Powered by OpenWeatherMap. Obtain a free API key [here](http://openweathermap.org/api) and set it as the `APPID` argument.
 
 By default, it uses [current](http://openweathermap.org/current) for current weather data and [forecast16](http://openweathermap.org/forecast16) for forecasts.
 
@@ -18,16 +18,14 @@ local myweather = lain.widget.weather()
 
 Variable | Meaning | Type | Default
 --- | --- | --- | ---
+`APPID` | API key | String | `nil`
 `timeout` | Refresh timeout seconds for current weather status | number | 900 (15 min)
-`timeout_forecast` | Refresh timeout seconds for forecast notification | number | 86400 (24 hrs)
 `current_call` | Command to fetch weather status data from the API | string | see `default_current_call`
 `forecast_call` | Command to fetch forecast data from the API | string | see `default_forecast_call`
 `city_id` | API city code | number | not set
-`utc_offset` | UTC time offset | function | see [here](https://github.com/lcpz/lain/blob/master/widget/weather.lua#L35-L39)
 `units` | Temperature units system | string | "metric"
 `lang` | API data localization | string | "en"
 `cnt` | Forecast days interval | integer | 5
-`date_cmd` | Forecast notification format style | string | "date -u -d @%d +'%%a %%d'"
 `icons_path` | Icons path | string | `lain/icons/openweathermap`
 `notification_preset` | Preset for notifications | table | empty table
 `notification_text_fun` | Function to format forecast notifications | function | see `notification_text_fun` below
@@ -35,24 +33,23 @@ Variable | Meaning | Type | Default
 `followtag` | Display the notification on currently focused screen | boolean | false
 `showpopup` | Display popups with mouse hovering | string, possible values: "on", "off" | "on"
 `settings` | User settings | function | empty function
+`widget` | Widget to render | function | `wibox.widget.textbox`
 
 - ``default_current_call``
 
-    `"curl -s 'http://api.openweathermap.org/data/2.5/weather?id=%s&units=%s&lang=%s'"`
+    `"curl -s 'http://api.openweathermap.org/data/2.5/weather?id=%s&units=%s&lang=%s&APPID=%s'"`
 
     You can rewrite it using any fetcher solution you like, or you can modify it in order to fetch data by city name, instead of ID: just replace `id` with `q`:
 
-    `"curl -s 'http://api.openweathermap.org/data/2.5/weather?q=%s&units=%s&lang=%s'"`
+    `"curl -s 'http://api.openweathermap.org/data/2.5/weather?q=%s&units=%s&lang=%s&APPID=%s'"`
 
     and set `city_id` with your city name, for instance `city_id = "London,UK"`.
 
 - ``default_forecast_call``
 
-    `"curl -s 'http://api.openweathermap.org/data/2.5/forecast/daily?id=%s&units=%s&lang=%s&cnt=%s'"`
+    `"curl -s 'http://api.openweathermap.org/data/2.5/forecast/daily?id=%s&units=%s&lang=%s&APPID=%s'"`
 
     Like above.
-    If you want to use [forecast5](http://openweathermap.org/forecast5), use this API call string:
-    `http://api.openweathermap.org/data/2.5/forecast?id=%s&units=%s&lang=%s&cnt=%s`
 
 - ``city_id``
 
@@ -73,18 +70,6 @@ Variable | Meaning | Type | Default
 
     See *Multilingual Support* section [here](http://openweathermap.org/current).
 
-- ``cnt``
-
-    Determines how many days to show in the forecast notification. Up to 16 if you use [forecast16](http://openweathermap.org/forecast16)  (default), and up to 5 if you use [forecast5](http://openweathermap.org/forecast5).
-
-- ``date_cmd``
-
-    OpenWeatherMap time is in UNIX format, so this variable uses `date` to determine how each line in the forecast notification is formatted. Default looks like this:
-
-        day #daynumber: forecast, temp_min - temp_max
-
-    see `man date` for your customizations.
-
 - ``icons_path``
 
     You can set your own icons path if you don't wish to use `lain/icons/openweathermap`. Just be sure that your icons are PNGs and named exactly like [OpenWeatherMap ones](http://openweathermap.org/weather-conditions).
@@ -96,15 +81,13 @@ Variable | Meaning | Type | Default
 - ``notification_text_fun``
    ```lua
    function (wn)
-       local day = string.gsub(read_pipe(string.format(date_cmd, wn["dt"])), "\n", "")
-       local tmin = math.floor(wn["temp"]["min"])
-       local tmax = math.floor(wn["temp"]["max"])
+       local day = os.date("%a %d", wn["dt"])
+       local temp = math.floor(wn["main"]["temp"])
        local desc = wn["weather"][1]["description"]
 
-       return string.format("<b>%s</b>: %s, %d - %d ", day, desc, tmin, tmax)
+       return string.format("<b>%s</b>: %s, %d ", day, desc, temp)
    end
    ```
-   See [here](https://github.com/lcpz/lain/issues/186#issuecomment-203400918) for a complete customization example.
 
 - ``followtag``
 
@@ -139,12 +122,12 @@ myweather.attach(obj)
 
 Hovering over ``obj`` will display the notification.
 
-## Keybindings
+## Key bindings
 
-You can create a keybinding for the weather popup like this:
+You can create a key binding for the weather pop-up like this:
 
 ```lua
 awful.key( { "Mod1" }, "w", function () myweather.show(5) end )
 ```
 
-where ``show`` argument is an integer defining timeout seconds.
+Where the ``show`` argument is an integer defining timeout seconds.

@@ -14,11 +14,20 @@ local mytemp = lain.widget.temp()
 
 Variable | Meaning | Type | Default
 --- | --- | --- | ---
-`timeout` | Refresh timeout (in seconds) | integer | 2
-`tempfile` | Path of file which stores core temperature value | string | "/sys/class/thermal/thermal_zone0/temp"
+`timeout` | Refresh timeout (in seconds) | integer | 30
+`tempfile` | Path of file which stores core temperature value | string | "/sys/devices/virtual/thermal/thermal_zone0/temp"
 `settings` | User settings | function | empty function
+`format` | String format for output | string | "%.1f"
+`widget` | Widget to render | function | `wibox.widget.textbox`
 
-`settings` can use the string `coretemp_now`, which means current core temperature, expressed in Celsius (linux standard).
+`settings` can use the string `coretemp_now`, which contains the info retrieved from `tempfile`, and the table `temp_now`, which contains an entry for each `*temp*` file in each directory in the following paths:
+
+```shell
+/sys/class/devices/virtual/thermal/thermal_zone*
+/sys/class/devices/platform/coretemp*/hwmon/hwon*
+```
+
+All values are expressed in Celsius (GNU/Linux standard).
 
 ## Output table
 
@@ -26,7 +35,3 @@ Variable | Meaning | Type
 --- | --- | ---
 `widget` | The widget | `wibox.widget.textbox`
 `update` | Update `widget` | function
-
-## Note
-
-Depending on the architecture, note that your temp files location [might vary](https://github.com/lcpz/lain/issues/84#issuecomment-72751763).

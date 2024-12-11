@@ -1,3 +1,4 @@
+
 --[[
 
      Awesome-Freedesktop
@@ -11,25 +12,12 @@
 
 --]]
 
+local Gio        = require("lgi").Gio
 local awful_menu = require("awful.menu")
 local menu_gen   = require("menubar.menu_gen")
 local menu_utils = require("menubar.utils")
-local icon_theme = require("menubar.icon_theme")
-local gls        = require("gears.filesystem")
 
-local pairs, string, table, os = pairs, string, table, os
-
--- Add support for NixOS systems too
-table.insert(menu_gen.all_menu_dirs, string.format("%s/.nix-profile/share/applications", os.getenv("HOME")))
-
--- Remove non existent paths in order to avoid issues
-local existent_paths = {}
-for k,v in pairs(menu_gen.all_menu_dirs) do
-    if gls.is_dir(v) then
-        table.insert(existent_paths, v)
-    end
-end
-menu_gen.all_menu_dirs = existent_paths
+local io, pairs, string, table, os = io, pairs, string, table, os
 
 -- Expecting a wm_name of awesome omits too many applications and tools
 menu_utils.wm_name = ""
@@ -37,6 +25,22 @@ menu_utils.wm_name = ""
 -- Menu
 -- freedesktop.menu
 local menu = {}
+
+-- Check if a path is a directory.
+-- @tparam string path The directory path
+-- @treturn boolean True if path exists and is a directory
+function menu.is_dir(path)
+    return Gio.File.new_for_path(path):query_file_type({}) == "DIRECTORY"
+end
+
+-- Remove non existent paths in order to avoid issues
+local existent_paths = {}
+for k,v in pairs(menu_gen.all_menu_dirs) do
+    if menu.is_dir(v) then
+        table.insert(existent_paths, v)
+    end
+end
+menu_gen.all_menu_dirs = existent_paths
 
 -- Determines whether an table includes a certain element
 -- @param tab a given table
@@ -55,7 +59,6 @@ end
 -- @return awful.menu
 function menu.build(args)
     local args       = args or {}
-    local icon_size  = args.icon_size
     local before     = args.before or {}
     local after      = args.after or {}
     local skip_items = args.skip_items or {}
@@ -108,13 +111,6 @@ function menu.build(args)
         for _, v in pairs(result) do _menu:add(v) end
         for _, v in pairs(after)  do _menu:add(v) end
     end)
-
-    -- Set icon size
-    if icon_size then
-        for _,v in pairs(menu_gen.all_categories) do
-            v.icon = icon_theme():find_icon_path(v.icon_name, icon_size)
-        end
-    end
 
     -- Hold the menu in the module
     menu.menu = _menu

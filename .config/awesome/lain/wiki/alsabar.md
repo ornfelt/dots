@@ -22,9 +22,14 @@ Variable | Meaning | Type | Default
 `paddings` | Bar paddings | number | 1
 `ticks` | Set bar ticks on | boolean | false
 `ticks_size` | Ticks size | integer | 7
+`tick` | String for a notification tick | string | "|"
+`tick_pre` | String for the left notification delimeter | string | "["
+`tick_post` | String for the right notification delimeter | string | "]"
+`tick_none` | String for an empty notification tick | string | " "
 `cmd` | ALSA mixer command | string | "amixer"
 `channel` | Mixer channel | string | "Master"
 `togglechannel` | Toggle channel | string | `nil`
+`tick` | The character usef for ticks in the notification | string | "|"
 `colors` | Bar colors | table | see [Default colors](https://github.com/lcpz/lain/wiki/alsabar#default-colors)
 `notification_preset` | Notification preset | table | See [default `notification_preset`](https://github.com/lcpz/lain/wiki/alsabar#default-notification_preset)
 `followtag` | Display the notification on currently focused screen | boolean | false
@@ -32,6 +37,8 @@ Variable | Meaning | Type | Default
 `cmd` is useful if you need to pass additional arguments to  `amixer`. For instance, you may want to define `cmd = "amixer -c X"` in order to set amixer with card `X`.
 
 In case mute toggling can't be mapped to master channel (this happens, for instance, when you are using an HDMI output), define `togglechannel` as your S/PDIF device. Read [`alsa`](https://github.com/lcpz/lain/wiki/alsa#toggle-channel) page to know how.
+
+To set the maximum number of ticks to display in the notification, define `max_ticks` (integer) in `notification_preset`.
 
 `settings` can use the following variables:
 
@@ -57,7 +64,6 @@ notification_preset = {
     font = "Monospace 10"
 }
 ```
-
 
 ## Output table
 

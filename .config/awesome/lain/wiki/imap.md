@@ -27,6 +27,7 @@ Variable | Meaning | Type
 `server` | Mail server | string
 `mail` | User mail | string
 `password` | User password | string
+`widget` | Widget to render | function | `wibox.widget.textbox`
 
 while the optional are:
 

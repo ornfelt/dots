@@ -19,6 +19,7 @@ Variable | Meaning | Type | Default
 `channel` | Mixer channel | string | "Master"
 `togglechannel` | Toggle channel | string | `nil`
 `settings` | User settings | function | empty function
+`widget` | Widget to render | function | `wibox.widget.textbox`
 
 `cmd` is useful if you need to pass additional arguments to amixer. For instance, you may want to define `cmd = "amixer -c X"` in order to set amixer with card `X`.
 
@@ -134,3 +135,15 @@ awful.key({ altkey, "Control" }, "0",
 ```
 
 where `altkey = "Mod1"`.
+
+### Muting with PulseAudio
+
+If you are using this widget in conjuction with PulseAudio, add the option `-D pulse` to the muting keybinding, like this:
+
+```lua
+awful.key({ altkey }, "m",
+	function ()
+		os.execute(string.format("amixer -D pulse set %s toggle", volume.togglechannel or volume.channel))
+		volume.update()
+	end),
+```

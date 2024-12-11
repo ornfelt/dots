@@ -23,8 +23,10 @@ Variable | Meaning | Type | Default
 `batteries` | Multiple batteries id table | table of strings | autodetected
 `ac` | AC | string | autodetected
 `notify` | Show notification popups | string | "on"
+`full_notify` | Show a notification popup when the battery's fully charged | string | inherited value from `notify`
 `n_perc` | Percentages assumed for critical and low battery levels | table of integers | `{5, 15}`
 `settings` | User settings | function | empty function
+`widget` | Widget to render | function | `wibox.widget.textbox`
 
 The widget will try to autodetect `battery`, `batteries` and `ac`. If something
 goes wrong, you will have to define them manually. In that case, you only have
@@ -45,7 +47,9 @@ If you define `pspath`, **be sure** to not forget the final slash (/).
 - `perc`, total charge percentage (integer between 0 and 100 or "N/A");
 - `n_perc[i]`, i-th battery charge percentage (like above);
 - `time`, time remaining until charge if charging, until discharge if discharging (HH:MM string or "N/A");
-- `watt`, battery watts (float with 2 decimals).
+- `watt`, battery watts (float with 2 decimals);
+- `capacity`, remaining battery capacity in percent;
+- `n_capacity[i]`, i-th battery remaining capacity (like above).
 
 and can modify the following three tables, which will be the preset for the naughty notifications:
 * `bat_notification_charged_preset` (used if battery is fully charged and connected to AC)

@@ -22,6 +22,10 @@ Variable | Meaning | Type | Default
 `paddings` | Bar paddings | number | 1
 `ticks` | Set bar ticks on | boolean | false
 `ticks_size` | Ticks size | number | 7
+`tick` | String for a notification tick | string | "|"
+`tick_pre` | String for the left notification delimeter | string | "["
+`tick_post` | String for the right notification delimeter | string | "]"
+`tick_none` | String for an empty notification tick | string | " "
 `scallback` | [PulseAudio sink callback](https://github.com/lcpz/lain/wiki/pulseaudio/) | function | `nil`
 `sink` | Mixer sink | number | 0
 `colors` | Bar colors | table | see [Default colors](https://github.com/lcpz/lain/wiki/pulsebar#default-colors)

@@ -15,27 +15,30 @@ local string  = string
 -- lain.widget.net
 
 local function factory(args)
-    local net        = { widget = wibox.widget.textbox(), devices = {} }
-    local args       = args or {}
+    args             = args or {}
+
+    local net        = { widget = args.widget or wibox.widget.textbox(), devices = {} }
     local timeout    = args.timeout or 2
     local units      = args.units or 1024 -- KB
     local notify     = args.notify or "on"
     local wifi_state = args.wifi_state or "off"
     local eth_state  = args.eth_state or "off"
     local screen     = args.screen or 1
+    local format     = args.format or "%.1f"
     local settings   = args.settings or function() end
 
     -- Compatibility with old API where iface was a string corresponding to 1 interface
     net.iface = (args.iface and (type(args.iface) == "string" and {args.iface}) or
                 (type(args.iface) == "table" and args.iface)) or {}
 
-    function net.get_device()
+    function net.get_devices()
+        net.iface = {} -- reset at every call
         helpers.line_callback("ip link", function(line)
             net.iface[#net.iface + 1] = not string.match(line, "LOOPBACK") and string.match(line, "(%w+): <") or nil
         end)
     end
 
-    if #net.iface == 0 then net.get_device() end
+    if #net.iface == 0 then net.get_devices() end
 
     function net.update()
         -- These are the totals over all specified interfaces
@@ -61,19 +64,25 @@ local function factory(args)
             net_now.sent     = net_now.sent + dev_now.sent
             net_now.received = net_now.received + dev_now.received
 
-            dev_now.sent     = string.format("%.1f", dev_now.sent)
-            dev_now.received = string.format("%.1f", dev_now.received)
+            dev_now.sent     = string.format(format, dev_now.sent)
+            dev_now.received = string.format(format, dev_now.received)
 
             dev_now.last_t   = now_t
             dev_now.last_r   = now_r
 
-            if wifi_state == "on" and helpers.first_line(string.format("/sys/class/net/%s/uevent", dev)) == "DEVTYPE=wlan" and string.match(dev_now.carrier, "1") then
+            if wifi_state == "on" and helpers.first_line(string.format("/sys/class/net/%s/uevent", dev)) == "DEVTYPE=wlan" then
                 dev_now.wifi   = true
-                dev_now.signal = tonumber(string.match(helpers.lines_from("/proc/net/wireless")[3], "(%-%d+%.)")) or nil
+                if string.match(dev_now.carrier, "1") then
+                        dev_now.signal = tonumber(string.match(helpers.lines_from("/proc/net/wireless")[3], "(%-%d+%.)")) or nil
+                end
+            else
+                dev_now.wifi   = false
             end
 
-            if eth_state == "on" and helpers.first_line(string.format("/sys/class/net/%s/uevent", dev)) ~= "DEVTYPE=wlan" and string.match(dev_now.carrier, "1") then
+            if eth_state == "on" and helpers.first_line(string.format("/sys/class/net/%s/uevent", dev)) ~= "DEVTYPE=wlan" then
                 dev_now.ethernet = true
+            else
+                dev_now.ethernet = false
             end
 
             net.devices[dev] = dev_now
@@ -98,8 +107,8 @@ local function factory(args)
             -- the totals across all specified devices
         end
 
-        net_now.sent = string.format("%.1f", net_now.sent)
-        net_now.received = string.format("%.1f", net_now.received)
+        net_now.sent = string.format(format, net_now.sent)
+        net_now.received = string.format(format, net_now.received)
 
         widget = net.widget
         settings()

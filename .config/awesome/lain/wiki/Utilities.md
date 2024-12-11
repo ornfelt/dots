@@ -270,7 +270,7 @@ You can either manually create a menu by defining a table in this format:
 { { "choice description 1", callbackFuction1 }, { "choice description 2", callbackFunction2 }, ... }
 ```
 
-or use `util.menu_iterator.menu`. Once you have your menu, use it with `lain.menu_iterator.iterate`.
+or use `lain.util.menu_iterator.menu`. Once you have your menu, use it with `lain.menu_iterator.iterate`.
 
 ### Input tables
 

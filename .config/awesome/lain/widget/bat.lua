@@ -26,14 +26,16 @@ local function factory(args)
         return
     end
 
-    local bat       = { widget = wibox.widget.textbox() }
-    local args      = args or {}
-    local timeout   = args.timeout or 30
-    local notify    = args.notify or "on"
-    local n_perc    = args.n_perc or { 5, 15 }
-    local batteries = args.batteries or (args.battery and {args.battery}) or {}
-    local ac        = args.ac or "AC0"
-    local settings  = args.settings or function() end
+    args              = args or {}
+
+    local bat         = { widget = args.widget or wibox.widget.textbox() }
+    local timeout     = args.timeout or 30
+    local notify      = args.notify or "on"
+    local full_notify = args.full_notify or notify
+    local n_perc      = args.n_perc or { 5, 15 }
+    local batteries   = args.batteries or (args.battery and {args.battery}) or {}
+    local ac          = args.ac or "AC0"
+    local settings    = args.settings or function() end
 
     function bat.get_batteries()
         helpers.line_callback("ls -1 " .. pspath, function(line)
@@ -41,7 +43,7 @@ local function factory(args)
             if bstr then
                 batteries[#batteries + 1] = bstr
             else
-                ac = string.match(line, "A%w+") or "AC0"
+                ac = string.match(line, "A%w+") or ac
             end
         end)
     end
@@ -77,26 +79,32 @@ local function factory(args)
         ac_status = "N/A",
         perc      = "N/A",
         time      = "N/A",
-        watt      = "N/A"
+        watt      = "N/A",
+        capacity  = "N/A"
     }
 
-    bat_now.n_status = {}
-    bat_now.n_perc   = {}
+    bat_now.n_status   = {}
+    bat_now.n_perc     = {}
+    bat_now.n_capacity = {}
     for i = 1, #batteries do
         bat_now.n_status[i] = "N/A"
         bat_now.n_perc[i] = 0
+        bat_now.n_capacity[i] = 0
     end
 
     -- used to notify full charge only once before discharging
     local fullnotification = false
 
     function bat.update()
-        local sum_rate_current = 0
-        local sum_rate_voltage = 0
-        local sum_rate_power   = 0
-        local sum_rate_energy  = 0
-        local sum_energy_now   = 0
-        local sum_energy_full  = 0
+        -- luacheck: globals bat_now
+        local sum_rate_current  = 0
+        local sum_rate_voltage  = 0
+        local sum_rate_power    = 0
+        local sum_rate_energy   = 0
+        local sum_energy_now    = 0
+        local sum_energy_full   = 0
+        local sum_charge_full   = 0
+        local sum_charge_design = 0
 
         for i, battery in ipairs(batteries) do
             local bstr    = pspath .. battery
@@ -107,6 +115,8 @@ local function factory(args)
                 local rate_current = tonumber(helpers.first_line(bstr .. "/current_now"))
                 local rate_voltage = tonumber(helpers.first_line(bstr .. "/voltage_now"))
                 local rate_power   = tonumber(helpers.first_line(bstr .. "/power_now"))
+                local charge_full  = tonumber(helpers.first_line(bstr .. "/charge_full"))
+                local charge_design = tonumber(helpers.first_line(bstr .. "/charge_full_design"))
 
                 -- energy_now(P)[uWh], charge_now(I)[uAh]
                 local energy_now = tonumber(helpers.first_line(bstr .. "/energy_now") or
@@ -114,7 +124,7 @@ local function factory(args)
 
                 -- energy_full(P)[uWh], charge_full(I)[uAh]
                 local energy_full = tonumber(helpers.first_line(bstr .. "/energy_full") or
-                                    helpers.first_line(bstr .. "/charge_full"))
+                                    charge_full)
 
                 local energy_percentage = tonumber(helpers.first_line(bstr .. "/capacity")) or
                                           math.floor((energy_now / energy_full) * 100)
@@ -122,20 +132,30 @@ local function factory(args)
                 bat_now.n_status[i] = helpers.first_line(bstr .. "/status") or "N/A"
                 bat_now.n_perc[i]   = energy_percentage or bat_now.n_perc[i]
 
-                sum_rate_current = sum_rate_current + (rate_current or 0)
-                sum_rate_voltage = sum_rate_voltage + (rate_voltage or 0)
-                sum_rate_power   = sum_rate_power + (rate_power or 0)
-                sum_rate_energy  = sum_rate_energy + (rate_power or (((rate_voltage or 0) * (rate_current or 0)) / 1e6))
-                sum_energy_now   = sum_energy_now + (energy_now or 0)
-                sum_energy_full  = sum_energy_full + (energy_full or 0)
+                if not charge_design or charge_design == 0 then
+                    bat_now.n_capacity[i] = 0
+                else
+                    bat_now.n_capacity[i] = math.floor((charge_full / charge_design) * 100)
+                end
+
+                sum_rate_current  = sum_rate_current + (rate_current or 0)
+                sum_rate_voltage  = sum_rate_voltage + (rate_voltage or 0)
+                sum_rate_power    = sum_rate_power + (rate_power or 0)
+                sum_rate_energy   = sum_rate_energy + (rate_power or (((rate_voltage or 0) * (rate_current or 0)) / 1e6))
+                sum_energy_now    = sum_energy_now + (energy_now or 0)
+                sum_energy_full   = sum_energy_full + (energy_full or 0)
+                sum_charge_full   = sum_charge_full + (charge_full or 0)
+                sum_charge_design = sum_charge_design + (charge_design or 0)
             end
         end
+
+        bat_now.capacity = math.floor(math.min(100, (sum_charge_full / sum_charge_design) * 100))
 
         -- When one of the battery is charging, others' status are either
         -- "Full", "Unknown" or "Charging". When the laptop is not plugged in,
         -- one or more of the batteries may be full, but only one battery
         -- discharging suffices to set global status to "Discharging".
-        bat_now.status = bat_now.n_status[1]
+        bat_now.status = bat_now.n_status[1] or "N/A"
         for _,status in ipairs(bat_now.n_status) do
             if status == "Discharging" or status == "Charging" then
                 bat_now.status = status
@@ -198,7 +218,7 @@ local function factory(args)
                     }).id
                 end
                 fullnotification = false
-            elseif bat_now.status == "Full" and not fullnotification then
+            elseif bat_now.status == "Full" and full_notify == "on" and not fullnotification then
                 bat.id = naughty.notify({
                     preset = bat_notification_charged_preset,
                     replaces_id = bat.id

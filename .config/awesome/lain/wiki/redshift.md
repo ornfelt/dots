@@ -28,8 +28,8 @@ This widget provides the following functions:
 
 | function | meaning |
 | --- | --- |
-| `redshift:toggle()` | Toggles Redshift adjustments on or off, and also restarts it if terminates. |
-| `redshift:attach(widget, update_function)` | Attach to a widget. Click on the widget to toggle redshift on or off. `update_function` is a callback function which will be triggered each time Redshift changes its status. (See the examples below.) |
+| `redshift.toggle()` | Toggles Redshift adjustments on or off, and also restarts it if terminates. |
+| `redshift.attach(widget, update_function)` | Attach to a widget. Click on the widget to toggle redshift on or off. `update_function` is a callback function which will be triggered each time Redshift changes its status. (See the examples below.) |
 
 ### Usage examples
 
@@ -37,7 +37,7 @@ This widget provides the following functions:
 
 ```lua
 myredshift = wibox.widget.textbox()
-lain.widget.contrib.redshift:attach(
+lain.widget.contrib.redshift.attach(
     myredshift,
     function (active)
         if active then
@@ -49,7 +49,7 @@ lain.widget.contrib.redshift:attach(
 )
 ```
 
-Then add `myredshift.widget` to your wibox.
+Then add `myredshift` to your wibox.
 
 #### Checkbox status widget
 
@@ -76,12 +76,14 @@ local myredshift_stack = wibox.widget{
     layout = wibox.layout.stack
 }
 
-lain.widget.contrib.redshift:attach(
+lain.widget.contrib.redshift.attach(
     myredshift,
     function (active)
         if active then
+            -- rename 'beautiful' to 'theme' if using awesome-copycats
             myredshift_text:set_markup(markup(beautiful.bg_normal, "<b>R</b>"))
         else
+            -- rename 'beautiful' to 'theme' if using awesome-copycats
             myredshift_text:set_markup(markup(beautiful.fg_normal, "R"))
         end
         myredshift.checked = active
@@ -89,12 +91,13 @@ lain.widget.contrib.redshift:attach(
 )
 ```
 
-Then add the `myredshift_stack` widget to your wibox.
+Then add `myredshift_stack` to your wibox.
 
 #### Keybinding
 
 Add this to the keybindings in your `rc.lua`:
+
 ```lua
--- Toggle redshift with Mod+Shift+t
-awful.key({ modkey, "Shift" }, "t", function () lain.widget.contrib.redshift:toggle() end),
+-- Toggle Redshift with Mod+Shift+t
+awful.key({ modkey, "Shift" }, "t", function () lain.widget.contrib.redshift.toggle() end),
 ```

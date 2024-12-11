@@ -12,10 +12,11 @@ local Gio        = require("lgi").Gio
 local focused    = require("awful.screen").focused
 local wibox      = require("wibox")
 local naughty    = require("naughty")
+local gears      = require("gears")
 local math       = math
 local string     = string
 local tconcat    = table.concat
-local tonumber   = tonumber
+local type       = type
 local query_size = Gio.FILE_ATTRIBUTE_FILESYSTEM_SIZE
 local query_free = Gio.FILE_ATTRIBUTE_FILESYSTEM_FREE
 local query_used = Gio.FILE_ATTRIBUTE_FILESYSTEM_USED
@@ -25,8 +26,10 @@ local query      = query_size .. "," .. query_free .. "," .. query_used
 -- lain.widget.fs
 
 local function factory(args)
+    args     = args or {}
+
     local fs = {
-        widget = wibox.widget.textbox(),
+        widget = args.widget or wibox.widget.textbox(),
         units = {
             [1] = "Kb", [2] = "Mb", [3] = "Gb",
             [4] = "Tb", [5] = "Pb", [6] = "Eb",
@@ -41,15 +44,16 @@ local function factory(args)
     end
 
     function fs.show(seconds, scr)
-        fs.hide(); fs.update()
-        fs.notification_preset.screen = fs.followtag and focused() or scr or 1
-        fs.notification = naughty.notify {
-            preset  = fs.notification_preset,
-            timeout = seconds or 5
-        }
+        fs.hide()
+        fs.update(function()
+            fs.notification_preset.screen = fs.followtag and focused() or scr or 1
+            fs.notification = naughty.notify {
+                preset  = fs.notification_preset,
+                timeout = type(seconds) == "number" and seconds or 5
+            }
+        end)
     end
 
-    local args      = args or {}
     local timeout   = args.timeout or 600
     local partition = args.partition
     local threshold = args.threshold or 99
@@ -67,11 +71,11 @@ local function factory(args)
         }
     end
 
-    function fs.update()
-        local notifytable = { [1] = string.format("%-10s %-5s %s\t%s\t\n", "path", "used", "free", "size") }
+    local function update_synced()
         local pathlen = 10
         fs_now = {}
 
+        local notifypaths = {}
         for _, mount in ipairs(Gio.unix_mounts_get()) do
             local path = Gio.unix_mount_get_mount_path(mount)
             local root = Gio.File.new_for_path(path)
@@ -88,17 +92,17 @@ local function factory(args)
                     fs_now[path] = {
                         units      = fs.units[units],
                         percentage = math.floor(100 * used / size), -- used percentage
-                        size       = size / math.pow(1024, math.floor(units)),
-                        used       = used / math.pow(1024, math.floor(units)),
-                        free       = free / math.pow(1024, math.floor(units))
+                        size       = size / math.pow(1024, units),
+                        used       = used / math.pow(1024, units),
+                        free       = free / math.pow(1024, units)
                     }
 
                     if fs_now[path].percentage > 0 then -- don't notify unused file systems
-                        notifytable[#notifytable+1] = string.format("\n%-10s %-5s %.2f\t%.2f\t%s", path,
-                        fs_now[path].percentage .. "%", fs_now[path].free, fs_now[path].size,
-                        fs_now[path].units)
+                        notifypaths[#notifypaths+1] = path
 
-                        pathlen = math.max(pathlen, #path)
+                        if #path > pathlen then
+                            pathlen = #path
+                        end
                     end
                 end
             end
@@ -120,14 +124,23 @@ local function factory(args)
             end
         end
 
-        if pathlen > 10 then -- formatting aesthetics
-            for i = 1, #notifytable do
-                local pathspaces = notifytable[i]:match("/%w*[/%w*]*%s*") or notifytable[i]:match("path%s*")
-                notifytable[i] = notifytable[i]:gsub(pathspaces, pathspaces .. string.rep(" ", pathlen - 10) .. "\t")
-            end
+        local fmt = "%-" .. tostring(pathlen) .. "s %4s\t%6s\t%6s\n"
+        local notifytable = { [1] = string.format(fmt, "path", "used", "free", "size") }
+        fmt = "\n%-" .. tostring(pathlen) .. "s %3s%%\t%6.2f\t%6.2f %s"
+        for _, path in ipairs(notifypaths) do
+            notifytable[#notifytable+1] = string.format(fmt, path, fs_now[path].percentage, fs_now[path].free, fs_now[path].size, fs_now[path].units)
         end
 
         fs.notification_preset.text = tconcat(notifytable)
+    end
+
+    function fs.update(callback)
+        Gio.Async.start(gears.protected_call.call)(function()
+            update_synced()
+            if type(callback) == "function" and callback then
+                callback()
+            end
+        end)
     end
 
     if showpopup == "on" then

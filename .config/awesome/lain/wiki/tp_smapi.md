@@ -57,6 +57,7 @@ Variable | Meaning | Type | Default
 `battery` | Single battery id | string | autodetected
 `batteries` | Multiple batteries id table | table of strings | autodetected
 `settings` | User settings | function | empty function
+`widget` | Widget to render | function | `wibox.widget.textbox`
 
 The widget will try to autodetect `battery` and `batteries`. If something
 goes wrong, you will have to define them manually. In that case, you only have

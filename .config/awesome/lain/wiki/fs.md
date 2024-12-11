@@ -23,6 +23,7 @@ Variable | Meaning | Type | Default
 `followtag` | Display the notification on currently focused screen | boolean | false
 `showpopup` | Display popups with mouse hovering | string, possible values: "on", "off" | "on"
 `settings` | User settings | function | empty function
+`widget` | Widget to render | function | `wibox.widget.textbox`
 
 `settings` can use the table `fs_now`, which contains a string entry for each file system path available. For instance, root infos are located in the variable `fs_now["/"]`. Every entry in this table have the following variables:
 

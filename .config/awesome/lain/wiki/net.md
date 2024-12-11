@@ -18,9 +18,10 @@ Variable | Meaning | Type | Default
 `iface` | Network device(s) | string (single interface) or table of strings (multiple interfaces) | autodetected
 `units` | Units | integer | 1024 (kilobytes)
 `notify` | Display "no carrier" notifications | string | "on"
-`wifi_state` | Get wifi connection status | string | "off"
-`eth_state` | Get ethernet connection status | string | "off"
+`wifi_state` | Get Wi-Fi connection status | string | "off"
+`eth_state` | Get Ethernet connection status | string | "off"
 `screen` | Notifications screen | integer | 1
+`format` | String format for output | string | "%.1f"
 `settings` | User settings | function | empty function
 
 `iface` can be a string or an table of the form `{ "eth0", "eth1", ... }` containing a list of the devices to collect data on.
@@ -28,7 +29,7 @@ Variable | Meaning | Type | Default
 If more than one device is included, `net_now.sent` and `net_now.received` will contain cumulative values over all given devices.
 Use `net_now.devices["eth0"]` to access `sent`, `received`, `state` or `carrier` per device.
 
-Possible alternative values for `units` are 1 (byte) or multiple of 1024: 1024^2 (mb), 1024^3 (gb), and so on.
+Possible alternative values for `units` are 1 (byte) or multiple of 1024: 1024^2 (MB), 1024^3 (GB), and so on.
 
 If `notify = "off"` is set, the widget won't display a notification when there's no carrier.
 
@@ -37,15 +38,15 @@ If `notify = "off"` is set, the widget won't display a notification when there's
 - `net_now.carrier` ("0", "1");
 - `net_now.state` ("up", "down");
 - `net_now.sent` and `net_now.received` (numbers) will be the sum across all specified interfaces;
-- `net_now.devices["interface"]` contains the same attributes as the old api for each interface. More on this in the "Multiple devices" section below.
+- `net_now.devices["interface"]` contains the previous attributes for each detected interface.
 
 If `wifi_state = "on"` is set, `settings` can use the following extra strings attached to `net_now.devices["wireless interface"]`:
 - `wifi` (true, false) indicates if the interface is connected to a network;
 - `signal` (number) is the connection signal strength in dBm;
 
-If `eth_state = "on"` is set, `settings` can use the following extra string: `net_now.devices["ethernet interface"].ethernet`, which is a boolean indicating if an ethernet connection's active.
+If `eth_state = "on"` is set, `settings` can use the following extra string: `net_now.devices["ethernet interface"].ethernet`, which is a boolean indicating if an Ethernet connection's active.
 
-For compatibility reasons, if multiple devices are given, `net_now.carrier` and `net_now.state` correspond to the last interface in the iface table and should not be relied upon (deprecated).
+For compatibility reasons, if multiple devices are given, `net_now.carrier` and `net_now.state` correspond to the last interface in the `iface` table and should not be relied upon (deprecated).
 
 ## Output table
 
@@ -53,6 +54,7 @@ Variable | Meaning | Type
 --- | --- | ---
 `widget` | The widget | `wibox.widget.textbox`
 `update` | Update `widget` | function
+`get_devices` | Update the `iface` table | function
 
 ## Notes
 
@@ -71,11 +73,11 @@ local mynetdown = wibox.widget.textbox()
 local mynetup = lain.widget.net {
     settings = function()
         widget:set_markup(net_now.sent)
-        netdowninfo:set_markup(net_now.received)
+        mynetdown:set_markup(net_now.received)
     end
 }
 ```
-### Wifi connection + signal strength indicator and ethernet connection indicator
+### Wi-Fi/Ethernet connection and signal strength indicator
 ```lua
 local wifi_icon = wibox.widget.imagebox()
 local eth_icon = wibox.widget.imagebox()

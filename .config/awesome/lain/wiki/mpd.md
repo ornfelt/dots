@@ -34,13 +34,14 @@ Variable | Meaning | Type | Default
 `cover_size` | Album art notification size (both height and width) | integer | 100
 `cover_pattern` | Pattern for the album art file | string | `*.(jpg\|jpeg\|png\|gif)$`
 `default_art` | Default art | string | `nil`
-`notify` | Show notification popups | string | "on"
+`notify` | Show notification pop-ups | string | "on"
 `followtag` | Notification behaviour | boolean | false
 `settings` | User settings | function | empty function
+`widget` | Widget to render | function | `wibox.widget.textbox`
 
 \* In Lua, "\\\\" means "\" escaped.
 
-Default `cover_pattern` definition will made the widget set the first jpg, jpeg, png or gif file found in the directory as the album art.
+The default `cover_pattern` definition will make the widget set the first JPG, JPEG, PNG or GIF file found in the directory as the album art.
 
 Pay attention to case sensitivity when defining `music_dir`.
 
@@ -65,8 +66,9 @@ Pay attention to case sensitivity when defining `music_dir`.
 - date
 - [time](https://github.com/lcpz/lain/pull/90) (length of current song, in seconds)
 - [elapsed](https://github.com/lcpz/lain/pull/90) (elapsed time of current song, in seconds)
+- volume
 
-and can modify `mpd_notification_preset` table, which will be the preset for the naughty notifications. Check [here](https://awesomewm.org/doc/api/libraries/naughty.html#notify) for the list of variables it can contain. Default definition:
+And can modify `mpd_notification_preset` table, which will be the preset for the naughty notifications. Check [here](https://awesomewm.org/doc/api/libraries/naughty.html#notify) for the list of variables it can contain. Default definition:
 
 ```lua
 mpd_notification_preset = {
@@ -91,9 +93,9 @@ The `update` function can be used to refresh the widget before `timeout` expires
 
 You can use `timer` to start/stop the widget as you like.
 
-## Keybindings
+## Key bindings
 
-You can control the widget with keybindings like these:
+You can control the widget with key bindings like these:
 
 ```lua
 -- MPD control
@@ -119,9 +121,9 @@ awful.key({ altkey, "Control" }, "Right",
 	end),
 ```
 
-where `altkey = "Mod1"`.
+Where `altkey = "Mod1"`.
 
-If you don't use the widget for long periods and wish to spare CPU, you can toggle it with a keybinding like this:
+If you don't use the widget for long periods and wish to spare CPU, you can toggle it with a key binding like this:
 
 ```lua
 -- disable MPD widget
@@ -166,7 +168,7 @@ $ curl https://gist.githubusercontent.com/lcpz/76e315bc27c6cdf7edd5021964b88df1/
 $ chmod +x ~/bin/mpc-fade
 ```
 
-Set your 1% decrease/increase commands [here](https://gist.github.com/lcpz/76e315bc27c6cdf7edd5021964b88df1#file-mpd-fade-L8-L9), then use a keybinding like this:
+Set your 1% decrease/increase commands [here](https://gist.github.com/lcpz/76e315bc27c6cdf7edd5021964b88df1#file-mpd-fade-L8-L9), then use a key binding like this:
 
 ```lua
 -- MPD toggle with volume fading
