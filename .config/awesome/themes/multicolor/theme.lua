@@ -121,8 +121,55 @@ local clockicon = wibox.widget {
 
 --local mytextclock = wibox.widget.textclock(markup("#7788af", "%A %d %B ") .. markup("#ab7367", ">") .. markup("#de5e1e", " %H:%M "))
 
-local mytextclock = wibox.widget.textclock(markup("#8ec07c", "%A %d %B ") .. markup("#8ec07c", "—") .. markup("#8ec07c", " %H:%M "))
-mytextclock.font = theme.font
+--local mytextclock = wibox.widget.textclock(markup("#8ec07c", "%A %d %B ") .. markup("#8ec07c", "—") .. markup("#8ec07c", " %H:%M "))
+--mytextclock.font = theme.font
+
+local mytextclock = wibox.widget {
+    widget = wibox.widget.textbox,
+    markup = markup.fontfg(theme.font, "#8ec07c", "Loading..."),
+    align = "center",
+    valign = "center",
+}
+
+-- Define a function to log clock updates
+local function log_clock_update(message)
+    local log_file = "/home/jonas/awesome_clock_update.log"
+    local log_entry = os.date("%Y-%m-%d %H:%M:%S") .. " - " .. message .. "\n"
+
+    local file = io.open(log_file, "a")
+    if file then
+        file:write(log_entry)
+        file:close()
+    else
+        print("Failed to open log file for writing: " .. log_file)
+    end
+end
+
+-- Define a function to update the clock widget
+local function update_clock_widget()
+    local script_path = "/home/jonas/.local/bin/statusbar/sb-clock"
+
+    awful.spawn.easy_async_with_shell(script_path, function(stdout, stderr)
+        if stderr and #stderr > 0 then
+            mytextclock:set_markup(markup.fontfg(theme.font, "#fb4934", "Error")) -- Red for errors
+            log_clock_update("Error: " .. stderr)
+            return
+        end
+
+        local output = stdout:gsub("^%s*(.-)%s*$", "%1") -- Trim whitespace
+        mytextclock:set_markup(markup.fontfg(theme.font, "#8ec07c", output)) -- Green for normal output
+        log_clock_update("Clock output updated: " .. output)
+    end)
+end
+
+-- Create a timer to update the clock widget every 30 seconds
+gears.timer({
+    timeout = 30,
+    autostart = true,
+    callback = update_clock_widget,
+})
+
+update_clock_widget()
 
 -- Calendar
 theme.cal = lain.widget.cal({

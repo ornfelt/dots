@@ -64,6 +64,11 @@ local function save_and_close_tab()
   local windows = vim.api.nvim_tabpage_list_wins(tabpage)
   local buffers = {}
 
+  if #windows > 1 then
+    vim.cmd("q")
+    return
+  end
+
   for _, win in ipairs(windows) do
     local buf = vim.api.nvim_win_get_buf(win)
     table.insert(buffers, {
@@ -1796,7 +1801,7 @@ vim.api.nvim_set_keymap('i', '<M-c>', '<cmd>lua PythonExecCommand()<CR>', { nore
 function CyclePythonExecCommand()
   local my_notes_path = os.getenv("my_notes_path")
   local config_file_path = my_notes_path .. "/scripts/files/nvim_config.txt"
-  local possible_commands = { "read_file", "gpt", "claude", "gemini", "mistral" }
+  local possible_commands = { "read_file", "gpt", "claude/claude", "gemini/gemini", "mistral/mistral" }
   local current_command = read_config("PythonExecCommand", "gpt")
 
   -- Identify current index, then rotate to the next
