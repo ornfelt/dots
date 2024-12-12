@@ -1,32 +1,4 @@
-MY DWM PATCHES:
-https://dwm.suckless.org/patches/noborder/
-https://dwm.suckless.org/patches/notitle/dwm-notitle-20210715-138b405.diff
-
-Added with modifications:
-https://dwm.suckless.org/patches/autostart/dwm-autostart-20210120-cb3f58a.diff
-https://dwm.suckless.org/patches/scratchpads/dwm-scratchpads-20200414-728d397b.diff
-https://dwm.suckless.org/patches/focusonclick/dwm-focusonclick-20200110-61bb8b2.diff
-https://dwm.suckless.org/patches/save_floats/
-https://dwm.suckless.org/patches/status2d/dwm-status2d-20200508-60bb3df.diff (modified)
-
-Luke patches:
-https://dwm.suckless.org/patches/sticky/dwm-sticky-20160911-ab9571b.diff
-https://dwm.suckless.org/patches/actualfullscreen/dwm-actualfullscreen-20211013-cb3f58a.diff
-https://dwm.suckless.org/patches/tagshift/dwm-tagshift-6.3.diff
-https://dwm.suckless.org/patches/statuscmd/dwm-statuscmd-20210405-67d76bd.diff
-https://dwm.suckless.org/patches/swallow/dwm-swallow-6.3.diff
-https://dwm.suckless.org/patches/xresources/dwm-xresources-20210827-138b405.diff
-https://dwm.suckless.org/patches/hide_vacant_tags/dwm-hide_vacant_tags-6.3.diff
-https://dwm.suckless.org/patches/stacker/dwm-stacker-6.2.diff
-https://dwm.suckless.org/patches/scratchpad/
-https://dwm.suckless.org/patches/vanitygaps/dwm-vanitygaps-6.2.diff
-
-Also see:
-https://dwm.suckless.org/patches/vanitygaps/dwm-cfacts-vanitygaps-6.4_combo.diff
-or:
-https://dwm.suckless.org/patches/vanitygaps/dwm-cfacts-vanitygaps-6.2.diff
-
-See generated patches in dir 'patches'.
+See patches in dir 'patches'.
 
 I also continously add fixes from suckless git log:
 https://git.suckless.org/
