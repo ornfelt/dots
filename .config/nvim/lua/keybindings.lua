@@ -4,7 +4,6 @@ local g   = vim.g
 g.mapleader = ' '
 g.maplocalleader = ' '
 
--- Keybinds
 local function map(m, k, v)
   vim.keymap.set(m, k, v, { silent = true })
 end
@@ -519,25 +518,51 @@ function ToggleQuickfix()
 end
 -- vim.api.nvim_set_keymap('n', '<M-b>', ':lua ToggleQuickfix()<CR>', { noremap = true, silent = true })
 
+local function move_or_split(direction)
+    local current_window = vim.api.nvim_get_current_win()
+    vim.cmd("wincmd " .. direction) -- Try moving to given direction
+
+    if vim.api.nvim_get_current_win() == current_window then
+        -- If the window didn't change, create a new split
+        if direction == "h" then
+            vim.cmd("leftabove vsplit")
+        elseif direction == "l" then
+            vim.cmd("rightbelow vsplit")
+        elseif direction == "j" then
+            vim.cmd("belowright split")
+        elseif direction == "k" then
+            vim.cmd("aboveleft split")
+        end
+    end
+end
+
 -- Window management and movement
 --- lua print(vim.fn.getenv("TERM_PROGRAM"))
 local term_program_raw = vim.fn.getenv("TERM_PROGRAM") or ""
 local term_program = tostring(term_program_raw):lower()
 --if term_program == "wezterm" or term_program == "tmux" then
 if term_program == "wezterm" then
-  vim.api.nvim_set_keymap('n', '<C-w>h', '<Plug>WinMoveLeft', { noremap = false, silent = true })
-  vim.api.nvim_set_keymap('n', '<C-w>j', '<Plug>WinMoveDown', { noremap = false, silent = true })
-  vim.api.nvim_set_keymap('n', '<C-w>k', '<Plug>WinMoveUp', { noremap = false, silent = true })
-  vim.api.nvim_set_keymap('n', '<C-w>l', '<Plug>WinMoveRight', { noremap = false, silent = true })
+  --vim.api.nvim_set_keymap('n', '<C-w>h', '<Plug>WinMoveLeft', { noremap = false, silent = true })
+  --vim.api.nvim_set_keymap('n', '<C-w>j', '<Plug>WinMoveDown', { noremap = false, silent = true })
+  --vim.api.nvim_set_keymap('n', '<C-w>k', '<Plug>WinMoveUp', { noremap = false, silent = true })
+  --vim.api.nvim_set_keymap('n', '<C-w>l', '<Plug>WinMoveRight', { noremap = false, silent = true })
+  vim.keymap.set('n', '<C-w>h', function() move_or_split('h') end, { noremap = true, silent = true })
+  vim.keymap.set('n', '<C-w>j', function() move_or_split('j') end, { noremap = true, silent = true })
+  vim.keymap.set('n', '<C-w>k', function() move_or_split('k') end, { noremap = true, silent = true })
+  vim.keymap.set('n', '<C-w>l', function() move_or_split('l') end, { noremap = true, silent = true })
   map('n', '<M-c-u>', ':resize +2<CR>')
   map('n', '<M-c-i>', ':resize -2<CR>')
   map('n', '<M-c-o>', ':vertical resize +2<CR>')
   map('n', '<M-c-y>', ':vertical resize -2<CR>')
 else
-  map('n', '<M-h>', '<Plug>WinMoveLeft')
-  map('n', '<M-j>', '<Plug>WinMoveDown')
-  map('n', '<M-k>', '<Plug>WinMoveUp')
-  map('n', '<M-l>', '<Plug>WinMoveRight')
+  --map('n', '<M-h>', '<Plug>WinMoveLeft')
+  --map('n', '<M-j>', '<Plug>WinMoveDown')
+  --map('n', '<M-k>', '<Plug>WinMoveUp')
+  --map('n', '<M-l>', '<Plug>WinMoveRight')
+  vim.keymap.set('n', '<M-h>', function() move_or_split('h') end, { noremap = true, silent = true })
+  vim.keymap.set('n', '<M-j>', function() move_or_split('j') end, { noremap = true, silent = true })
+  vim.keymap.set('n', '<M-k>', function() move_or_split('k') end, { noremap = true, silent = true })
+  vim.keymap.set('n', '<M-l>', function() move_or_split('l') end, { noremap = true, silent = true })
   map('n', '<M-u>', ':resize +2<CR>')
   map('n', '<M-i>', ':resize -2<CR>')
   map('n', '<M-o>', ':vertical resize +2<CR>')
@@ -545,10 +570,14 @@ else
 end
 
 if term_program == "tmux" then
-  vim.api.nvim_set_keymap('n', '<C-w>h', '<Plug>WinMoveLeft', { noremap = false, silent = true })
-  vim.api.nvim_set_keymap('n', '<C-w>j', '<Plug>WinMoveDown', { noremap = false, silent = true })
-  vim.api.nvim_set_keymap('n', '<C-w>k', '<Plug>WinMoveUp', { noremap = false, silent = true })
-  vim.api.nvim_set_keymap('n', '<C-w>l', '<Plug>WinMoveRight', { noremap = false, silent = true })
+  --vim.api.nvim_set_keymap('n', '<C-w>h', '<Plug>WinMoveLeft', { noremap = false, silent = true })
+  --vim.api.nvim_set_keymap('n', '<C-w>j', '<Plug>WinMoveDown', { noremap = false, silent = true })
+  --vim.api.nvim_set_keymap('n', '<C-w>k', '<Plug>WinMoveUp', { noremap = false, silent = true })
+  --vim.api.nvim_set_keymap('n', '<C-w>l', '<Plug>WinMoveRight', { noremap = false, silent = true })
+  vim.keymap.set('n', '<C-w>h', function() move_or_split('h') end, { noremap = true, silent = true })
+  vim.keymap.set('n', '<C-w>j', function() move_or_split('j') end, { noremap = true, silent = true })
+  vim.keymap.set('n', '<C-w>k', function() move_or_split('k') end, { noremap = true, silent = true })
+  vim.keymap.set('n', '<C-w>l', function() move_or_split('l') end, { noremap = true, silent = true })
   map('n', '<M-c-u>', ':resize +2<CR>')
   map('n', '<M-c-i>', ':resize -2<CR>')
   map('n', '<M-c-o>', ':vertical resize +2<CR>')
@@ -574,7 +603,19 @@ map('x', 'J', ":move '>+1<CR>gv=gv")
 map('x', 'K', ":move '<-2<CR>gv=gv")
 map('n', '<leader>j', ':join<CR>')
 map('n', '<leader>J', ':join!<CR>')
-map('n', '<leader>z', '<Plug>Zoom')
+--map('n', '<leader>z', '<Plug>Zoom')
+vim.keymap.set('n', '<leader>z', function()
+    local zoomed = vim.w.zoomed
+
+    if zoomed then
+        vim.cmd("wincmd =")
+        vim.w.zoomed = nil
+    else
+        vim.cmd("wincmd _")
+        vim.cmd("wincmd |")
+        vim.w.zoomed = true
+    end
+end, { desc = "Toggle Zoom for Current Split" })
 
 -- Indentation
 map('v', '<leader><', ':le<CR>')
