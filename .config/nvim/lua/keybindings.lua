@@ -543,6 +543,18 @@ else
   map('n', '<M-o>', ':vertical resize +2<CR>')
   map('n', '<M-y>', ':vertical resize -2<CR>')
 end
+
+if term_program == "tmux" then
+  vim.api.nvim_set_keymap('n', '<C-w>h', '<Plug>WinMoveLeft', { noremap = false, silent = true })
+  vim.api.nvim_set_keymap('n', '<C-w>j', '<Plug>WinMoveDown', { noremap = false, silent = true })
+  vim.api.nvim_set_keymap('n', '<C-w>k', '<Plug>WinMoveUp', { noremap = false, silent = true })
+  vim.api.nvim_set_keymap('n', '<C-w>l', '<Plug>WinMoveRight', { noremap = false, silent = true })
+  map('n', '<M-c-u>', ':resize +2<CR>')
+  map('n', '<M-c-i>', ':resize -2<CR>')
+  map('n', '<M-c-o>', ':vertical resize +2<CR>')
+  map('n', '<M-c-y>', ':vertical resize -2<CR>')
+end
+
 map('n', '<C-d>', '<C-d>zz')
 map('n', '<C-u>', '<C-u>zz')
 map('n', '<leader>l', ':Tabmerge right<CR>')
