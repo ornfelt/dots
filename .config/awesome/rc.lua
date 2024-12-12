@@ -68,7 +68,8 @@ local function run_once(cmd_arr)
     end
 end
 
-run_once({ "urxvtd", "unclutter -root" }) -- comma-separated entries
+--run_once({ "urxvtd", "unclutter -root" }) -- comma-separated entries
+run_once({ "picom", "--animations" })
 
 -- This function implements the XDG autostart specification
 --[[
@@ -545,6 +546,12 @@ globalkeys = mytable.join(
     awful.key({ modkey }, "y", function () awful.tag.incmwfact(-0.05) end,
         {description = "decrease master width factor", group = "layout"}),
 
+    awful.key({ modkey, "Shift" }, "a", function() awful.spawn("picom-trans -c -5") end,
+        {description = "decrease transparency", group = "custom"}),
+
+    awful.key({ modkey, "Control" }, "a", function() awful.spawn("picom-trans -c +5") end,
+        {description = "increase transparency", group = "custom"}),
+
     -- Dynamic tagging
     -- awful.key({ modkey, "Shift" }, "n", function () lain.util.add_tag() end,
     --     {description = "add new tag", group = "tag"}),
@@ -965,3 +972,4 @@ for s in screen do
         end
     end)
 end
+
