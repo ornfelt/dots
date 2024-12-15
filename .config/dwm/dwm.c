@@ -62,8 +62,8 @@
 #define ISINC(X)                ((X) > 1000 && (X) < 3000)
 #define ISVISIBLE(C)            ((C->tags & C->mon->tagset[C->mon->seltags]) || C->issticky)
 #define PREVSEL                 3000
-#define MOUSEMASK               (BUTTONMASK|PointerMotionMask)
 #define MOD(N,M)                ((N)%(M) < 0 ? (N)%(M) + (M) : (N)%(M))
+#define MOUSEMASK               (BUTTONMASK|PointerMotionMask)
 #define WIDTH(X)                ((X)->w + 2 * (X)->bw)
 #define HEIGHT(X)               ((X)->h + 2 * (X)->bw)
 #define NUMTAGS					(LENGTH(tags) + LENGTH(scratchpads))
@@ -111,7 +111,7 @@ struct Client {
 	int bw, oldbw;
 	unsigned int tags;
     int isfixed, isfloating, isurgent, neverfocus, oldstate, isfullscreen, issticky, isterminal, noswallow;
-	pid_t pid;
+    pid_t pid;
 	Client *next;
 	Client *snext;
     Client *swallowing;
@@ -200,6 +200,7 @@ static void destroynotify(XEvent *e);
 static void detach(Client *c);
 static void detachstack(Client *c);
 static Monitor *dirtomon(int dir);
+static Monitor *numtomon(int num);
 static void drawbar(Monitor *m);
 static void drawbars(void);
 static int drawstatusbar(Monitor *m, int bh, char* text);
@@ -207,6 +208,7 @@ static void expose(XEvent *e);
 static void focus(Client *c);
 static void focusin(XEvent *e);
 static void focusmon(const Arg *arg);
+static void focusnthmon(const Arg *arg);
 static void focusstack(const Arg *arg);
 static Atom getatomprop(Client *c, Atom prop);
 static int getrootptr(int *x, int *y);
@@ -248,6 +250,8 @@ static void setcfact(const Arg *arg);
 static void setmfact(const Arg *arg);
 static void setup(void);
 static void seturgent(Client *c, int urg);
+static void shiftview(const Arg *arg);
+static void shifttag(const Arg *arg);
 static void showhide(Client *c);
 static void sigstatusbar(const Arg *arg);
 static void spawn(const Arg *arg);
@@ -256,7 +260,12 @@ static void tag(const Arg *arg);
 static void tagview(const Arg *arg);
 static void tagmon(const Arg *arg);
 static void tagmonview(const Arg *arg);
+static void tagnextmon(const Arg *arg);
+static void tagnewmon(const Arg *arg);
+static void tagnthmon(const Arg *arg);
+static void tagnthmonview(const Arg *arg);
 static void togglebar(const Arg *arg);
+static void togglebars(const Arg *arg);
 static void togglefloating(const Arg *arg);
 static void togglescratch(const Arg *arg);
 static void togglesticky(const Arg *arg);
@@ -545,9 +554,8 @@ buttonpress(XEvent *e)
 
 	click = ClkRootWin;
 	/* focus monitor if necessary */
-	//if ((m = wintomon(ev->window)) && m != selmon
-	//    && (focusonwheel || (ev->button != Button4 && ev->button != Button5))) {
-    if ((m = wintomon(ev->window)) && m != selmon) {
+	if ((m = wintomon(ev->window)) && m != selmon
+	    && (focusonwheel || (ev->button != Button4 && ev->button != Button5))) {
 		unfocus(selmon->sel, 1);
 		selmon = m;
 		focus(NULL);
@@ -566,12 +574,12 @@ buttonpress(XEvent *e)
 		if (i < LENGTH(tags)) {
 			click = ClkTagBar;
 			arg.ui = 1 << i;
-		} //else if (ev->x < x + TEXTW(selmon->ltsymbol))
-			//click = ClkLtSymbol;
-		//else
-		else if (ev->x > selmon->ww - statusw) {
-			x = selmon->ww - statusw;
-			click = ClkStatusText;
+		} else if (ev->x < x + TEXTW(selmon->ltsymbol))
+			click = ClkLtSymbol;
+        } else if (ev->x > selmon->ww - statusw) {
+            x = selmon->ww - statusw;
+            click = ClkStatusText;
+
 			char *text, *s, ch;
 			statussig = 0;
 			for (text = s = stext; *s && x <= ev->x; s++) {
@@ -595,11 +603,9 @@ buttonpress(XEvent *e)
 					s--;
 				}
 			}
-		}
 	} else if ((c = wintoclient(ev->window))) {
-		//if (focusonwheel || (ev->button != Button4 && ev->button != Button5))
-		//	focus(c);
-        focus(c);
+		if (focusonwheel || (ev->button != Button4 && ev->button != Button5))
+			focus(c);
 		XAllowEvents(dpy, ReplayPointer, CurrentTime);
 		click = ClkClientWin;
 	}
@@ -792,7 +798,10 @@ createmon(void)
 	Monitor *m;
 
 	m = ecalloc(1, sizeof(Monitor));
-	m->tagset[0] = m->tagset[1] = 1;
+    if (mons)
+        m->tagset[0] = m->tagset[1] = 2;
+    else
+        m->tagset[0] = m->tagset[1] = 1;
 	m->mfact = mfact;
 	m->nmaster = nmaster;
 	m->showbar = showbar;
@@ -858,118 +867,16 @@ dirtomon(int dir)
 	return m;
 }
 
-//int
-//drawstatusbar(Monitor *m, int bh, char* stext) {
-//	int ret, i, j, w, x, len;
-//	short isCode = 0;
-//	char *text;
-//	char *p;
-//
-//	len = strlen(stext) + 1 ;
-//	if (!(text = (char*) malloc(sizeof(char)*len)))
-//		die("malloc");
-//	p = text;
-//
-//	i = -1, j = 0;
-//	while (stext[++i])
-//		if ((unsigned char)stext[i] >= ' ')
-//			text[j++] = stext[i];
-//	text[j] = '\0';
-//
-//	/* compute width of the status text */
-//	w = 0;
-//	i = -1;
-//	while (text[++i]) {
-//		if (text[i] == '^') {
-//			if (!isCode) {
-//				isCode = 1;
-//				text[i] = '\0';
-//				w += TEXTW(text) - lrpad;
-//				text[i] = '^';
-//				if (text[++i] == 'f')
-//					w += atoi(text + ++i);
-//			} else {
-//				isCode = 0;
-//				text = text + i + 1;
-//				i = -1;
-//			}
-//		}
-//	}
-//	if (!isCode)
-//		w += TEXTW(text) - lrpad;
-//	else
-//		isCode = 0;
-//	text = p;
-//
-//	w += 2; /* 1px padding on both sides */
-//	ret = x = m->ww - w;
-//
-//	drw_setscheme(drw, scheme[LENGTH(colors)]);
-//	drw->scheme[ColFg] = scheme[SchemeNorm][ColFg];
-//	drw->scheme[ColBg] = scheme[SchemeNorm][ColBg];
-//	drw_rect(drw, x, 0, w, bh, 1, 1);
-//	x++;
-//
-//	/* process status text */
-//	i = -1;
-//	while (text[++i]) {
-//		if (text[i] == '^' && !isCode) {
-//			isCode = 1;
-//
-//			text[i] = '\0';
-//			w = TEXTW(text) - lrpad;
-//			drw_text(drw, x, 0, w, bh, 0, text, 0);
-//
-//			x += w;
-//
-//			/* process code */
-//			while (text[++i] != '^') {
-//				if (text[i] == 'c') {
-//					char buf[8];
-//					memcpy(buf, (char*)text+i+1, 7);
-//					buf[7] = '\0';
-//					drw_clr_create(drw, &drw->scheme[ColFg], buf);
-//					i += 7;
-//				} else if (text[i] == 'b') {
-//					char buf[8];
-//					memcpy(buf, (char*)text+i+1, 7);
-//					buf[7] = '\0';
-//					drw_clr_create(drw, &drw->scheme[ColBg], buf);
-//					i += 7;
-//				} else if (text[i] == 'd') {
-//					drw->scheme[ColFg] = scheme[SchemeNorm][ColFg];
-//					drw->scheme[ColBg] = scheme[SchemeNorm][ColBg];
-//				} else if (text[i] == 'r') {
-//					int rx = atoi(text + ++i);
-//					while (text[++i] != ',');
-//					int ry = atoi(text + ++i);
-//					while (text[++i] != ',');
-//					int rw = atoi(text + ++i);
-//					while (text[++i] != ',');
-//					int rh = atoi(text + ++i);
-//
-//					drw_rect(drw, rx + x, ry, rw, rh, 1, 0);
-//				} else if (text[i] == 'f') {
-//					x += atoi(text + ++i);
-//				}
-//			}
-//
-//			text = text + i + 1;
-//			i=-1;
-//			isCode = 0;
-//		}
-//	}
-//
-//	if (!isCode) {
-//		w = TEXTW(text) - lrpad;
-//		drw_text(drw, x, 0, w, bh, 0, text, 0);
-//	}
-//
-//	drw_setscheme(drw, scheme[SchemeNorm]);
-//	free(p);
-//
-//	return ret;
-//}
+Monitor *
+numtomon(int num)
+{
+    Monitor *m = NULL;
+    int i = 0;
+
+    for(m = mons, i=0; m->next && i < num; m = m->next)
+        i++;
+    return m;
+}
 
 int
 drawstatusbar(Monitor *m, int bh, char* stext)
@@ -1093,130 +1000,6 @@ drawstatusbar(Monitor *m, int bh, char* stext)
     return ret;
 }
 
-//typedef struct {
-//    char key;
-//    const char *color;
-//} ColorMapping;
-//
-//int is_hot_weather(const char *filepath) {
-//    FILE *ptr = fopen(filepath, "r");
-//    if (!ptr) {
-//        printf("Failed to read weather report...\n");
-//        return 0;
-//    }
-//
-//    char ch;
-//    int hot = 0;
-//    while ((ch = fgetc(ptr)) != EOF) {
-//        if (ch == '+') {
-//            hot = 1;
-//        } else if (hot && (ch == '2' || ch == '3') && fgetc(ptr) <= '9') {
-//            fclose(ptr);
-//            return 1; // Hot weather
-//        } else if (ch == '-') {
-//            fclose(ptr);
-//            return -1; // Cold weather
-//        }
-//    }
-//    fclose(ptr);
-//    return 0; // Neutral or unknown weather
-//}
-//
-//void set_color(char key, const char *weather_path, Drw *drw) {
-//    static const ColorMapping color_map[] = {
-//        {'3', col3}, {'4', col4}, {'5', col5}, {'6', col6}
-//    };
-//
-//    if (key == '2') {
-//        int weather_status = is_hot_weather(weather_path);
-//        if (weather_status > 0) {
-//            drw_clr_create(drw, &drw->scheme[ColFg], col21); // Hot
-//        } else if (weather_status < 0) {
-//            drw_clr_create(drw, &drw->scheme[ColFg], col23); // Cold
-//        } else {
-//            drw_clr_create(drw, &drw->scheme[ColFg], col24); // Neutral
-//        }
-//    } else {
-//        for (size_t i = 0; i < sizeof(color_map) / sizeof(color_map[0]); i++) {
-//            if (color_map[i].key == key) {
-//                drw_clr_create(drw, &drw->scheme[ColFg], color_map[i].color);
-//                return;
-//            }
-//        }
-//    }
-//}
-//
-//int drawstatusbar(Monitor *m, int bh, char *stext) {
-//    int ret, i, w, x, len;
-//    short isCode = 0;
-//    char *text, *p;
-//    
-//    len = strlen(stext) + 1;
-//    if (!(text = malloc(len))) die("malloc");
-//    p = text;
-//    memcpy(text, stext, len);
-//
-//    // Compute the width of the status text
-//    w = 0;
-//    for (i = 0; text[i]; i++) {
-//        if (text[i] == '^') {
-//            if (!isCode) {
-//                isCode = 1;
-//                text[i] = '\0';
-//                w += TEXTW(text) - lrpad;
-//                text[i] = '^';
-//                if (text[++i] == 'f')
-//                    w += atoi(text + ++i);
-//            } else {
-//                isCode = 0;
-//                text += i + 1;
-//                i = -1;
-//            }
-//        }
-//    }
-//    if (!isCode) w += TEXTW(text) - lrpad;
-//
-//    w += 2; // Padding
-//    ret = x = m->ww - w;
-//
-//    drw_setscheme(drw, scheme[LENGTH(colors)]);
-//    drw->scheme[ColFg] = scheme[SchemeNorm][ColFg];
-//    drw->scheme[ColBg] = scheme[SchemeNorm][ColBg];
-//    drw_rect(drw, x, 0, w, bh, 1, 1);
-//    x++;
-//
-//    // Process status text
-//    text = p;
-//    for (i = 0; text[i]; i++) {
-//        if (text[i] == '^' && !isCode) {
-//            isCode = 1;
-//
-//            text[i] = '\0';
-//            w = TEXTW(text) - lrpad;
-//            drw_text(drw, x, 0, w, bh, 0, text, 0);
-//            x += w;
-//
-//            while (text[++i] != '^') {
-//                set_color(text[i], "/home/jonas/.local/share/weatherreport", drw);
-//            }
-//
-//            text += i + 1;
-//            i = -1;
-//            isCode = 0;
-//        }
-//    }
-//
-//    if (!isCode) {
-//        w = TEXTW(text) - lrpad;
-//        drw_text(drw, x, 0, w, bh, 0, text, 0);
-//    }
-//
-//    drw_setscheme(drw, scheme[SchemeNorm]);
-//    free(p);
-//
-//    return ret;
-//}
-
 void
 drawbar(Monitor *m)
 {
@@ -1327,6 +1110,22 @@ focusmon(const Arg *arg)
 	unfocus(selmon->sel, 0);
 	selmon = m;
 	focus(NULL);
+}
+
+void
+focusnthmon(const Arg *arg)
+{
+    Monitor *m;
+
+    if (!mons->next)
+        return;
+
+    if ((m = numtomon(arg->i)) == selmon)
+        return;
+    unfocus(selmon->sel, 0);
+    XWarpPointer(dpy, None, m->barwin, 0, 0, 0, 0, m->mw / 2, m->mh / 2);
+    selmon = m;
+    focus(NULL);
 }
 
 void
@@ -2167,6 +1966,40 @@ setlayout(const Arg *arg)
 }
 
 void
+shiftview(const Arg *arg) {
+	Arg shifted;
+
+	if(arg->i > 0) /* left circular shift */
+		shifted.ui = (selmon->tagset[selmon->seltags] << arg->i)
+		   | (selmon->tagset[selmon->seltags] >> (LENGTH(tags) - arg->i));
+
+	else /* right circular shift */
+		shifted.ui = selmon->tagset[selmon->seltags] >> (- arg->i)
+		   | selmon->tagset[selmon->seltags] << (LENGTH(tags) + arg->i);
+
+	view(&shifted);
+}
+
+void
+shifttag(const Arg *arg) {
+	Arg shifted;
+	Client *c;
+
+	if (!selmon->sel)
+		return;
+	c = selmon->sel;
+
+	if (arg->i > 0) /* left circular shift */
+		shifted.ui = (c->tags ^ (c->tags << arg->i)) 
+			^ (c->tags >> (LENGTH(tags) - arg->i));
+	else /* right circular shift */
+		shifted.ui = (c->tags ^ (c->tags >> (-arg->i)))
+			^ (c->tags << (LENGTH(tags) + arg->i));
+
+	toggletag(&shifted);
+}
+
+void
 setcfact(const Arg *arg) {
 	float f;
 	Client *c;
@@ -2379,20 +2212,76 @@ stackpos(const Arg *arg) {
 		return arg->i;
 }
 
+//void
+//tag(const Arg *arg)
+//{
+//    if (selmon->sel && arg->ui & TAGMASK) {
+//        if (mons && mons->next) {
+//            // Moving to even tag, selected mon != first mon
+//            if ((arg->ui & 341) == 0 && selmon != mons) {
+//                selmon->sel->tags = arg->ui & TAGMASK;
+//                focus(NULL);
+//                arrange(selmon);
+//                // Moving to odd tag, selected mon == first mon
+//            } else if ((arg->ui & 341) > 0 && selmon == mons) {
+//                selmon->sel->tags = arg->ui & TAGMASK;
+//                focus(NULL);
+//                arrange(selmon);
+//            } else {
+//                tagnextmon(arg);
+//            }
+//        } else {
+//            if (selmon->sel && arg->ui & TAGMASK) {
+//                selmon->sel->tags = arg->ui & TAGMASK;
+//                focus(NULL);
+//                arrange(selmon);
+//            }
+//        }
+//    }
+//}
+
 void
 tag(const Arg *arg)
 {
-	if (selmon->sel && arg->ui & TAGMASK) {
-		selmon->sel->tags = arg->ui & TAGMASK;
-		focus(NULL);
-		arrange(selmon);
-	}
+    if (!(selmon->sel && arg->ui & TAGMASK))
+        return;
+
+    if (mons && mons->next) {
+        // Moving to even tag, selected mon != first mon
+        if ((arg->ui & 341) == 0 && selmon != mons) {
+            selmon->sel->tags = arg->ui & TAGMASK;
+        }
+        // Moving to odd tag, selected mon == first mon
+        else if ((arg->ui & 341) > 0 && selmon == mons) {
+            selmon->sel->tags = arg->ui & TAGMASK;
+        } else {
+            tagnextmon(arg);
+            return;
+        }
+    } else {
+        selmon->sel->tags = arg->ui & TAGMASK;
+    }
+
+    focus(NULL);
+    arrange(selmon);
 }
 
 void
 tagview(const Arg *arg)
 {
     if (selmon->sel && arg->ui & TAGMASK) {
+        if (mons && mons->next) {
+            // If first monitor and moving to even tag (second mon)
+            if ((arg->ui & 341) == 0 && selmon == mons) {
+                tagnthmonview(&((Arg) { .i = 1 }));
+                tagnewmon(arg);
+                return;
+            } else if ((arg->ui & 341) > 0 && selmon != mons) {
+                tagnthmonview(&((Arg) { .i = 0 }));
+                tagnewmon(arg);
+                return;
+            }
+        }
         selmon->sel->tags = arg->ui & TAGMASK;
         focus(NULL);
         arrange(selmon);
@@ -2417,12 +2306,69 @@ tagmonview(const Arg *arg)
 }
 
 void
+tagnextmon(const Arg *arg)
+{
+    Client *sel;
+    Monitor *newmon;
+
+    if (!selmon->sel || !mons->next)
+        return;
+    sel = selmon->sel;
+    newmon = dirtomon(1);
+    sendmon(sel, newmon);
+    if (sel && arg->ui & TAGMASK) {
+        sel->tags = arg->ui & TAGMASK;
+        focus(NULL);
+        arrange(newmon);
+    }
+}
+
+void
+tagnewmon(const Arg *arg)
+{
+    if (selmon->sel && arg->ui & TAGMASK) {
+        selmon->sel->tags = arg->ui & TAGMASK;
+        focus(NULL);
+        arrange(selmon);
+        view(arg);
+    }
+}
+
+void
+tagnthmon(const Arg *arg)
+{
+    if (!selmon->sel || !mons->next)
+        return;
+    sendmon(selmon->sel, numtomon(arg->i));
+}
+
+void
+tagnthmonview(const Arg *arg)
+{
+    if (!selmon->sel || !mons->next)
+        return;
+    sendmonview(selmon->sel, numtomon(arg->i));
+}
+
+void
 togglebar(const Arg *arg)
 {
 	selmon->showbar = !selmon->showbar;
 	updatebarpos(selmon);
 	XMoveResizeWindow(dpy, selmon->barwin, selmon->wx, selmon->by, selmon->ww, bh);
 	arrange(selmon);
+}
+
+void
+togglebars(const Arg *arg)
+{
+    Monitor *m;
+    for (m = mons; m; m = m->next) {
+        m->showbar = !m->showbar;
+        updatebarpos(m);
+        XMoveResizeWindow(dpy, m->barwin, m->wx, m->by, m->ww, bh);
+        arrange(m);
+    }
 }
 
 void
@@ -2827,16 +2773,27 @@ updatewmhints(Client *c)
 void
 view(const Arg *arg)
 {
-    if ((arg->ui & TAGMASK) == selmon->tagset[selmon->seltags]) {
-        view(&((Arg) { .ui = 0 }));
-        return;
+    if (mons && mons->next) {
+        if ((arg->ui & TAGMASK) == selmon->tagset[selmon->seltags])
+            return;
+
+        // GENIUS 101010101
+        if ((arg->ui & 341) == 0)
+            focusnthmon(&((Arg) { .i = 1 }));
+        else
+            focusnthmon(&((Arg) { .i = 0 }));
+    } else {
+        if ((arg->ui & TAGMASK) == selmon->tagset[selmon->seltags]) { 
+            view(&((Arg) { .ui = 0 })); 
+            return; 
+        } 
     }
 
-	selmon->seltags ^= 1; /* toggle sel tagset */
-	if (arg->ui & TAGMASK)
-		selmon->tagset[selmon->seltags] = arg->ui & TAGMASK;
-	focus(NULL);
-	arrange(selmon);
+    selmon->seltags ^= 1; /* toggle sel tagset */
+    if (arg->ui & TAGMASK)
+        selmon->tagset[selmon->seltags] = arg->ui & TAGMASK;
+    focus(NULL);
+    arrange(selmon);
 }
 
 pid_t

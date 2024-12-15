@@ -71,7 +71,7 @@ download_if_not_exists https://dwm.suckless.org/patches/autostart/dwm-autostart-
 # https://dwm.suckless.org/patches/scratchpad/
 #download_if_not_exists https://dwm.suckless.org/patches/scratchpad/dwm-scratchpad-20240321-061e9fe.diff
 
-# https://dwm.suckless.org/patches/scratchpads/
+#https://dwm.suckless.org/patches/scratchpads/
 download_if_not_exists https://dwm.suckless.org/patches/scratchpads/dwm-scratchpads-20200414-728d397b.diff
 
 # https://dwm.suckless.org/patches/focusonclick/

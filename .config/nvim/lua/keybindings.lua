@@ -540,8 +540,7 @@ end
 --- lua print(vim.fn.getenv("TERM_PROGRAM"))
 local term_program_raw = vim.fn.getenv("TERM_PROGRAM") or ""
 local term_program = tostring(term_program_raw):lower()
---if term_program == "wezterm" or term_program == "tmux" then
-if term_program == "wezterm" then
+if term_program == "wezterm" or term_program == "tmux" then
   --vim.api.nvim_set_keymap('n', '<C-w>h', '<Plug>WinMoveLeft', { noremap = false, silent = true })
   --vim.api.nvim_set_keymap('n', '<C-w>j', '<Plug>WinMoveDown', { noremap = false, silent = true })
   --vim.api.nvim_set_keymap('n', '<C-w>k', '<Plug>WinMoveUp', { noremap = false, silent = true })
@@ -554,7 +553,9 @@ if term_program == "wezterm" then
   map('n', '<M-c-i>', ':resize -2<CR>')
   map('n', '<M-c-o>', ':vertical resize +2<CR>')
   map('n', '<M-c-y>', ':vertical resize -2<CR>')
-else
+end
+
+if term_program ~= "wezterm" then
   --map('n', '<M-h>', '<Plug>WinMoveLeft')
   --map('n', '<M-j>', '<Plug>WinMoveDown')
   --map('n', '<M-k>', '<Plug>WinMoveUp')
@@ -567,21 +568,6 @@ else
   map('n', '<M-i>', ':resize -2<CR>')
   map('n', '<M-o>', ':vertical resize +2<CR>')
   map('n', '<M-y>', ':vertical resize -2<CR>')
-end
-
-if term_program == "tmux" then
-  --vim.api.nvim_set_keymap('n', '<C-w>h', '<Plug>WinMoveLeft', { noremap = false, silent = true })
-  --vim.api.nvim_set_keymap('n', '<C-w>j', '<Plug>WinMoveDown', { noremap = false, silent = true })
-  --vim.api.nvim_set_keymap('n', '<C-w>k', '<Plug>WinMoveUp', { noremap = false, silent = true })
-  --vim.api.nvim_set_keymap('n', '<C-w>l', '<Plug>WinMoveRight', { noremap = false, silent = true })
-  vim.keymap.set('n', '<C-w>h', function() move_or_split('h') end, { noremap = true, silent = true })
-  vim.keymap.set('n', '<C-w>j', function() move_or_split('j') end, { noremap = true, silent = true })
-  vim.keymap.set('n', '<C-w>k', function() move_or_split('k') end, { noremap = true, silent = true })
-  vim.keymap.set('n', '<C-w>l', function() move_or_split('l') end, { noremap = true, silent = true })
-  map('n', '<M-c-u>', ':resize +2<CR>')
-  map('n', '<M-c-i>', ':resize -2<CR>')
-  map('n', '<M-c-o>', ':vertical resize +2<CR>')
-  map('n', '<M-c-y>', ':vertical resize -2<CR>')
 end
 
 map('n', '<C-d>', '<C-d>zz')

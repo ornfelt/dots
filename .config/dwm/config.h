@@ -28,6 +28,7 @@ static int smartgaps            = 0;        /* 1 means no outer gap when there i
 static int browsergaps          = 0;        /* 0 means no outer gap when there is only one window and it is firefox */
 static int showbar              = 1;        /* 0 means no bar */
 static int topbar               = 1;        /* 0 means bottom bar */
+static const int focusonwheel       = 0;
 /* static char *fonts[]            = { "Linux Libertine Mono:size=12", "Mono:pixelsize=12:antialias=true:autohint=true", "FontAwesome:size=15","FontAwesome5Brands:size=13:antialias:true", "FontAwesome5Free:size=13:antialias:true", "FontAwesome5Free:style=Solid:size=13:antialias:true","JetBrainsMono Nerd Font:size=12:style=bold:antialias=true:autohint=true", "Nerd Font Complete Mono:size=13", "JoyPixels:pixelsize=10:antialias=true:autohint=true", "Inconsolata Nerd Font:size=15", "Nerd Font Complete Mono:size=13" }; */
 /* static const char *fonts[]      = { "JetBrainsMono Nerd Font:size=11:style=bold:antialias=true:autohint=true", "JoyPixels:pixelsize=13:antialias=true:autohint=true" }; */
 static const char *fonts[]      = { "JetBrainsMono Nerd Font:size=11:style=bold" };
@@ -163,7 +164,6 @@ ResourcePref resources[] = {
 };
 
 #include <X11/XF86keysym.h>
-#include "shiftview.c"
 
 static const Key keys[] = {
     /*  modifier                    key                 function            argument */
@@ -214,7 +214,7 @@ static const Key keys[] = {
         /* { MODKEY,                   XK_Tab,             view,               {0} }, */
         /* { MODKEY,                   XK_Tab,             view,               {0} }, */
         { MODKEY,                   XK_q,               killclient,         {0} },
-        { MODKEY|ShiftMask,         XK_p,               togglebar,          {0} },
+        { MODKEY|ShiftMask,         XK_p,               togglebars,          {0} },
         { MODKEY|ControlMask|ShiftMask,     XK_p,       togglebar,          {0} },
         { MODKEY,                   XK_h,               focusmon,           { .i = -1 } },
         { MODKEY|ShiftMask,         XK_h,               tagmonview,         { .i = -1 } },

@@ -1,13 +1,5 @@
-See patches in dir 'patches'.
-
-I also continously add fixes from suckless git log:
-https://git.suckless.org/
-https://dwm.suckless.org/
-
-============================
 dwm - dynamic window manager
 ============================
-
 dwm is an extremely fast, small, and dynamic window manager for X.
 
 
