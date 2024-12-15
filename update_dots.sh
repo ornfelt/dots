@@ -21,11 +21,8 @@ rm -rf .config/awesome
 rm -rf .config/cava
 rm -rf .config/conky
 rm -rf .config/dmenu
-rm -rf .config/dmenu_git
 rm -rf .config/dwm
-rm -rf .config/dwm_git
 rm -rf .config/dwmblocks
-rm -rf .config/dwm_mul_mon
 rm -rf .config/eww
 rm -rf .config/hypr
 rm -rf .config/i3
@@ -39,7 +36,6 @@ rm -rf .config/ranger
 rm -rf .config/yazi
 rm -rf .config/rofi
 rm -rf .config/st
-rm -rf .config/st_git
 rm -rf .config/zathura
 rm -rf .dwm
 rm -rf bin
@@ -59,11 +55,8 @@ cp -r $HOME/.config/alacritty .config/alacritty/
 cp -r $HOME/.config/cava .config/cava/
 cp -r $HOME/.config/conky .config/conky/
 cp -r $HOME/.config/dmenu .config/dmenu/
-cp -r $HOME/.config/dmenu_git .config/dmenu_git/
 cp -r $HOME/.config/dwm .config/dwm/
-cp -r $HOME/.config/dwm_git .config/dwm_git/
 cp -r $HOME/.config/dwmblocks .config/dwmblocks/
-cp -r $HOME/.config/dwm_mul_mon .config/dwm_mul_mon/
 cp -r $HOME/.config/eww .config/eww/
 cp -r $HOME/.config/hypr .config/hypr/
 cp -r $HOME/.config/i3 .config/i3/
@@ -77,7 +70,6 @@ cp -r $HOME/.config/ranger .config/ranger/
 cp -r $HOME/.config/yazi .config/yazi/
 cp -r $HOME/.config/rofi .config/rofi/
 cp -r $HOME/.config/st .config/st/
-cp -r $HOME/.config/st_git .config/st_git/
 cp -r $HOME/.config/zathura .config/zathura/
 cp $HOME/.config/mimeapps.list .config/
 
