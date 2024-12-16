@@ -32,13 +32,12 @@ static const int focusonwheel       = 0;
 /* static char *fonts[]            = { "Linux Libertine Mono:size=12", "Mono:pixelsize=12:antialias=true:autohint=true", "FontAwesome:size=15","FontAwesome5Brands:size=13:antialias:true", "FontAwesome5Free:size=13:antialias:true", "FontAwesome5Free:style=Solid:size=13:antialias:true","JetBrainsMono Nerd Font:size=12:style=bold:antialias=true:autohint=true", "Nerd Font Complete Mono:size=13", "JoyPixels:pixelsize=10:antialias=true:autohint=true", "Inconsolata Nerd Font:size=15", "Nerd Font Complete Mono:size=13" }; */
 /* static const char *fonts[]      = { "JetBrainsMono Nerd Font:size=11:style=bold:antialias=true:autohint=true", "JoyPixels:pixelsize=13:antialias=true:autohint=true" }; */
 static const char *fonts[]      = { "JetBrainsMono Nerd Font:size=11:style=bold" };
-//static char normbgcolor[]       = "#222222";
 static char normbgcolor[]       = "#282828";
-static char normbordercolor[]   = "#ebdbb2";
+static char normbordercolor[]   = "#282828";
 static char normfgcolor[]       = "#ebdbb2";
 static char selfgcolor[]        = "#ebdbb2";
-static char selbordercolor[]    = "#770000";
-static char selbgcolor[]        = "#005577";
+static char selbordercolor[]    = "#ebdbb2";
+static char selbgcolor[]        = "#282828";
 static const char col1[]        = "#98971a";
 static const char col21[]       = "#fb4934";
 static const char col22[]       = "#ebdbb2";
@@ -58,8 +57,10 @@ typedef struct {
     const char *name;
     const void *cmd;
 } Sp;
-const char *spcmd1[] = {"st", "-n", "spterm", "-g", "30x30", "-e", "python3", NULL };
-const char *spcmd2[] = {"st", "-n", "spcalc", "-g", "30x30", NULL };
+//const char *spcmd1[] = {"st", "-n", "spterm", "-g", "30x30", "-e", "python3", NULL };
+//const char *spcmd2[] = {"st", "-n", "spcalc", "-g", "30x30", NULL };
+const char *spcmd1[] = {"st", "-n", "spterm", "-e", "python3", NULL };
+const char *spcmd2[] = {"st", "-n", "spcalc", NULL };
 /* const char *spcmd2[] = {"st", "-n", "spcalc", "-f", "monospace:size=16", "-g", "50x20", "-e", "bc", "-lq", NULL }; */
 static Sp scratchpads[] = {
     /* name          cmd  */
@@ -209,8 +210,8 @@ static const Key keys[] = {
         { MODKEY,                   XK_minus,           incrgaps,           {.i = -3 } },
         { MODKEY|ShiftMask,         XK_plus,            incrgaps,           {.i = +1 } },
         { MODKEY|ShiftMask,         XK_minus,           incrgaps,           {.i = -1 } },
-        { MODKEY1,                  XK_Tab,             shiftview,          { .i = +1 } },
-        { MODKEY1|ShiftMask,        XK_Tab,             shiftview,          { .i = -1 } },
+        { MODKEY1,                  XK_Tab,             shiftviewclients,          { .i = +1 } },
+        { MODKEY1|ShiftMask,        XK_Tab,             shiftviewclients,          { .i = -1 } },
         /* { MODKEY,                   XK_Tab,             view,               {0} }, */
         /* { MODKEY,                   XK_Tab,             view,               {0} }, */
         { MODKEY,                   XK_q,               killclient,         {0} },

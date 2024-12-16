@@ -17,10 +17,10 @@ index 482b545..95d4fd0 100644
  
  
 diff --git a/config.h b/config.h
-index 3d14213..ec7de9e 100644
+index 3d14213..303596c 100644
 --- a/config.h
 +++ b/config.h
-@@ -28,6 +28,7 @@ static int smartgaps            = 0;        /* 1 means no outer gap when there i
+@@ -28,16 +28,16 @@ static int smartgaps            = 0;        /* 1 means no outer gap when there i
  static int browsergaps          = 0;        /* 0 means no outer gap when there is only one window and it is firefox */
  static int showbar              = 1;        /* 0 means no bar */
  static int topbar               = 1;        /* 0 means bottom bar */
@@ -28,7 +28,33 @@ index 3d14213..ec7de9e 100644
  /* static char *fonts[]            = { "Linux Libertine Mono:size=12", "Mono:pixelsize=12:antialias=true:autohint=true", "FontAwesome:size=15","FontAwesome5Brands:size=13:antialias:true", "FontAwesome5Free:size=13:antialias:true", "FontAwesome5Free:style=Solid:size=13:antialias:true","JetBrainsMono Nerd Font:size=12:style=bold:antialias=true:autohint=true", "Nerd Font Complete Mono:size=13", "JoyPixels:pixelsize=10:antialias=true:autohint=true", "Inconsolata Nerd Font:size=15", "Nerd Font Complete Mono:size=13" }; */
  /* static const char *fonts[]      = { "JetBrainsMono Nerd Font:size=11:style=bold:antialias=true:autohint=true", "JoyPixels:pixelsize=13:antialias=true:autohint=true" }; */
  static const char *fonts[]      = { "JetBrainsMono Nerd Font:size=11:style=bold" };
-@@ -163,7 +164,6 @@ ResourcePref resources[] = {
+-//static char normbgcolor[]       = "#222222";
+ static char normbgcolor[]       = "#282828";
+-static char normbordercolor[]   = "#ebdbb2";
++static char normbordercolor[]   = "#282828";
+ static char normfgcolor[]       = "#ebdbb2";
+ static char selfgcolor[]        = "#ebdbb2";
+-static char selbordercolor[]    = "#770000";
+-static char selbgcolor[]        = "#005577";
++static char selbordercolor[]    = "#ebdbb2";
++static char selbgcolor[]        = "#282828";
+ static const char col1[]        = "#98971a";
+ static const char col21[]       = "#fb4934";
+ static const char col22[]       = "#ebdbb2";
+@@ -57,8 +57,10 @@ typedef struct {
+     const char *name;
+     const void *cmd;
+ } Sp;
+-const char *spcmd1[] = {"st", "-n", "spterm", "-g", "30x30", "-e", "python3", NULL };
+-const char *spcmd2[] = {"st", "-n", "spcalc", "-g", "30x30", NULL };
++//const char *spcmd1[] = {"st", "-n", "spterm", "-g", "30x30", "-e", "python3", NULL };
++//const char *spcmd2[] = {"st", "-n", "spcalc", "-g", "30x30", NULL };
++const char *spcmd1[] = {"st", "-n", "spterm", "-e", "python3", NULL };
++const char *spcmd2[] = {"st", "-n", "spcalc", NULL };
+ /* const char *spcmd2[] = {"st", "-n", "spcalc", "-f", "monospace:size=16", "-g", "50x20", "-e", "bc", "-lq", NULL }; */
+ static Sp scratchpads[] = {
+     /* name          cmd  */
+@@ -163,7 +165,6 @@ ResourcePref resources[] = {
  };
  
  #include <X11/XF86keysym.h>
@@ -36,8 +62,37 @@ index 3d14213..ec7de9e 100644
  
  static const Key keys[] = {
      /*  modifier                    key                 function            argument */
+@@ -209,12 +210,12 @@ static const Key keys[] = {
+         { MODKEY,                   XK_minus,           incrgaps,           {.i = -3 } },
+         { MODKEY|ShiftMask,         XK_plus,            incrgaps,           {.i = +1 } },
+         { MODKEY|ShiftMask,         XK_minus,           incrgaps,           {.i = -1 } },
+-        { MODKEY1,                  XK_Tab,             shiftview,          { .i = +1 } },
+-        { MODKEY1|ShiftMask,        XK_Tab,             shiftview,          { .i = -1 } },
++        { MODKEY1,                  XK_Tab,             shiftviewclients,          { .i = +1 } },
++        { MODKEY1|ShiftMask,        XK_Tab,             shiftviewclients,          { .i = -1 } },
+         /* { MODKEY,                   XK_Tab,             view,               {0} }, */
+         /* { MODKEY,                   XK_Tab,             view,               {0} }, */
+         { MODKEY,                   XK_q,               killclient,         {0} },
+-        { MODKEY|ShiftMask,         XK_p,               togglebar,          {0} },
++        { MODKEY|ShiftMask,         XK_p,               togglebars,          {0} },
+         { MODKEY|ControlMask|ShiftMask,     XK_p,       togglebar,          {0} },
+         { MODKEY,                   XK_h,               focusmon,           { .i = -1 } },
+         { MODKEY|ShiftMask,         XK_h,               tagmonview,         { .i = -1 } },
+diff --git a/drw.c b/drw.c
+index 6be5dee..11387e5 100644
+--- a/drw.c
++++ b/drw.c
+@@ -176,6 +176,8 @@ drw_clr_create(Drw *drw, Clr *dest, const char *clrname)
+ 	                       DefaultColormap(drw->dpy, drw->screen),
+ 	                       clrname, dest))
+ 		die("error, cannot allocate color '%s'", clrname);
++
++    dest->pixel |= 0xff << 24;
+ }
+ 
+ /* Wrapper to create color schemes. The caller has to call free(3) on the
 diff --git a/dwm.c b/dwm.c
-index 1ce4a38..6232799 100644
+index 1ce4a38..ce6c5f5 100644
 --- a/dwm.c
 +++ b/dwm.c
 @@ -62,8 +62,8 @@
@@ -50,16 +105,60 @@ index 1ce4a38..6232799 100644
  #define WIDTH(X)                ((X)->w + 2 * (X)->bw)
  #define HEIGHT(X)               ((X)->h + 2 * (X)->bw)
  #define NUMTAGS					(LENGTH(tags) + LENGTH(scratchpads))
-@@ -248,6 +248,8 @@ static void setcfact(const Arg *arg);
+@@ -111,7 +111,7 @@ struct Client {
+ 	int bw, oldbw;
+ 	unsigned int tags;
+     int isfixed, isfloating, isurgent, neverfocus, oldstate, isfullscreen, issticky, isterminal, noswallow;
+-	pid_t pid;
++    pid_t pid;
+ 	Client *next;
+ 	Client *snext;
+     Client *swallowing;
+@@ -200,6 +200,7 @@ static void destroynotify(XEvent *e);
+ static void detach(Client *c);
+ static void detachstack(Client *c);
+ static Monitor *dirtomon(int dir);
++static Monitor *numtomon(int num);
+ static void drawbar(Monitor *m);
+ static void drawbars(void);
+ static int drawstatusbar(Monitor *m, int bh, char* text);
+@@ -207,6 +208,7 @@ static void expose(XEvent *e);
+ static void focus(Client *c);
+ static void focusin(XEvent *e);
+ static void focusmon(const Arg *arg);
++static void focusnthmon(const Arg *arg);
+ static void focusstack(const Arg *arg);
+ static Atom getatomprop(Client *c, Atom prop);
+ static int getrootptr(int *x, int *y);
+@@ -248,6 +250,14 @@ static void setcfact(const Arg *arg);
  static void setmfact(const Arg *arg);
  static void setup(void);
  static void seturgent(Client *c, int urg);
-+static void shiftview(const Arg *arg);
 +static void shifttag(const Arg *arg);
++static void shifttagclients(const Arg *arg);
++static void shiftview(const Arg *arg);
++static void shiftviewclients(const Arg *arg);
++static void shiftboth(const Arg *arg);
++static void swaptags(const Arg *arg);
++static void shiftswaptags(const Arg *arg);
++static void setcfact(const Arg *arg);
  static void showhide(Client *c);
  static void sigstatusbar(const Arg *arg);
  static void spawn(const Arg *arg);
-@@ -545,9 +547,8 @@ buttonpress(XEvent *e)
+@@ -256,7 +266,12 @@ static void tag(const Arg *arg);
+ static void tagview(const Arg *arg);
+ static void tagmon(const Arg *arg);
+ static void tagmonview(const Arg *arg);
++static void tagnextmon(const Arg *arg);
++static void tagnewmon(const Arg *arg);
++static void tagnthmon(const Arg *arg);
++static void tagnthmonview(const Arg *arg);
+ static void togglebar(const Arg *arg);
++static void togglebars(const Arg *arg);
+ static void togglefloating(const Arg *arg);
+ static void togglescratch(const Arg *arg);
+ static void togglesticky(const Arg *arg);
+@@ -545,9 +560,8 @@ buttonpress(XEvent *e)
  
  	click = ClkRootWin;
  	/* focus monitor if necessary */
@@ -71,7 +170,7 @@ index 1ce4a38..6232799 100644
  		unfocus(selmon->sel, 1);
  		selmon = m;
  		focus(NULL);
-@@ -566,12 +567,12 @@ buttonpress(XEvent *e)
+@@ -566,12 +580,12 @@ buttonpress(XEvent *e)
  		if (i < LENGTH(tags)) {
  			click = ClkTagBar;
  			arg.ui = 1 << i;
@@ -79,16 +178,18 @@ index 1ce4a38..6232799 100644
 -			//click = ClkLtSymbol;
 -		//else
 -		else if (ev->x > selmon->ww - statusw) {
+-			x = selmon->ww - statusw;
+-			click = ClkStatusText;
 +		} else if (ev->x < x + TEXTW(selmon->ltsymbol))
 +			click = ClkLtSymbol;
 +        } else if (ev->x > selmon->ww - statusw) {
-             x = selmon->ww - statusw;
-             click = ClkStatusText;
++            x = selmon->ww - statusw;
++            click = ClkStatusText;
 +
  			char *text, *s, ch;
  			statussig = 0;
  			for (text = s = stext; *s && x <= ev->x; s++) {
-@@ -595,10 +596,8 @@ buttonpress(XEvent *e)
+@@ -595,11 +609,9 @@ buttonpress(XEvent *e)
  					s--;
  				}
  			}
@@ -96,11 +197,25 @@ index 1ce4a38..6232799 100644
  	} else if ((c = wintoclient(ev->window))) {
 -		//if (focusonwheel || (ev->button != Button4 && ev->button != Button5))
 -		//	focus(c);
+-        focus(c);
 +		if (focusonwheel || (ev->button != Button4 && ev->button != Button5))
- 			focus(c);
++			focus(c);
  		XAllowEvents(dpy, ReplayPointer, CurrentTime);
  		click = ClkClientWin;
-@@ -858,119 +857,6 @@ dirtomon(int dir)
+ 	}
+@@ -792,7 +804,10 @@ createmon(void)
+ 	Monitor *m;
+ 
+ 	m = ecalloc(1, sizeof(Monitor));
+-	m->tagset[0] = m->tagset[1] = 1;
++    if (mons)
++        m->tagset[0] = m->tagset[1] = 2;
++    else
++        m->tagset[0] = m->tagset[1] = 1;
+ 	m->mfact = mfact;
+ 	m->nmaster = nmaster;
+ 	m->showbar = showbar;
+@@ -858,118 +873,16 @@ dirtomon(int dir)
  	return m;
  }
  
@@ -216,11 +331,20 @@ index 1ce4a38..6232799 100644
 -//
 -//	return ret;
 -//}
--
++Monitor *
++numtomon(int num)
++{
++    Monitor *m = NULL;
++    int i = 0;
++
++    for(m = mons, i=0; m->next && i < num; m = m->next)
++        i++;
++    return m;
++}
+ 
  int
  drawstatusbar(Monitor *m, int bh, char* stext)
- {
-@@ -1093,130 +979,6 @@ drawstatusbar(Monitor *m, int bh, char* stext)
+@@ -1093,130 +1006,6 @@ drawstatusbar(Monitor *m, int bh, char* stext)
      return ret;
  }
  
@@ -351,47 +475,444 @@ index 1ce4a38..6232799 100644
  void
  drawbar(Monitor *m)
  {
-@@ -2166,6 +1928,40 @@ setlayout(const Arg *arg)
- 		drawbar(selmon);
+@@ -1329,6 +1118,22 @@ focusmon(const Arg *arg)
+ 	focus(NULL);
  }
  
 +void
-+shiftview(const Arg *arg) {
-+	Arg shifted;
++focusnthmon(const Arg *arg)
++{
++    Monitor *m;
 +
-+	if(arg->i > 0) /* left circular shift */
-+		shifted.ui = (selmon->tagset[selmon->seltags] << arg->i)
-+		   | (selmon->tagset[selmon->seltags] >> (LENGTH(tags) - arg->i));
++    if (!mons->next)
++        return;
 +
-+	else /* right circular shift */
-+		shifted.ui = selmon->tagset[selmon->seltags] >> (- arg->i)
-+		   | selmon->tagset[selmon->seltags] << (LENGTH(tags) + arg->i);
-+
-+	view(&shifted);
++    if ((m = numtomon(arg->i)) == selmon)
++        return;
++    unfocus(selmon->sel, 0);
++    XWarpPointer(dpy, None, m->barwin, 0, 0, 0, 0, m->mw / 2, m->mh / 2);
++    selmon = m;
++    focus(NULL);
 +}
 +
+ void
+ focusstack(const Arg *arg)
+ {
+@@ -1814,8 +1619,8 @@ resizeclient(Client *c, int x, int y, int w, int h)
+ 	if (((nexttiled(c->mon->clients) == c && !nexttiled(c->next))
+ 	    || &monocle == c->mon->lt[c->mon->sellt]->arrange)
+ 	    && !c->isfullscreen && !c->isfloating) {
+-		c->w = wc.width += c->bw * 2;
+-		c->h = wc.height += c->bw * 2;
++        wc.width += c->bw * 2;
++        wc.height += c->bw * 2;
+ 		wc.border_width = 0;
+ 	}
+ 	XConfigureWindow(dpy, c->win, CWX|CWY|CWWidth|CWHeight|CWBorderWidth, &wc);
+@@ -2166,6 +1971,188 @@ setlayout(const Arg *arg)
+ 		drawbar(selmon);
+ }
+ 
++//void
++//shiftview(const Arg *arg) {
++//	Arg shifted;
++//
++//	if(arg->i > 0) /* left circular shift */
++//		shifted.ui = (selmon->tagset[selmon->seltags] << arg->i)
++//		   | (selmon->tagset[selmon->seltags] >> (LENGTH(tags) - arg->i));
++//
++//	else /* right circular shift */
++//		shifted.ui = selmon->tagset[selmon->seltags] >> (- arg->i)
++//		   | selmon->tagset[selmon->seltags] << (LENGTH(tags) + arg->i);
++//
++//	view(&shifted);
++//}
++//
++//void
++//shifttag(const Arg *arg) {
++//	Arg shifted;
++//	Client *c;
++//
++//	if (!selmon->sel)
++//		return;
++//	c = selmon->sel;
++//
++//	if (arg->i > 0) /* left circular shift */
++//		shifted.ui = (c->tags ^ (c->tags << arg->i)) 
++//			^ (c->tags >> (LENGTH(tags) - arg->i));
++//	else /* right circular shift */
++//		shifted.ui = (c->tags ^ (c->tags >> (-arg->i)))
++//			^ (c->tags << (LENGTH(tags) + arg->i));
++//
++//	toggletag(&shifted);
++//}
++
++// https://github.com/ornfelt/dwm/blob/bkp/shiftview.c
++// Or this (used below):
++// https://dwm.suckless.org/patches/shift-tools/shift-tools-scratchpads.c
++
++/* Sends a window to the next/prev tag */
 +void
-+shifttag(const Arg *arg) {
++shifttag(const Arg *arg)
++{
++	Arg shifted;
++	shifted.ui = selmon->tagset[selmon->seltags] & ~SPTAGMASK;
++
++
++	if (arg->i > 0)	/* left circular shift */
++		shifted.ui = ((shifted.ui << arg->i) | (shifted.ui >> (LENGTH(tags) - arg->i))) & ~SPTAGMASK;
++	else		/* right circular shift */
++		shifted.ui = (shifted.ui >> (- arg->i) | shifted.ui << (LENGTH(tags) + arg->i)) & ~SPTAGMASK;
++	tag(&shifted);
++}
++/* Sends a window to the next/prev tag that has a client, else it moves it to the next/prev one. */
++void
++shifttagclients(const Arg *arg)
++{
++
 +	Arg shifted;
 +	Client *c;
++	unsigned int tagmask = 0;
++	shifted.ui = selmon->tagset[selmon->seltags] & ~SPTAGMASK;
 +
-+	if (!selmon->sel)
++	for (c = selmon->clients; c; c = c->next)
++		if (!(c->tags & SPTAGMASK))
++			tagmask = tagmask | c->tags;
++
++
++	if (arg->i > 0)	/* left circular shift */
++		do {
++			shifted.ui = (shifted.ui << arg->i)
++			   | (shifted.ui >> (LENGTH(tags) - arg->i));
++			shifted.ui &= ~SPTAGMASK;
++		} while (tagmask && !(shifted.ui & tagmask));
++	else		/* right circular shift */
++		do {
++			shifted.ui = (shifted.ui >> (- arg->i)
++			   | shifted.ui << (LENGTH(tags) + arg->i));
++			shifted.ui &= ~SPTAGMASK;
++		} while (tagmask && !(shifted.ui & tagmask));
++	tag(&shifted);
++}
++/* Navigate to the next/prev tag */
++void
++shiftview(const Arg *arg)
++{
++	Arg shifted;
++	shifted.ui = selmon->tagset[selmon->seltags] & ~SPTAGMASK;
++
++	if (arg->i > 0) {/* left circular shift */
++		shifted.ui = (shifted.ui << arg->i) | (shifted.ui >> (LENGTH(tags) - arg->i));
++		shifted.ui &= ~SPTAGMASK;
++	} else {	/* right circular shift */
++		shifted.ui = (shifted.ui >> (- arg->i) | shifted.ui << (LENGTH(tags) + arg->i));
++		shifted.ui &= ~SPTAGMASK;
++	}
++	view(&shifted);
++}
++/* Navigate to the next/prev tag that has a client, else moves it to the next/prev tag */
++void
++shiftviewclients(const Arg *arg)
++{
++	Arg shifted;
++	Client *c;
++	unsigned int tagmask = 0;
++	shifted.ui = selmon->tagset[selmon->seltags] & ~SPTAGMASK;
++
++	for (c = selmon->clients; c; c = c->next)
++		if (!(c->tags & SPTAGMASK))
++			tagmask = tagmask | c->tags;
++
++
++	if (arg->i > 0)	/* left circular shift */
++		do {
++			shifted.ui = (shifted.ui << arg->i)
++			   | (shifted.ui >> (LENGTH(tags) - arg->i));
++			shifted.ui &= ~SPTAGMASK;
++		} while (tagmask && !(shifted.ui & tagmask));
++	else		/* right circular shift */
++		do {
++			shifted.ui = (shifted.ui >> (- arg->i)
++			   | shifted.ui << (LENGTH(tags) + arg->i));
++			shifted.ui &= ~SPTAGMASK;
++		} while (tagmask && !(shifted.ui & tagmask));
++	view(&shifted);
++}
++/* move the current active window to the next/prev tag and view it. More like following the window */
++void
++shiftboth(const Arg *arg)
++{
++	Arg shifted;
++	shifted.ui = selmon->tagset[selmon->seltags] & ~SPTAGMASK;
++
++	if (arg->i > 0)	/* left circular shift */
++		shifted.ui = ((shifted.ui << arg->i) | (shifted.ui >> (LENGTH(tags) - arg->i))) & ~SPTAGMASK;
++	else		/* right circular shift */
++		shifted.ui = ((shifted.ui >> (- arg->i) | shifted.ui << (LENGTH(tags) + arg->i))) & ~SPTAGMASK;
++	tag(&shifted);
++	view(&shifted);
++}
++//helper function for shiftswaptags found on:
++//https://github.com/moizifty/DWM-Build/blob/65379c62640788881486401a0d8c79333751b02f/config.h#L48
++// modified to work with scratchpad
++void
++swaptags(const Arg *arg)
++{
++	Client *c;
++	unsigned int newtag = arg->ui & TAGMASK;
++	unsigned int curtag = selmon->tagset[selmon->seltags] & ~SPTAGMASK;
++
++	if (newtag == curtag || !curtag || (curtag & (curtag-1)))
 +		return;
-+	c = selmon->sel;
 +
-+	if (arg->i > 0) /* left circular shift */
-+		shifted.ui = (c->tags ^ (c->tags << arg->i)) 
-+			^ (c->tags >> (LENGTH(tags) - arg->i));
-+	else /* right circular shift */
-+		shifted.ui = (c->tags ^ (c->tags >> (-arg->i)))
-+			^ (c->tags << (LENGTH(tags) + arg->i));
++	for (c = selmon->clients; c != NULL; c = c->next) {
++		if ((c->tags & newtag) || (c->tags & curtag))
++			c->tags ^= curtag ^ newtag;
 +
-+	toggletag(&shifted);
++		if (!c->tags)
++			c->tags = newtag;
++	}
++
++	//move to the swaped tag
++	//selmon->tagset[selmon->seltags] = newtag;
++
++	focus(NULL);
++	arrange(selmon);
++}
++/* swaps "tags" (all the clients) with the next/prev tag. */
++void
++shiftswaptags(const Arg *arg)
++{
++	Arg shifted;
++	shifted.ui = selmon->tagset[selmon->seltags] & ~SPTAGMASK;
++
++	if (arg->i > 0)	/* left circular shift */
++		shifted.ui = ((shifted.ui << arg->i) | (shifted.ui >> (LENGTH(tags) - arg->i))) & ~SPTAGMASK;
++	else		/* right circular shift */
++		shifted.ui = ((shifted.ui >> (- arg->i) | shifted.ui << (LENGTH(tags) + arg->i))) & ~SPTAGMASK;
++	swaptags(&shifted);
++	// uncomment if you also want to "go" (view) the tag where the the clients are going
++	//view(&shifted);
 +}
 +
  void
  setcfact(const Arg *arg) {
  	float f;
+@@ -2379,20 +2366,76 @@ stackpos(const Arg *arg) {
+ 		return arg->i;
+ }
+ 
++//void
++//tag(const Arg *arg)
++//{
++//    if (selmon->sel && arg->ui & TAGMASK) {
++//        if (mons && mons->next) {
++//            // Moving to even tag, selected mon != first mon
++//            if ((arg->ui & 341) == 0 && selmon != mons) {
++//                selmon->sel->tags = arg->ui & TAGMASK;
++//                focus(NULL);
++//                arrange(selmon);
++//                // Moving to odd tag, selected mon == first mon
++//            } else if ((arg->ui & 341) > 0 && selmon == mons) {
++//                selmon->sel->tags = arg->ui & TAGMASK;
++//                focus(NULL);
++//                arrange(selmon);
++//            } else {
++//                tagnextmon(arg);
++//            }
++//        } else {
++//            if (selmon->sel && arg->ui & TAGMASK) {
++//                selmon->sel->tags = arg->ui & TAGMASK;
++//                focus(NULL);
++//                arrange(selmon);
++//            }
++//        }
++//    }
++//}
++
+ void
+ tag(const Arg *arg)
+ {
+-	if (selmon->sel && arg->ui & TAGMASK) {
+-		selmon->sel->tags = arg->ui & TAGMASK;
+-		focus(NULL);
+-		arrange(selmon);
+-	}
++    if (!(selmon->sel && arg->ui & TAGMASK))
++        return;
++
++    if (mons && mons->next) {
++        // Moving to even tag, selected mon != first mon
++        if ((arg->ui & 341) == 0 && selmon != mons) {
++            selmon->sel->tags = arg->ui & TAGMASK;
++        }
++        // Moving to odd tag, selected mon == first mon
++        else if ((arg->ui & 341) > 0 && selmon == mons) {
++            selmon->sel->tags = arg->ui & TAGMASK;
++        } else {
++            tagnextmon(arg);
++            return;
++        }
++    } else {
++        selmon->sel->tags = arg->ui & TAGMASK;
++    }
++
++    focus(NULL);
++    arrange(selmon);
+ }
+ 
+ void
+ tagview(const Arg *arg)
+ {
+     if (selmon->sel && arg->ui & TAGMASK) {
++        if (mons && mons->next) {
++            // If first monitor and moving to even tag (second mon)
++            if ((arg->ui & 341) == 0 && selmon == mons) {
++                tagnthmonview(&((Arg) { .i = 1 }));
++                tagnewmon(arg);
++                return;
++            } else if ((arg->ui & 341) > 0 && selmon != mons) {
++                tagnthmonview(&((Arg) { .i = 0 }));
++                tagnewmon(arg);
++                return;
++            }
++        }
+         selmon->sel->tags = arg->ui & TAGMASK;
+         focus(NULL);
+         arrange(selmon);
+@@ -2416,6 +2459,51 @@ tagmonview(const Arg *arg)
+     sendmonview(selmon->sel, dirtomon(arg->i));
+ }
+ 
++void
++tagnextmon(const Arg *arg)
++{
++    Client *sel;
++    Monitor *newmon;
++
++    if (!selmon->sel || !mons->next)
++        return;
++    sel = selmon->sel;
++    newmon = dirtomon(1);
++    sendmon(sel, newmon);
++    if (sel && arg->ui & TAGMASK) {
++        sel->tags = arg->ui & TAGMASK;
++        focus(NULL);
++        arrange(newmon);
++    }
++}
++
++void
++tagnewmon(const Arg *arg)
++{
++    if (selmon->sel && arg->ui & TAGMASK) {
++        selmon->sel->tags = arg->ui & TAGMASK;
++        focus(NULL);
++        arrange(selmon);
++        view(arg);
++    }
++}
++
++void
++tagnthmon(const Arg *arg)
++{
++    if (!selmon->sel || !mons->next)
++        return;
++    sendmon(selmon->sel, numtomon(arg->i));
++}
++
++void
++tagnthmonview(const Arg *arg)
++{
++    if (!selmon->sel || !mons->next)
++        return;
++    sendmonview(selmon->sel, numtomon(arg->i));
++}
++
+ void
+ togglebar(const Arg *arg)
+ {
+@@ -2425,6 +2513,18 @@ togglebar(const Arg *arg)
+ 	arrange(selmon);
+ }
+ 
++void
++togglebars(const Arg *arg)
++{
++    Monitor *m;
++    for (m = mons; m; m = m->next) {
++        m->showbar = !m->showbar;
++        updatebarpos(m);
++        XMoveResizeWindow(dpy, m->barwin, m->wx, m->by, m->ww, bh);
++        arrange(m);
++    }
++}
++
+ void
+ togglefloating(const Arg *arg)
+ {
+@@ -2433,6 +2533,7 @@ togglefloating(const Arg *arg)
+ 	if (selmon->sel->isfullscreen) /* no support for fullscreen windows */
+ 		return;
+ 	selmon->sel->isfloating = !selmon->sel->isfloating || selmon->sel->isfixed;
++
+ 	if (selmon->sel->isfloating)
+ 		/* restore last known float dimensions */
+ 		resize(selmon->sel, selmon->sel->sfx, selmon->sel->sfy,
+@@ -2444,6 +2545,17 @@ togglefloating(const Arg *arg)
+ 		selmon->sel->sfw = selmon->sel->w;
+ 		selmon->sel->sfh = selmon->sel->h;
+ 	}
++
++ 	//if (selmon->sel->isfloating)
++ 	//	resize(selmon->sel, selmon->sel->x, selmon->sel->y,
++ 	//		//selmon->sel->w, selmon->sel->h, 0);
++ 	//		900, 600, 0);
++
++    if (!selmon->sel->sfx) {
++        selmon->sel->x = selmon->sel->mon->mx + (selmon->sel->mon->mw - WIDTH(selmon->sel)) / 2;
++        selmon->sel->y = selmon->sel->mon->my + (selmon->sel->mon->mh - HEIGHT(selmon->sel)) / 2;
++    }
++
+ 	arrange(selmon);
+ }
+ 
+@@ -2827,16 +2939,27 @@ updatewmhints(Client *c)
+ void
+ view(const Arg *arg)
+ {
+-    if ((arg->ui & TAGMASK) == selmon->tagset[selmon->seltags]) {
+-        view(&((Arg) { .ui = 0 }));
+-        return;
++    if (mons && mons->next) {
++        if ((arg->ui & TAGMASK) == selmon->tagset[selmon->seltags])
++            return;
++
++        // GENIUS 101010101
++        if ((arg->ui & 341) == 0)
++            focusnthmon(&((Arg) { .i = 1 }));
++        else
++            focusnthmon(&((Arg) { .i = 0 }));
++    } else {
++        if ((arg->ui & TAGMASK) == selmon->tagset[selmon->seltags]) { 
++            view(&((Arg) { .ui = 0 })); 
++            return; 
++        } 
+     }
+ 
+-	selmon->seltags ^= 1; /* toggle sel tagset */
+-	if (arg->ui & TAGMASK)
+-		selmon->tagset[selmon->seltags] = arg->ui & TAGMASK;
+-	focus(NULL);
+-	arrange(selmon);
++    selmon->seltags ^= 1; /* toggle sel tagset */
++    if (arg->ui & TAGMASK)
++        selmon->tagset[selmon->seltags] = arg->ui & TAGMASK;
++    focus(NULL);
++    arrange(selmon);
+ }
+ 
+ pid_t
 diff --git a/shiftview.c b/shiftview.c
 deleted file mode 100644
 index 7905a6d..0000000
@@ -474,7 +995,7 @@ index 6f2407d..5acce38 100644
      if (n == 1 && strstr(nexttiled(m->clients)->name, "Mozilla Firefox") != NULL && !browsergaps) {
          oe = 0; // outer gaps disabled when only one client (and it's Firefox)
          if (TAGMASK == (1 << 8)){
-@@ -484,144 +485,82 @@ deck(Monitor *m)
+@@ -484,153 +485,91 @@ deck(Monitor *m)
   * Fibonacci layout + gaps
   * https://dwm.suckless.org/patches/fibonacci/
   */
@@ -569,24 +1090,22 @@ index 6f2407d..5acce38 100644
 +void
  fibonacci(Monitor *m, int s)
  {
- 	unsigned int i, n;
- 	int nx, ny, nw, nh;
- 	int oh, ov, ih, iv;
-+	int nv, hrest = 0, wrest = 0, r = 1;
- 	Client *c;
- 
- 	getgaps(m, &oh, &ov, &ih, &iv, &n);
+-    unsigned int i, n;
+-    int nx, ny, nw, nh;
+-    int oh, ov, ih, iv;
+-    Client *c;
 -
- 	if (n == 0)
- 		return;
- 
- 	nx = m->wx + ov;
+-    getgaps(m, &oh, &ov, &ih, &iv, &n);
+-
+-    if (n == 0)
+-        return;
+-
+-    nx = m->wx + ov;
 -    ny = oh;
-+	ny = m->wy + oh;
- 	nw = m->ww - 2*ov;
- 	nh = m->wh - 2*oh;
- 
- 	for (i = 0, c = nexttiled(m->clients); c; c = nexttiled(c->next)) {
+-    nw = m->ww - 2*ov;
+-    nh = m->wh - 2*oh;
+-
+-    for (i = 0, c = nexttiled(m->clients); c; c = nexttiled(c->next)) {
 -        if ((i % 2 && nh / 2 > 2*c->bw)
 -                || (!(i % 2) && nw / 2 > 2*c->bw)) {
 -            if (i < n - 1) {
@@ -594,6 +1113,55 @@ index 6f2407d..5acce38 100644
 -                    nh = (nh - ih) / 2;
 -                else
 -                    nw = (nw - iv) / 2;
+-
+-                if ((i % 4) == 2 && !s)
+-                    nx += nw + iv;
+-                else if ((i % 4) == 3 && !s)
+-                    ny += nh + ih;
+-            }
+-            if ((i % 4) == 0) {
+-                if (s)
+-                    ny += nh + ih;
+-                else
+-                    ny -= nh + ih;
+-            }
+-            else if ((i % 4) == 1)
+-                nx += nw + iv;
+-            else if ((i % 4) == 2)
+-                ny += nh + ih;
+-            else if ((i % 4) == 3) {
+-                if (s)
+-                    nx += nw + iv;
+-                else
+-                    nx -= nw + iv;
+-            }
+-            if (i == 0)	{
+-                if (n != 1)
+-                    nw = (m->ww - 2*ov - iv) * m->mfact;
+-                ny = m->wy + oh;
+-            }
+-            else if (i == 1)
+-                nw = m->ww - nw - iv - 2*ov;
+-            i++;
+-        }
++	unsigned int i, n;
++	int nx, ny, nw, nh;
++	int oh, ov, ih, iv;
++	int nv, hrest = 0, wrest = 0, r = 1;
++	Client *c;
+ 
+-        resize(c, nx, ny, nw - (2*c->bw), nh - (2*c->bw), False);
+-    }
++	getgaps(m, &oh, &ov, &ih, &iv, &n);
++	if (n == 0)
++		return;
++
++	nx = m->wx + ov;
++	ny = m->wy + oh;
++	nw = m->ww - 2*ov;
++	nh = m->wh - 2*oh;
++
++	for (i = 0, c = nexttiled(m->clients); c; c = nexttiled(c->next)) {
 +		if (r) {
 +			if ((i % 2 && (nh - ih) / 2 <= (bh + 2*c->bw))
 +			   || (!(i % 2) && (nw - iv) / 2 <= (bh + 2*c->bw))) {
@@ -609,56 +1177,57 @@ index 6f2407d..5acce38 100644
 +					wrest = nw - 2*nv - iv;
 +					nw = nv;
 +				}
- 
- 				if ((i % 4) == 2 && !s)
- 					nx += nw + iv;
- 				else if ((i % 4) == 3 && !s)
- 					ny += nh + ih;
- 			}
 +
- 			if ((i % 4) == 0) {
--                if (s)
++				if ((i % 4) == 2 && !s)
++					nx += nw + iv;
++				else if ((i % 4) == 3 && !s)
++					ny += nh + ih;
++			}
++
++			if ((i % 4) == 0) {
 +				if (s) {
- 					ny += nh + ih;
--                else
++					ny += nh + ih;
 +					nh += hrest;
 +				}
 +				else {
 +					nh -= hrest;
- 					ny -= nh + ih;
- 				}
--            else if ((i % 4) == 1)
++					ny -= nh + ih;
++				}
 +			}
 +			else if ((i % 4) == 1) {
- 				nx += nw + iv;
--            else if ((i % 4) == 2)
++				nx += nw + iv;
 +				nw += wrest;
 +			}
 +			else if ((i % 4) == 2) {
- 				ny += nh + ih;
++				ny += nh + ih;
 +				nh += hrest;
 +				if (i < n - 1)
 +					nw += wrest;
 +			}
- 			else if ((i % 4) == 3) {
--                if (s)
++			else if ((i % 4) == 3) {
 +				if (s) {
- 					nx += nw + iv;
--                else
++					nx += nw + iv;
 +					nw -= wrest;
 +				} else {
 +					nw -= wrest;
- 					nx -= nw + iv;
++					nx -= nw + iv;
 +					nh += hrest;
 +				}
- 			}
- 			if (i == 0)	{
--                if (n != 1)
--                    nw = (m->ww - 2*ov - iv) * m->mfact;
++			}
++			if (i == 0)	{
 +				if (n != 1) {
 +					nw = (m->ww - iv - 2*ov) - (m->ww - iv - 2*ov) * (1 - m->mfact);
 +					wrest = 0;
 +				}
- 				ny = m->wy + oh;
- 			}
- 			else if (i == 1)
++				ny = m->wy + oh;
++			}
++			else if (i == 1)
++				nw = m->ww - nw - iv - 2*ov;
++			i++;
++		}
++
++		resize(c, nx, ny, nw - (2*c->bw), nh - (2*c->bw), False);
++	}
+ }
+ 
+ void

@@ -250,8 +250,14 @@ static void setcfact(const Arg *arg);
 static void setmfact(const Arg *arg);
 static void setup(void);
 static void seturgent(Client *c, int urg);
-static void shiftview(const Arg *arg);
 static void shifttag(const Arg *arg);
+static void shifttagclients(const Arg *arg);
+static void shiftview(const Arg *arg);
+static void shiftviewclients(const Arg *arg);
+static void shiftboth(const Arg *arg);
+static void swaptags(const Arg *arg);
+static void shiftswaptags(const Arg *arg);
+static void setcfact(const Arg *arg);
 static void showhide(Client *c);
 static void sigstatusbar(const Arg *arg);
 static void spawn(const Arg *arg);
@@ -1613,8 +1619,8 @@ resizeclient(Client *c, int x, int y, int w, int h)
 	if (((nexttiled(c->mon->clients) == c && !nexttiled(c->next))
 	    || &monocle == c->mon->lt[c->mon->sellt]->arrange)
 	    && !c->isfullscreen && !c->isfloating) {
-		c->w = wc.width += c->bw * 2;
-		c->h = wc.height += c->bw * 2;
+        wc.width += c->bw * 2;
+        wc.height += c->bw * 2;
 		wc.border_width = 0;
 	}
 	XConfigureWindow(dpy, c->win, CWX|CWY|CWWidth|CWHeight|CWBorderWidth, &wc);
@@ -1965,38 +1971,186 @@ setlayout(const Arg *arg)
 		drawbar(selmon);
 }
 
+//void
+//shiftview(const Arg *arg) {
+//	Arg shifted;
+//
+//	if(arg->i > 0) /* left circular shift */
+//		shifted.ui = (selmon->tagset[selmon->seltags] << arg->i)
+//		   | (selmon->tagset[selmon->seltags] >> (LENGTH(tags) - arg->i));
+//
+//	else /* right circular shift */
+//		shifted.ui = selmon->tagset[selmon->seltags] >> (- arg->i)
+//		   | selmon->tagset[selmon->seltags] << (LENGTH(tags) + arg->i);
+//
+//	view(&shifted);
+//}
+//
+//void
+//shifttag(const Arg *arg) {
+//	Arg shifted;
+//	Client *c;
+//
+//	if (!selmon->sel)
+//		return;
+//	c = selmon->sel;
+//
+//	if (arg->i > 0) /* left circular shift */
+//		shifted.ui = (c->tags ^ (c->tags << arg->i)) 
+//			^ (c->tags >> (LENGTH(tags) - arg->i));
+//	else /* right circular shift */
+//		shifted.ui = (c->tags ^ (c->tags >> (-arg->i)))
+//			^ (c->tags << (LENGTH(tags) + arg->i));
+//
+//	toggletag(&shifted);
+//}
+
+// https://github.com/ornfelt/dwm/blob/bkp/shiftview.c
+// Or this (used below):
+// https://dwm.suckless.org/patches/shift-tools/shift-tools-scratchpads.c
+
+/* Sends a window to the next/prev tag */
 void
-shiftview(const Arg *arg) {
+shifttag(const Arg *arg)
+{
 	Arg shifted;
+	shifted.ui = selmon->tagset[selmon->seltags] & ~SPTAGMASK;
 
-	if(arg->i > 0) /* left circular shift */
-		shifted.ui = (selmon->tagset[selmon->seltags] << arg->i)
-		   | (selmon->tagset[selmon->seltags] >> (LENGTH(tags) - arg->i));
 
-	else /* right circular shift */
-		shifted.ui = selmon->tagset[selmon->seltags] >> (- arg->i)
-		   | selmon->tagset[selmon->seltags] << (LENGTH(tags) + arg->i);
-
-	view(&shifted);
+	if (arg->i > 0)	/* left circular shift */
+		shifted.ui = ((shifted.ui << arg->i) | (shifted.ui >> (LENGTH(tags) - arg->i))) & ~SPTAGMASK;
+	else		/* right circular shift */
+		shifted.ui = (shifted.ui >> (- arg->i) | shifted.ui << (LENGTH(tags) + arg->i)) & ~SPTAGMASK;
+	tag(&shifted);
 }
-
+/* Sends a window to the next/prev tag that has a client, else it moves it to the next/prev one. */
 void
-shifttag(const Arg *arg) {
+shifttagclients(const Arg *arg)
+{
+
 	Arg shifted;
 	Client *c;
+	unsigned int tagmask = 0;
+	shifted.ui = selmon->tagset[selmon->seltags] & ~SPTAGMASK;
 
-	if (!selmon->sel)
+	for (c = selmon->clients; c; c = c->next)
+		if (!(c->tags & SPTAGMASK))
+			tagmask = tagmask | c->tags;
+
+
+	if (arg->i > 0)	/* left circular shift */
+		do {
+			shifted.ui = (shifted.ui << arg->i)
+			   | (shifted.ui >> (LENGTH(tags) - arg->i));
+			shifted.ui &= ~SPTAGMASK;
+		} while (tagmask && !(shifted.ui & tagmask));
+	else		/* right circular shift */
+		do {
+			shifted.ui = (shifted.ui >> (- arg->i)
+			   | shifted.ui << (LENGTH(tags) + arg->i));
+			shifted.ui &= ~SPTAGMASK;
+		} while (tagmask && !(shifted.ui & tagmask));
+	tag(&shifted);
+}
+/* Navigate to the next/prev tag */
+void
+shiftview(const Arg *arg)
+{
+	Arg shifted;
+	shifted.ui = selmon->tagset[selmon->seltags] & ~SPTAGMASK;
+
+	if (arg->i > 0) {/* left circular shift */
+		shifted.ui = (shifted.ui << arg->i) | (shifted.ui >> (LENGTH(tags) - arg->i));
+		shifted.ui &= ~SPTAGMASK;
+	} else {	/* right circular shift */
+		shifted.ui = (shifted.ui >> (- arg->i) | shifted.ui << (LENGTH(tags) + arg->i));
+		shifted.ui &= ~SPTAGMASK;
+	}
+	view(&shifted);
+}
+/* Navigate to the next/prev tag that has a client, else moves it to the next/prev tag */
+void
+shiftviewclients(const Arg *arg)
+{
+	Arg shifted;
+	Client *c;
+	unsigned int tagmask = 0;
+	shifted.ui = selmon->tagset[selmon->seltags] & ~SPTAGMASK;
+
+	for (c = selmon->clients; c; c = c->next)
+		if (!(c->tags & SPTAGMASK))
+			tagmask = tagmask | c->tags;
+
+
+	if (arg->i > 0)	/* left circular shift */
+		do {
+			shifted.ui = (shifted.ui << arg->i)
+			   | (shifted.ui >> (LENGTH(tags) - arg->i));
+			shifted.ui &= ~SPTAGMASK;
+		} while (tagmask && !(shifted.ui & tagmask));
+	else		/* right circular shift */
+		do {
+			shifted.ui = (shifted.ui >> (- arg->i)
+			   | shifted.ui << (LENGTH(tags) + arg->i));
+			shifted.ui &= ~SPTAGMASK;
+		} while (tagmask && !(shifted.ui & tagmask));
+	view(&shifted);
+}
+/* move the current active window to the next/prev tag and view it. More like following the window */
+void
+shiftboth(const Arg *arg)
+{
+	Arg shifted;
+	shifted.ui = selmon->tagset[selmon->seltags] & ~SPTAGMASK;
+
+	if (arg->i > 0)	/* left circular shift */
+		shifted.ui = ((shifted.ui << arg->i) | (shifted.ui >> (LENGTH(tags) - arg->i))) & ~SPTAGMASK;
+	else		/* right circular shift */
+		shifted.ui = ((shifted.ui >> (- arg->i) | shifted.ui << (LENGTH(tags) + arg->i))) & ~SPTAGMASK;
+	tag(&shifted);
+	view(&shifted);
+}
+//helper function for shiftswaptags found on:
+//https://github.com/moizifty/DWM-Build/blob/65379c62640788881486401a0d8c79333751b02f/config.h#L48
+// modified to work with scratchpad
+void
+swaptags(const Arg *arg)
+{
+	Client *c;
+	unsigned int newtag = arg->ui & TAGMASK;
+	unsigned int curtag = selmon->tagset[selmon->seltags] & ~SPTAGMASK;
+
+	if (newtag == curtag || !curtag || (curtag & (curtag-1)))
 		return;
-	c = selmon->sel;
 
-	if (arg->i > 0) /* left circular shift */
-		shifted.ui = (c->tags ^ (c->tags << arg->i)) 
-			^ (c->tags >> (LENGTH(tags) - arg->i));
-	else /* right circular shift */
-		shifted.ui = (c->tags ^ (c->tags >> (-arg->i)))
-			^ (c->tags << (LENGTH(tags) + arg->i));
+	for (c = selmon->clients; c != NULL; c = c->next) {
+		if ((c->tags & newtag) || (c->tags & curtag))
+			c->tags ^= curtag ^ newtag;
 
-	toggletag(&shifted);
+		if (!c->tags)
+			c->tags = newtag;
+	}
+
+	//move to the swaped tag
+	//selmon->tagset[selmon->seltags] = newtag;
+
+	focus(NULL);
+	arrange(selmon);
+}
+/* swaps "tags" (all the clients) with the next/prev tag. */
+void
+shiftswaptags(const Arg *arg)
+{
+	Arg shifted;
+	shifted.ui = selmon->tagset[selmon->seltags] & ~SPTAGMASK;
+
+	if (arg->i > 0)	/* left circular shift */
+		shifted.ui = ((shifted.ui << arg->i) | (shifted.ui >> (LENGTH(tags) - arg->i))) & ~SPTAGMASK;
+	else		/* right circular shift */
+		shifted.ui = ((shifted.ui >> (- arg->i) | shifted.ui << (LENGTH(tags) + arg->i))) & ~SPTAGMASK;
+	swaptags(&shifted);
+	// uncomment if you also want to "go" (view) the tag where the the clients are going
+	//view(&shifted);
 }
 
 void
@@ -2379,6 +2533,7 @@ togglefloating(const Arg *arg)
 	if (selmon->sel->isfullscreen) /* no support for fullscreen windows */
 		return;
 	selmon->sel->isfloating = !selmon->sel->isfloating || selmon->sel->isfixed;
+
 	if (selmon->sel->isfloating)
 		/* restore last known float dimensions */
 		resize(selmon->sel, selmon->sel->sfx, selmon->sel->sfy,
@@ -2390,6 +2545,17 @@ togglefloating(const Arg *arg)
 		selmon->sel->sfw = selmon->sel->w;
 		selmon->sel->sfh = selmon->sel->h;
 	}
+
+ 	//if (selmon->sel->isfloating)
+ 	//	resize(selmon->sel, selmon->sel->x, selmon->sel->y,
+ 	//		//selmon->sel->w, selmon->sel->h, 0);
+ 	//		900, 600, 0);
+
+    if (!selmon->sel->sfx) {
+        selmon->sel->x = selmon->sel->mon->mx + (selmon->sel->mon->mw - WIDTH(selmon->sel)) / 2;
+        selmon->sel->y = selmon->sel->mon->my + (selmon->sel->mon->mh - HEIGHT(selmon->sel)) / 2;
+    }
+
 	arrange(selmon);
 }
 

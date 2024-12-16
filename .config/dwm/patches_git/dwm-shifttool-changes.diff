@@ -1,0 +1,239 @@
+diff --git a/config.h b/config.h
+index 3fb3f44..4613e1b 100644
+--- a/config.h
++++ b/config.h
+@@ -209,8 +209,8 @@ static const Key keys[] = {
+         { MODKEY,                   XK_minus,           incrgaps,           {.i = -3 } },
+         { MODKEY|ShiftMask,         XK_plus,            incrgaps,           {.i = +1 } },
+         { MODKEY|ShiftMask,         XK_minus,           incrgaps,           {.i = -1 } },
+-        { MODKEY1,                  XK_Tab,             shiftview,          { .i = +1 } },
+-        { MODKEY1|ShiftMask,        XK_Tab,             shiftview,          { .i = -1 } },
++        { MODKEY1,                  XK_Tab,             shiftviewclients,          { .i = +1 } },
++        { MODKEY1|ShiftMask,        XK_Tab,             shiftviewclients,          { .i = -1 } },
+         /* { MODKEY,                   XK_Tab,             view,               {0} }, */
+         /* { MODKEY,                   XK_Tab,             view,               {0} }, */
+         { MODKEY,                   XK_q,               killclient,         {0} },
+diff --git a/dwm.c b/dwm.c
+index 8b14f30..c072985 100644
+--- a/dwm.c
++++ b/dwm.c
+@@ -250,8 +250,14 @@ static void setcfact(const Arg *arg);
+ static void setmfact(const Arg *arg);
+ static void setup(void);
+ static void seturgent(Client *c, int urg);
+-static void shiftview(const Arg *arg);
+ static void shifttag(const Arg *arg);
++static void shifttagclients(const Arg *arg);
++static void shiftview(const Arg *arg);
++static void shiftviewclients(const Arg *arg);
++static void shiftboth(const Arg *arg);
++static void swaptags(const Arg *arg);
++static void shiftswaptags(const Arg *arg);
++static void setcfact(const Arg *arg);
+ static void showhide(Client *c);
+ static void sigstatusbar(const Arg *arg);
+ static void spawn(const Arg *arg);
+@@ -1965,38 +1971,186 @@ setlayout(const Arg *arg)
+ 		drawbar(selmon);
+ }
+ 
++//void
++//shiftview(const Arg *arg) {
++//	Arg shifted;
++//
++//	if(arg->i > 0) /* left circular shift */
++//		shifted.ui = (selmon->tagset[selmon->seltags] << arg->i)
++//		   | (selmon->tagset[selmon->seltags] >> (LENGTH(tags) - arg->i));
++//
++//	else /* right circular shift */
++//		shifted.ui = selmon->tagset[selmon->seltags] >> (- arg->i)
++//		   | selmon->tagset[selmon->seltags] << (LENGTH(tags) + arg->i);
++//
++//	view(&shifted);
++//}
++//
++//void
++//shifttag(const Arg *arg) {
++//	Arg shifted;
++//	Client *c;
++//
++//	if (!selmon->sel)
++//		return;
++//	c = selmon->sel;
++//
++//	if (arg->i > 0) /* left circular shift */
++//		shifted.ui = (c->tags ^ (c->tags << arg->i)) 
++//			^ (c->tags >> (LENGTH(tags) - arg->i));
++//	else /* right circular shift */
++//		shifted.ui = (c->tags ^ (c->tags >> (-arg->i)))
++//			^ (c->tags << (LENGTH(tags) + arg->i));
++//
++//	toggletag(&shifted);
++//}
++
++// https://github.com/ornfelt/dwm/blob/bkp/shiftview.c
++// Or this (used below):
++// https://dwm.suckless.org/patches/shift-tools/shift-tools-scratchpads.c
++
++/* Sends a window to the next/prev tag */
+ void
+-shiftview(const Arg *arg) {
++shifttag(const Arg *arg)
++{
+ 	Arg shifted;
++	shifted.ui = selmon->tagset[selmon->seltags] & ~SPTAGMASK;
+ 
+-	if(arg->i > 0) /* left circular shift */
+-		shifted.ui = (selmon->tagset[selmon->seltags] << arg->i)
+-		   | (selmon->tagset[selmon->seltags] >> (LENGTH(tags) - arg->i));
+ 
+-	else /* right circular shift */
+-		shifted.ui = selmon->tagset[selmon->seltags] >> (- arg->i)
+-		   | selmon->tagset[selmon->seltags] << (LENGTH(tags) + arg->i);
++	if (arg->i > 0)	/* left circular shift */
++		shifted.ui = ((shifted.ui << arg->i) | (shifted.ui >> (LENGTH(tags) - arg->i))) & ~SPTAGMASK;
++	else		/* right circular shift */
++		shifted.ui = (shifted.ui >> (- arg->i) | shifted.ui << (LENGTH(tags) + arg->i)) & ~SPTAGMASK;
++	tag(&shifted);
++}
++/* Sends a window to the next/prev tag that has a client, else it moves it to the next/prev one. */
++void
++shifttagclients(const Arg *arg)
++{
+ 
++	Arg shifted;
++	Client *c;
++	unsigned int tagmask = 0;
++	shifted.ui = selmon->tagset[selmon->seltags] & ~SPTAGMASK;
++
++	for (c = selmon->clients; c; c = c->next)
++		if (!(c->tags & SPTAGMASK))
++			tagmask = tagmask | c->tags;
++
++
++	if (arg->i > 0)	/* left circular shift */
++		do {
++			shifted.ui = (shifted.ui << arg->i)
++			   | (shifted.ui >> (LENGTH(tags) - arg->i));
++			shifted.ui &= ~SPTAGMASK;
++		} while (tagmask && !(shifted.ui & tagmask));
++	else		/* right circular shift */
++		do {
++			shifted.ui = (shifted.ui >> (- arg->i)
++			   | shifted.ui << (LENGTH(tags) + arg->i));
++			shifted.ui &= ~SPTAGMASK;
++		} while (tagmask && !(shifted.ui & tagmask));
++	tag(&shifted);
++}
++/* Navigate to the next/prev tag */
++void
++shiftview(const Arg *arg)
++{
++	Arg shifted;
++	shifted.ui = selmon->tagset[selmon->seltags] & ~SPTAGMASK;
++
++	if (arg->i > 0) {/* left circular shift */
++		shifted.ui = (shifted.ui << arg->i) | (shifted.ui >> (LENGTH(tags) - arg->i));
++		shifted.ui &= ~SPTAGMASK;
++	} else {	/* right circular shift */
++		shifted.ui = (shifted.ui >> (- arg->i) | shifted.ui << (LENGTH(tags) + arg->i));
++		shifted.ui &= ~SPTAGMASK;
++	}
+ 	view(&shifted);
+ }
++/* Navigate to the next/prev tag that has a client, else moves it to the next/prev tag */
++void
++shiftviewclients(const Arg *arg)
++{
++	Arg shifted;
++	Client *c;
++	unsigned int tagmask = 0;
++	shifted.ui = selmon->tagset[selmon->seltags] & ~SPTAGMASK;
++
++	for (c = selmon->clients; c; c = c->next)
++		if (!(c->tags & SPTAGMASK))
++			tagmask = tagmask | c->tags;
+ 
++
++	if (arg->i > 0)	/* left circular shift */
++		do {
++			shifted.ui = (shifted.ui << arg->i)
++			   | (shifted.ui >> (LENGTH(tags) - arg->i));
++			shifted.ui &= ~SPTAGMASK;
++		} while (tagmask && !(shifted.ui & tagmask));
++	else		/* right circular shift */
++		do {
++			shifted.ui = (shifted.ui >> (- arg->i)
++			   | shifted.ui << (LENGTH(tags) + arg->i));
++			shifted.ui &= ~SPTAGMASK;
++		} while (tagmask && !(shifted.ui & tagmask));
++	view(&shifted);
++}
++/* move the current active window to the next/prev tag and view it. More like following the window */
+ void
+-shifttag(const Arg *arg) {
++shiftboth(const Arg *arg)
++{
+ 	Arg shifted;
++	shifted.ui = selmon->tagset[selmon->seltags] & ~SPTAGMASK;
++
++	if (arg->i > 0)	/* left circular shift */
++		shifted.ui = ((shifted.ui << arg->i) | (shifted.ui >> (LENGTH(tags) - arg->i))) & ~SPTAGMASK;
++	else		/* right circular shift */
++		shifted.ui = ((shifted.ui >> (- arg->i) | shifted.ui << (LENGTH(tags) + arg->i))) & ~SPTAGMASK;
++	tag(&shifted);
++	view(&shifted);
++}
++//helper function for shiftswaptags found on:
++//https://github.com/moizifty/DWM-Build/blob/65379c62640788881486401a0d8c79333751b02f/config.h#L48
++// modified to work with scratchpad
++void
++swaptags(const Arg *arg)
++{
+ 	Client *c;
++	unsigned int newtag = arg->ui & TAGMASK;
++	unsigned int curtag = selmon->tagset[selmon->seltags] & ~SPTAGMASK;
+ 
+-	if (!selmon->sel)
++	if (newtag == curtag || !curtag || (curtag & (curtag-1)))
+ 		return;
+-	c = selmon->sel;
+ 
+-	if (arg->i > 0) /* left circular shift */
+-		shifted.ui = (c->tags ^ (c->tags << arg->i)) 
+-			^ (c->tags >> (LENGTH(tags) - arg->i));
+-	else /* right circular shift */
+-		shifted.ui = (c->tags ^ (c->tags >> (-arg->i)))
+-			^ (c->tags << (LENGTH(tags) + arg->i));
++	for (c = selmon->clients; c != NULL; c = c->next) {
++		if ((c->tags & newtag) || (c->tags & curtag))
++			c->tags ^= curtag ^ newtag;
++
++		if (!c->tags)
++			c->tags = newtag;
++	}
+ 
+-	toggletag(&shifted);
++	//move to the swaped tag
++	//selmon->tagset[selmon->seltags] = newtag;
++
++	focus(NULL);
++	arrange(selmon);
++}
++/* swaps "tags" (all the clients) with the next/prev tag. */
++void
++shiftswaptags(const Arg *arg)
++{
++	Arg shifted;
++	shifted.ui = selmon->tagset[selmon->seltags] & ~SPTAGMASK;
++
++	if (arg->i > 0)	/* left circular shift */
++		shifted.ui = ((shifted.ui << arg->i) | (shifted.ui >> (LENGTH(tags) - arg->i))) & ~SPTAGMASK;
++	else		/* right circular shift */
++		shifted.ui = ((shifted.ui >> (- arg->i) | shifted.ui << (LENGTH(tags) + arg->i))) & ~SPTAGMASK;
++	swaptags(&shifted);
++	// uncomment if you also want to "go" (view) the tag where the the clients are going
++	//view(&shifted);
+ }
+ 
+ void

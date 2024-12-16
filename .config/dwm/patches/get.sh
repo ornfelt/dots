@@ -84,3 +84,6 @@ download_if_not_exists https://dwm.suckless.org/patches/save_floats/dwm-savefloa
 #download_if_not_exists https://dwm.suckless.org/patches/status2d/dwm-status2d-systray-6.4.diff
 download_if_not_exists https://dwm.suckless.org/patches/status2d/dwm-status2d-6.3.diff
 
+# https://dwm.suckless.org/patches/togglefloatingcenter/
+download_if_not_exists https://dwm.suckless.org/patches/togglefloatingcenter/dwm-togglefloatingcenter-20210806-138b405f.diff
+
