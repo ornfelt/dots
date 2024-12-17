@@ -11,6 +11,8 @@ vim.cmd [[
 --   command = "source ~/.vim/sessions/s.vim"
 -- })
 
+local code_root_dir = os.getenv("code_root_dir")
+
 -- Helper function to create key mappings for given filetypes
 local function create_mappings(ft, mappings)
   vim.api.nvim_create_autocmd("FileType", {
@@ -268,7 +270,6 @@ vim.api.nvim_create_autocmd("TextYankPost", {
 
 -- Read Program.cs and appsettings file and extract engine and env values
 local function read_envs_from_appsettings()
-  local code_root_dir = os.getenv("code_root_dir")
   if not code_root_dir then
     print("Environment variable 'code_root_dir' is not set.")
     return nil
@@ -349,7 +350,6 @@ end
 
 -- Helper function to read engines and envs
 local function read_program_cs()
-  local code_root_dir = os.getenv("code_root_dir")
   if not code_root_dir then
     print("Environment variable 'code_root_dir' is not set.")
     return nil
@@ -423,7 +423,6 @@ vim.api.nvim_create_autocmd("FileType", {
 })
 
 local function get_notes_path()
-  local code_root_dir = os.getenv("code_root_dir")
   if not code_root_dir then
     print("Environment variable 'code_root_dir' is not set.")
     return nil
