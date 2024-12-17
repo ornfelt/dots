@@ -18,9 +18,9 @@ end
 --local my_notes_path = vim.fn.getenv("my_notes_path")
 --local my_notes_path = normalize_path(vim.env.my_notes_path or "")
 local home_dir = normalize_path((os.getenv("HOME") or os.getenv("USERPROFILE")) .. "/")
-local my_notes_path = normalize_path(os.getenv("my_notes_path") or home_dir .. "/")
-local code_root_dir = normalize_path(os.getenv("code_root_dir") or home_dir .. "/")
-local ps_profile_path = normalize_path(tostring(os.getenv("ps_profile_path")) or home_dir .. "/")
+local my_notes_path = normalize_path((os.getenv("my_notes_path") or home_dir) .. "/")
+local code_root_dir = normalize_path((os.getenv("code_root_dir") or home_dir) .. "/")
+local ps_profile_path = normalize_path((tostring(os.getenv("ps_profile_path")) or home_dir) .. "/")
 
 local barhidden = false
 --local function togglebar()
