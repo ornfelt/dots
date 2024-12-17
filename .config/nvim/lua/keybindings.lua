@@ -976,7 +976,7 @@ function ReplacePathBasedOnContext()
     end
   end
 
-  line = normalize_path(line) -- Just to replace any concecutive slashes again...
+  line = normalize_path(line) -- Just to replace any consecutive slashes again...
   -- Update line in buffer
   vim.fn.setline(".", line)
 end
@@ -2445,6 +2445,13 @@ vim.keymap.set('n', '<leader><leader>', function()
     { label = "Toggle Relative Numbers", cmd = "lua vim.o.relativenumber = not vim.o.relativenumber" },
     { label = "Neovim Log", cmd = "lua vim.cmd('tabedit ' .. vim.fn.stdpath('state') .. '/log')" },
     { label = "Check Health", cmd = "lua vim.cmd('checkhealth')" },
+    { label = "diffthis", cmd = "windo diffthis" },
+    { label = "diffoff", cmd = "windo diffoff" },
+    { label = "diffget", cmd = "windo diffget" },
+    { label = "diffput", cmd = "windo diffput" },
+    { label = "diffpatch", cmd = "windo diffpatch" },
+    { label = "diffsplit", cmd = "windo diffsplit" },
+    { label = "diffdiffupdate", cmd = "windo diffdiffupdate" },
   }
 
   local selections_to_print = {
@@ -2735,4 +2742,117 @@ vim.api.nvim_create_autocmd("FileType", {
     vim.keymap.set("i", "t", add_async, { buffer = true })
   end,
 })
+
+local function replace_env_paths(file_path)
+    local my_notes_path = normalize_path(os.getenv("my_notes_path")) .. "/"
+    local code_root_dir = normalize_path(os.getenv("code_root_dir")) .. "/"
+    local ps_profile_path = normalize_path(tostring(os.getenv("ps_profile_path"))) .. "/"
+
+    if file_path:find("{my_notes_path}/", 1, true) or file_path:find("{code_root_dir}/", 1, true) or file_path:find("{ps_profile_path}/", 1, true) then
+        file_path = file_path:gsub("{my_notes_path}/", vim.pesc(my_notes_path))
+        file_path = file_path:gsub("{code_root_dir}/", vim.pesc(code_root_dir))
+        file_path = file_path:gsub("{ps_profile_path}/", vim.pesc(ps_profile_path))
+        file_path = normalize_path(file_path)
+    end
+    return file_path
+end
+
+local function clean_selected_path(cwd, selected_path)
+    selected_path = selected_path:match("[A-Za-z].*$") or selected_path
+    if not selected_path:match("^/") and not selected_path:match("^%a:") then
+        selected_path = vim.fn.fnamemodify(cwd .. "/" .. selected_path, ":p")
+    end
+
+    return normalize_path(selected_path)
+end
+
+function diff_buffers_or_file()
+  local tabpage = vim.api.nvim_get_current_tabpage()
+  local windows = vim.api.nvim_tabpage_list_wins(tabpage)
+  local use_fzf_for_diff = true
+  local use_fzf_lua_for_diff = false
+
+  if #windows == 2 then
+    vim.cmd("windo diffthis")
+    print("Diff mode enabled for the two open splits.")
+  else
+    local file_to_diff = vim.fn.input("Enter file path or directory to diff with current buffer: ")
+    if file_to_diff ~= "" then
+      file_to_diff = replace_env_paths(file_to_diff)
+
+      if vim.fn.isdirectory(file_to_diff) == 1 then
+        if use_fzf_lua_for_diff then
+          require('fzf-lua').files({
+            cwd = file_to_diff,
+            prompt = "Select a file to diff",
+            actions = {
+              ["default"] = function(selected_paths)
+                local cwd = file_to_diff
+                local selected_path = selected_paths[1]
+
+                if selected_path then
+                  print("path: " .. selected_path)
+                  selected_path = clean_selected_path(cwd, selected_path)
+                  print("Cleaned path: " .. selected_path)
+
+                  vim.cmd("vsplit " .. vim.fn.fnameescape(selected_path))
+                  vim.cmd("diffthis")
+                  vim.cmd("windo diffthis")
+                  print("Diff mode enabled for current buffer and " .. selected_path)
+                else
+                  print("No file selected. Diff mode aborted.")
+                end
+              end,
+            },
+          })
+        elseif use_fzf_for_diff then
+          vim.fn['fzf#run']({
+            dir = file_to_diff,
+            options = '--prompt="Select file to diff> " --reverse',
+            sink = function(selected)
+              local file = clean_selected_path(file_to_diff, selected)
+              vim.cmd("vsplit " .. vim.fn.fnameescape(file))
+              vim.cmd("diffthis | windo diffthis")
+              print("Diff mode enabled for current buffer and " .. file)
+            end,
+            window = {
+              width = 0.6,
+              height = 0.6,
+              border = 'rounded',
+            },
+          })
+        else
+          require('telescope.builtin').find_files({
+            cwd = file_to_diff,
+            prompt_title = "Select a file to diff",
+            attach_mappings = function(_, map)
+              map("i", "<CR>", function(prompt_bufnr)
+                local selected = require('telescope.actions.state').get_selected_entry()
+                require('telescope.actions').close(prompt_bufnr)
+                if selected and selected.path then
+                  vim.cmd("vsplit " .. vim.fn.fnameescape(selected.path))
+                  vim.cmd("diffthis")
+                  vim.cmd("windo diffthis")
+                  print("Diff mode enabled for current buffer and " .. selected.path)
+                end
+              end)
+              return true
+            end,
+          })
+        end
+      elseif vim.fn.filereadable(file_to_diff) == 1 then
+        vim.cmd("vsplit " .. vim.fn.fnameescape(file_to_diff))
+        vim.cmd("diffthis")
+        vim.cmd("windo diffthis")
+        print("Diff mode enabled for current buffer and " .. file_to_diff)
+      else
+        print("Invalid file or directory path. Please try again.")
+      end
+    else
+      print("No file path provided. Diff mode aborted.")
+    end
+  end
+end
+
+vim.api.nvim_set_keymap("n", "<leader>di", ":lua diff_buffers_or_file()<CR>", { noremap = true, silent = true })
 

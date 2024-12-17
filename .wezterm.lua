@@ -475,8 +475,28 @@ config.keys = {
   resize_pane("i"),
   resize_pane("o"),
   -- QuickSelect
+  -- shift-ctrl-space is provided by default
+  -- https://wezfurlong.org/wezterm/config/default-keys.html
   -- { key = ' ', mods = 'SHIFT|CTRL', action = wezterm.action.QuickSelect },
-  { key = ' ', mods = 'ALT|SHIFT', action = wezterm.action.QuickSelect },
+  --{ key = ' ', mods = 'ALT|SHIFT', action = wezterm.action.QuickSelect },
+
+  -- Customizing QuickSelect
+  -- https://wezfurlong.org/wezterm/config/lua/keyassignment/QuickSelectArgs.html
+  {
+    key = ' ',
+    mods = 'ALT|SHIFT',
+    action = wezterm.action.QuickSelectArgs {
+      label = 'open url',
+      patterns = {
+        'https?://\\S+',
+      },
+      action = wezterm.action_callback(function(window, pane)
+        local url = window:get_selection_text_for_pane(pane)
+        wezterm.log_info('opening: ' .. url)
+        wezterm.open_with(url)
+      end),
+    },
+  },
 
   -- Make ctrl-tab cycle tabs / windows for both wezterm and tmux
   {
