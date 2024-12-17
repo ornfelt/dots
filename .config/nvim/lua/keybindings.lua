@@ -1447,8 +1447,25 @@ local function SqlExecCommand()
   --vim.api.nvim_buf_set_option(new_buf, "bufhidden", "wipe") -- Automatically wipe the buffer when closed
 end
 
+local config_file_path = my_notes_path .. "scripts/files/nvim_config.txt"
+local function print_config_contents()
+    local file = io.open(config_file_path, "r")
+    if not file then
+        vim.notify("Config file not found: " .. config_file_path, vim.log.levels.ERROR)
+        return
+    end
+
+    vim.notify("Contents of " .. config_file_path, vim.log.levels.INFO)
+    for line in file:lines() do
+        print(line)
+    end
+
+    file:close()
+end
+
+vim.api.nvim_create_user_command("PrintConfig", print_config_contents, {})
+
 local function read_config(key, default_value)
-  local config_file_path = my_notes_path .. "/scripts/files/nvim_config.txt"
   local value = default_value
   local key_lower = key:lower()
 
@@ -1817,7 +1834,6 @@ vim.api.nvim_set_keymap('v', '<M-c>', '<cmd>lua PythonExecCommand()<CR>', { nore
 vim.api.nvim_set_keymap('i', '<M-c>', '<cmd>lua PythonExecCommand()<CR>', { noremap = true, silent = true })
 
 function CyclePythonExecCommand()
-  local config_file_path = my_notes_path .. "/scripts/files/nvim_config.txt"
   local possible_commands = { "read_file", "gpt", "claude/claude", "gemini/gemini", "mistral/mistral" }
   local current_command = read_config("PythonExecCommand", "gpt")
 
@@ -1862,8 +1878,6 @@ function CyclePythonExecCommand()
 end
 
 function TogglePrioritizeBuildScript()
-  local config_file_path = my_notes_path .. "/scripts/files/nvim_config.txt"
-
   local lines = {}
   local current_value = "false"
   local updated = false
@@ -2261,8 +2275,9 @@ vim.keymap.set('n', '<leader><leader>', function()
     { label = "DiffCp", cmd = "DiffCp" },
     { label = "MakefileTargets", cmd = "MakefileTargets" },
     { label = "GoLangTestFiles", cmd = "GoLangTestFiles" },
-    { label = "Update Config - CyclePythonExecCommand", cmd = "CyclePythonExecCommand" },
-    { label = "Update Config - TogglePrioritizeBuildScript", cmd = "TogglePrioritizeBuildScript" },
+    { label = "Config - CyclePythonExecCommand", cmd = "CyclePythonExecCommand" },
+    { label = "Config - TogglePrioritizeBuildScript", cmd = "TogglePrioritizeBuildScript" },
+    { label = "Config - PrintConfig", cmd = "PrintConfig" },
     { label = "Llama", cmd = "Llm" },
     -- SQL
     { label = "SqlsExecuteQuery", cmd = "SqlsExecuteQuery" },
@@ -2435,6 +2450,7 @@ vim.keymap.set('n', '<leader><leader>', function()
     ["messages"] = true,
     ["CyclePythonExecCommand"] = true,
     ["TogglePrioritizeBuildScript"] = true,
+    ["PrintConfig"] = true,
   }
 
   pickers.new({}, {
