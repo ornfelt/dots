@@ -2754,11 +2754,11 @@ updategeom(void)
 
 #ifdef XINERAMA
 	if (XineramaIsActive(dpy)) {
-		int i, j, n, nn;
-		Client *c;
-		Monitor *m;
-		XineramaScreenInfo *info = XineramaQueryScreens(dpy, &nn);
-		XineramaScreenInfo *unique = NULL;
+        int i, j, n, nn;
+        Client *c, *next_client;
+        Monitor *m, *primary, *secondary;
+        XineramaScreenInfo *info = XineramaQueryScreens(dpy, &nn);
+        XineramaScreenInfo *unique = NULL;
 
 		for (n = 0, m = mons; m; m = m->next, n++);
 		/* only consider unique geometries as separate screens */
@@ -2777,6 +2777,29 @@ updategeom(void)
 			else
 				mons = createmon();
 		}
+
+        /* Move even-tagged clients from first monitor to second monitor */
+        if (nn > 1) {
+            primary = mons;              /* First monitor */
+            secondary = mons->next;      /* Second monitor */
+
+            if (primary && secondary) {
+                for (c = primary->clients; c; c = next_client) {
+                    next_client = c->next;
+
+                    /* Check if the client belongs to an even tag */
+                    if (c->tags & 0b010101010) { /* Even tags: 2, 4, 6, 8 */
+                        detach(c);               /* Detach from primary monitor */
+                        detachstack(c);
+
+                        c->mon = secondary;     /* Assign to secondary monitor */
+                        attach(c);              /* Attach to secondary monitor */
+                        attachstack(c);
+                    }
+                }
+            }
+        }
+
 		for (i = 0, m = mons; i < nn && m; m = m->next, i++)
 			if (i >= n
 			|| unique[i].x_org != m->mx || unique[i].y_org != m->my

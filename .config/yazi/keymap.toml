@@ -107,15 +107,15 @@ on = ["g", "a"]
 run = [ '''cd ~/Downloads''' ]
 desc = "cd to ~/Downloads"
 
-[[manager.prepend_keymap]]
-on = ["x", "-"]
-run = [ '''shell chmod -x {{s}}''' ]
-desc = "Remove execute permissions"
-
-[[manager.prepend_keymap]]
-on = ["x", "+"]
-run = [ '''shell chmod +x {{s}}''' ]
-desc = "Add execute permissions"
+#[[manager.prepend_keymap]]
+#on = ["x", "-"]
+#run = [ '''shell chmod -x {{s}}''' ]
+#desc = "Remove execute permissions"
+#
+#[[manager.prepend_keymap]]
+#on = ["x", "+"]
+#run = [ '''shell chmod +x {{s}}''' ]
+#desc = "Add execute permissions"
 
 [[manager.prepend_keymap]]
 on = "V"

@@ -1,0 +1,4206 @@
+diff --git a/README.rst b/README.rst
+new file mode 100644
+index 0000000..7fa6263
+--- /dev/null
++++ b/README.rst
+@@ -0,0 +1,182 @@
++Awesome WM Copycats
++===================
++
++-------------------------
++Themes for Awesome WM 4.x
++-------------------------
++
++:Author: Luca CPZ
++:Version: git
++:License: BY-SA_
++:Source: https://github.com/lcpz/awesome-copycats
++
++Description
++===========
++
++A set of themes for the Awesome_ window manager, version 4.x.
++
++See branches_ for previous versions.
++
++Purpose
++=======
++
++The main purpose of this repository is to spread ready to use configurations, which can also serve as a cookbook for customisation.
++
++A secondary aim is to add new themes only when they constitute different UI/UX designs.
++
++Features
++========
++
++- Modularity
++- Autohide widgets
++- Autostart windowless processes
++- Fast MPD and volume shortcuts (first time this trick has been used in Awesome)
++- Shortcuts for copying to the clipboard, toggle wiboxes, widgets popups, screenshots capture, moving and magnifying clients
++- Quake drop-down terminal
++- Calendar with current day highlighted and months switch with a click/scroll
++- Notifications for new mails, current song, volume level, hdd critical state, low battery
++- OpenWeatherMap integration
++- Net carrier status notifier
++- Symbolic tag names
++- DWM-like textual layoutbox
++- Cairo wibar
++- Custom layouts
++- No borders when there's only one visible client
++- Freedesktop.org compliant menu and desktop icons
++- Vi-like client focus
++- Non-empty tag browsing
++- On-the-fly useless gaps resize
++- Dynamic tagging
++
++Gallery
++=======
++
++**Multicolor**, inspired by lucamanni_
++
++.. image:: http://dotshare.it/public/images/uploads/650.png
++
++**Powerarrow**, porting of romockee_'s
++
++.. image:: http://dotshare.it/public/images/uploads/1453.png
++
++**Powerarrow Dark**
++
++.. image:: http://dotshare.it/public/images/uploads/649.jpg
++
++**Steamburn**, porting of ok100_'s dwm
++
++.. image:: http://dotshare.it/public/images/uploads/648.png
++
++**Blackburn**
++
++.. image:: http://dotshare.it/public/images/uploads/553.png
++
++**Dremora**
++
++.. image:: http://dotshare.it/public/images/uploads/652.png
++
++**Rainbow**
++
++.. image:: http://dotshare.it/public/images/uploads/606.png
++
++**Holo**, requested by amouly_
++
++.. image:: http://dotshare.it/public/images/uploads/651.jpg
++
++**Copland**, inspired by foozer_
++
++.. image:: http://dotshare.it/public/images/uploads/655.png
++
++**Vertex**, requested by swordfischer_
++
++.. image:: http://dotshare.it/public/images/uploads/1432.jpg
++
++Installation
++============
++
++.. code-block:: shell
++
++    git clone --recurse-submodules --remote-submodules --depth 1 -j 2 https://github.com/lcpz/awesome-copycats.git
++    mkdir -p ~/.config/awesome && mv -bv awesome-copycats/{*,.[^.]*} ~/.config/awesome &&  rm -rf awesome-copycats
++
++In case you do not want the Git files, use the following as the second command:
++
++.. code-block:: shell
++
++    mv -bv awesome-copycats/* ~/.config/awesome; rm -rf awesome-copycats
++
++Usage
++=====
++
++The modular structure allows to
++
++* set variables
++* define startup processes
++* change keybindings and layouts
++* set client properties
++
++in ``rc.lua``, and
++
++* configure widgets
++* define wiboxes and screen settings
++
++in ``theme.lua``, so that you just need to change ``chosen_theme`` variable in ``rc.lua`` to preserve your preferences *and* switch the theme, instead of having file redundancy.
++
++Just do the following:
++
++.. code-block:: shell
++
++    $ cd ~/.config/awesome
++    $ cp rc.lua.template rc.lua
++
++Then, set the variable ``chosen_theme`` in ``rc.lua`` to your preferred theme, do your settings, and restart Awesome (``Mod4 + ctrl + r``).
++
++To customize a theme, head over to ``themes/$chosen_theme/theme.lua``.
++
++Otherwise, if you want to be synced with upstream, modify the theme path in ``rc.lua`` like this:
++
++.. code-block:: diff
++
++    -beautiful.init(string.format("%s/.config/awesome/themes/%s/theme.lua", os.getenv("HOME"), chosen_theme))
++    +beautiful.init(string.format("%s/.config/awesome/themes/%s/theme-personal.lua", os.getenv("HOME"), chosen_theme))
++
++then, copy ``theme.lua`` to ``theme-personal.lua`` and do your customizations there.
++
++This way, you can safely ``git pull`` anytime.
++
++Notes
++=====
++
++Complements are provided by lain_ and freedesktop_. **Be sure** to satisfy their dependencies_. In particular, mail_ and weather_ widgets have **mandatory** arguments.
++
++The fonts used in the screenshots are: Terminus_ (Multicolor, Powerarrow, Powerarrow Dark), Roboto_ (Holo, Vertex) and Tamzen_ (other ones).
++
++As taglist font, Blackburn and Dremora use Icons_, Vertex uses FontAwesome_: be sure to have bitmaps enabled if running under Debian or Ubuntu_.
++
++Every theme has a colorscheme_.
++
++Additional default software used: ::
++
++    amixer dmenu librewolf mpc mpd scrot unclutter xbacklight xsel slock
++
++.. _BY-SA: https://creativecommons.org/licenses/by-sa/4.0
++.. _Awesome: http://github.com/awesomeWM/awesome
++.. _branches: https://github.com/lcpz/awesome-copycats/branches
++.. _lucamanni: https://github.com/lucamanni/awesome
++.. _romockee: https://github.com/romockee/powerarrow
++.. _ok100: http://ok100.deviantart.com/art/DWM-January-2013-348656846
++.. _amouly: https://bbs.archlinux.org/viewtopic.php?pid=1307158#p1307158
++.. _swordfischer: https://github.com/lcpz/awesome-copycats/issues/53
++.. _foozer: http://dotshare.it/dots/499
++.. _lain: https://github.com/lcpz/lain
++.. _freedesktop: https://github.com/lcpz/awesome-freedesktop
++.. _Terminus: http://terminus-font.sourceforge.net
++.. _Roboto: https://fonts.google.com/specimen/Roboto
++.. _Tamzen: https://github.com/sunaku/tamzen-font
++.. _Icons: https://github.com/lcpz/dots/tree/master/.fonts
++.. _FontAwesome: https://github.com/FortAwesome/Font-Awesome
++.. _Ubuntu: https://wiki.ubuntu.com/Fonts#Enabling_Bitmapped_Fonts
++.. _colorscheme: https://github.com/lcpz/dots/tree/master/.colors
++.. _dependencies: https://github.com/lcpz/lain/wiki#dependencies
++.. _mail: https://github.com/lcpz/lain/wiki/mail
++.. _weather: https://github.com/lcpz/lain/wiki/weather
+diff --git a/bar/bar.lua b/bar/bar.lua
+deleted file mode 100755
+index dece062..0000000
+--- a/bar/bar.lua
++++ /dev/null
+@@ -1,68 +0,0 @@
+-local awful = require("awful")
+-local beautiful = require("beautiful")
+-local wibox = require("wibox")
+-
+-local taglist = require("bar/widgets/taglist")
+-local clock = require("bar/widgets/clock")
+-local vpn = require("bar/widgets/vpn")
+-local spacer = require("bar/widgets/spacer")
+-local layout = require("bar/widgets/layout")
+-local battery = require("bar/widgets/battery")
+-local unison = require("bar/widgets/unison")
+-local togglekeyboard = require("bar/widgets/togglekeyboard")
+-local playing = require("bar/widgets/playing")
+-
+-
+-local bar = function(s)
+-    local wb = awful.wibar {
+-        position = "top",
+-        height = beautiful.bar_height,
+-        screen = s,
+-        bg = beautiful.background
+-    }
+-    wb:setup {
+-        {
+-            {
+-                layout = wibox.layout.align.horizontal,
+-                {
+-                    layout = wibox.layout.align.horizontal,
+-                    taglist(s),
+-                    layout(s)
+-                },
+-                nil,
+-                {
+-                    layout = wibox.layout.align.horizontal,
+-                    {
+-                        layout = wibox.layout.align.horizontal,
+-                        playing,
+-                        spacer,
+-                        battery,
+-                    },
+-					{
+-						layout = wibox.layout.align.horizontal,
+-                        spacer,
+-						unison,
+-						spacer,
+-					},
+-                    {
+-                        layout = wibox.layout.align.horizontal,
+-                        togglekeyboard,
+-                        spacer,
+-                        vpn,
+-                    }
+-                }
+-            },
+-            widget = wibox.container.margin,
+-            right = 5,
+-            left = 5
+-        },
+-        {
+-            layout = wibox.container.place,
+-            halign = "center",
+-            clock
+-        },
+-        layout = wibox.layout.stack,
+-    }
+-end
+-
+-return bar
+diff --git a/bar/widgets/battery.lua b/bar/widgets/battery.lua
+deleted file mode 100644
+index 8902f57..0000000
+--- a/bar/widgets/battery.lua
++++ /dev/null
+@@ -1,97 +0,0 @@
+-local wibox = require("wibox")
+-local awful = require("awful")
+-local gears = require("gears")
+-
+-local level_icons = {
+-    "  ",
+-    "  ",
+-    "  ",
+-    "  ",
+-    "  "
+-}
+-
+-local charging_icon = ""
+-
+-local notification_shown = 100
+-
+-local icon_widget = wibox.widget.textbox()
+-icon_widget:set_text("")
+-
+-local charging_widget = wibox.widget.textbox()
+-charging_widget:set_text("")
+-
+-local percentage_widget = wibox.widget.textbox()
+-percentage_widget:set_text("")
+-
+-local combo_widget = wibox.widget {
+-    charging_widget,
+-    {
+-        icon_widget,
+-        left = 5,
+-        widget = wibox.container.margin
+-    },
+-    percentage_widget,
+-    layout = wibox.layout.fixed.horizontal
+-}
+-
+-local function update_icon_and_percentage_widgets(upower_output)
+-    local percentage = tonumber(upower_output:match("percentage:%s*(%d+)")) or 0
+-
+-    -- Round to the nearest 20 to get the icon index
+-    -- The +0.5 is to round to the nearest integer instead of the floor
+-    local level = math.floor(percentage/25 + 0.5)
+-    local icon = level_icons[level+1]
+-
+-    -- is_red is for alternating the color of the percentage widget
+-    -- (blinking red/white)
+-    if percentage <= 15 then
+-        percentage_widget.markup = "<span color='red'>" .. percentage .. "%</span>"
+-        icon_widget.markup = "<span color='red'>" .. icon .. "</span>"
+-        if notification_shown - percentage >= 10 then
+-            awful.spawn.with_shell(
+-                "notify-send -u critical 'Battery Low' 'Battery is at " .. percentage .. "%'"
+-            )
+-            -- Avoid sending another notification until the next 5% step
+-            -- (5, 10, 15)
+-            notification_shown = math.ceil(percentage/5) * 5
+-        end
+-    else
+-        percentage_widget.markup = percentage .. "%"
+-        icon_widget.markup = icon
+-        notification_shown = 100 -- Reset
+-    end
+-end
+-
+-local update_charging_widget = function(upower_output)
+-    local charging = upower_output:match("state:%s*(%a+)")
+-    if charging == "charging" then
+-        charging_widget:set_text(charging_icon)
+-    else
+-        charging_widget:set_text("")
+-    end
+-end
+-
+-local function check_laptop_and_update()
+-    awful.spawn.easy_async_with_shell(
+-        "upower -i /org/freedesktop/UPower/devices/battery_BAT1",
+-        function(output)
+-            if output:match("(should be ignored)") then
+-                -- No battery found!
+-                combo_widget.visible = false
+-                return
+-            end
+-            update_icon_and_percentage_widgets(output)
+-            update_charging_widget(output)
+-        end
+-    )
+-end
+-
+-gears.timer {
+-    timeout = 1,    -- It's good to update the charging status often for quick 
+-                    -- feedback
+-    autostart = true,
+-    call_now = true,
+-    callback = check_laptop_and_update
+-}
+-
+-return combo_widget
+diff --git a/bar/widgets/clock.lua b/bar/widgets/clock.lua
+deleted file mode 100755
+index f9e3f4a..0000000
+--- a/bar/widgets/clock.lua
++++ /dev/null
+@@ -1,10 +0,0 @@
+-local wibox = require("wibox")
+-local gears = require("gears")
+-local beautiful = require("beautiful")
+-
+-local clock = wibox.widget {
+-        format = "%a %d %b %H:%M",
+-        widget = wibox.widget.textclock,
+-}
+-
+-return clock
+diff --git a/bar/widgets/layout.lua b/bar/widgets/layout.lua
+deleted file mode 100644
+index afd5216..0000000
+--- a/bar/widgets/layout.lua
++++ /dev/null
+@@ -1,23 +0,0 @@
+-local awful = require("awful")
+-local gears = require("gears")
+-
+-local function layoutbox(s)
+-    local widget = awful.widget.layoutbox(s)
+-    widget:buttons(gears.table.join(
+-        awful.button({}, 1, function()
+-            awful.layout.inc(1)
+-        end),
+-        awful.button({}, 3, function()
+-            awful.layout.inc(-1)
+-        end),
+-        awful.button({}, 4, function()
+-            awful.layout.inc(1)
+-        end),
+-        awful.button({}, 5, function()
+-            awful.layout.inc(-1)
+-        end)
+-    ))
+-    return widget
+-end
+-
+-return layoutbox
+diff --git a/bar/widgets/playing.lua b/bar/widgets/playing.lua
+deleted file mode 100755
+index b8e29da..0000000
+--- a/bar/widgets/playing.lua
++++ /dev/null
+@@ -1,62 +0,0 @@
+-local awful = require("awful")
+-local wibox = require("wibox")
+-local gears = require("gears")
+-
+-local icon = wibox.widget.textbox("󰝚 ")
+-local title = wibox.widget.textbox()
+-local cover = wibox.widget {
+-    resize = true,
+-    forced_height = 300,
+-    forced_width = 300,
+-    clip_shape = gears.shape.rounded_rect,
+-    widget = wibox.widget.imagebox
+-}
+-
+-local function daemon ()
+-    awful.spawn.easy_async_with_shell(
+-        'mpc current --format "%artist% - %title%"',
+-        function(stdout)
+-            -- Remove all lines after the first one
+-            stdout = stdout:gsub("\n.*", "")
+-            if stdout ~= "" and stdout ~= " - " then
+-                title:set_text(stdout)
+-            else
+-                title:set_text("Not playing")
+-            end
+-        end
+-    )
+-end
+-
+-title:connect_signal("button::press", function(_, _, _, button)
+-    if button == 1 then
+-        awful.spawn.with_shell('mpc toggle')
+-    end
+-end)
+-
+-gears.timer {
+-    timeout = 1,
+-    call_now = true,
+-    autostart = true,
+-    callback = daemon
+-}
+-
+--- Put the title in a container to allow for scrolling when the text is too
+--- long (like this comment :-)).
+-local scrolling_title = wibox.widget {
+-   layout = wibox.container.scroll.horizontal,
+-   max_size = 300,
+-   step_function = wibox.container.scroll.step_functions
+-                   .waiting_nonlinear_back_and_forth,
+-   speed = 100,
+-   title
+-}
+-
+-scrolling_title:set_fps(60)
+-
+-local main = wibox.widget {
+-    icon,
+-    scrolling_title,
+-    layout = wibox.layout.fixed.horizontal
+-}
+-
+-return main
+diff --git a/bar/widgets/spacer.lua b/bar/widgets/spacer.lua
+deleted file mode 100644
+index fb8e879..0000000
+--- a/bar/widgets/spacer.lua
++++ /dev/null
+@@ -1,6 +0,0 @@
+-local wibox = require("wibox")
+-
+-local spacer = wibox.widget.textbox()
+-spacer:set_text(" ")
+-
+-return spacer
+diff --git a/bar/widgets/taglist.lua b/bar/widgets/taglist.lua
+deleted file mode 100755
+index 1c0c542..0000000
+--- a/bar/widgets/taglist.lua
++++ /dev/null
+@@ -1,28 +0,0 @@
+-local awful = require("awful")
+-local gears = require("gears")
+-
+-
+-return function(s)
+-    local taglist_buttons = gears.table.join(
+-        awful.button({ }, 1, function(t) t:view_only() end),
+-        awful.button({ modkey }, 1, function(t)
+-            if client.focus then
+-                client.focus:move_to_tag(t)
+-            end
+-        end),
+-        awful.button({ }, 3, awful.tag.viewtoggle),
+-        awful.button({ modkey }, 3, function(t)
+-            if client.focus then
+-                client.focus:toggle_tag(t)
+-            end
+-        end),
+-        awful.button({ }, 4, function(t) awful.tag.viewnext(t.screen) end),
+-        awful.button({ }, 5, function(t) awful.tag.viewprev(t.screen) end)
+-    )
+-
+-    return awful.widget.taglist {
+-        screen  = s,
+-        filter  = awful.widget.taglist.filter.all,
+-        buttons = taglist_buttons,
+-    }
+-end
+diff --git a/bar/widgets/togglekeyboard.lua b/bar/widgets/togglekeyboard.lua
+deleted file mode 100644
+index 4c54613..0000000
+--- a/bar/widgets/togglekeyboard.lua
++++ /dev/null
+@@ -1,54 +0,0 @@
+-local internal_keyboard = "AT Translated Set 2 keyboard"
+-
+-local awful = require("awful")
+-local wibox = require("wibox")
+-local gears = require("gears")
+-
+-local widget = wibox.widget.textbox()
+-
+-local function get_enabled (callback)
+-    awful.spawn.easy_async_with_shell('xinput list-props "' .. internal_keyboard ..  '" | grep "Device Enabled" | awk \'{print $4}\'', function (stdout, stderr)
+-        callback(stdout == "1\n")
+-    end)
+-end
+-
+-local function daemon ()
+-    get_enabled(function(status)
+-        if status then
+-            widget:set_text("  on")
+-        else
+-            widget:set_text("  off")
+-        end
+-    end)
+-end
+-
+-local function toggle ()
+-    get_enabled(function(status)
+-        local new
+-        if status then
+-            new = 0
+-        else
+-            new = 1
+-        end
+-
+-        awful.spawn.easy_async_with_shell('xinput set-prop "' .. internal_keyboard .. '" "Device Enabled" ' .. new, function()
+-            daemon()
+-            awful.spawn.easy_async_with_shell("~/.config/scripts/manage-keyboards")
+-        end)
+-    end)
+-end
+-
+-widget:connect_signal("button::press", function(_, _, _, button)
+-    if button == 1 then
+-        toggle()
+-    end
+-end)
+-
+-gears.timer {
+-    timeout = 1,
+-    call_now = true,
+-    autostart = true,
+-    callback = daemon
+-}
+-
+-return widget
+diff --git a/bar/widgets/unison.lua b/bar/widgets/unison.lua
+deleted file mode 100755
+index 330fcb4..0000000
+--- a/bar/widgets/unison.lua
++++ /dev/null
+@@ -1,29 +0,0 @@
+-local awful = require("awful")
+-local wibox = require("wibox")
+-local gears = require("gears")
+-
+-local widget = wibox.widget.textbox()
+-
+-local icon = " "
+-
+-local function daemon ()
+-    awful.spawn.easy_async_with_shell('pgrep unison', function(stdout)
+-		-- Check we have at least 4 unison processes (4 lines)
+-		local _, process_count = stdout:gsub('\n', '\n')
+-		if process_count >= 4 then
+-			widget:set_markup(icon .. "OK")
+-		else
+-			widget:set_markup("<span color='#FF0000'>" .. icon .. "DOWN</span>")
+-		end
+-    end)
+-end
+-
+-
+-gears.timer {
+-    timeout = 1,
+-    call_now = true,
+-    autostart = true,
+-    callback = daemon
+-}
+-
+-return widget
+diff --git a/bar/widgets/vpn.lua b/bar/widgets/vpn.lua
+deleted file mode 100755
+index e51c865..0000000
+--- a/bar/widgets/vpn.lua
++++ /dev/null
+@@ -1,66 +0,0 @@
+-local awful = require("awful")
+-local wibox = require("wibox")
+-local gears = require("gears")
+--- local lain = require("lain")
+-
+-local widget = wibox.widget.textbox()
+-
+-local function get_vpn_status (callback)
+-    awful.spawn.easy_async_with_shell('ip a | grep -q "scope global vpn"', function(_, _, _, exit_code)
+-        if exit_code == 0 then
+-            callback(true)
+-        else
+-            callback(false)
+-        end
+-    end)
+-end
+-
+-local function daemon ()
+-    get_vpn_status(function(status)
+-        if status then
+-            widget:set_text("󰌾 ")
+-        else
+-            widget:set_text("󰿆 ")
+-        end
+-    end)
+-end
+-
+--- local function toggle ()
+---     get_vpn_status(function(status)
+---         local new
+---         if status then
+---             new = "down"
+---         else
+---             new = "up"
+---         end
+-
+---         local quake = lain.util.quake({
+---             app = "alacritty --class VpnQuake",
+---             argname = "--title %s -e sudo wg-quick " .. new .. " vpn",
+---             followtag = true,
+---             height = 0.3,
+---             width = 0.3,
+---             vert = "center",
+---             horiz = "center",
+---             border = 2,
+---             name = "VpnQuake",
+---             settings = function(c) c.sticky = true end
+---         })
+---         quake:toggle()
+---     end)
+--- end
+-
+--- widget:connect_signal("button::press", function(_, _, _, button)
+---     if button == 1 then
+---         toggle()
+---     end
+--- end)
+-
+-gears.timer {
+-    timeout = 1,
+-    call_now = true,
+-    autostart = true,
+-    callback = daemon
+-}
+-
+-return widget
+diff --git a/error_handling.lua b/error_handling.lua
+deleted file mode 100755
+index cd3ca77..0000000
+--- a/error_handling.lua
++++ /dev/null
+@@ -1,25 +0,0 @@
+-local naughty = require("naughty")
+-
+-
+--- Check if awesome encountered an error during startup and fell back to
+--- another config (This code will only ever execute for the fallback config)
+-if awesome.startup_errors then
+-    naughty.notify({ preset = naughty.config.presets.critical,
+-                     title = "Oops, there were errors during startup!",
+-                     text = awesome.startup_errors })
+-end
+-
+--- Handle runtime errors after startup
+-do
+-    local in_error = false
+-    awesome.connect_signal("debug::error", function (err)
+-        -- Make sure we don't go into an endless error loop
+-        if in_error then return end
+-        in_error = true
+-
+-        naughty.notify({ preset = naughty.config.presets.critical,
+-                         title = "Oops, an error happened!",
+-                         text = tostring(err) })
+-        in_error = false
+-    end)
+-end
+diff --git a/freedesktop b/freedesktop
+new file mode 160000
+index 0000000..c82ad29
+--- /dev/null
++++ b/freedesktop
+@@ -0,0 +1 @@
++Subproject commit c82ad2960c5f0c84e765df68554c266ea7e9464d
+diff --git a/keys.lua b/keys.lua
+deleted file mode 100755
+index 5175fb3..0000000
+--- a/keys.lua
++++ /dev/null
+@@ -1,241 +0,0 @@
+--- This file configures the keybindings of awesome.
+--- I have made it so that it matches my keyboard layout (colemak).
+--- This means that you may have to change some shortcuts.
+--- arstdhneio is the whole colemak home row, from left to right. Change those keys to match your keyboard layout.
+--- Remember that almost all the keys are bound to something, so changing one you might need to change another.
+-
+-local awful = require("awful")
+-local gears = require("gears")
+-local naughty = require("naughty")
+-require("awful.hotkeys_popup.keys")
+-
+--- local lain = require("lain")
+-
+--- local org_quake = lain.util.quake({ app = "alacritty --class OrgQuake", argname = "--title %s -e nvim org/fast.org", followtag = true, height = 0.9, width = 0.9, vert = "center", horiz = "center", border = 2, name = "OrgQuake", settings = function(c) c.sticky = true end })
+-
+--- local weechat_quake = lain.util.quake({ app = "alacritty --class WeechatQuake", argname = "--title %s -e ssh cocinero-tarneo -t \"tmux a -t weechat\"", followtag = true, height = 0.9, width = 0.9, vert = "center", horiz = "center", border = 2, name = "WeechatQuake", settings = function(c) c.sticky = true end })
+-
+-ModKey = "Mod4"
+-
+-local previous_layout = nil
+-
+-local globalkeys = gears.table.join(
+-    -- Applications launcher: dmenu. Archlinux package: dmenu
+-    awful.key({ ModKey,           }, "p", function() awful.spawn.with_shell("dmenu_run") end),
+-    -- Dmscripts (my own scripts): see the dotfile's README for more info
+-    awful.key({ ModKey,           }, "y", function() awful.spawn.with_shell("bash ~/.config/dmscripts/main.sh") end),
+-    -- Qutebrowser (web browser). You can change this to match your browser (don't use chrome, opera, vivaldi, brave, firefox, etc.)
+-    -- nice alternatives include GNU icecat and librewolf.
+-    awful.key({ ModKey,           }, "b", function() awful.spawn.with_shell("qutebrowser") end),
+-    -- Emacs: I use emacsclient to open emacs. You can change this to match your editor, or just remove it.
+-    awful.key({ ModKey,           }, "g", function() awful.spawn.with_shell("emacs") end),
+-    -- Zathura: PDF viewer. Archlinux package: zathura.
+-    awful.key({ ModKey,           }, "z", function() awful.spawn.with_shell("zathura") end),
+-    -- Open org quake terminal
+-    -- awful.key({ ModKey,           }, "j", function() org_quake:toggle() end),
+-    -- Open weechat quake terminal
+-    -- awful.key({ ModKey,           }, "k", function() weechat_quake:toggle() end),
+-    -- ncmpcpp: terminal music player/mpd frontend. Archlinux package: ncmpcpp.
+-    awful.key({ ModKey,           }, "slash", function() awful.spawn.with_shell(TerminalCmd .. " ncmpcpp") end),
+-
+-    -- Open terminal (I use alacritty)
+-    awful.key({ ModKey,           }, "Return", function () awful.spawn.with_shell(Terminal) end),
+-
+-    -- Open tmux on server
+-    awful.key({ ModKey, "Shift" }, "Return", function () awful.spawn.with_shell(TerminalCmd .. " ssh risitas@cocinero -t \"tmux a -t services\"") end),
+-
+-    -- Reload awesomewm. This is useful when you change the config file.
+-    awful.key({ ModKey,  }, "q", awesome.restart),
+-
+-    -- Open BWmenu (Bitwarden dmenu script)
+-    awful.key({ ModKey            }, "m", function() awful.spawn.with_shell("~/.config/scripts/bwmenu") end),
+-
+-    -- Open qobuz (music streaming service) when pressing XF86AudioMedia (F12 key on framework laptop)
+-    awful.key({ }, "XF86AudioMedia", function() awful.spawn.with_shell("xdg-open https://play.qobuz.com") end),
+-
+-    -- Shutdown the computer
+-    -- awful.key({ ModKey, "Control" }, "q", function() awful.spawn.with_shell("sudo shutdown now") end),
+-
+-    -- Hibernate the computer: you need some configuration for this to work. See the archwiki, page on hibernation.
+-    awful.key({ ModKey, "Control" }, "q", function() awful.spawn.with_shell("systemctl hibernate") end),
+-
+-    -- change brightness. Only works on my laptop (asus something)
+-    awful.key({ }, "XF86MonBrightnessDown", function ()
+-        awful.spawn.with_shell("brightnessctl -d amdgpu_bl0 set 10%-") end),
+-    awful.key({ }, "XF86MonBrightnessUp", function ()
+-        awful.spawn.with_shell("brightnessctl -d amdgpu_bl0 set +10%") end),
+-
+-    ----------------
+-    -- Media keys --
+-    ----------------
+-
+-    -- Volume control
+-    awful.key({}, "XF86AudioRaiseVolume", function ()   awful.spawn.with_shell("pamixer -i 2")   end),
+-    awful.key({}, "XF86AudioLowerVolume", function ()   awful.spawn.with_shell("pamixer -d 2")   end),
+-    awful.key({}, "XF86AudioMute", function ()          awful.spawn.with_shell("pamixer -t")  end),
+-
+-    -- Playerctl control (incompatible with mpd below)
+-    awful.key({}, "XF86AudioNext", function () awful.spawn.with_shell("playerctl next -p $(playerctl -l | grep mpd | head -n 1)")       end),
+-    awful.key({}, "XF86AudioPrev", function () awful.spawn.with_shell("playerctl previous -p $(playerctl -l | grep mpd | head -n 1)")   end),
+-    awful.key({}, "XF86AudioPlay", function () awful.spawn.with_shell("playerctl play-pause -p $(playerctl -l | grep mpd | head -n 1)") end),
+-
+-    -- MPD control (incompatible with playerctl above)
+-    -- awful.key({}, "XF86AudioNext", function ()          awful.spawn.with_shell("mpc next")                      end),
+-    -- awful.key({}, "XF86AudioPrev", function ()          awful.spawn.with_shell("mpc prev")                      end),
+-    -- awful.key({}, "XF86AudioPlay", function ()          awful.spawn.with_shell("mpc toggle")                    end),
+-
+-
+-    -- Focus (colemak hjkl=neio)
+-    awful.key({ ModKey,           }, "i",
+-        function ()
+-            awful.client.focus.byidx( 1)
+-        end
+-    ),
+-    awful.key({ ModKey,           }, "e",
+-        function ()
+-            awful.client.focus.byidx(-1)
+-        end
+-    ),
+-
+-    -- Layout manipulation (still colemak keys)
+-    awful.key({ ModKey, "Shift"   }, "i",     function () awful.client.swap.byidx(  1)        end), -- Swap with next client
+-    awful.key({ ModKey, "Shift"   }, "e",     function () awful.client.swap.byidx( -1)        end), -- Swap with previous client
+-    awful.key({ ModKey, "Shift"   }, "o",     function () awful.tag.incmwfact( 0.05)          end), -- Increase master width factor
+-    awful.key({ ModKey, "Shift"   }, "n",     function () awful.tag.incmwfact(-0.05)          end), -- Decrease master width factor
+-    awful.key({ ModKey,           }, "n",     function () awful.tag.incnmaster( 1, nil, true) end), -- Increase the number of master clients
+-    awful.key({ ModKey,           }, "o",     function () awful.tag.incnmaster(-1, nil, true) end), -- Decrease the number of master clients
+-    awful.key({ ModKey, "Shift"   }, "m",     function () awful.tag.incncol( 1, nil, true)    end), -- Increase the number of columns
+-    awful.key({ ModKey, "Shift"   }, "/",     function () awful.tag.incncol(-1, nil, true)    end), -- Decrease the number of columns
+-
+-    -- Change layout
+-    awful.key({ ModKey,           }, ",", function () awful.layout.inc( 1)                end),
+-
+-    -- Toggle maximized layout
+-    -- This will just crash if you set the default layout to maximized, but else it works well.
+-    awful.key({ ModKey,           }, ".", function ()
+-        local screen = awful.screen.focused()
+-        local tag = screen.selected_tag
+-        local current_layout = tag.layout
+-
+-        local toggled_layout = awful.layout.suit.max
+-
+-        if current_layout.name == toggled_layout.name then
+-            awful.layout.set(previous_layout, tag)
+-        else
+-            previous_layout = current_layout
+-            awful.layout.set(toggled_layout, tag)
+-        end
+-    end),
+-
+-    -- Restore last minimized client
+-    awful.key({ ModKey, }, "u",
+-              function ()
+-                  local c = awful.client.restore()
+-                  -- Focus restored client
+-                  if c then
+-                    c:emit_signal(
+-                        "request::activate", "key.unminimize", {raise = true}
+-                    )
+-                  end
+-              end)
+-
+-    -- Switch focus to next screen
+-    -- awful.key({ ModKey }, "h", function () awful.screen.focus_relative(1) end)
+-)
+-
+--- Keys for clients (windows)
+-ClientKeys = gears.table.join(
+-    -- Toggle fullscreen = no borders, bar, titlebar, or gaps
+-    awful.key({ ModKey,           }, "f",
+-        function (c)
+-            c.fullscreen = not c.fullscreen
+-            c:raise()
+-        end),
+-    -- Close client
+-    awful.key({ ModKey,           }, "w",      function (c) c:kill()                         end),
+-    -- Toggle floating
+-    awful.key({ ModKey            }, "c",  awful.client.floating.toggle                     ),
+-    -- Toggle maximized
+-    awful.key({ ModKey, "Shift"   }, "f",  function (c) c.maximized = not c.maximized end),
+-    -- Minimize client
+-    awful.key({ ModKey,           }, "l",
+-        function (c)
+-            -- The client currently has the input focus, so it cannot be
+-            -- minimized, since minimized clients can't have the focus.
+-            c.minimized = true
+-        end),
+-    -- Take screenshot
+-    awful.key({}, "Print", function (c)
+-        local filename = os.getenv("HOME") .. "/Downloads/Screenshot_" .. os.date("%Y-%m-%d_%H:%M:%S") .. ".png"
+-        awful.screenshot{auto_save_delay = 3, client = c, file_path = filename}
+-        awful.spawn.with_shell("xclip -selection clipboard -t image/png " .. filename)
+-        naughty.notify({text = "Screenshot saved to " .. filename .. " and copied to clipboard"})
+-    end)
+-    -- Move client to next screen
+-    -- awful.key({ ModKey, "Shift"   }, "h",      function (c) c:move_to_screen()               end)
+-)
+-
+--- Bind all key numbers to tags.
+--- Colemak's "arstd" = qwerty's "asdfg"
+-local tagkeys = { "a", "r", "s", "t", "d", "h"}
+--- Here change the number 5 to the number of buttons you set just above.
+-for i = 1, 6 do
+-    globalkeys = gears.table.join(globalkeys,
+-        -- View tag only.
+-        awful.key({ ModKey }, tagkeys[i],
+-                  function ()
+-                        local screen = awful.screen.focused()
+-                        local tag = screen.tags[i]
+-                        if tag then
+-                           tag:view_only()
+-                        end
+-                  end),
+-        -- Toggle tag display. (in awesomewm you can view multiple tags at once)
+-        awful.key({ ModKey, "Control" }, tagkeys[i],
+-                  function ()
+-                      local screen = awful.screen.focused()
+-                      local tag = screen.tags[i]
+-                      if tag then
+-                         awful.tag.viewtoggle(tag)
+-                      end
+-                  end),
+-        -- Move client to tag.
+-        awful.key({ ModKey, "Shift" }, tagkeys[i],
+-                  function ()
+-                      if client.focus then
+-                          local tag = client.focus.screen.tags[i]
+-                          if tag then
+-                              client.focus:move_to_tag(tag)
+-                          end
+-                     end
+-                  end),
+-        -- Toggle tag on focused client. (clients/windows can be tagged with multiple tags)
+-        awful.key({ ModKey, "Control", "Shift" }, tagkeys[i],
+-                  function ()
+-                      if client.focus then
+-                          local tag = client.focus.screen.tags[i]
+-                          if tag then
+-                              client.focus:toggle_tag(tag)
+-                          end
+-                      end
+-                  end)
+-    )
+-end
+-
+--- Mouse bindings. You shouldn't need to change these.
+-ClientButtons = gears.table.join(
+-    awful.button({ }, 1, function (c)
+-        c:emit_signal("request::activate", "mouse_click", {raise = true})
+-    end),
+-    awful.button({ ModKey }, 1, function (c)
+-        c:emit_signal("request::activate", "mouse_click", {raise = true})
+-        awful.mouse.client.move(c)
+-    end),
+-    awful.button({ ModKey }, 3, function (c)
+-        c:emit_signal("request::activate", "mouse_click", {raise = true})
+-        awful.mouse.client.resize(c)
+-    end)
+-)
+-
+--- Set keys. Without this line all of this file is useless!
+-root.keys(globalkeys)
+diff --git a/lain b/lain
+new file mode 160000
+index 0000000..c489aa6
+--- /dev/null
++++ b/lain
+@@ -0,0 +1 @@
++Subproject commit c489aa63acc1364851e0e51152be3db5c75e145d
+diff --git a/rc.lua b/rc.lua
+old mode 100755
+new mode 100644
+index 898b85e..65f2d3e
+--- a/rc.lua
++++ b/rc.lua
+@@ -1,52 +1,1039 @@
++-- {{{ Required libraries
++
++-- If LuaRocks is installed, make sure that packages installed through it are
++-- found (e.g. lgi). If LuaRocks is not installed, do nothing.
+ pcall(require, "luarocks.loader")
+ 
+-local awful = require("awful")
+-local beautiful = require("beautiful")
+-local gears = require("gears")
++local gears         = require("gears")
++local awful         = require("awful")
++                      require("awful.autofocus")
++local wibox         = require("wibox")
++local beautiful     = require("beautiful")
++local naughty       = require("naughty")
++local lain          = require("lain")
++--local menubar       = require("menubar")
++local freedesktop   = require("freedesktop")
++local hotkeys_popup = require("awful.hotkeys_popup")
++                      require("awful.hotkeys_popup.keys")
++local mytable       = awful.util.table or gears.table -- 4.{0,1} compatibility
++
++-- }}}
++
++-- {{{ Error handling
++
++-- Check if awesome encountered an error during startup and fell back to
++-- another config (This code will only ever execute for the fallback config)
++if awesome.startup_errors then
++    naughty.notify {
++        preset = naughty.config.presets.critical,
++        title = "Oops, there were errors during startup!",
++        text = awesome.startup_errors
++    }
++end
++
++-- Handle runtime errors after startup
++do
++    local in_error = false
++
++    awesome.connect_signal("debug::error", function (err)
++        if in_error then return end
++
++        in_error = true
++
++        naughty.notify {
++            preset = naughty.config.presets.critical,
++            title = "Oops, an error happened!",
++            text = tostring(err)
++        }
++
++        in_error = false
++    end)
++end
++
++-- }}}
++
++-- {{{ Autostart windowless processes
++
++-- This function will run once every time Awesome is started
++local function run_once(cmd_arr)
++    for _, cmd in ipairs(cmd_arr) do
++        awful.spawn.with_shell(string.format("pgrep -u $USER -fx '%s' > /dev/null || (%s)", cmd, cmd))
++    end
++end
++
++--run_once({ "urxvtd", "unclutter -root" }) -- comma-separated entries
++run_once({ "picom", "--animations" })
++
++-- This function implements the XDG autostart specification
++--[[
++awful.spawn.with_shell(
++    'if (xrdb -query | grep -q "^awesome\\.started:\\s*true$"); then exit; fi;' ..
++    'xrdb -merge <<< "awesome.started:true";' ..
++    -- list each of your autostart commands, followed by ; inside single quotes, followed by ..
++    'dex --environment Awesome --autostart --search-paths ' ..
++    '"${XDG_CONFIG_HOME:-$HOME/.config}/autostart:${XDG_CONFIG_DIRS:-/etc/xdg}/autostart";' -- https://github.com/jceb/dex
++)
++--]]
++
++-- }}}
++
++-- {{{ Variable definitions
++
++local themes = {
++    "blackburn",       -- 1
++    "copland",         -- 2
++    "dremora",         -- 3
++    "holo",            -- 4
++    "multicolor",      -- 5
++    "powerarrow",      -- 6
++    "powerarrow-dark", -- 7
++    "rainbow",         -- 8
++    "steamburn",       -- 9
++    "vertex"           -- 10
++}
++
++local chosen_theme = themes[5]
++local modkey       = "Mod4"
++local altkey       = "Mod1"
++local ctrlkey     = "Control"
++--local terminal     = "urxvtc"
++
++local vi_focus     = false -- vi-like client focus https://github.com/lcpz/awesome-copycats/issues/275
++local cycle_prev   = true  -- cycle with only the previously focused client or all https://github.com/lcpz/awesome-copycats/issues/274
++local editor       = os.getenv("EDITOR") or "nvim"
++--local browser      = "librewolf"
++local browser      = "firefox"
++
++local terminal    = "wezterm"
++local secterminal    = "alacritty"
++--local filex    = "ranger"
++local filex    = "yazi"
++
++awful.util.terminal = terminal
++awful.util.tagnames = { "1", "2", "3", "4", "5", "6", "7", "8", "9" }
++awful.layout.layouts = {
++    awful.layout.suit.spiral,
++    awful.layout.suit.floating,
++    awful.layout.suit.tile,
++    awful.layout.suit.tile.left,
++    awful.layout.suit.tile.bottom,
++    awful.layout.suit.tile.top,
++    --awful.layout.suit.fair,
++    --awful.layout.suit.fair.horizontal,
++    --awful.layout.suit.spiral.dwindle,
++    --awful.layout.suit.max,
++    --awful.layout.suit.max.fullscreen,
++    --awful.layout.suit.magnifier,
++    --awful.layout.suit.corner.nw,
++    --awful.layout.suit.corner.ne,
++    --awful.layout.suit.corner.sw,
++    --awful.layout.suit.corner.se,
++    --lain.layout.cascade,
++    --lain.layout.cascade.tile,
++    --lain.layout.centerwork,
++    --lain.layout.centerwork.horizontal,
++    --lain.layout.termfair,
++    --lain.layout.termfair.center
++}
++
++lain.layout.termfair.nmaster           = 3
++lain.layout.termfair.ncol              = 1
++lain.layout.termfair.center.nmaster    = 3
++lain.layout.termfair.center.ncol       = 1
++lain.layout.cascade.tile.offset_x      = 2
++lain.layout.cascade.tile.offset_y      = 32
++lain.layout.cascade.tile.extra_padding = 5
++lain.layout.cascade.tile.nmaster       = 5
++lain.layout.cascade.tile.ncol          = 2
++
++awful.util.taglist_buttons = mytable.join(
++    awful.button({ }, 1, function(t) t:view_only() end),
++    awful.button({ modkey }, 1, function(t)
++        if client.focus then client.focus:move_to_tag(t) end
++    end),
++    awful.button({ }, 3, awful.tag.viewtoggle),
++    awful.button({ modkey }, 3, function(t)
++        if client.focus then client.focus:toggle_tag(t) end
++    end),
++    awful.button({ }, 4, function(t) awful.tag.viewnext(t.screen) end),
++    awful.button({ }, 5, function(t) awful.tag.viewprev(t.screen) end)
++)
++
++awful.util.tasklist_buttons = mytable.join(
++     awful.button({ }, 1, function(c)
++         if c == client.focus then
++             c.minimized = true
++         else
++             c:emit_signal("request::activate", "tasklist", { raise = true })
++         end
++     end),
++     awful.button({ }, 3, function()
++         awful.menu.client_list({ theme = { width = 250 } })
++     end),
++     awful.button({ }, 4, function() awful.client.focus.byidx(1) end),
++     awful.button({ }, 5, function() awful.client.focus.byidx(-1) end)
++)
++
++beautiful.init(string.format("%s/.config/awesome/themes/%s/theme.lua", os.getenv("HOME"), chosen_theme))
++
++-- }}}
++
++-- {{{ Menu
++
++-- Create a launcher widget and a main menu
++local myawesomemenu = {
++   { "Hotkeys", function() hotkeys_popup.show_help(nil, awful.screen.focused()) end },
++   { "Manual", string.format("%s -e man awesome", terminal) },
++   { "Edit config", string.format("%s -e %s %s", terminal, editor, awesome.conffile) },
++   { "Restart", awesome.restart },
++   { "Quit", function() awesome.quit() end },
++}
++
++awful.util.mymainmenu = freedesktop.menu.build {
++    before = {
++        { "Awesome", myawesomemenu, beautiful.awesome_icon },
++        -- other triads can be put here
++    },
++    after = {
++        { "Open terminal", terminal },
++        -- other triads can be put here
++    }
++}
++
++-- Hide the menu when the mouse leaves it
++--[[
++awful.util.mymainmenu.wibox:connect_signal("mouse::leave", function()
++    if not awful.util.mymainmenu.active_child or
++       (awful.util.mymainmenu.wibox ~= mouse.current_wibox and
++       awful.util.mymainmenu.active_child.wibox ~= mouse.current_wibox) then
++        awful.util.mymainmenu:hide()
++    else
++        awful.util.mymainmenu.active_child.wibox:connect_signal("mouse::leave",
++        function()
++            if awful.util.mymainmenu.wibox ~= mouse.current_wibox then
++                awful.util.mymainmenu:hide()
++            end
++        end)
++    end
++end)
++--]]
++
++-- Set the Menubar terminal for applications that require it
++--menubar.utils.terminal = terminal
++
++-- }}}
++
++-- {{{ Screen
++
++-- Re-set wallpaper when a screen's geometry changes (e.g. different resolution)
++screen.connect_signal("property::geometry", function(s)
++    -- Wallpaper
++    if beautiful.wallpaper then
++        local wallpaper = beautiful.wallpaper
++        -- If wallpaper is a function, call it with the screen
++        if type(wallpaper) == "function" then
++            wallpaper = wallpaper(s)
++        end
++        gears.wallpaper.maximized(wallpaper, s, true)
++    end
++end)
++
++-- No borders when rearranging only 1 non-floating or maximized client
++screen.connect_signal("arrange", function (s)
++    local only_one = #s.tiled_clients == 1
++    for _, c in pairs(s.clients) do
++        if only_one and not c.floating or c.maximized or c.fullscreen then
++            c.border_width = 0
++        else
++            c.border_width = beautiful.border_width
++        end
++    end
++end)
++
++-- Create a wibox for each screen and add it
++awful.screen.connect_for_each_screen(function(s) beautiful.at_screen_connect(s) end)
++
++-- }}}
++
++-- {{{ Mouse bindings
++
++root.buttons(mytable.join(
++    awful.button({ }, 3, function () awful.util.mymainmenu:toggle() end),
++    awful.button({ }, 4, awful.tag.viewnext),
++    awful.button({ }, 5, awful.tag.viewprev)
++))
++
++-- }}}
++
++-- {{{ Key bindings
++globalkeys = mytable.join(
++    -- {{{ Personal keybindings
++
++    -- Awesome keybindings
++    awful.key({ modkey,         }, "Return", function () awful.spawn.with_shell( "~/.local/bin/my_scripts/term_wd.sh ".. terminal) end,
++              {description = "Launch terminal wd", group = "awesome"}),
++    awful.key({ modkey, "Shift" }, "Return", function () awful.spawn( terminal ) end,
++              {description = "Launch terminal", group = "awesome"}),
++    awful.key({ modkey, ctrlkey }, "Return", function () awful.spawn.with_shell( "~/.local/bin/my_scripts/term_wd.sh " .. secterminal ) end,
++              {description = "Launch terminal", group = "awesome"}),
++
++    awful.key({ modkey, ctrlkey }, "r", awesome.restart,
++              {description = "Reload awesome", group = "awesome"}),
++
++    awful.key({ modkey, "Shift" }, "q",   awesome.quit,
++              {description = "Quit awesome", group = "awesome"}),
++
++    awful.key({ }, "F1",      hotkeys_popup.show_help,
++        {description = "Show help", group="awesome"}),
++
++    --awful.key({ modkey, "Shift" }, "w", function () awful.spawn( browser ) end,
++    --          {description = "Launch firefox", group = "awesome"}),
++    -- awful.key({ modkey, ctrlkey }, "w", function () awful.util.mymainmenu:show() end,
++    --     {description = "Show main menu", group = "awesome"}),
++    awful.key({ modkey, "Shift" }, "p", function ()
++            for s in screen do
++                s.mywibox.visible = not s.mywibox.visible
++                if s.mybottomwibox then
++                    s.mybottomwibox.visible = not s.mybottomwibox.visible
++                end
++            end
++        end,
++        {description = "Show/hide wibox (bar)", group = "awesome"}),
++
++    awful.key({ modkey, ctrlkey }, "p", function() toggle_widget_visibility() end,
++              { description = "toggle widgets visibility", group = "custom" }),
++
++    -- Run launcher
++    awful.key({ modkey },            "a",     function ()
++    awful.util.spawn("/home/jonas/.local/bin/my_scripts/tmux_attach.sh "..terminal)  end,
++              {description = "run tmux", group = "launcher"}),
++
++    awful.key({ modkey },            "g",     function ()
++    awful.spawn("/home/jonas/.local/bin/my_scripts/nvim_fzf.sh "..terminal)   end,
++              {description = "nvim_fzf", group = "launcher"}),
++
++    awful.key({ modkey },            "d",     function ()
++    awful.util.spawn("rofi -show run -theme ~/.config/rofi/themes/gruvbox/gruvbox-dark.rasi")   end,
++              {description = "run rofi", group = "launcher"}),
++
++    awful.key({ modkey },            "c",     function ()
++    awful.util.spawn("/home/jonas/.local/bin/my_scripts/term_calc.sh "..terminal)   end,
++              {description = "calculator", group = "launcher"}),
++
++    awful.key({ modkey, "Shift" },            "c",     function ()
++    awful.util.spawn("/home/jonas/.local/bin/my_scripts/code_helper.sh new "..terminal)   end,
++              {description = "code launcher", group = "launcher"}),
++
++    awful.key({ modkey, "Control" },            "c",     function ()
++    awful.util.spawn("GTK_THEME=Adwaita:dark gnome-calendar")   end,
++              {description = "calendar", group = "launcher"}),
++
++    awful.key({ modkey, "Shift" },            "d",     function ()
++    awful.util.spawn("/home/jonas/.local/bin/my_scripts/code_helper.sh old " .. terminal)   end,
++              {description = "code launcher", group = "launcher"}),
++
++    awful.key({ modkey },            "r",     function ()
++    awful.util.spawn("dmenu_run -fn 'Linux Libertine Mono'")    end,
++              {description = "run dmenu", group = "launcher"}),
++
++    awful.key({ modkey },            "w",     function ()
++    awful.util.spawn(terminal.. " -e " .. filex .. " ~/")    end,
++              {description = "run ranger", group = "launcher"}),
++
++    awful.key({ modkey },            "e",        function ()
++    awful.util.spawn("/home/jonas/.local/bin/my_scripts/file_explorer_wd.sh " .. terminal .. " " .. filex )   end,
++              {description = "run ranger in wd", group = "launcher"}),
++
++    awful.key({ modkey, "Shift"     },            "e",        function ()
++    awful.util.spawn("sh /home/jonas/.local/bin/my_scripts/sysmenu_awsm.sh")  end,
++              {description = "Run sysmenu", group = "launcher"}),
++
++    awful.key({ modkey, "Shift"     },            "s",        function ()
++    awful.spawn("/home/jonas/.local/bin/my_scripts/win_screenshot_awsm.sh")    end,
++              {description = "Screenshot to cb", group = "launcher"}),
++
++    awful.key({ modkey, "Control"     },            "s",        function ()
++    awful.spawn("/home/jonas/.local/bin/my_scripts/tesseract_ocr.sh")    end,
++              {description = "Screenshot ocr", group = "launcher"}),
++
++	-- Lock screen 
++    awful.key({ modkey, "Shift"    },            "x",     function ()
++    awful.spawn("i3lock")     end,
++              {description = "i3lock", group = "launcher"}),
++
++    awful.key({ modkey, "Control"     },            "x",        function ()
++    awful.spawn("i3lock -i /home/jonas/Downloads/lock-wallpaper.png")  end,
++              {description = "i3lock pic", group = "launcher"}),
++	-- Suspend 
++    awful.key({ modkey, "Shift"    },            "comma",     function ()
++    awful.spawn("/home/jonas/.local/bin/my_scripts/suspend_awsm.sh")   end,
++              {description = "Suspend", group = "launcher"}),
++
++    awful.key({ modkey, "Shift"    },            "period",     function ()
++    awful.spawn("/home/jonas/.local/bin/my_scripts/suspend_awsm_lock.sh")    end,
++              {description = "Suspend", group = "launcher"}),
++
++	-- Nice things
++    awful.key({modkey},            "v",        function ()
++    awful.util.spawn("/home/jonas/.local/bin/my_scripts/clip_history.sh greenclip")   end,
++              {description = "clip_history", group = "launcher"}),
++
++    awful.key({modkey},            "period",     function ()
++    awful.util.spawn("/home/jonas/.local/bin/my_scripts/emojipick/emojipick")   end,
++              {description = "Emojipick", group = "launcher"}),
++
++	-- Program shortcuts
++    awful.key({modkey},            "b",     function ()
++    awful.util.spawn(terminal.. " -e sudo htop")    end,
++              {description = "Htop", group = "launcher"}),
++
++    awful.key({ modkey, "Shift"    },            "b",     function ()
++    awful.util.spawn(terminal.. " -e sudo bashtop") end,
++              {description = "Bashtop", group = "launcher"}),
++
++    awful.key({ modkey, "Control"    },            "b",     function ()
++    awful.util.spawn(terminal .. " -e sudo ytop")    end,
++              {description = "Ytop", group = "launcher"}),
++
++    awful.key({ modkey },            "n",     function ()
++    awful.util.spawn("/home/jonas/.local/bin/my_scripts/files_wd.sh")     end,
++              {description = "run file manager in wd", group = "launcher"}),
++
++    awful.key({ modkey, "Shift"    },            "n",     function ()
++    awful.util.spawn("thunar")  end,
++              {description = "run thunar", group = "launcher"}),
++
++    awful.key({ modkey, "Control"    },            "n",     function ()
++    awful.util.spawn("/home/jonas/.local/bin/my_scripts/open_notes.sh 1 "..terminal)    end,
++              {description = "Ytop", group = "launcher"}),
++
++    awful.key({modkey},            "m",     function ()
++    awful.util.spawn("nm-connection-editor")  end,
++              {description = "Network connections", group = "launcher"}),
++
++    awful.key({ modkey, "Shift"    },            "m",     function ()
++    awful.util.spawn("spotify")      end,
++              {description = "Spotify", group = "launcher"}),
++
++    awful.key({ modkey, "Control"    },            "m",     function ()
++    awful.util.spawn("/home/jonas/.local/bin/my_scripts/open_notes.sh 2 "..terminal)   end,
++              {description = "Ytop", group = "launcher"}),
++
++    awful.key({modkey},            "p",     function ()
++    awful.util.spawn("/home/jonas/.local/bin/my_scripts/xrandr_helper.sh")  end,
++              {description = "Xrandr", group = "launcher"}),
++
++    awful.key({modkey},            "t",     function ()
++    awful.util.spawn("/home/jonas/.local/bin/my_scripts/script_copy.sh")  end,
++              {description = "Script_copy", group = "launcher"}),
++
++    awful.key({ modkey, "Shift"    },           "t",     function ()
++    awful.util.spawn("/home/jonas/.local/bin/my_scripts/script_helper.sh "..terminal)      end,
++              {description = "Script_helper", group = "launcher"}),
++
++    awful.key({modkey },            "section",     function ()
++    awful.util.spawn("sh /home/jonas/.local/bin/my_scripts/loadEww.sh")  end,
++              {description = "Load Eww", group = "launcher"}),
++
++    awful.key({modkey, "Shift" }, 'section', function() _G.dashboard_show() end,
++              {description = 'toggle dashboard', group = 'awesome'}),
++
++    awful.key({ "Shift" },            "F1",     function ()
++    awful.util.spawn("/home/jonas/.local/bin/my_scripts/show_keys.sh vim "..terminal)   end,
++              {description = "vim keybinds", group = "launcher"}),
++
++	-- Print
++    awful.key({ },  "Print",     function ()
++    awful.spawn("/home/jonas/.local/bin/my_scripts/screenshot_select.sh")   end,
++              {description = "Screenshot", group = "launcher"}),
++
++    awful.key({ "Shift"  },  "Print",     function ()
++    awful.spawn("sh /home/jonas/.local/bin/my_scripts/screenshot.sh")  end,
++              {description = "Screenshot", group = "launcher"}),
++
++    awful.key({ "Control" },  "Print",     function ()
++    awful.spawn("/home/jonas/.local/bin/my_scripts/screenshot_ocr.sh")  end,
++              {description = "Screenshot", group = "launcher"}),
++
++    -- Tag browsing with modkey
++    awful.key({ modkey,         }, "Left",   awful.tag.viewprev,
++        {description = "view previous", group = "tag"}),
++    awful.key({ modkey,         }, "Right",  awful.tag.viewnext,
++        {description = "view next", group = "tag"}),
++    -- awful.key({ altkey,         }, "Escape", awful.tag.history.restore,
++    --     {description = "go back", group = "tag"}),
++
++     -- Tag browsing ALT+TAB (ALT+SHIFT+TAB)
++    --awful.key({ altkey,         }, "Tab", awful.tag.viewnext,
++    --    {description = "view next", group = "tag"}),
++    --awful.key({ altkey, "Shift" }, "Tab", awful.tag.viewprev,
++    --    {description = "view previous", group = "tag"}),
++
++    -- Non-empty tag browsing CTRL+TAB (CTRL+SHIFT+TAB)
++     awful.key({ altkey }, "Tab", function () lain.util.tag_view_nonempty(-1) end,
++               {description = "view  previous nonempty", group = "tag"}),
++     awful.key({ altkey, "Shift" }, "Tab", function () lain.util.tag_view_nonempty(1) end,
++               {description = "view  previous nonempty", group = "tag"}),
++
++    -- Default client focus
++    awful.key({ modkey,         }, "j", function () awful.client.focus.byidx( 1) end,
++        {description = "Focus next by index", group = "client"}),
++    awful.key({ modkey,         }, "k", function () awful.client.focus.byidx(-1) end,
++        {description = "Focus previous by index", group = "client"}),
++
++    -- By direction client focus
++    --awful.key({ altkey, "Shift" }, "j", function() awful.client.focus.global_bydirection("down")
++    --    if client.focus then client.focus:raise() end end,
++    --    {description = "Focus down", group = "client"}),
++    --awful.key({ altkey, "Shift" }, "k", function() awful.client.focus.global_bydirection("up")
++    --    if client.focus then client.focus:raise() end end,
++    --    {description = "Focus up", group = "client"}),
++    --awful.key({ altkey, "Shift" }, "h", function() awful.client.focus.global_bydirection("left")
++    --    if client.focus then client.focus:raise() end end,
++    --    {description = "Focus left", group = "client"}),
++    --awful.key({ altkey, "Shift" }, "l", function() awful.client.focus.global_bydirection("right")
++    --    if client.focus then client.focus:raise() end end,
++    --    {description = "Focus right", group = "client"}),
++
++        -- By direction client focus with arrows
++    awful.key({ ctrlkey, modkey }, "Down", function() awful.client.focus.global_bydirection("down")
++        if client.focus then client.focus:raise() end end,
++        {description = "Focus down", group = "client"}),
++    awful.key({ ctrlkey, modkey }, "Up", function() awful.client.focus.global_bydirection("up")
++        if client.focus then client.focus:raise() end end,
++        {description = "Focus up", group = "client"}),
++    awful.key({ ctrlkey, modkey }, "Left", function() awful.client.focus.global_bydirection("left")
++        if client.focus then client.focus:raise() end end,
++        {description = "Focus left", group = "client"}),
++    awful.key({ ctrlkey, modkey }, "Right", function() awful.client.focus.global_bydirection("right")
++        if client.focus then client.focus:raise() end end,
++        {description = "Focus right", group = "client"}),
++
++    -- Layout manipulation
++    awful.key({ modkey, "Shift" }, "j", function () awful.client.swap.byidx(1) end,
++        {description = "swap with next client by index", group = "client"}),
++    awful.key({ modkey, "Shift" }, "k", function () awful.client.swap.byidx( -1) end,
++        {description = "swap with previous client by index", group = "client"}),
++    awful.key({ modkey          }, "l", function () awful.screen.focus_relative(1) end,
++        {description = "focus the next screen", group = "screen"}),
++    awful.key({ modkey          }, "h", function () awful.screen.focus_relative(-1) end,
++        {description = "focus the previous screen", group = "screen"}),
++    awful.key({ modkey,         }, "u", awful.client.urgent.jumpto,
++        {description = "jump to urgent client", group = "client"}),
++    -- awful.key({ ctrlkey,        }, "Tab", function () awful.client.focus.history.previous()
++    --     if client.focus then client.focus:raise() end end,
++    --     {description = "go back", group = "client"}),
++
++    -- On the fly useless gaps change
++    awful.key({ modkey }, "+", function () lain.util.useless_gaps_resize(1) end,
++        {description = "increment useless gaps", group = "tag"}),
++    awful.key({ modkey }, "-", function () lain.util.useless_gaps_resize(-1) end,
++        {description = "decrement useless gaps", group = "tag"}),
++    awful.key({ modkey }, "z", function () lain.util.useless_gaps_resize(-8) end,
++        {description = "No gaps", group = "tag"}),
++    awful.key({ modkey }, "x", function () lain.util.useless_gaps_resize(8) end,
++        {description = "Default gaps", group = "tag"}),
++
++    awful.key({ modkey }, "o", function () awful.tag.incmwfact( 0.05) end,
++        {description = "increase master width factor", group = "layout"}),
++    awful.key({ modkey }, "y", function () awful.tag.incmwfact(-0.05) end,
++        {description = "decrease master width factor", group = "layout"}),
++
++    awful.key({ modkey, "Shift" }, "a", function() awful.spawn("picom-trans -c -5") end,
++        {description = "decrease transparency", group = "custom"}),
++
++    awful.key({ modkey, "Control" }, "a", function() awful.spawn("picom-trans -c +5") end,
++        {description = "increase transparency", group = "custom"}),
++
++    -- Dynamic tagging
++    -- awful.key({ modkey, "Shift" }, "n", function () lain.util.add_tag() end,
++    --     {description = "add new tag", group = "tag"}),
++    -- awful.key({ modkey, "Shift" }, "r", function () lain.util.rename_tag() end,
++    --     {description = "rename tag", group = "tag"}),
++    -- awful.key({ modkey, "Shift" }, "Left", function () lain.util.move_tag(-1) end,
++    --     {description = "move tag to the left", group = "tag"}),
++    -- awful.key({ modkey, "Shift" }, "Right", function () lain.util.move_tag(1) end,
++    --     {description = "move tag to the right", group = "tag"}),
++    -- awful.key({ modkey, "Shift" }, "d", function () lain.util.delete_tag() end,
++    --     {description = "delete tag", group = "tag"}),
++
++    -- awful.key({ modkey, "Shift" }, "l", function () awful.tag.incmwfact( 0.05) end,
++    --     {description = "increase master width factor", group = "layout"}),
++    -- awful.key({ modkey, "Shift" }, "h", function () awful.tag.incmwfact(-0.05) end,
++    --     {description = "decrease master width factor", group = "layout"}),
++    -- awful.key({ modkey, "Shift" }, "Up", function () awful.tag.incnmaster( 1, nil, true) end,
++    --     {description = "increase the number of master clients", group = "layout"}),
++    -- awful.key({ modkey, "Shift" }, "Down", function () awful.tag.incnmaster(-1, nil, true) end,
++    --     {description = "decrease the number of master clients", group = "layout"}),
++    -- awful.key({ modkey, ctrlkey }, "h", function () awful.tag.incncol( 1, nil, true) end,
++    --     {description = "increase the number of columns", group = "layout"}),
++    -- awful.key({ modkey, ctrlkey }, "l", function () awful.tag.incncol(-1, nil, true) end,
++    --     {description = "decrease the number of columns", group = "layout"}),
++    -- awful.key({ modkey,         }, "Tab", function () awful.layout.inc( 1) end,
++    --     {description = "select next", group = "layout"}),
++    -- awful.key({ modkey, "Shift" }, "Tab", function () awful.layout.inc(-1) end,
++    --     {description = "select previous", group = "layout"}),
++
++    -- awful.key({ modkey, ctrlkey }, "n",
++    --           function ()
++    --               local c = awful.client.restore()
++    --               -- Focus restored client
++    --               if c then
++    --                   client.focus = c
++    --                   c:raise()
++    --               end
++    --           end,
++    --           {description = "restore minimized", group = "client"}),
++
++    -- Dropdown application
++    awful.key({ modkey, }, "F12", function () awful.screen.focused().quake:toggle() end,
++              {description = "dropdown application", group = "super"}),
++
++    -- Widgets popups
++    -- awful.key({ modkey, altkey, }, "c", function () lain.widget.cal.show(7) end,
++    --     {description = "show calendar", group = "widgets"}),
++    -- awful.key({ altkey, }, "h", function () if beautiful.fs then beautiful.fs.show(7) end end,
++    --     {description = "show filesystem", group = "widgets"}),
++    -- awful.key({ altkey, }, "w", function () if beautiful.weather then beautiful.weather.show(7) end end,
++    --     {description = "show weather", group = "widgets"}),
++
++    -- Brightness
++    awful.key({ }, "XF86MonBrightnessUp", function () os.execute("xbacklight -inc 10") end,
++        {description = "+10%", group = "hotkeys"}),
++    awful.key({ }, "XF86MonBrightnessDown", function () os.execute("xbacklight -dec 10") end,
++        {description = "-10%", group = "hotkeys"}),
++
++    -- ALSA volume control
++    --awful.key({ ctrlkey }, "Up",
++    awful.key({ }, "XF86AudioRaiseVolume",
++        function ()
++            os.execute(string.format("amixer -q set %s 1%%+", beautiful.volume.channel))
++            beautiful.volume.update()
++        end),
++    --awful.key({ ctrlkey }, "Down",
++    awful.key({ }, "XF86AudioLowerVolume",
++        function ()
++            os.execute(string.format("amixer -q set %s 1%%-", beautiful.volume.channel))
++            beautiful.volume.update()
++        end),
++    awful.key({ }, "XF86AudioMute",
++        function ()
++            os.execute(string.format("amixer -q set %s toggle", beautiful.volume.togglechannel or beautiful.volume.channel))
++            beautiful.volume.update()
++        end)
++
++    -- Copy primary to clipboard (terminals to gtk)
++    -- awful.key({ modkey }, "c", function () awful.spawn.with_shell("xsel | xsel -i -b") end,
++    --     {description = "copy terminal to gtk", group = "hotkeys"}),
++    -- Copy clipboard to primary (gtk to terminals)
++    -- awful.key({ modkey }, "v", function () awful.spawn.with_shell("xsel -b | xsel") end,
++    --     {description = "copy gtk to terminal", group = "hotkeys"}),
++    -- awful.key({ altkey, "Shift" }, "x",
++    --           function ()
++    --               awful.prompt.run {
++    --                 prompt       = "Run Lua code: ",
++    --                 textbox      = awful.screen.focused().mypromptbox.widget,
++    --                 exe_callback = awful.util.eval,
++    --                 history_path = awful.util.get_cache_dir() .. "/history_eval"
++    --               }
++    --           end,
++    --           {description = "lua execute prompt", group = "awesome"})
++    --]]
++)
++
++clientkeys = mytable.join(
++    -- awful.key({ altkey, "Shift" }, "m",      lain.util.magnify_client,
++    --           {description = "magnify client", group = "client"}),
++    awful.key({ modkey,           }, "f",
++        function (c)
++            c.fullscreen = not c.fullscreen
++            c:raise()
++        end,
++        {description = "toggle fullscreen", group = "client"}),
++
++    awful.key({ modkey }, "q", function (c) c:kill() end,
++      {description = "close", group = "hotkeys"}),
++
++    --awful.key({ modkey,         }, "space", awful.client.floating.toggle,
++    --  {description = "toggle floating", group = "client"}),
++
++    awful.key(
++      { modkey }, "space",
++      function(c)
++        awful.client.floating.toggle(c)
++
++        -- If the client is now floating, center it
++        if c.floating then
++          awful.placement.centered(c, {honor_workarea = true})
++        end
++      end,
++      {description = "toggle floating and center", group = "client"}
++    ),
++
++    -- awful.key({ modkey, ctrlkey }, "Return", function (c) c:swap(awful.client.getmaster()) end,
++    --   {description = "move to master", group = "client"}),
++    -- awful.key({ modkey, "Shift" }, "t", function (c) c.ontop = not c.ontop end,
++    --   {description = "toggle keep on top", group = "client"}),
++
++    awful.key({ modkey, "Shift"}, "l",
++        function ()
++            local c = client.focus
++            if c then c:move_to_screen() end
++        end, {description = "move client to next screen", group = "client"}),
++
++    awful.key({ modkey, "Shift"}, "h",
++        function ()
++            local c = client.focus
++            if c then c:move_to_screen(c.screen.index-1) end
++        end, {description = "move client to prev screen", group = "client"}),
++
++    -- awful.key({ modkey,         }, "n",
++    --     function (c)
++    --         -- The client currently has the input focus, so it cannot be
++    --         -- minimized, since minimized clients can't have the focus.
++    --         c.minimized = true
++    --     end ,
++    -- {description = "minimize", group = "client"}),
++
++     awful.key({ modkey, "Shift", ctrlkey           }, "m",
++         function (c)
++             c.maximized = not c.maximized
++             c:raise()
++         end ,
++     {description = "maximize", group = "client"})
++)
++
++-- Toggleable Tag Switching
++local last_tag = {}
++
++local function toggle_tag(tag)
++    local screen = awful.screen.focused()
++    if screen.selected_tag == tag then
++        if last_tag[screen] then
++            last_tag[screen]:view_only()
++        end
++    else
++        last_tag[screen] = screen.selected_tag
++        tag:view_only()
++    end
++end
++
++-- Bind all key numbers to tags.
++-- Be careful: we use keycodes to make it work on any keyboard layout.
++-- This should map on the top row of your keyboard, usually 1 to 9.
++for i = 1, 9 do
++    globalkeys = mytable.join(globalkeys,
++        -- View tag only.
++        awful.key({ modkey }, "#" .. i + 9,
++                  function ()
++                        local screen = awful.screen.focused()
++                        local tag = screen.tags[i]
++                        if tag then
++                           --tag:view_only()
++                           toggle_tag(tag)
++                        end
++                  end,
++                  {description = "view tag #"..i, group = "tag"}),
++        -- Toggle tag display.
++        --awful.key({ modkey, "Control" }, "#" .. i + 9,
++        --          function ()
++        --              local screen = awful.screen.focused()
++        --              local tag = screen.tags[i]
++        --              if tag then
++        --                 awful.tag.viewtoggle(tag)
++        --              end
++        --          end,
++        --          {description = "toggle tag #" .. i, group = "tag"}),
++        -- Move client to tag and view it.
++        awful.key({ modkey, "Shift" }, "#" .. i + 9,
++                  function ()
++                      if client.focus then
++                          local tag = client.focus.screen.tags[i]
++                          if tag then
++                              client.focus:move_to_tag(tag)
++                              toggle_tag(tag)
++                          end
++                     end
++                  end,
++                  {description = "move focused client to tag #"..i, group = "tag"}),
++        -- Move client to tag.
++        awful.key({ modkey, "Control" }, "#" .. i + 9,
++                  function ()
++                      if client.focus then
++                          local tag = client.focus.screen.tags[i]
++                          if tag then
++                              client.focus:move_to_tag(tag)
++                          end
++                     end
++                  end,
++                  {description = "move focused client to tag #"..i, group = "tag"}),
++        -- Toggle tag on focused client.
++        awful.key({ modkey, "Control", "Shift" }, "#" .. i + 9,
++                  function ()
++                      if client.focus then
++                          local tag = client.focus.screen.tags[i]
++                          if tag then
++                              client.focus:toggle_tag(tag)
++                          end
++                      end
++                  end,
++                  {description = "toggle focused client on tag #" .. i, group = "tag"})
++    )
++end
++
++clientbuttons = mytable.join(
++    awful.button({ }, 1, function (c)
++        c:emit_signal("request::activate", "mouse_click", {raise = true})
++    end),
++    awful.button({ modkey }, 1, function (c)
++        c:emit_signal("request::activate", "mouse_click", {raise = true})
++        awful.mouse.client.move(c)
++    end),
++    awful.button({ modkey }, 3, function (c)
++        c:emit_signal("request::activate", "mouse_click", {raise = true})
++        awful.mouse.client.resize(c)
++    end)
++)
++
++-- Set keys
++root.keys(globalkeys)
++
++-- }}}
++
++-- {{{ Rules
++
++-- Rules to apply to new clients (through the "manage" signal).
++awful.rules.rules = {
++    {
++        rule = { class = "firefox" },
++        properties = {
++            --maximized = false, -- Ensure Firefox is not always maximized
++            floating = false,  -- Ensure it respects tiled layouts
++            tag = "2",
++        },
++    },
++    {
++        rule = { class = "thunar" },
++        properties = {
++            maximized = false,
++            floating = false,
++        },
++    },
++
++    -- All clients will match this rule.
++    { rule = { },
++      properties = { border_width = beautiful.border_width,
++                     border_color = beautiful.border_normal,
++                     callback = awful.client.setslave,
++                     focus = awful.client.focus.filter,
++                     raise = true,
++                     keys = clientkeys,
++                     buttons = clientbuttons,
++                     screen = awful.screen.preferred,
++                     placement = awful.placement.no_overlap+awful.placement.no_offscreen,
++                     size_hints_honor = false
++     }
++    },
++
++    -- Floating clients.
++  --{
++  --  rule_any = {
++  --    instance = {
++  --      "DTA", -- Firefox addon DownThemAll.
++  --      "copyq", -- Includes session name in class.
++  --      "pinentry",
++  --    },
++  --    class = {
++  --      "Arandr",
++  --      "Blueman-manager",
++  --      "Gpick",
++  --      "Kruler",
++  --      "MessageWin", -- kalarm.
++  --      "Sxiv",
++  --      "Tor Browser", -- Needs a fixed window size to avoid fingerprinting by screen size.
++  --      "Wpa_gui",
++  --      "veromix",
++  --      "xtightvncviewer"},
++  --
++  --    -- Note that the name property shown in xprop might be set slightly after creation of the client
++  --    -- and the name shown there might not match defined rules here.
++  --    name = {
++  --      "Event Tester",  -- xev.
++  --    },
++  --    role = {
++  --      "AlarmWindow",  -- Thunderbird's calendar.
++  --      "ConfigManager",  -- Thunderbird's about:config.
++  --      "pop-up",       -- e.g. Google Chrome's (detached) Developer Tools.
++  --    }
++  --  }, properties = { floating = true }},
++
++    -- Add titlebars to normal clients and dialogs
++    { rule_any = {type = { "normal", "dialog" }
++      }, properties = { titlebars_enabled = false }
++    },
++
++    -- Set Firefox to always map on the tag named "2" on screen 1.
++    -- { rule = { class = "Firefox" },
++    --   properties = { screen = 1, tag = "2" } },
++}
++
++-- }}}
++
++-- {{{ Signals
++
++-- Signal function to execute when a new client appears.
++client.connect_signal("manage", function (c)
++    -- Set the windows at the slave,
++    -- i.e. put it at the end of others instead of setting it master.
++    -- if not awesome.startup then awful.client.setslave(c) end
++
++    if awesome.startup
++      and not c.size_hints.user_position
++      and not c.size_hints.program_position then
++        -- Prevent clients from being unreachable after screen count changes.
++        awful.placement.no_offscreen(c)
++    end
++end)
++
++-- Add a titlebar if titlebars_enabled is set to true in the rules.
++client.connect_signal("request::titlebars", function(c)
++    -- Custom
++    if beautiful.titlebar_fun then
++        beautiful.titlebar_fun(c)
++        return
++    end
++
++    -- Default
++    -- buttons for the titlebar
++    local buttons = mytable.join(
++        awful.button({ }, 1, function()
++            c:emit_signal("request::activate", "titlebar", {raise = true})
++            awful.mouse.client.move(c)
++        end),
++        awful.button({ }, 3, function()
++            c:emit_signal("request::activate", "titlebar", {raise = true})
++            awful.mouse.client.resize(c)
++        end)
++    )
+ 
+--- focus windows automatically when they are raised
+-require("awful.autofocus")
++    awful.titlebar(c, { size = 16 }) : setup {
++        { -- Left
++            awful.titlebar.widget.iconwidget(c),
++            buttons = buttons,
++            layout  = wibox.layout.fixed.horizontal
++        },
++        { -- Middle
++            { -- Title
++                align  = "center",
++                widget = awful.titlebar.widget.titlewidget(c)
++            },
++            buttons = buttons,
++            layout  = wibox.layout.flex.horizontal
++        },
++        { -- Right
++            awful.titlebar.widget.floatingbutton (c),
++            awful.titlebar.widget.maximizedbutton(c),
++            awful.titlebar.widget.stickybutton   (c),
++            awful.titlebar.widget.ontopbutton    (c),
++            awful.titlebar.widget.closebutton    (c),
++            layout = wibox.layout.fixed.horizontal()
++        },
++        layout = wibox.layout.align.horizontal
++    }
++end)
+ 
+-local awesome_conf_dir = gears.filesystem.get_configuration_dir()
++-- Enable sloppy focus, so that focus follows mouse.
++--client.connect_signal("mouse::enter", function(c)
++--    c:emit_signal("request::activate", "mouse_enter", {raise = vi_focus})
++--end)
+ 
+--- Global variables
+-Terminal = "alacritty"
+-TerminalCmd = Terminal .. " -e "
+-Editor = "nvim"
++client.connect_signal("focus", function(c) c.border_color = beautiful.border_focus end)
++client.connect_signal("unfocus", function(c) c.border_color = beautiful.border_normal end)
+ 
++-- switch to parent after closing child window
++local function backham()
++    local s = awful.screen.focused()
++    local c = awful.client.focus.history.get(s, 0)
++    if c then
++        client.focus = c
++        c:raise()
++    end
++end
+ 
+--- Error handling: this isn't useful here, but is if the config is used as fallback.
+-dofile(awesome_conf_dir .. "error_handling.lua")
++-- attach to minimized state
++client.connect_signal("property::minimized", backham)
++-- attach to closed state
++client.connect_signal("unmanage", backham)
++-- ensure there is always a selected client during tag switching or logins
++tag.connect_signal("property::selected", backham)
+ 
+--- Themes define colours, font and wallpapers.
+-beautiful.init(awesome_conf_dir .. "theme/theme.lua")
++-- }}}
+ 
+--- Screens, layouts, tags
+-dofile(awesome_conf_dir .. "screens.lua")
++for s in screen do
++    s:connect_signal("arrange", function(scr)
++        local clients = scr.clients
++        local firefox_clients = {}
++        
++        -- Collect all Firefox clients
++        for _, c in ipairs(clients) do
++            if c.class == "firefox" then
++                table.insert(firefox_clients, c)
++            end
++        end
+ 
+--- Key bindings
+-dofile(awesome_conf_dir .. "keys.lua")
++        -- If there's only one client on the screen and it's Firefox, maximize it.
++        -- Otherwise, if there are multiple clients, ensure Firefox is not maximized.
++        if #clients == 1 and #firefox_clients == 1 then
++            firefox_clients[1].maximized = true
++        else
++            for _, fc in ipairs(firefox_clients) do
++                fc.maximized = false
++            end
++        end
++    end)
++end
+ 
+--- Rules: how windows are placed and managed
+--- If you want to make specific programs appear on specific tags, you can do that here.
+-dofile(awesome_conf_dir .. "rules.lua")
++-- Multiple monitor taglist setup
++-- See: {code_root_dir}/Code2/Lua/my_lua/testing/awsm_tag_testing.lua
++local binary_mask = 341
+ 
+--- Signals: what to do when a window is created, moved, etc.
+-dofile(awesome_conf_dir .. "signals.lua")
++local function setup_tags_for_monitors()
++    local num_screens = screen.count()
+ 
++    for s in screen do
++        s.tags = {}
+ 
++        if num_screens == 2 then
++            for i = 1, 9 do
++                if s.index == 1 and (binary_mask & (1 << (i - 1))) ~= 0 then
++                  awful.tag.add("Tag " .. i, { screen = s, layout = awful.layout.suit.spiral })
++                elseif s.index == 2 and (binary_mask & (1 << (i - 1))) == 0 then
++                  awful.tag.add("Tag " .. i, { screen = s, layout = awful.layout.suit.spiral })
++                end
++            end
++        else
++            -- Cyclical tag distribution for 3 or more monitors
++            for i = 1, 9 do
++                -- Assign tag `i` to the monitor `((i - 1) % num_screens) + 1`
++                local target_screen = ((i - 1) % num_screens) + 1
++                if s.index == target_screen then
++                    awful.tag.add("Tag " .. i, {
++                        screen = s,
++                        layout = awful.layout.suit.spiral,
++                    })
++                end
++            end
++        end
++    end
++end
+ 
+--- Autostart applications
+-awful.spawn.with_shell("pgrep signal-desktop || signal-desktop --start-in-tray")
++screen.connect_signal("added", function()
++    setup_tags_for_monitors()
++end)
+ 
+--- Keyboard & monitor manager, automatically runs autorandr and setxkbmap
+--- when a new keyboard or monitor is plugged in/out.
+-awful.spawn.with_shell("~/.config/scripts/manager")
++screen.connect_signal("removed", function()
++    setup_tags_for_monitors()
++end)
+ 
+--- Unison sync script: syncs files with my server.
+-awful.spawn.with_shell("pgrep unison || ~/.config/scripts/unison-sync")
++setup_tags_for_monitors()
+ 
+--- Set the screen to turn off & lock after 5 minutes of inactivity.
+-awful.spawn.with_shell("xset s 300")
+--- xss-lock will exit if already running, no need to pgrep.
+-awful.spawn.with_shell("xss-lock ~/.config/scripts/lock")
+diff --git a/rc.lua.template b/rc.lua.template
+new file mode 100644
+index 0000000..6370d0e
+--- /dev/null
++++ b/rc.lua.template
+@@ -0,0 +1,832 @@
++--[[
++
++     Awesome WM configuration template
++     github.com/lcpz
++
++--]]
++
++-- {{{ Required libraries
++
++-- If LuaRocks is installed, make sure that packages installed through it are
++-- found (e.g. lgi). If LuaRocks is not installed, do nothing.
++pcall(require, "luarocks.loader")
++
++local gears         = require("gears")
++local awful         = require("awful")
++                      require("awful.autofocus")
++local wibox         = require("wibox")
++local beautiful     = require("beautiful")
++local naughty       = require("naughty")
++local lain          = require("lain")
++--local menubar       = require("menubar")
++local freedesktop   = require("freedesktop")
++local hotkeys_popup = require("awful.hotkeys_popup")
++                      require("awful.hotkeys_popup.keys")
++local mytable       = awful.util.table or gears.table -- 4.{0,1} compatibility
++
++-- }}}
++
++-- {{{ Error handling
++
++-- Check if awesome encountered an error during startup and fell back to
++-- another config (This code will only ever execute for the fallback config)
++if awesome.startup_errors then
++    naughty.notify {
++        preset = naughty.config.presets.critical,
++        title = "Oops, there were errors during startup!",
++        text = awesome.startup_errors
++    }
++end
++
++-- Handle runtime errors after startup
++do
++    local in_error = false
++
++    awesome.connect_signal("debug::error", function (err)
++        if in_error then return end
++
++        in_error = true
++
++        naughty.notify {
++            preset = naughty.config.presets.critical,
++            title = "Oops, an error happened!",
++            text = tostring(err)
++        }
++
++        in_error = false
++    end)
++end
++
++-- }}}
++
++-- {{{ Autostart windowless processes
++
++-- This function will run once every time Awesome is started
++local function run_once(cmd_arr)
++    for _, cmd in ipairs(cmd_arr) do
++        awful.spawn.with_shell(string.format("pgrep -u $USER -fx '%s' > /dev/null || (%s)", cmd, cmd))
++    end
++end
++
++run_once({ "urxvtd", "unclutter -root" }) -- comma-separated entries
++
++-- This function implements the XDG autostart specification
++--[[
++awful.spawn.with_shell(
++    'if (xrdb -query | grep -q "^awesome\\.started:\\s*true$"); then exit; fi;' ..
++    'xrdb -merge <<< "awesome.started:true";' ..
++    -- list each of your autostart commands, followed by ; inside single quotes, followed by ..
++    'dex --environment Awesome --autostart --search-paths ' ..
++    '"${XDG_CONFIG_HOME:-$HOME/.config}/autostart:${XDG_CONFIG_DIRS:-/etc/xdg}/autostart";' -- https://github.com/jceb/dex
++)
++--]]
++
++-- }}}
++
++-- {{{ Variable definitions
++
++local themes = {
++    "blackburn",       -- 1
++    "copland",         -- 2
++    "dremora",         -- 3
++    "holo",            -- 4
++    "multicolor",      -- 5
++    "powerarrow",      -- 6
++    "powerarrow-dark", -- 7
++    "rainbow",         -- 8
++    "steamburn",       -- 9
++    "vertex"           -- 10
++}
++
++local chosen_theme = themes[5]
++local modkey       = "Mod4"
++local altkey       = "Mod1"
++local terminal     = "urxvtc"
++local vi_focus     = false -- vi-like client focus https://github.com/lcpz/awesome-copycats/issues/275
++local cycle_prev   = true  -- cycle with only the previously focused client or all https://github.com/lcpz/awesome-copycats/issues/274
++local editor       = os.getenv("EDITOR") or "nvim"
++local browser      = "librewolf"
++
++awful.util.terminal = terminal
++awful.util.tagnames = { "1", "2", "3", "4", "5" }
++awful.layout.layouts = {
++    awful.layout.suit.floating,
++    awful.layout.suit.tile,
++    awful.layout.suit.tile.left,
++    awful.layout.suit.tile.bottom,
++    awful.layout.suit.tile.top,
++    --awful.layout.suit.fair,
++    --awful.layout.suit.fair.horizontal,
++    --awful.layout.suit.spiral,
++    --awful.layout.suit.spiral.dwindle,
++    --awful.layout.suit.max,
++    --awful.layout.suit.max.fullscreen,
++    --awful.layout.suit.magnifier,
++    --awful.layout.suit.corner.nw,
++    --awful.layout.suit.corner.ne,
++    --awful.layout.suit.corner.sw,
++    --awful.layout.suit.corner.se,
++    --lain.layout.cascade,
++    --lain.layout.cascade.tile,
++    --lain.layout.centerwork,
++    --lain.layout.centerwork.horizontal,
++    --lain.layout.termfair,
++    --lain.layout.termfair.center
++}
++
++lain.layout.termfair.nmaster           = 3
++lain.layout.termfair.ncol              = 1
++lain.layout.termfair.center.nmaster    = 3
++lain.layout.termfair.center.ncol       = 1
++lain.layout.cascade.tile.offset_x      = 2
++lain.layout.cascade.tile.offset_y      = 32
++lain.layout.cascade.tile.extra_padding = 5
++lain.layout.cascade.tile.nmaster       = 5
++lain.layout.cascade.tile.ncol          = 2
++
++awful.util.taglist_buttons = mytable.join(
++    awful.button({ }, 1, function(t) t:view_only() end),
++    awful.button({ modkey }, 1, function(t)
++        if client.focus then client.focus:move_to_tag(t) end
++    end),
++    awful.button({ }, 3, awful.tag.viewtoggle),
++    awful.button({ modkey }, 3, function(t)
++        if client.focus then client.focus:toggle_tag(t) end
++    end),
++    awful.button({ }, 4, function(t) awful.tag.viewnext(t.screen) end),
++    awful.button({ }, 5, function(t) awful.tag.viewprev(t.screen) end)
++)
++
++awful.util.tasklist_buttons = mytable.join(
++     awful.button({ }, 1, function(c)
++         if c == client.focus then
++             c.minimized = true
++         else
++             c:emit_signal("request::activate", "tasklist", { raise = true })
++         end
++     end),
++     awful.button({ }, 3, function()
++         awful.menu.client_list({ theme = { width = 250 } })
++     end),
++     awful.button({ }, 4, function() awful.client.focus.byidx(1) end),
++     awful.button({ }, 5, function() awful.client.focus.byidx(-1) end)
++)
++
++beautiful.init(string.format("%s/.config/awesome/themes/%s/theme.lua", os.getenv("HOME"), chosen_theme))
++
++-- }}}
++
++-- {{{ Menu
++
++-- Create a launcher widget and a main menu
++local myawesomemenu = {
++   { "Hotkeys", function() hotkeys_popup.show_help(nil, awful.screen.focused()) end },
++   { "Manual", string.format("%s -e man awesome", terminal) },
++   { "Edit config", string.format("%s -e %s %s", terminal, editor, awesome.conffile) },
++   { "Restart", awesome.restart },
++   { "Quit", function() awesome.quit() end },
++}
++
++awful.util.mymainmenu = freedesktop.menu.build {
++    before = {
++        { "Awesome", myawesomemenu, beautiful.awesome_icon },
++        -- other triads can be put here
++    },
++    after = {
++        { "Open terminal", terminal },
++        -- other triads can be put here
++    }
++}
++
++-- Hide the menu when the mouse leaves it
++--[[
++awful.util.mymainmenu.wibox:connect_signal("mouse::leave", function()
++    if not awful.util.mymainmenu.active_child or
++       (awful.util.mymainmenu.wibox ~= mouse.current_wibox and
++       awful.util.mymainmenu.active_child.wibox ~= mouse.current_wibox) then
++        awful.util.mymainmenu:hide()
++    else
++        awful.util.mymainmenu.active_child.wibox:connect_signal("mouse::leave",
++        function()
++            if awful.util.mymainmenu.wibox ~= mouse.current_wibox then
++                awful.util.mymainmenu:hide()
++            end
++        end)
++    end
++end)
++--]]
++
++-- Set the Menubar terminal for applications that require it
++--menubar.utils.terminal = terminal
++
++-- }}}
++
++-- {{{ Screen
++
++-- Re-set wallpaper when a screen's geometry changes (e.g. different resolution)
++screen.connect_signal("property::geometry", function(s)
++    -- Wallpaper
++    if beautiful.wallpaper then
++        local wallpaper = beautiful.wallpaper
++        -- If wallpaper is a function, call it with the screen
++        if type(wallpaper) == "function" then
++            wallpaper = wallpaper(s)
++        end
++        gears.wallpaper.maximized(wallpaper, s, true)
++    end
++end)
++
++-- No borders when rearranging only 1 non-floating or maximized client
++screen.connect_signal("arrange", function (s)
++    local only_one = #s.tiled_clients == 1
++    for _, c in pairs(s.clients) do
++        if only_one and not c.floating or c.maximized or c.fullscreen then
++            c.border_width = 0
++        else
++            c.border_width = beautiful.border_width
++        end
++    end
++end)
++
++-- Create a wibox for each screen and add it
++awful.screen.connect_for_each_screen(function(s) beautiful.at_screen_connect(s) end)
++
++-- }}}
++
++-- {{{ Mouse bindings
++
++root.buttons(mytable.join(
++    awful.button({ }, 3, function () awful.util.mymainmenu:toggle() end),
++    awful.button({ }, 4, awful.tag.viewnext),
++    awful.button({ }, 5, awful.tag.viewprev)
++))
++
++-- }}}
++
++-- {{{ Key bindings
++
++globalkeys = mytable.join(
++    -- Destroy all notifications
++    awful.key({ "Control",           }, "space", function() naughty.destroy_all_notifications() end,
++              {description = "destroy all notifications", group = "hotkeys"}),
++    -- Take a screenshot
++    -- https://github.com/lcpz/dots/blob/master/bin/screenshot
++    awful.key({ altkey }, "p", function() os.execute("screenshot") end,
++              {description = "take a screenshot", group = "hotkeys"}),
++
++    -- X screen locker
++    awful.key({ altkey, "Control" }, "l", function () os.execute(scrlocker) end,
++              {description = "lock screen", group = "hotkeys"}),
++
++    -- Show help
++    awful.key({ modkey,           }, "s",      hotkeys_popup.show_help,
++              {description="show help", group="awesome"}),
++
++    -- Tag browsing
++    awful.key({ modkey,           }, "Left",   awful.tag.viewprev,
++              {description = "view previous", group = "tag"}),
++    awful.key({ modkey,           }, "Right",  awful.tag.viewnext,
++              {description = "view next", group = "tag"}),
++    awful.key({ modkey,           }, "Escape", awful.tag.history.restore,
++              {description = "go back", group = "tag"}),
++
++    -- Non-empty tag browsing
++    awful.key({ altkey }, "Left", function () lain.util.tag_view_nonempty(-1) end,
++              {description = "view  previous nonempty", group = "tag"}),
++    awful.key({ altkey }, "Right", function () lain.util.tag_view_nonempty(1) end,
++              {description = "view  previous nonempty", group = "tag"}),
++
++    -- Default client focus
++    awful.key({ altkey,           }, "j",
++        function ()
++            awful.client.focus.byidx( 1)
++        end,
++        {description = "focus next by index", group = "client"}
++    ),
++    awful.key({ altkey,           }, "k",
++        function ()
++            awful.client.focus.byidx(-1)
++        end,
++        {description = "focus previous by index", group = "client"}
++    ),
++
++    -- By-direction client focus
++    awful.key({ modkey }, "j",
++        function()
++            awful.client.focus.global_bydirection("down")
++            if client.focus then client.focus:raise() end
++        end,
++        {description = "focus down", group = "client"}),
++    awful.key({ modkey }, "k",
++        function()
++            awful.client.focus.global_bydirection("up")
++            if client.focus then client.focus:raise() end
++        end,
++        {description = "focus up", group = "client"}),
++    awful.key({ modkey }, "h",
++        function()
++            awful.client.focus.global_bydirection("left")
++            if client.focus then client.focus:raise() end
++        end,
++        {description = "focus left", group = "client"}),
++    awful.key({ modkey }, "l",
++        function()
++            awful.client.focus.global_bydirection("right")
++            if client.focus then client.focus:raise() end
++        end,
++        {description = "focus right", group = "client"}),
++
++    -- Menu
++    awful.key({ modkey,           }, "w", function () awful.util.mymainmenu:show() end,
++              {description = "show main menu", group = "awesome"}),
++
++    -- Layout manipulation
++    awful.key({ modkey, "Shift"   }, "j", function () awful.client.swap.byidx(  1)    end,
++              {description = "swap with next client by index", group = "client"}),
++    awful.key({ modkey, "Shift"   }, "k", function () awful.client.swap.byidx( -1)    end,
++              {description = "swap with previous client by index", group = "client"}),
++    awful.key({ modkey, "Control" }, "j", function () awful.screen.focus_relative( 1) end,
++              {description = "focus the next screen", group = "screen"}),
++    awful.key({ modkey, "Control" }, "k", function () awful.screen.focus_relative(-1) end,
++              {description = "focus the previous screen", group = "screen"}),
++    awful.key({ modkey,           }, "u", awful.client.urgent.jumpto,
++              {description = "jump to urgent client", group = "client"}),
++    awful.key({ modkey,           }, "Tab",
++        function ()
++            if cycle_prev then
++                awful.client.focus.history.previous()
++            else
++                awful.client.focus.byidx(-1)
++            end
++            if client.focus then
++                client.focus:raise()
++            end
++        end,
++        {description = "cycle with previous/go back", group = "client"}),
++
++    -- Show/hide wibox
++    awful.key({ modkey }, "b", function ()
++            for s in screen do
++                s.mywibox.visible = not s.mywibox.visible
++                if s.mybottomwibox then
++                    s.mybottomwibox.visible = not s.mybottomwibox.visible
++                end
++            end
++        end,
++        {description = "toggle wibox", group = "awesome"}),
++
++    -- On-the-fly useless gaps change
++    awful.key({ altkey, "Control" }, "+", function () lain.util.useless_gaps_resize(1) end,
++              {description = "increment useless gaps", group = "tag"}),
++    awful.key({ altkey, "Control" }, "-", function () lain.util.useless_gaps_resize(-1) end,
++              {description = "decrement useless gaps", group = "tag"}),
++
++    -- Dynamic tagging
++    awful.key({ modkey, "Shift" }, "n", function () lain.util.add_tag() end,
++              {description = "add new tag", group = "tag"}),
++    awful.key({ modkey, "Shift" }, "r", function () lain.util.rename_tag() end,
++              {description = "rename tag", group = "tag"}),
++    awful.key({ modkey, "Shift" }, "Left", function () lain.util.move_tag(-1) end,
++              {description = "move tag to the left", group = "tag"}),
++    awful.key({ modkey, "Shift" }, "Right", function () lain.util.move_tag(1) end,
++              {description = "move tag to the right", group = "tag"}),
++    awful.key({ modkey, "Shift" }, "d", function () lain.util.delete_tag() end,
++              {description = "delete tag", group = "tag"}),
++
++    -- Standard program
++    awful.key({ modkey,           }, "Return", function () awful.spawn(terminal) end,
++              {description = "open a terminal", group = "launcher"}),
++    awful.key({ modkey, "Control" }, "r", awesome.restart,
++              {description = "reload awesome", group = "awesome"}),
++    awful.key({ modkey, "Shift"   }, "q", awesome.quit,
++              {description = "quit awesome", group = "awesome"}),
++
++    awful.key({ modkey, altkey    }, "l",     function () awful.tag.incmwfact( 0.05)          end,
++              {description = "increase master width factor", group = "layout"}),
++    awful.key({ modkey, altkey    }, "h",     function () awful.tag.incmwfact(-0.05)          end,
++              {description = "decrease master width factor", group = "layout"}),
++    awful.key({ modkey, "Shift"   }, "h",     function () awful.tag.incnmaster( 1, nil, true) end,
++              {description = "increase the number of master clients", group = "layout"}),
++    awful.key({ modkey, "Shift"   }, "l",     function () awful.tag.incnmaster(-1, nil, true) end,
++              {description = "decrease the number of master clients", group = "layout"}),
++    awful.key({ modkey, "Control" }, "h",     function () awful.tag.incncol( 1, nil, true)    end,
++              {description = "increase the number of columns", group = "layout"}),
++    awful.key({ modkey, "Control" }, "l",     function () awful.tag.incncol(-1, nil, true)    end,
++              {description = "decrease the number of columns", group = "layout"}),
++    awful.key({ modkey,           }, "space", function () awful.layout.inc( 1)                end,
++              {description = "select next", group = "layout"}),
++    awful.key({ modkey, "Shift"   }, "space", function () awful.layout.inc(-1)                end,
++              {description = "select previous", group = "layout"}),
++
++    awful.key({ modkey, "Control" }, "n", function ()
++        local c = awful.client.restore()
++        -- Focus restored client
++        if c then
++            c:emit_signal("request::activate", "key.unminimize", {raise = true})
++        end
++    end, {description = "restore minimized", group = "client"}),
++
++    -- Dropdown application
++    awful.key({ modkey, }, "z", function () awful.screen.focused().quake:toggle() end,
++              {description = "dropdown application", group = "launcher"}),
++
++    -- Widgets popups
++    awful.key({ altkey, }, "c", function () if beautiful.cal then beautiful.cal.show(7) end end,
++              {description = "show calendar", group = "widgets"}),
++    awful.key({ altkey, }, "h", function () if beautiful.fs then beautiful.fs.show(7) end end,
++              {description = "show filesystem", group = "widgets"}),
++    awful.key({ altkey, }, "w", function () if beautiful.weather then beautiful.weather.show(7) end end,
++              {description = "show weather", group = "widgets"}),
++
++    -- Screen brightness
++    awful.key({ }, "XF86MonBrightnessUp", function () os.execute("xbacklight -inc 10") end,
++              {description = "+10%", group = "hotkeys"}),
++    awful.key({ }, "XF86MonBrightnessDown", function () os.execute("xbacklight -dec 10") end,
++              {description = "-10%", group = "hotkeys"}),
++
++    -- ALSA volume control
++    awful.key({ altkey }, "Up",
++        function ()
++            os.execute(string.format("amixer -q set %s 1%%+", beautiful.volume.channel))
++            beautiful.volume.update()
++        end,
++        {description = "volume up", group = "hotkeys"}),
++    awful.key({ altkey }, "Down",
++        function ()
++            os.execute(string.format("amixer -q set %s 1%%-", beautiful.volume.channel))
++            beautiful.volume.update()
++        end,
++        {description = "volume down", group = "hotkeys"}),
++    awful.key({ altkey }, "m",
++        function ()
++            os.execute(string.format("amixer -q set %s toggle", beautiful.volume.togglechannel or beautiful.volume.channel))
++            beautiful.volume.update()
++        end,
++        {description = "toggle mute", group = "hotkeys"}),
++    awful.key({ altkey, "Control" }, "m",
++        function ()
++            os.execute(string.format("amixer -q set %s 100%%", beautiful.volume.channel))
++            beautiful.volume.update()
++        end,
++        {description = "volume 100%", group = "hotkeys"}),
++    awful.key({ altkey, "Control" }, "0",
++        function ()
++            os.execute(string.format("amixer -q set %s 0%%", beautiful.volume.channel))
++            beautiful.volume.update()
++        end,
++        {description = "volume 0%", group = "hotkeys"}),
++
++    -- MPD control
++    awful.key({ altkey, "Control" }, "Up",
++        function ()
++            os.execute("mpc toggle")
++            beautiful.mpd.update()
++        end,
++        {description = "mpc toggle", group = "widgets"}),
++    awful.key({ altkey, "Control" }, "Down",
++        function ()
++            os.execute("mpc stop")
++            beautiful.mpd.update()
++        end,
++        {description = "mpc stop", group = "widgets"}),
++    awful.key({ altkey, "Control" }, "Left",
++        function ()
++            os.execute("mpc prev")
++            beautiful.mpd.update()
++        end,
++        {description = "mpc prev", group = "widgets"}),
++    awful.key({ altkey, "Control" }, "Right",
++        function ()
++            os.execute("mpc next")
++            beautiful.mpd.update()
++        end,
++        {description = "mpc next", group = "widgets"}),
++    awful.key({ altkey }, "0",
++        function ()
++            local common = { text = "MPD widget ", position = "top_middle", timeout = 2 }
++            if beautiful.mpd.timer.started then
++                beautiful.mpd.timer:stop()
++                common.text = common.text .. lain.util.markup.bold("OFF")
++            else
++                beautiful.mpd.timer:start()
++                common.text = common.text .. lain.util.markup.bold("ON")
++            end
++            naughty.notify(common)
++        end,
++        {description = "mpc on/off", group = "widgets"}),
++
++    -- Copy primary to clipboard (terminals to gtk)
++    awful.key({ modkey }, "c", function () awful.spawn.with_shell("xsel | xsel -i -b") end,
++              {description = "copy terminal to gtk", group = "hotkeys"}),
++    -- Copy clipboard to primary (gtk to terminals)
++    awful.key({ modkey }, "v", function () awful.spawn.with_shell("xsel -b | xsel") end,
++              {description = "copy gtk to terminal", group = "hotkeys"}),
++
++    -- User programs
++    awful.key({ modkey }, "q", function () awful.spawn(browser) end,
++              {description = "run browser", group = "launcher"}),
++
++    -- Default
++    --[[ Menubar
++    awful.key({ modkey }, "p", function() menubar.show() end,
++              {description = "show the menubar", group = "launcher"}),
++    --]]
++    --[[ dmenu
++    awful.key({ modkey }, "x", function ()
++            os.execute(string.format("dmenu_run -i -fn 'Monospace' -nb '%s' -nf '%s' -sb '%s' -sf '%s'",
++            beautiful.bg_normal, beautiful.fg_normal, beautiful.bg_focus, beautiful.fg_focus))
++        end,
++        {description = "show dmenu", group = "launcher"}),
++    --]]
++    -- alternatively use rofi, a dmenu-like application with more features
++    -- check https://github.com/DaveDavenport/rofi for more details
++    --[[ rofi
++    awful.key({ modkey }, "x", function ()
++            os.execute(string.format("rofi -show %s -theme %s",
++            'run', 'dmenu'))
++        end,
++        {description = "show rofi", group = "launcher"}),
++    --]]
++    -- Prompt
++    awful.key({ modkey }, "r", function () awful.screen.focused().mypromptbox:run() end,
++              {description = "run prompt", group = "launcher"}),
++
++    awful.key({ modkey }, "x",
++              function ()
++                  awful.prompt.run {
++                    prompt       = "Run Lua code: ",
++                    textbox      = awful.screen.focused().mypromptbox.widget,
++                    exe_callback = awful.util.eval,
++                    history_path = awful.util.get_cache_dir() .. "/history_eval"
++                  }
++              end,
++              {description = "lua execute prompt", group = "awesome"})
++    --]]
++)
++
++clientkeys = mytable.join(
++    awful.key({ altkey, "Shift"   }, "m",      lain.util.magnify_client,
++              {description = "magnify client", group = "client"}),
++    awful.key({ modkey,           }, "f",
++        function (c)
++            c.fullscreen = not c.fullscreen
++            c:raise()
++        end,
++        {description = "toggle fullscreen", group = "client"}),
++    awful.key({ modkey, "Shift"   }, "c",      function (c) c:kill()                         end,
++              {description = "close", group = "client"}),
++    awful.key({ modkey, "Control" }, "space",  awful.client.floating.toggle                     ,
++              {description = "toggle floating", group = "client"}),
++    awful.key({ modkey, "Control" }, "Return", function (c) c:swap(awful.client.getmaster()) end,
++              {description = "move to master", group = "client"}),
++    awful.key({ modkey,           }, "o",      function (c) c:move_to_screen()               end,
++              {description = "move to screen", group = "client"}),
++    awful.key({ modkey,           }, "t",      function (c) c.ontop = not c.ontop            end,
++              {description = "toggle keep on top", group = "client"}),
++    awful.key({ modkey,           }, "n",
++        function (c)
++            -- The client currently has the input focus, so it cannot be
++            -- minimized, since minimized clients can't have the focus.
++            c.minimized = true
++        end ,
++        {description = "minimize", group = "client"}),
++    awful.key({ modkey,           }, "m",
++        function (c)
++            c.maximized = not c.maximized
++            c:raise()
++        end ,
++        {description = "(un)maximize", group = "client"}),
++    awful.key({ modkey, "Control" }, "m",
++        function (c)
++            c.maximized_vertical = not c.maximized_vertical
++            c:raise()
++        end ,
++        {description = "(un)maximize vertically", group = "client"}),
++    awful.key({ modkey, "Shift"   }, "m",
++        function (c)
++            c.maximized_horizontal = not c.maximized_horizontal
++            c:raise()
++        end ,
++        {description = "(un)maximize horizontally", group = "client"})
++)
++
++-- Bind all key numbers to tags.
++-- Be careful: we use keycodes to make it work on any keyboard layout.
++-- This should map on the top row of your keyboard, usually 1 to 9.
++for i = 1, 9 do
++    globalkeys = mytable.join(globalkeys,
++        -- View tag only.
++        awful.key({ modkey }, "#" .. i + 9,
++                  function ()
++                        local screen = awful.screen.focused()
++                        local tag = screen.tags[i]
++                        if tag then
++                           tag:view_only()
++                        end
++                  end,
++                  {description = "view tag #"..i, group = "tag"}),
++        -- Toggle tag display.
++        awful.key({ modkey, "Control" }, "#" .. i + 9,
++                  function ()
++                      local screen = awful.screen.focused()
++                      local tag = screen.tags[i]
++                      if tag then
++                         awful.tag.viewtoggle(tag)
++                      end
++                  end,
++                  {description = "toggle tag #" .. i, group = "tag"}),
++        -- Move client to tag.
++        awful.key({ modkey, "Shift" }, "#" .. i + 9,
++                  function ()
++                      if client.focus then
++                          local tag = client.focus.screen.tags[i]
++                          if tag then
++                              client.focus:move_to_tag(tag)
++                          end
++                     end
++                  end,
++                  {description = "move focused client to tag #"..i, group = "tag"}),
++        -- Toggle tag on focused client.
++        awful.key({ modkey, "Control", "Shift" }, "#" .. i + 9,
++                  function ()
++                      if client.focus then
++                          local tag = client.focus.screen.tags[i]
++                          if tag then
++                              client.focus:toggle_tag(tag)
++                          end
++                      end
++                  end,
++                  {description = "toggle focused client on tag #" .. i, group = "tag"})
++    )
++end
++
++clientbuttons = mytable.join(
++    awful.button({ }, 1, function (c)
++        c:emit_signal("request::activate", "mouse_click", {raise = true})
++    end),
++    awful.button({ modkey }, 1, function (c)
++        c:emit_signal("request::activate", "mouse_click", {raise = true})
++        awful.mouse.client.move(c)
++    end),
++    awful.button({ modkey }, 3, function (c)
++        c:emit_signal("request::activate", "mouse_click", {raise = true})
++        awful.mouse.client.resize(c)
++    end)
++)
++
++-- Set keys
++root.keys(globalkeys)
++
++-- }}}
++
++-- {{{ Rules
++
++-- Rules to apply to new clients (through the "manage" signal).
++awful.rules.rules = {
++    -- All clients will match this rule.
++    { rule = { },
++      properties = { border_width = beautiful.border_width,
++                     border_color = beautiful.border_normal,
++                     callback = awful.client.setslave,
++                     focus = awful.client.focus.filter,
++                     raise = true,
++                     keys = clientkeys,
++                     buttons = clientbuttons,
++                     screen = awful.screen.preferred,
++                     placement = awful.placement.no_overlap+awful.placement.no_offscreen,
++                     size_hints_honor = false
++     }
++    },
++
++    -- Floating clients.
++    { rule_any = {
++        instance = {
++          "DTA",  -- Firefox addon DownThemAll.
++          "copyq",  -- Includes session name in class.
++          "pinentry",
++        },
++        class = {
++          "Arandr",
++          "Blueman-manager",
++          "Gpick",
++          "Kruler",
++          "MessageWin",  -- kalarm.
++          "Sxiv",
++          "Tor Browser", -- Needs a fixed window size to avoid fingerprinting by screen size.
++          "Wpa_gui",
++          "veromix",
++          "xtightvncviewer"},
++
++        -- Note that the name property shown in xprop might be set slightly after creation of the client
++        -- and the name shown there might not match defined rules here.
++        name = {
++          "Event Tester",  -- xev.
++        },
++        role = {
++          "AlarmWindow",  -- Thunderbird's calendar.
++          "ConfigManager",  -- Thunderbird's about:config.
++          "pop-up",       -- e.g. Google Chrome's (detached) Developer Tools.
++        }
++      }, properties = { floating = true }},
++
++    -- Add titlebars to normal clients and dialogs
++    { rule_any = {type = { "normal", "dialog" }
++      }, properties = { titlebars_enabled = true }
++    },
++
++    -- Set Firefox to always map on the tag named "2" on screen 1.
++    -- { rule = { class = "Firefox" },
++    --   properties = { screen = 1, tag = "2" } },
++}
++
++-- }}}
++
++-- {{{ Signals
++
++-- Signal function to execute when a new client appears.
++client.connect_signal("manage", function (c)
++    -- Set the windows at the slave,
++    -- i.e. put it at the end of others instead of setting it master.
++    -- if not awesome.startup then awful.client.setslave(c) end
++
++    if awesome.startup
++      and not c.size_hints.user_position
++      and not c.size_hints.program_position then
++        -- Prevent clients from being unreachable after screen count changes.
++        awful.placement.no_offscreen(c)
++    end
++end)
++
++-- Add a titlebar if titlebars_enabled is set to true in the rules.
++client.connect_signal("request::titlebars", function(c)
++    -- Custom
++    if beautiful.titlebar_fun then
++        beautiful.titlebar_fun(c)
++        return
++    end
++
++    -- Default
++    -- buttons for the titlebar
++    local buttons = mytable.join(
++        awful.button({ }, 1, function()
++            c:emit_signal("request::activate", "titlebar", {raise = true})
++            awful.mouse.client.move(c)
++        end),
++        awful.button({ }, 3, function()
++            c:emit_signal("request::activate", "titlebar", {raise = true})
++            awful.mouse.client.resize(c)
++        end)
++    )
++
++    awful.titlebar(c, { size = 16 }) : setup {
++        { -- Left
++            awful.titlebar.widget.iconwidget(c),
++            buttons = buttons,
++            layout  = wibox.layout.fixed.horizontal
++        },
++        { -- Middle
++            { -- Title
++                align  = "center",
++                widget = awful.titlebar.widget.titlewidget(c)
++            },
++            buttons = buttons,
++            layout  = wibox.layout.flex.horizontal
++        },
++        { -- Right
++            awful.titlebar.widget.floatingbutton (c),
++            awful.titlebar.widget.maximizedbutton(c),
++            awful.titlebar.widget.stickybutton   (c),
++            awful.titlebar.widget.ontopbutton    (c),
++            awful.titlebar.widget.closebutton    (c),
++            layout = wibox.layout.fixed.horizontal()
++        },
++        layout = wibox.layout.align.horizontal
++    }
++end)
++
++-- Enable sloppy focus, so that focus follows mouse.
++client.connect_signal("mouse::enter", function(c)
++    c:emit_signal("request::activate", "mouse_enter", {raise = vi_focus})
++end)
++
++client.connect_signal("focus", function(c) c.border_color = beautiful.border_focus end)
++client.connect_signal("unfocus", function(c) c.border_color = beautiful.border_normal end)
++
++-- switch to parent after closing child window
++local function backham()
++    local s = awful.screen.focused()
++    local c = awful.client.focus.history.get(s, 0)
++    if c then
++        client.focus = c
++        c:raise()
++    end
++end
++
++-- attach to minimized state
++client.connect_signal("property::minimized", backham)
++-- attach to closed state
++client.connect_signal("unmanage", backham)
++-- ensure there is always a selected client during tag switching or logins
++tag.connect_signal("property::selected", backham)
++
++-- }}}
+diff --git a/rules.lua b/rules.lua
+deleted file mode 100755
+index d73ef50..0000000
+--- a/rules.lua
++++ /dev/null
+@@ -1,75 +0,0 @@
+-local awful = require("awful")
+-local beautiful = require("beautiful")
+-
+-
+--- Rules to apply to new clients (through the "manage" signal).
+-awful.rules.rules = {
+-    -- All clients will match this rule.
+-    { rule = { },
+-      properties = { border_width = beautiful.border_width,
+-                     border_color = beautiful.border_normal,
+-                     focus = awful.client.focus.filter,
+-                     raise = true,
+-                     keys = ClientKeys,
+-                     buttons = ClientButtons,
+-                     screen = awful.screen.preferred,
+-                     placement = awful.placement.no_overlap+awful.placement.no_offscreen
+-     }
+-    },
+-
+-    -- Floating clients.
+-    { rule_any = {
+-        instance = {
+-          "DTA",  -- Firefox addon DownThemAll.
+-          "copyq",  -- Includes session name in class.
+-          "pinentry",
+-        },
+-        class = {
+-          "Arandr",
+-          "Blueman-manager",
+-          "Gpick",
+-          "Kruler",
+-          "MessageWin",  -- kalarm.
+-          --"Sxiv",
+-          "Tor Browser", -- Needs a fixed window size to avoid fingerprinting by screen size.
+-          "Wpa_gui",
+-          "veromix",
+-          "xtightvncviewer"},
+-
+-        -- Note that the name property shown in xprop might be set slightly after creation of the client
+-        -- and the name shown there might not match defined rules here.
+-        name = {
+-          "Event Tester",  -- xev.
+-        },
+-        role = {
+-          "AlarmWindow",  -- Thunderbird's calendar.
+-          "ConfigManager",  -- Thunderbird's about:config.
+-          "pop-up",       -- e.g. Google Chrome's (detached) Developer Tools.
+-        }
+-      }, properties = { floating = true }},
+-
+-    -- place conky in background on primary screen
+-    { rule = { class = "conky" },
+-      properties = { focusable = false, screen = function() return screen.primary end,
+-        placement = awful.placement.restore, new_tag = { hide = true, volatile = true }},
+-      callback = function()
+-        if not awful.rules.conky_signals_connected then
+-          local function conky_restart()
+-            awful.spawn("killall -SIGUSR1 conky", false)
+-          end
+-
+-          -- restart conky when a screen is removed or its geometry changes, or when awesome restarts
+-          screen.connect_signal("property::geometry", conky_restart)
+-          screen.connect_signal("removed", conky_restart)
+-          awesome.connect_signal("exit", conky_restart)
+-
+-          awful.rules.conky_signals_connected = true
+-        end
+-      end
+-    },
+-
+-    -- Set Firefox to always map on the tag named "2" on screen 1.
+-    -- This is just an example.
+-    -- { rule = { class = "Firefox" },
+-    --   properties = { screen = 1, tag = "2" } },
+-}
+diff --git a/screens.lua b/screens.lua
+deleted file mode 100755
+index a2d5ba9..0000000
+--- a/screens.lua
++++ /dev/null
+@@ -1,59 +0,0 @@
+-local awful = require("awful")
+-local beautiful = require("beautiful")
+-local gears = require("gears")
+-local bar = require("bar.bar")
+-
+-local function set_wallpaper(s)
+-    -- Wallpaper
+-    if beautiful.wallpaper then
+-        local wallpaper = beautiful.wallpaper
+-        -- If wallpaper is a function, call it with the screen
+-        if type(wallpaper) == "function" then
+-            wallpaper = wallpaper(s)
+-        end
+-        gears.wallpaper.maximized(wallpaper, s, false)
+-    elseif beautiful.wallpaper_color then
+-        gears.wallpaper.set(beautiful.wallpaper_color)
+-    elseif beautiful.wallpaper_folder then
+-        local f = io.popen("sh -c \"find ".. beautiful.wallpaper_folder .. " -name '*.png' | shuf -n 1 | xargs echo -n\"")
+-        if f == nil then
+-            return
+-        end
+-        local wallpaper = f:read("*all")
+-        f:close()
+-        gears.wallpaper.maximized(wallpaper, s, false)
+-    end
+-end
+-
+--- Re-set wallpaper when a screen's geometry changes (e.g. different resolution)
+-screen.connect_signal("property::geometry", set_wallpaper)
+-
+--- Table of layouts to cover with awful.layout.inc, order matters.
+-awful.layout.layouts = {
+-    -- awful.layout.suit.floating,
+-    awful.layout.suit.tile,
+-    awful.layout.suit.tile.left,
+-    -- awful.layout.suit.tile.bottom,
+-    -- awful.layout.suit.tile.top,
+-    awful.layout.suit.fair,
+-    -- awful.layout.suit.fair.horizontal,
+-    -- awful.layout.suit.spiral,
+-    -- awful.layout.suit.spiral.dwindle,
+-    -- awful.layout.suit.max,
+-    -- awful.layout.suit.max.fullscreen,
+-    -- awful.layout.suit.magnifier,
+-    -- awful.layout.suit.corner.nw,
+-    -- awful.layout.suit.corner.ne,
+-    -- awful.layout.suit.corner.sw,
+-    -- awful.layout.suit.corner.se,
+-}
+-
+-awful.screen.connect_for_each_screen(function(s)
+-    -- Wallpaper
+-    set_wallpaper(s)
+-
+-    bar(s)
+-
+-    -- Each screen has its own tag table.
+-    awful.tag({ "1", "2", "3", "4", "5", "6" }, s, awful.layout.layouts[1])
+-end)
+diff --git a/signals.lua b/signals.lua
+deleted file mode 100755
+index 76dfff5..0000000
+--- a/signals.lua
++++ /dev/null
+@@ -1,19 +0,0 @@
+-local awful = require("awful")
+-local beautiful = require("beautiful")
+-
+--- Signal function to execute when a new client appears.
+-client.connect_signal("manage", function (c)
+-    -- Set the windows at the slave,
+-    -- i.e. put it at the end of others instead of setting it master.
+-    if not awesome.startup then awful.client.setslave(c) end
+-
+-    if awesome.startup
+-      and not c.size_hints.user_position
+-      and not c.size_hints.program_position then
+-        -- Prevent clients from being unreachable after screen count changes.
+-        awful.placement.no_offscreen(c)
+-    end
+-end)
+-
+-client.connect_signal("focus", function(c) c.border_color = beautiful.border_focus end)
+-client.connect_signal("unfocus", function(c) c.border_color = beautiful.border_normal end)
+diff --git a/theme/theme.lua b/theme/theme.lua
+deleted file mode 100755
+index 5c661f3..0000000
+--- a/theme/theme.lua
++++ /dev/null
+@@ -1,98 +0,0 @@
+----------------------------
+--- Gruvbox awesome theme --
+----------------------------
+-
+-local gears = require("gears")
+-
+-local theme = {}
+-
+-theme.background = "#282828"
+-theme.foreground = "#ebdbb2"
+-theme.color0 = "#3c3836"
+-theme.color1 = "#cc241d"
+-theme.color2 = "#98971a"
+-theme.color3 = "#d79921"
+-theme.color4 = "#458588"
+-theme.color5 = "#b16286"
+-theme.color6 = "#689d6a"
+-theme.color7 = "#a89984"
+-theme.color8 = "#928374"
+-theme.color9 = "#fb4934"
+-theme.color10 = "#b8bb26"
+-theme.color11 = "#fabd2f"
+-theme.color12 = "#83a598"
+-theme.color13 = "#d3869b"
+-theme.color14 = "#8ec07c"
+-theme.color15 = "#fbf1c7"
+-theme.cursor = "#bdae93"
+-
+-
+-theme.bg_accent = theme.color0
+-theme.fg_accent = theme.color11
+-theme.fg_inactive = theme.color14
+-
+--- ADD THE GAAAAP
+-theme.useless_gap = 5
+-theme.gap_single_client = true
+-
+-theme.bar_bg = theme.background
+-theme.bar_fg = theme.foreground
+-
+-theme.font          = "FantasqueSansM Nerd Font 8"
+-theme.bar_height    = 18
+-
+-theme.bg_normal     = theme.background
+-theme.bg_focus      = theme.background
+-theme.bg_urgent     = theme.background
+-theme.bg_minimize   = theme.background
+-theme.bg_systray    = theme.background
+-
+-theme.fg_normal     = theme.foreground
+-theme.fg_focus      = theme.foreground
+-theme.fg_urgent     = theme.foreground
+-theme.fg_minimize   = theme.foreground
+-
+-theme.border_width  = 2
+-theme.border_normal = theme.color8
+-theme.border_focus  = theme.color15
+-theme.border_marked = "#91231c"
+-
+-theme.notification_border_color = theme.color8
+-theme.notification_border_width = 2
+-theme.notification_max_width = 500
+-theme.notification_max_height = 100
+-theme.notification_icon_size = 100
+-
+-theme.taglist_fg_focus = theme.foreground
+-theme.taglist_fg_occupied = theme.foreground
+-theme.taglist_fg_empty = theme.fg_inactive
+-theme.taglist_bg_focus = theme.bg_accent
+-
+-theme.tasklist_fg_focus = theme.color15
+-theme.tasklist_fg_normal = theme.color14
+-
+-theme.titlebar_fg_focus = theme.color15
+-theme.titlebar_fg_normal = theme.color14
+-
+--- theme.wallpaper = "~/.config/awesome/theme/walls/railway.jpg"
+--- theme.wallpaper = "~/.config/awesome/theme/walls/calvin.png"
+--- theme.wallpaper = "~/.config/awesome/theme/walls/mountain-night-3.jpg"
+--- theme.wallpaper = "~/.config/awesome/theme/walls/mtn.jpg"
+-theme.wallpaper = "~/.config/awesome/theme/walls/foggy-forest-3.jpg"
+--- function theme.wallpaper(s)
+---     -- XXX: Tilde expansion doesn't work here
+---     local awesome_conf_dir = gears.filesystem.get_configuration_dir()
+---     if s.geometry.width == 2560 and s.geometry.height == 1080 then
+---         return awesome_conf_dir .. "theme/walls/foggy-forest-3.jpg"
+---     else
+---         return  awesome_conf_dir .. "theme/walls/leaves-dark.jpg"
+---     end
+--- end
+--- theme.wallpaper_color = "#1d2021"
+--- theme.wallpaper_folder = "~/.config/awesome/theme/walls/"
+-
+--- Variable used by `~/.config/scripts/lock`.
+--- If this isn't set, the lock script will use the lock.png image.
+-theme.lockwall = "~/.config/awesome/theme/walls/foggy-forest-3.jpg"
+-
+-return theme
+diff --git a/theme/walls/astronaut.jpg b/theme/walls/astronaut.jpg
+deleted file mode 100644
+index 37614bb..0000000
+Binary files a/theme/walls/astronaut.jpg and /dev/null differ
+diff --git a/theme/walls/blue-mountains.jpg b/theme/walls/blue-mountains.jpg
+deleted file mode 100644
+index a62909f..0000000
+Binary files a/theme/walls/blue-mountains.jpg and /dev/null differ
+diff --git a/theme/walls/calvin.png b/theme/walls/calvin.png
+deleted file mode 100644
+index 145971b..0000000
+Binary files a/theme/walls/calvin.png and /dev/null differ
+diff --git a/theme/walls/flower.jpg b/theme/walls/flower.jpg
+deleted file mode 100644
+index 9720294..0000000
+Binary files a/theme/walls/flower.jpg and /dev/null differ
+diff --git a/theme/walls/foggy-forest-2.jpg b/theme/walls/foggy-forest-2.jpg
+deleted file mode 100644
+index 9f93ce7..0000000
+Binary files a/theme/walls/foggy-forest-2.jpg and /dev/null differ
+diff --git a/theme/walls/foggy-forest-3.jpg b/theme/walls/foggy-forest-3.jpg
+deleted file mode 100644
+index 590f063..0000000
+Binary files a/theme/walls/foggy-forest-3.jpg and /dev/null differ
+diff --git a/theme/walls/foggy-forest-4.jpg b/theme/walls/foggy-forest-4.jpg
+deleted file mode 100644
+index 1551a09..0000000
+Binary files a/theme/walls/foggy-forest-4.jpg and /dev/null differ
+diff --git a/theme/walls/foggy-forest.jpg b/theme/walls/foggy-forest.jpg
+deleted file mode 100644
+index 845c6d6..0000000
+Binary files a/theme/walls/foggy-forest.jpg and /dev/null differ
+diff --git a/theme/walls/forest-house.png b/theme/walls/forest-house.png
+deleted file mode 100644
+index 06909ee..0000000
+Binary files a/theme/walls/forest-house.png and /dev/null differ
+diff --git a/theme/walls/leaves.jpg b/theme/walls/leaves.jpg
+deleted file mode 100644
+index ca5253c..0000000
+Binary files a/theme/walls/leaves.jpg and /dev/null differ
+diff --git a/theme/walls/lock.png b/theme/walls/lock.png
+deleted file mode 100644
+index 8fb4ee7..0000000
+Binary files a/theme/walls/lock.png and /dev/null differ
+diff --git a/theme/walls/mountain-night-2.jpg b/theme/walls/mountain-night-2.jpg
+deleted file mode 100644
+index 082a156..0000000
+Binary files a/theme/walls/mountain-night-2.jpg and /dev/null differ
+diff --git a/theme/walls/mountain-night-3.jpg b/theme/walls/mountain-night-3.jpg
+deleted file mode 100644
+index 6ff3691..0000000
+Binary files a/theme/walls/mountain-night-3.jpg and /dev/null differ
+diff --git a/theme/walls/mountain-night-4.png b/theme/walls/mountain-night-4.png
+deleted file mode 100644
+index 290400d..0000000
+Binary files a/theme/walls/mountain-night-4.png and /dev/null differ
+diff --git a/theme/walls/mountain-night.png b/theme/walls/mountain-night.png
+deleted file mode 100644
+index 715327e..0000000
+Binary files a/theme/walls/mountain-night.png and /dev/null differ
+diff --git a/theme/walls/mtn.jpg b/theme/walls/mtn.jpg
+deleted file mode 100644
+index ced24c3..0000000
+Binary files a/theme/walls/mtn.jpg and /dev/null differ
+diff --git a/theme/walls/murky-peaks.jpg b/theme/walls/murky-peaks.jpg
+deleted file mode 100644
+index 9776f86..0000000
+Binary files a/theme/walls/murky-peaks.jpg and /dev/null differ
+diff --git a/theme/walls/night-city.jpg b/theme/walls/night-city.jpg
+deleted file mode 100644
+index b3a4472..0000000
+Binary files a/theme/walls/night-city.jpg and /dev/null differ
+diff --git a/theme/walls/nord-earth.jpg b/theme/walls/nord-earth.jpg
+deleted file mode 100644
+index 2687f6c..0000000
+Binary files a/theme/walls/nord-earth.jpg and /dev/null differ
+diff --git a/theme/walls/nord-earth.png b/theme/walls/nord-earth.png
+deleted file mode 100644
+index c23cdb6..0000000
+Binary files a/theme/walls/nord-earth.png and /dev/null differ
+diff --git a/theme/walls/nord-fish.png b/theme/walls/nord-fish.png
+deleted file mode 100644
+index c6eee14..0000000
+Binary files a/theme/walls/nord-fish.png and /dev/null differ
+diff --git a/theme/walls/nord-scenary.png b/theme/walls/nord-scenary.png
+deleted file mode 100644
+index 0152fa6..0000000
+Binary files a/theme/walls/nord-scenary.png and /dev/null differ
+diff --git a/theme/walls/nord-the-great-wave.png b/theme/walls/nord-the-great-wave.png
+deleted file mode 100644
+index 2b315fb..0000000
+Binary files a/theme/walls/nord-the-great-wave.png and /dev/null differ
+diff --git a/theme/walls/pixelmoon.png b/theme/walls/pixelmoon.png
+deleted file mode 100644
+index b885be1..0000000
+Binary files a/theme/walls/pixelmoon.png and /dev/null differ
+diff --git a/theme/walls/place.jpg b/theme/walls/place.jpg
+deleted file mode 100644
+index 057f492..0000000
+Binary files a/theme/walls/place.jpg and /dev/null differ
+diff --git a/theme/walls/planet.jpg b/theme/walls/planet.jpg
+deleted file mode 100644
+index 0b9acf7..0000000
+Binary files a/theme/walls/planet.jpg and /dev/null differ
+diff --git a/theme/walls/railway-2.jpg b/theme/walls/railway-2.jpg
+deleted file mode 100644
+index a53d2ce..0000000
+Binary files a/theme/walls/railway-2.jpg and /dev/null differ
+diff --git a/theme/walls/railway.jpg b/theme/walls/railway.jpg
+deleted file mode 100644
+index 4c4f0c6..0000000
+Binary files a/theme/walls/railway.jpg and /dev/null differ
+diff --git a/theme/walls/rocky.jpg b/theme/walls/rocky.jpg
+deleted file mode 100644
+index f7a549f..0000000
+Binary files a/theme/walls/rocky.jpg and /dev/null differ
+diff --git a/theme/walls/two-astronauts.png b/theme/walls/two-astronauts.png
+deleted file mode 100644
+index 124765e..0000000
+Binary files a/theme/walls/two-astronauts.png and /dev/null differ
+diff --git a/themes/multicolor/icons/ac.png b/themes/multicolor/icons/ac.png
+new file mode 100755
+index 0000000..272b832
+Binary files /dev/null and b/themes/multicolor/icons/ac.png differ
+diff --git a/themes/multicolor/icons/bat.png b/themes/multicolor/icons/bat.png
+new file mode 100755
+index 0000000..bd63927
+Binary files /dev/null and b/themes/multicolor/icons/bat.png differ
+diff --git a/themes/multicolor/icons/clock.png b/themes/multicolor/icons/clock.png
+new file mode 100755
+index 0000000..22aef71
+Binary files /dev/null and b/themes/multicolor/icons/clock.png differ
+diff --git a/themes/multicolor/icons/cpu.png b/themes/multicolor/icons/cpu.png
+new file mode 100755
+index 0000000..e3794ca
+Binary files /dev/null and b/themes/multicolor/icons/cpu.png differ
+diff --git a/themes/multicolor/icons/dish.png b/themes/multicolor/icons/dish.png
+new file mode 100755
+index 0000000..c71499b
+Binary files /dev/null and b/themes/multicolor/icons/dish.png differ
+diff --git a/themes/multicolor/icons/dwindle.png b/themes/multicolor/icons/dwindle.png
+new file mode 100755
+index 0000000..94d8382
+Binary files /dev/null and b/themes/multicolor/icons/dwindle.png differ
+diff --git a/themes/multicolor/icons/fairh.png b/themes/multicolor/icons/fairh.png
+new file mode 100755
+index 0000000..4468efc
+Binary files /dev/null and b/themes/multicolor/icons/fairh.png differ
+diff --git a/themes/multicolor/icons/fairv.png b/themes/multicolor/icons/fairv.png
+new file mode 100755
+index 0000000..7c8728e
+Binary files /dev/null and b/themes/multicolor/icons/fairv.png differ
+diff --git a/themes/multicolor/icons/floating.png b/themes/multicolor/icons/floating.png
+new file mode 100755
+index 0000000..7593a2a
+Binary files /dev/null and b/themes/multicolor/icons/floating.png differ
+diff --git a/themes/multicolor/icons/fs.png b/themes/multicolor/icons/fs.png
+new file mode 100755
+index 0000000..1c1b13e
+Binary files /dev/null and b/themes/multicolor/icons/fs.png differ
+diff --git a/themes/multicolor/icons/fullscreen.png b/themes/multicolor/icons/fullscreen.png
+new file mode 100755
+index 0000000..f63a69c
+Binary files /dev/null and b/themes/multicolor/icons/fullscreen.png differ
+diff --git a/themes/multicolor/icons/magnifier.png b/themes/multicolor/icons/magnifier.png
+new file mode 100755
+index 0000000..8819554
+Binary files /dev/null and b/themes/multicolor/icons/magnifier.png differ
+diff --git a/themes/multicolor/icons/mail.png b/themes/multicolor/icons/mail.png
+new file mode 100755
+index 0000000..25021f5
+Binary files /dev/null and b/themes/multicolor/icons/mail.png differ
+diff --git a/themes/multicolor/icons/max.png b/themes/multicolor/icons/max.png
+new file mode 100755
+index 0000000..4b6a8c3
+Binary files /dev/null and b/themes/multicolor/icons/max.png differ
+diff --git a/themes/multicolor/icons/mem.png b/themes/multicolor/icons/mem.png
+new file mode 100755
+index 0000000..d04ee11
+Binary files /dev/null and b/themes/multicolor/icons/mem.png differ
+diff --git a/themes/multicolor/icons/net_down.png b/themes/multicolor/icons/net_down.png
+new file mode 100755
+index 0000000..09433b1
+Binary files /dev/null and b/themes/multicolor/icons/net_down.png differ
+diff --git a/themes/multicolor/icons/net_up.png b/themes/multicolor/icons/net_up.png
+new file mode 100755
+index 0000000..395d014
+Binary files /dev/null and b/themes/multicolor/icons/net_up.png differ
+diff --git a/themes/multicolor/icons/note.png b/themes/multicolor/icons/note.png
+new file mode 100755
+index 0000000..2f41eb3
+Binary files /dev/null and b/themes/multicolor/icons/note.png differ
+diff --git a/themes/multicolor/icons/note_on.png b/themes/multicolor/icons/note_on.png
+new file mode 100755
+index 0000000..264d2c8
+Binary files /dev/null and b/themes/multicolor/icons/note_on.png differ
+diff --git a/themes/multicolor/icons/spiral.png b/themes/multicolor/icons/spiral.png
+new file mode 100755
+index 0000000..6a1ebf1
+Binary files /dev/null and b/themes/multicolor/icons/spiral.png differ
+diff --git a/themes/multicolor/icons/spkr.png b/themes/multicolor/icons/spkr.png
+new file mode 100755
+index 0000000..80c20b0
+Binary files /dev/null and b/themes/multicolor/icons/spkr.png differ
+diff --git a/themes/multicolor/icons/square_a.png b/themes/multicolor/icons/square_a.png
+new file mode 100755
+index 0000000..1774d95
+Binary files /dev/null and b/themes/multicolor/icons/square_a.png differ
+diff --git a/themes/multicolor/icons/square_b.png b/themes/multicolor/icons/square_b.png
+new file mode 100755
+index 0000000..b47e9f3
+Binary files /dev/null and b/themes/multicolor/icons/square_b.png differ
+diff --git a/themes/multicolor/icons/submenu.png b/themes/multicolor/icons/submenu.png
+new file mode 100755
+index 0000000..7c81cab
+Binary files /dev/null and b/themes/multicolor/icons/submenu.png differ
+diff --git a/themes/multicolor/icons/temp.png b/themes/multicolor/icons/temp.png
+new file mode 100755
+index 0000000..6c8f8bd
+Binary files /dev/null and b/themes/multicolor/icons/temp.png differ
+diff --git a/themes/multicolor/icons/tile.png b/themes/multicolor/icons/tile.png
+new file mode 100755
+index 0000000..64103d9
+Binary files /dev/null and b/themes/multicolor/icons/tile.png differ
+diff --git a/themes/multicolor/icons/tilebottom.png b/themes/multicolor/icons/tilebottom.png
+new file mode 100755
+index 0000000..9363636
+Binary files /dev/null and b/themes/multicolor/icons/tilebottom.png differ
+diff --git a/themes/multicolor/icons/tileleft.png b/themes/multicolor/icons/tileleft.png
+new file mode 100755
+index 0000000..9331898
+Binary files /dev/null and b/themes/multicolor/icons/tileleft.png differ
+diff --git a/themes/multicolor/icons/tiletop.png b/themes/multicolor/icons/tiletop.png
+new file mode 100755
+index 0000000..1cef886
+Binary files /dev/null and b/themes/multicolor/icons/tiletop.png differ
+diff --git a/themes/multicolor/icons/titlebar/close_focus.png b/themes/multicolor/icons/titlebar/close_focus.png
+new file mode 100755
+index 0000000..cd297db
+Binary files /dev/null and b/themes/multicolor/icons/titlebar/close_focus.png differ
+diff --git a/themes/multicolor/icons/titlebar/close_normal.png b/themes/multicolor/icons/titlebar/close_normal.png
+new file mode 100755
+index 0000000..5448ed8
+Binary files /dev/null and b/themes/multicolor/icons/titlebar/close_normal.png differ
+diff --git a/themes/multicolor/icons/titlebar/floating_focus_active.png b/themes/multicolor/icons/titlebar/floating_focus_active.png
+new file mode 100755
+index 0000000..ae5a8e2
+Binary files /dev/null and b/themes/multicolor/icons/titlebar/floating_focus_active.png differ
+diff --git a/themes/multicolor/icons/titlebar/floating_focus_inactive.png b/themes/multicolor/icons/titlebar/floating_focus_inactive.png
+new file mode 100755
+index 0000000..c54eb0c
+Binary files /dev/null and b/themes/multicolor/icons/titlebar/floating_focus_inactive.png differ
+diff --git a/themes/multicolor/icons/titlebar/floating_normal_active.png b/themes/multicolor/icons/titlebar/floating_normal_active.png
+new file mode 100755
+index 0000000..62342d1
+Binary files /dev/null and b/themes/multicolor/icons/titlebar/floating_normal_active.png differ
+diff --git a/themes/multicolor/icons/titlebar/floating_normal_inactive.png b/themes/multicolor/icons/titlebar/floating_normal_inactive.png
+new file mode 100755
+index 0000000..e2bbdfa
+Binary files /dev/null and b/themes/multicolor/icons/titlebar/floating_normal_inactive.png differ
+diff --git a/themes/multicolor/icons/titlebar/maximized_focus_active.png b/themes/multicolor/icons/titlebar/maximized_focus_active.png
+new file mode 100755
+index 0000000..957298b
+Binary files /dev/null and b/themes/multicolor/icons/titlebar/maximized_focus_active.png differ
+diff --git a/themes/multicolor/icons/titlebar/maximized_focus_inactive.png b/themes/multicolor/icons/titlebar/maximized_focus_inactive.png
+new file mode 100755
+index 0000000..1187229
+Binary files /dev/null and b/themes/multicolor/icons/titlebar/maximized_focus_inactive.png differ
+diff --git a/themes/multicolor/icons/titlebar/maximized_normal_active.png b/themes/multicolor/icons/titlebar/maximized_normal_active.png
+new file mode 100755
+index 0000000..a705f81
+Binary files /dev/null and b/themes/multicolor/icons/titlebar/maximized_normal_active.png differ
+diff --git a/themes/multicolor/icons/titlebar/maximized_normal_inactive.png b/themes/multicolor/icons/titlebar/maximized_normal_inactive.png
+new file mode 100755
+index 0000000..4c1ab1f
+Binary files /dev/null and b/themes/multicolor/icons/titlebar/maximized_normal_inactive.png differ
+diff --git a/themes/multicolor/icons/titlebar/minimize_focus.png b/themes/multicolor/icons/titlebar/minimize_focus.png
+new file mode 100755
+index 0000000..bbe8cff
+Binary files /dev/null and b/themes/multicolor/icons/titlebar/minimize_focus.png differ
+diff --git a/themes/multicolor/icons/titlebar/minimize_normal.png b/themes/multicolor/icons/titlebar/minimize_normal.png
+new file mode 100755
+index 0000000..36621d0
+Binary files /dev/null and b/themes/multicolor/icons/titlebar/minimize_normal.png differ
+diff --git a/themes/multicolor/icons/titlebar/ontop_focus_active.png b/themes/multicolor/icons/titlebar/ontop_focus_active.png
+new file mode 100755
+index 0000000..25a3080
+Binary files /dev/null and b/themes/multicolor/icons/titlebar/ontop_focus_active.png differ
+diff --git a/themes/multicolor/icons/titlebar/ontop_focus_inactive.png b/themes/multicolor/icons/titlebar/ontop_focus_inactive.png
+new file mode 100755
+index 0000000..d3c077a
+Binary files /dev/null and b/themes/multicolor/icons/titlebar/ontop_focus_inactive.png differ
+diff --git a/themes/multicolor/icons/titlebar/ontop_normal_active.png b/themes/multicolor/icons/titlebar/ontop_normal_active.png
+new file mode 100755
+index 0000000..117a203
+Binary files /dev/null and b/themes/multicolor/icons/titlebar/ontop_normal_active.png differ
+diff --git a/themes/multicolor/icons/titlebar/ontop_normal_inactive.png b/themes/multicolor/icons/titlebar/ontop_normal_inactive.png
+new file mode 100755
+index 0000000..d3a10c8
+Binary files /dev/null and b/themes/multicolor/icons/titlebar/ontop_normal_inactive.png differ
+diff --git a/themes/multicolor/icons/titlebar/sticky_focus_active.png b/themes/multicolor/icons/titlebar/sticky_focus_active.png
+new file mode 100755
+index 0000000..147ce6a
+Binary files /dev/null and b/themes/multicolor/icons/titlebar/sticky_focus_active.png differ
+diff --git a/themes/multicolor/icons/titlebar/sticky_focus_inactive.png b/themes/multicolor/icons/titlebar/sticky_focus_inactive.png
+new file mode 100755
+index 0000000..396628a
+Binary files /dev/null and b/themes/multicolor/icons/titlebar/sticky_focus_inactive.png differ
+diff --git a/themes/multicolor/icons/titlebar/sticky_normal_active.png b/themes/multicolor/icons/titlebar/sticky_normal_active.png
+new file mode 100755
+index 0000000..bdb5595
+Binary files /dev/null and b/themes/multicolor/icons/titlebar/sticky_normal_active.png differ
+diff --git a/themes/multicolor/icons/titlebar/sticky_normal_inactive.png b/themes/multicolor/icons/titlebar/sticky_normal_inactive.png
+new file mode 100755
+index 0000000..a96b9b1
+Binary files /dev/null and b/themes/multicolor/icons/titlebar/sticky_normal_inactive.png differ
+diff --git a/themes/multicolor/theme.lua b/themes/multicolor/theme.lua
+new file mode 100644
+index 0000000..890614a
+--- /dev/null
++++ b/themes/multicolor/theme.lua
+@@ -0,0 +1,704 @@
++--[[
++
++     Multicolor Awesome WM theme 2.0
++     github.com/lcpz
++
++--]]
++
++local gears = require("gears")
++local lain  = require("lain")
++local awful = require("awful")
++local wibox = require("wibox")
++local dpi   = require("beautiful.xresources").apply_dpi
++
++local os = os
++local my_table = awful.util.table or gears.table -- 4.{0,1} compatibility
++
++local theme                                     = {}
++theme.confdir                                   = os.getenv("HOME") .. "/.config/awesome/themes/multicolor"
++theme.wallpaper                                 = theme.confdir .. "/wall.png"
++--theme.font                                      = "JetBrainsMono Nerd Font 11"
++theme.font                                      = "JetBrainsMono Nerd Font Bold 11"
++theme.taglist_font                              = "JetBrainsMono Nerd Font Bold 11"
++theme.menu_bg_normal                            = "#282828"
++theme.menu_bg_focus                             = "#282828"
++theme.bg_normal                                 = "#282828"
++theme.bg_focus                                  = "#282828"
++theme.bg_urgent                                 = "#282828"
++--theme.fg_normal                                 = "#aaaaaa"
++theme.fg_normal                                 = "#ebdbb2"
++--theme.fg_focus                                  = "#ff8c00"
++theme.fg_focus                                  = "#282828"
++theme.fg_urgent                                 = "#af1d18"
++theme.fg_minimize                               = "#ffffff"
++theme.border_width                              = dpi(1)
++theme.border_normal                             = "#1c2022"
++theme.border_focus                              = "#ebdbb2"
++theme.border_marked                             = "#3ca4d8"
++theme.menu_border_width                         = 0
++theme.menu_width                                = dpi(130)
++theme.menu_submenu_icon                         = theme.confdir .. "/icons/submenu.png"
++theme.menu_fg_normal                            = "#aaaaaa"
++theme.menu_fg_focus                             = "#ff8c00"
++theme.menu_bg_normal                            = "#050505dd"
++theme.menu_bg_focus                             = "#050505dd"
++theme.widget_temp                               = theme.confdir .. "/icons/temp.png"
++theme.widget_uptime                             = theme.confdir .. "/icons/ac.png"
++theme.widget_cpu                                = theme.confdir .. "/icons/cpu.png"
++theme.widget_weather                            = theme.confdir .. "/icons/dish.png"
++theme.widget_fs                                 = theme.confdir .. "/icons/fs.png"
++theme.widget_mem                                = theme.confdir .. "/icons/mem.png"
++theme.widget_note                               = theme.confdir .. "/icons/note.png"
++theme.widget_note_on                            = theme.confdir .. "/icons/note_on.png"
++--theme.widget_netdown                            = theme.confdir .. "/icons/net_down.png"
++--theme.widget_netup                              = theme.confdir .. "/icons/net_up.png"
++theme.widget_mail                               = theme.confdir .. "/icons/mail.png"
++theme.widget_batt                               = theme.confdir .. "/icons/bat.png"
++theme.widget_clock                              = theme.confdir .. "/icons/clock.png"
++--theme.widget_vol                                = theme.confdir .. "/icons/spkr.png"
++--theme.taglist_squares_sel                       = theme.confdir .. "/icons/square_a.png"
++--theme.taglist_squares_unsel                     = theme.confdir .. "/icons/square_b.png"
++theme.tasklist_plain_task_name                  = true
++theme.tasklist_disable_icon                     = true
++theme.useless_gap                               = 8
++theme.layout_txt_tile                           = "[t]"
++theme.layout_txt_tileleft                       = "[l]"
++theme.layout_txt_tilebottom                     = "[b]"
++theme.layout_txt_tiletop                        = "[tt]"
++theme.layout_txt_fairv                          = "[fv]"
++theme.layout_txt_fairh                          = "[fh]"
++theme.layout_txt_spiral                         = " [@]"
++theme.layout_txt_dwindle                        = "[d]"
++theme.layout_txt_max                            = "[m]"
++theme.layout_txt_fullscreen                     = "[F]"
++theme.layout_txt_magnifier                      = "[M]"
++theme.layout_txt_floating                       = "[*]"
++theme.layout_tile                               = theme.confdir .. "/icons/tile.png"
++theme.layout_tilegaps                           = theme.confdir .. "/icons/tilegaps.png"
++theme.layout_tileleft                           = theme.confdir .. "/icons/tileleft.png"
++theme.layout_tilebottom                         = theme.confdir .. "/icons/tilebottom.png"
++theme.layout_tiletop                            = theme.confdir .. "/icons/tiletop.png"
++theme.layout_fairv                              = theme.confdir .. "/icons/fairv.png"
++theme.layout_fairh                              = theme.confdir .. "/icons/fairh.png"
++theme.layout_spiral                             = theme.confdir .. "/icons/spiral.png"
++theme.layout_dwindle                            = theme.confdir .. "/icons/dwindle.png"
++theme.layout_max                                = theme.confdir .. "/icons/max.png"
++theme.layout_fullscreen                         = theme.confdir .. "/icons/fullscreen.png"
++theme.layout_magnifier                          = theme.confdir .. "/icons/magnifier.png"
++theme.layout_floating                           = theme.confdir .. "/icons/floating.png"
++theme.titlebar_close_button_normal              = theme.confdir .. "/icons/titlebar/close_normal.png"
++theme.titlebar_close_button_focus               = theme.confdir .. "/icons/titlebar/close_focus.png"
++theme.titlebar_minimize_button_normal           = theme.confdir .. "/icons/titlebar/minimize_normal.png"
++theme.titlebar_minimize_button_focus            = theme.confdir .. "/icons/titlebar/minimize_focus.png"
++theme.titlebar_ontop_button_normal_inactive     = theme.confdir .. "/icons/titlebar/ontop_normal_inactive.png"
++theme.titlebar_ontop_button_focus_inactive      = theme.confdir .. "/icons/titlebar/ontop_focus_inactive.png"
++theme.titlebar_ontop_button_normal_active       = theme.confdir .. "/icons/titlebar/ontop_normal_active.png"
++theme.titlebar_ontop_button_focus_active        = theme.confdir .. "/icons/titlebar/ontop_focus_active.png"
++theme.titlebar_sticky_button_normal_inactive    = theme.confdir .. "/icons/titlebar/sticky_normal_inactive.png"
++theme.titlebar_sticky_button_focus_inactive     = theme.confdir .. "/icons/titlebar/sticky_focus_inactive.png"
++theme.titlebar_sticky_button_normal_active      = theme.confdir .. "/icons/titlebar/sticky_normal_active.png"
++theme.titlebar_sticky_button_focus_active       = theme.confdir .. "/icons/titlebar/sticky_focus_active.png"
++theme.titlebar_floating_button_normal_inactive  = theme.confdir .. "/icons/titlebar/floating_normal_inactive.png"
++theme.titlebar_floating_button_focus_inactive   = theme.confdir .. "/icons/titlebar/floating_focus_inactive.png"
++theme.titlebar_floating_button_normal_active    = theme.confdir .. "/icons/titlebar/floating_normal_active.png"
++theme.titlebar_floating_button_focus_active     = theme.confdir .. "/icons/titlebar/floating_focus_active.png"
++theme.titlebar_maximized_button_normal_inactive = theme.confdir .. "/icons/titlebar/maximized_normal_inactive.png"
++theme.titlebar_maximized_button_focus_inactive  = theme.confdir .. "/icons/titlebar/maximized_focus_inactive.png"
++theme.titlebar_maximized_button_normal_active   = theme.confdir .. "/icons/titlebar/maximized_normal_active.png"
++theme.titlebar_maximized_button_focus_active    = theme.confdir .. "/icons/titlebar/maximized_focus_active.png"
++
++local markup = lain.util.markup
++
++-- Textclock
++os.setlocale(os.getenv("LANG")) -- to localize the clock
++--local clockicon = wibox.widget.imagebox(theme.widget_clock)
++local clockicon = wibox.widget {
++    widget = wibox.widget.textbox,
++    markup = markup.fontfg(theme.font, "#8ec07c", "󰥔 "),
++    align = "center",
++    valign = "center"
++}
++
++--local mytextclock = wibox.widget.textclock(markup("#7788af", "%A %d %B ") .. markup("#ab7367", ">") .. markup("#de5e1e", " %H:%M "))
++
++--local mytextclock = wibox.widget.textclock(markup("#8ec07c", "%A %d %B ") .. markup("#8ec07c", "—") .. markup("#8ec07c", " %H:%M "))
++--mytextclock.font = theme.font
++
++local mytextclock = wibox.widget {
++    widget = wibox.widget.textbox,
++    markup = markup.fontfg(theme.font, "#8ec07c", "Loading..."),
++    align = "center",
++    valign = "center",
++}
++
++-- Define a function to log clock updates
++local function log_clock_update(message)
++    local log_file = "/home/jonas/awesome_clock_update.log"
++    local log_entry = os.date("%Y-%m-%d %H:%M:%S") .. " - " .. message .. "\n"
++
++    local file = io.open(log_file, "a")
++    if file then
++        file:write(log_entry)
++        file:close()
++    else
++        print("Failed to open log file for writing: " .. log_file)
++    end
++end
++
++-- Define a function to update the clock widget
++local function update_clock_widget()
++    local script_path = "/home/jonas/.local/bin/statusbar/sb-clock"
++
++    awful.spawn.easy_async_with_shell(script_path, function(stdout, stderr)
++        if stderr and #stderr > 0 then
++            mytextclock:set_markup(markup.fontfg(theme.font, "#fb4934", "Error"))
++            --log_clock_update("Error: " .. stderr)
++            return
++        end
++
++        local output = stdout:gsub("^%s*(.-)%s*$", "%1") -- Trim whitespace
++        mytextclock:set_markup(markup.fontfg(theme.font, "#8ec07c", output .. " "))
++        --log_clock_update("Clock output updated: " .. output)
++    end)
++end
++
++-- Create a timer to update the clock widget every 30 seconds
++gears.timer({
++    timeout = 30,
++    autostart = true,
++    callback = update_clock_widget,
++})
++
++update_clock_widget()
++
++-- Calendar
++theme.cal = lain.widget.cal({
++    attach_to = { mytextclock },
++    notification_preset = {
++        font = "Terminus 10",
++        fg   = theme.fg_normal,
++        bg   = theme.bg_normal
++    }
++})
++
++-- Weather
++--local weathericon = wibox.widget.imagebox(theme.widget_weather)
++
++local gruvbox_blue = "#458588"
++local gruvbox_red = "#cc241d"
++local default_color = "#ebdbb2"
++
++local weathericon = wibox.widget {
++    widget = wibox.widget.textbox,
++    markup = markup.fontfg(theme.font, default_color, "   "),
++    align = "center",
++    valign = "center"
++}
++
++--theme.weather = lain.widget.weather({
++--    city_id = 2673730,
++--    notification_preset = { font = theme.font, fg = theme.fg_normal },
++--
++--    weather_na_markup = markup.fontfg(theme.font, "#ebdbb2", "N/A "),
++--    settings = function()
++--        descr = weather_now["weather"][1]["description"]:lower()
++--        units = math.floor(weather_now["main"]["temp"])
++--        widget:set_markup(markup.fontfg(theme.font, "#ebdbb2", descr .. " @ " .. units .. "°C "))
++--    end
++--})
++--theme.weather = lain.widget.weather({
++--    city_id = 2673730,
++--    notification_preset = { font = theme.font, fg = theme.fg_normal },
++--    weather_na_markup = markup.fontfg(theme.font, default_color, "N/A"),
++--
++--    settings = function()
++--        descr = weather_now["weather"][1]["description"]:lower()
++--        units = math.floor(weather_now["main"]["temp"])
++--
++--        local color
++--        if units < 0 then
++--            color = gruvbox_blue
++--        elseif units > 20 then
++--            color = gruvbox_red
++--        else
++--            color = default_color
++--        end
++--
++--        --widget:set_markup(markup.fontfg(theme.font, color, descr .. " @ " .. units .. "°C "))
++--        widget:set_markup(markup.fontfg(theme.font, color, units .. "°C "))
++--    end
++--})
++
++local weather_widget = wibox.widget {
++    widget = wibox.widget.textbox,
++    markup = markup.fontfg(theme.font, default_color, "Loading..."),
++    align = "center",
++    valign = "center",
++}
++
++local function log_weather_update(message)
++    local log_file = "/home/jonas/awesome_weather_update.log"
++    local log_entry = os.date("%Y-%m-%d %H:%M:%S") .. " - " .. message .. "\n"
++
++    local file = io.open(log_file, "a")
++    if file then
++        file:write(log_entry)
++        file:close()
++    else
++        print("Failed to open log file for writing: " .. log_file)
++    end
++end
++
++local function update_weather_widget()
++    local script_path = "~/.local/bin/statusbar/weather"
++
++    awful.spawn.easy_async_with_shell(script_path, function(stdout, stderr)
++        if stderr and #stderr > 0 then
++            weather_widget:set_markup(markup.fontfg(theme.font, default_color, "Error"))
++            weathericon:set_markup(markup.fontfg(theme.font, default_color, "   "))
++            return
++        end
++
++        local output = stdout:gsub("^%s*(.-)%s*$", "%1") -- Trim whitespace
++        local units = tonumber(output:match("%-?%d+")) -- Extract numeric temperature
++        local color
++
++        if units then
++            if units < 0 then
++                color = gruvbox_blue
++            elseif units > 20 then
++                color = gruvbox_red
++            else
++                color = default_color
++            end
++            weather_widget:set_markup(markup.fontfg(theme.font, color, output))
++            weathericon:set_markup(markup.fontfg(theme.font, color, "   "))
++        else
++            weather_widget:set_markup(markup.fontfg(theme.font, default_color, output))
++            weathericon:set_markup(markup.fontfg(theme.font, default_color, "   "))
++        end
++
++        local log_message = "Weather output updated: " .. output
++        --log_weather_update(log_message)
++    end)
++end
++
++gears.timer({
++    timeout = 600,
++    autostart = true,
++    callback = update_weather_widget,
++})
++
++update_weather_widget()
++
++-- / fs
++--[[ commented because it needs Gio/Glib >= 2.54
++local fsicon = wibox.widget.imagebox(theme.widget_fs)
++theme.fs = lain.widget.fs({
++    notification_preset = { font = "Terminus 10", fg = theme.fg_normal },
++    settings  = function()
++        widget:set_markup(markup.fontfg(theme.font, "#80d9d8", string.format("%.1f", fs_now["/"].percentage) .. "% "))
++    end
++})
++--]]
++
++-- Mail IMAP check
++--[[ to be set before use
++local mailicon = wibox.widget.imagebox()
++theme.mail = lain.widget.imap({
++    timeout  = 180,
++    server   = "server",
++    mail     = "mail",
++    password = "keyring get mail",
++    settings = function()
++        if mailcount > 0 then
++            mailicon:set_image(theme.widget_mail)
++            widget:set_markup(markup.fontfg(theme.font, "#cccccc", mailcount .. " "))
++        else
++            widget:set_text("")
++            --mailicon:set_image() -- not working in 4.0
++            mailicon._private.image = nil
++            mailicon:emit_signal("widget::redraw_needed")
++            mailicon:emit_signal("widget::layout_changed")
++        end
++    end
++})
++--]]
++
++-- CPU
++--local cpuicon = wibox.widget.imagebox(theme.widget_cpu)
++
++local cpuicon = wibox.widget {
++    widget = wibox.widget.textbox,
++    markup = markup.fontfg(theme.font, "#b16286", "  "),
++    align = "center",
++    valign = "center"
++}
++
++local cpu = lain.widget.cpu({
++    settings = function()
++        --widget:set_markup(markup.fontfg(theme.font, "#e33a6e", cpu_now.usage .. "% "))
++        widget:set_markup(markup.fontfg(theme.font, "#b16286", cpu_now.usage .. "% "))
++    end
++})
++
++-- Coretemp
++--local tempicon = wibox.widget.imagebox(theme.widget_temp)
++local tempicon = wibox.widget {
++    widget = wibox.widget.textbox,
++    markup = markup.fontfg(theme.font, "#d79921", "  "),
++    align = "center",
++    valign = "center"
++}
++local temp = lain.widget.temp({
++    settings = function()
++        --widget:set_markup(markup.fontfg(theme.font, "#f1af5f", coretemp_now .. "°C "))
++        widget:set_markup(markup.fontfg(theme.font, "#d79921", coretemp_now .. "°C "))
++    end
++})
++
++-- Battery
++--local baticon = wibox.widget.imagebox(theme.widget_batt)
++local baticon = wibox.widget {
++    widget = wibox.widget.textbox,
++    markup = markup.fontfg(theme.font, "#d3869b", "  "),
++    align = "center",
++    valign = "center"
++}
++--local bat = lain.widget.bat({
++--    settings = function()
++--        local perc = bat_now.perc ~= "N/A" and bat_now.perc .. "%" or bat_now.perc
++--
++--        if bat_now.ac_status == 1 then
++--            perc = perc .. " plug"
++--        end
++--
++--        --widget:set_markup(markup.fontfg(theme.font, theme.fg_normal, perc .. " "))
++--        widget:set_markup(markup.fontfg(theme.font, "#d3869b", perc .. " "))
++--    end
++--})
++local bat = lain.widget.bat({
++    settings = function()
++        local perc = bat_now.perc ~= "N/A" and tonumber(bat_now.perc) or nil
++        local icon = " "
++
++        if bat_now.ac_status == 1 then
++            icon = "󰂄"
++        elseif perc then
++            -- Icons based on percentage
++            if perc >= 80 then
++                icon = " "
++            elseif perc >= 60 then
++                icon = " "
++            elseif perc >= 40 then
++                icon = " "
++            elseif perc >= 20 then
++                icon = " "
++            else
++                icon = " "
++            end
++        end
++
++        baticon:set_markup(markup.fontfg(theme.font, "#d3869b", " " .. icon .. " "))
++        widget:set_markup(markup.fontfg(theme.font, "#d3869b", (perc or "100") .. "%  "))
++    end
++})
++
++-- ALSA volume
++--local volicon = wibox.widget.imagebox(theme.widget_vol)
++local volicon = wibox.widget {
++    widget = wibox.widget.textbox,
++    markup = markup.fontfg(theme.font, "#83a598", " 󰕾 "),
++    align = "center",
++    valign = "center"
++}
++theme.volume = lain.widget.alsa({
++    settings = function()
++        --if volume_now.status == "off" then
++        --  volume_now.level = volume_now.level .. "M"
++        --end
++        if volume_now.status == "off" then
++            volicon:set_markup(markup.fontfg(theme.font, "#83a598", " 󰖁 "))
++        else
++            volicon:set_markup(markup.fontfg(theme.font, "#83a598", " 󰕾 "))
++        end
++
++        widget:set_markup(markup.fontfg(theme.font, "#83a598", volume_now.level .. "% "))
++    end
++})
++
++-- Net
++--local netdownicon = wibox.widget.imagebox(theme.widget_netdown)
++local netdowninfo = wibox.widget.textbox()
++--local netupicon = wibox.widget.imagebox(theme.widget_netup)
++local netupinfo = lain.widget.net({
++    settings = function()
++        --if iface ~= "network off" and
++        --   string.match(theme.weather.widget.text, "N/A")
++        --then
++        --    theme.weather.update()
++        --end
++        --theme.weather.update()
++
++        --widget:set_markup(markup.fontfg(theme.font, "#e54c62", net_now.sent .. " "))
++        --netdowninfo:set_markup(markup.fontfg(theme.font, "#87af5f", net_now.received .. " "))
++        widget:set_markup(markup.fontfg(theme.font, "#fe8019", net_now.sent .. " "))
++        netdowninfo:set_markup(markup.fontfg(theme.font, "#689d6a", net_now.received .. " "))
++    end
++})
++
++local netupicon = wibox.widget {
++    widget = wibox.widget.textbox,
++    markup = markup.fontfg(theme.font, "#fe8019", " "),
++    align = "center",
++    valign = "center"
++}
++
++local netdownicon = wibox.widget {
++    widget = wibox.widget.textbox,
++    markup = markup.fontfg(theme.font, "#689d6a", "  "),
++    align = "center",
++    valign = "center"
++}
++
++-- MEM
++--local memicon = wibox.widget.imagebox(theme.widget_mem)
++local memicon = wibox.widget {
++    widget = wibox.widget.textbox,
++    markup = markup.fontfg(theme.font, "#fabd2f", " 󰍛 "),
++    align = "center",
++    valign = "center"
++}
++
++local memory = lain.widget.mem({
++    settings = function()
++        --widget:set_markup(markup.fontfg(theme.font, "#e0da37", mem_now.used .. "M "))
++        widget:set_markup(markup.fontfg(theme.font, "#fabd2f", mem_now.used .. "M "))
++    end
++})
++
++-- MPD
++local mpdicon = wibox.widget.imagebox()
++theme.mpd = lain.widget.mpd({
++    settings = function()
++        mpd_notification_preset = {
++            text = string.format("%s [%s] - %s\n%s", mpd_now.artist,
++                   mpd_now.album, mpd_now.date, mpd_now.title)
++        }
++
++        if mpd_now.state == "play" then
++            artist = mpd_now.artist .. " > "
++            title  = mpd_now.title .. " "
++            mpdicon:set_image(theme.widget_note_on)
++        elseif mpd_now.state == "pause" then
++            artist = "mpd "
++            title  = "paused "
++        else
++            artist = ""
++            title  = ""
++            --mpdicon:set_image() -- not working in 4.0
++            mpdicon._private.image = nil
++            mpdicon:emit_signal("widget::redraw_needed")
++            mpdicon:emit_signal("widget::layout_changed")
++        end
++        widget:set_markup(markup.fontfg(theme.font, "#e54c62", artist) .. markup.fontfg(theme.font, "#b2b2b2", title))
++    end
++})
++
++local spotify_widget = require("lain.widget.spotify-widget.spotify")
++
++local custom_spotify_widget = spotify_widget({
++    font = theme.font,
++    dim_when_paused = true,
++    dim_opacity = 0.5,
++    max_length = -1,
++})
++
++ -- Spotify widget with left, right, top, bottom margins
++local spotify_widget_with_margin = wibox.container.margin(custom_spotify_widget, 0, 3, 0, 0)
++
++local function update_txt_layoutbox(s)
++    -- Writes a string representation of the current layout in a textbox widget
++    local txt_l = theme["layout_txt_" .. awful.layout.getname(awful.layout.get(s))] or ""
++    s.mytxtlayoutbox:set_text(txt_l)
++end
++
++function toggle_widget_visibility()
++  local widgets_to_toggle = {
++    netdownicon,
++    netdowninfo,
++    netupicon,
++    netupinfo.widget,
++    memicon,
++    memory.widget,
++    cpuicon,
++    cpu.widget,
++  }
++
++  for _, widget in ipairs(widgets_to_toggle) do
++    widget.visible = not widget.visible
++  end
++end
++
++function theme.at_screen_connect(s)
++    -- Quake application
++    s.quake = lain.util.quake({ app = awful.util.terminal })
++
++    -- If wallpaper is a function, call it with the screen
++    local wallpaper = theme.wallpaper
++    if type(wallpaper) == "function" then
++        wallpaper = wallpaper(s)
++    end
++    gears.wallpaper.maximized(wallpaper, s, true)
++
++    -- Tags
++    awful.tag(awful.util.tagnames, s, awful.layout.layouts[1])
++
++    -- Create a promptbox for each screen
++    s.mypromptbox = awful.widget.prompt()
++    -- Create an imagebox widget which will contains an icon indicating which layout we're using.
++
++    -- We need one layoutbox per screen.
++    s.mytxtlayoutbox = wibox.widget.textbox(theme["layout_txt_" .. awful.layout.getname(awful.layout.get(s))])
++    awful.tag.attached_connect_signal(s, "property::selected", function () update_txt_layoutbox(s) end)
++    awful.tag.attached_connect_signal(s, "property::layout", function () update_txt_layoutbox(s) end)
++    s.mytxtlayoutbox:buttons(my_table.join(
++                           awful.button({}, 1, function() awful.layout.inc(1) end),
++                           awful.button({}, 2, function () awful.layout.set( awful.layout.layouts[1] ) end),
++                           awful.button({}, 3, function() awful.layout.inc(-1) end),
++                           awful.button({}, 4, function() awful.layout.inc(1) end),
++                           awful.button({}, 5, function() awful.layout.inc(-1) end)))
++
++    -- Create a taglist widget
++    --s.mytaglist = awful.widget.taglist(s, awful.widget.taglist.filter.all, awful.util.taglist_buttons)
++    --s.mytaglist = awful.widget.taglist {
++    --    screen = s,
++    --    filter = function (t) return t.selected or #t:clients() > 0 end,
++    --    --buttons = taglist_buttons
++    --}
++
++  local gruvbox_white = "#ebdbb2"
++  local gruvbox_black = "#282828"
++
++  -- Modify the taglist label function
++  local original_taglist_label = awful.widget.taglist.taglist_label
++
++  awful.widget.taglist.taglist_label = function(tag, args, tb)
++
++    -- Use the original taglist_label function
++    local text, bg, bg_image, icon, other_args = original_taglist_label(tag, args, tb)
++
++    -- Customize colors based on whether the tag is selected
++    if tag.selected then
++      bg = gruvbox_white
++      other_args.fg_focus = gruvbox_black
++    else
++      bg = gruvbox_black
++      other_args.fg_focus = gruvbox_white
++    end
++
++    return text, bg, bg_image, icon, other_args
++  end
++
++  -- https://awesomewm.org/doc/api/classes/wibox.widget.textbox.html
++  s.mytaglist = awful.widget.taglist {
++    screen = s,
++    filter = function(t) return t.selected or #t:clients() > 0 end,
++    layout = {
++      --spacing = 8,
++      --spacing = 2,
++      layout = wibox.layout.fixed.horizontal,
++    },
++    widget_template = {
++      {
++        {
++          id = "text_role",
++          widget = wibox.widget.textbox,
++        },
++        widget = wibox.container.place, -- Center the text
++        halign = "center", -- Horizontal alignment
++      },
++      id = "background_role",
++      widget = wibox.container.background,
++      forced_width = 30,
++    },
++  }
++
++    -- Create a tasklist widget
++    --s.mytasklist = awful.widget.tasklist(s, awful.widget.tasklist.filter.currenttags, awful.util.tasklist_buttons)
++
++    -- Create the wibox
++    s.mywibox = awful.wibar({ position = "top", screen = s, height = dpi(25), bg = theme.bg_normal, fg = theme.fg_normal })
++
++    -- Add widgets to the wibox
++    s.mywibox:setup {
++        layout = wibox.layout.align.horizontal,
++        { -- Left widgets
++            layout = wibox.layout.fixed.horizontal,
++            --s.mylayoutbox,
++            s.mytaglist,
++            s.mytxtlayoutbox,
++            --s.mypromptbox,
++            mpdicon,
++            theme.mpd.widget,
++        },
++        --s.mytasklist, -- Middle widget
++        nil,
++        { -- Right widgets
++            layout = wibox.layout.fixed.horizontal,
++            --wibox.widget.systray(),
++
++            --mailicon,
++            --theme.mail.widget,
++
++            --spotify_widget({
++            --    font = theme.font,
++            --    -- play_icon = '/usr/share/icons/Papirus-Light/24x24/categories/spotify.svg',
++            --    -- pause_icon = '/usr/share/icons/Papirus-Dark/24x24/panel/spotify-indicator.svg',
++            --    dim_when_paused = true,
++            --    dim_opacity = 0.5,
++            --    max_length = -1,
++            --}),
++            spotify_widget_with_margin,
++            netdownicon,
++            netdowninfo,
++            netupicon,
++            netupinfo.widget,
++            memicon,
++            memory.widget,
++            cpuicon,
++            cpu.widget,
++            --fsicon,
++            --theme.fs.widget,
++            weathericon,
++            --theme.weather.widget,
++            weather_widget,
++            tempicon,
++            temp.widget,
++            volicon,
++            theme.volume.widget,
++            baticon,
++            bat.widget,
++            clockicon,
++            mytextclock,
++        },
++    }
++
++    -- Create the bottom wibox
++    --s.mybottomwibox = awful.wibar({ position = "bottom", screen = s, border_width = 0, height = dpi(20), bg = theme.bg_normal, fg = theme.fg_normal })
++
++    -- Add widgets to the bottom wibox
++    --s.mybottomwibox:setup {
++    --    layout = wibox.layout.align.horizontal,
++    --    { -- Left widgets
++    --        layout = wibox.layout.fixed.horizontal,
++    --    },
++    --    s.mytasklist, -- Middle widget
++    --    { -- Right widgets
++    --        layout = wibox.layout.fixed.horizontal,
++    --        s.mylayoutbox,
++    --    },
++    --}
++end
++
++return theme
+diff --git a/themes/multicolor/wall.png b/themes/multicolor/wall.png
+new file mode 100755
+index 0000000..a3188d0
+Binary files /dev/null and b/themes/multicolor/wall.png differ

@@ -38,8 +38,8 @@ setxkbmap -option caps:escape
 xhost si:localuser:root
 #systemctl --user import-environment DISPLAY
 
-#exec awesome
 #exec i3
+exec awesome
 exec dwm &
 sh ~/.dwm/autostart.sh &
 #sh ~/.dwm/autostart.sh >> ~/.dwm/autostart.log 2>&1 &
