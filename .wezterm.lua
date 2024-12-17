@@ -478,12 +478,14 @@ config.keys = {
   -- shift-ctrl-space is provided by default
   -- https://wezfurlong.org/wezterm/config/default-keys.html
   -- { key = ' ', mods = 'SHIFT|CTRL', action = wezterm.action.QuickSelect },
-  --{ key = ' ', mods = 'ALT|SHIFT', action = wezterm.action.QuickSelect },
+  { key = ' ', mods = 'ALT|SHIFT', action = wezterm.action.QuickSelect },
 
   -- Customizing QuickSelect
   -- https://wezfurlong.org/wezterm/config/lua/keyassignment/QuickSelectArgs.html
   {
-    key = ' ',
+    --key = ' ',
+    --mods = 'SHIFT|CTRL',
+    key = 'o',
     mods = 'ALT|SHIFT',
     action = wezterm.action.QuickSelectArgs {
       label = 'open url',
