@@ -2756,7 +2756,7 @@ updategeom(void)
 	if (XineramaIsActive(dpy)) {
         int i, j, n, nn;
         Client *c, *next_client;
-        Monitor *m, *primary, *secondary;
+        Monitor *m, *primary, *secondary, *current_monitor;
         XineramaScreenInfo *info = XineramaQueryScreens(dpy, &nn);
         XineramaScreenInfo *unique = NULL;
 
@@ -2778,10 +2778,11 @@ updategeom(void)
 				mons = createmon();
 		}
 
-        /* Move even-tagged clients from first monitor to second monitor */
-        if (nn > 1) {
-            primary = mons;              /* First monitor */
-            secondary = mons->next;      /* Second monitor */
+        /* Logic for moving clients */
+        if (nn == 2) {
+            /* Case with exactly two monitors: Move even-tagged clients */
+            primary = mons;         /* First monitor */
+            secondary = mons->next; /* Second monitor */
 
             if (primary && secondary) {
                 for (c = primary->clients; c; c = next_client) {
@@ -2796,6 +2797,27 @@ updategeom(void)
                         attach(c);              /* Attach to secondary monitor */
                         attachstack(c);
                     }
+                }
+            }
+        } else if (nn > 2) {
+            /* Case with more than two monitors: Move clients cyclically */
+            for (m = mons; m; m = m->next) {
+                current_monitor = m; /* Start with the current monitor */
+
+                for (c = current_monitor->clients; c; c = next_client) {
+                    next_client = c->next;
+
+                    /* Determine the next monitor cyclically */
+                    Monitor *next_monitor = current_monitor->next ? current_monitor->next : mons;
+
+                    detach(c);               /* Detach client from current monitor */
+                    detachstack(c);
+
+                    c->mon = next_monitor;   /* Assign client to the next monitor */
+                    attach(c);               /* Attach to the next monitor */
+                    attachstack(c);
+
+                    current_monitor = next_monitor; /* Update current monitor */
                 }
             }
         }

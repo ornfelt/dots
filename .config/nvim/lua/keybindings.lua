@@ -8,6 +8,20 @@ local function map(m, k, v)
   vim.keymap.set(m, k, v, { silent = true })
 end
 
+local function normalize_path(path)
+  if not path then return nil end
+  -- Replace backslashes with forward slashes and remove duplicate forward slashes
+  path = path:gsub("\\", "/"):gsub("//+", "/")
+  return path
+end
+
+--local my_notes_path = vim.fn.getenv("my_notes_path")
+--local my_notes_path = normalize_path(vim.env.my_notes_path or "")
+local home_dir = normalize_path((os.getenv("HOME") or os.getenv("USERPROFILE")) .. "/")
+local my_notes_path = normalize_path(os.getenv("my_notes_path") or home_dir .. "/")
+local code_root_dir = normalize_path(os.getenv("code_root_dir") or home_dir .. "/")
+local ps_profile_path = normalize_path(tostring(os.getenv("ps_profile_path")) or home_dir .. "/")
+
 local barhidden = false
 --local function togglebar()
 --    barhidden = not barhidden
@@ -224,8 +238,7 @@ end
 
 -- Start fzf/telescope from a given environment variable
 function StartFinder(env_var, additional_path)
-  local default_path = (env_var == "my_notes_path") and "~/Documents/my_notes" or "~"
-  local path = os.getenv(env_var) or default_path
+  local path = os.getenv(env_var) or "~/"
 
   if additional_path then
     path = path .. "/" .. additional_path
@@ -278,7 +291,6 @@ local function read_lines_from_file(file)
 end
 
 function open_files_from_list()
-  local my_notes_path = vim.fn.getenv("my_notes_path")
   local file_path = my_notes_path .. "/files.txt"
   local files = read_lines_from_file(file_path)
 
@@ -632,12 +644,6 @@ map('n', '<M-9>', '9gt')
 map('n', '<M-0>', ':tablast<CR>')
 map('n', '<leader>o', '<C-^>')
 
-local function normalize_slashes(path)
-  path = path:gsub("\\", "/")
-  path = path:gsub("/+", "/")
-  return path
-end
-
 -- Session management
 function load_session()
   local session_dir = vim.fn.expand('~/.vim/sessions/')
@@ -771,7 +777,6 @@ function load_tabs_and_splits()
 end
 
 function save_tabs_and_splits()
-  local my_notes_path = normalize_slashes(vim.env.my_notes_path or "")
   local tab_count = vim.fn.tabpagenr('$')
 
   local save_restriction = (#my_notes_path > 0 and tab_count > 2) or (tab_count > 1)
@@ -799,7 +804,7 @@ function save_tabs_and_splits()
         -- .* matches any characters up to the last /.
         -- (.-) captures the smallest sequence of characters between the last two slashes, which is the parent directory name.
         -- [^/]+$ ensures we're matching a file name (or final path component) after this last directory.
-        local full_path = normalize_slashes(vim.fn.fnamemodify(buf_name, ':p'))
+        local full_path = normalize_path(vim.fn.fnamemodify(buf_name, ':p'))
         -- local final_dir = full_path:match(".*/(.-)/[^/]+$") or ""
         -- ([^/]+/[^/]+) captures two directory levels at the end of the path.
         -- [^/]+$ matches the filename after the last directory.
@@ -877,7 +882,7 @@ function save_tabs_and_splits()
       vim.cmd(j .. "wincmd w")
       local buf_name = vim.fn.bufname('%')
       if buf_name ~= "" then
-        local full_path = normalize_slashes(vim.fn.fnamemodify(buf_name, ':p'))
+        local full_path = normalize_path(vim.fn.fnamemodify(buf_name, ':p'))
         file:write(full_path .. "\n")
       end
     end
@@ -914,8 +919,8 @@ map('n', '<M-.>', ':tabe ~/Documents/my_notes/vimtutor.txt<CR>')
 -- Windows
 if vim.fn.has('win32') == 1 then
   vim.api.nvim_set_keymap('n', '<M-m>', '<cmd>tabe ' .. vim.fn.expand('$LOCALAPPDATA') .. '/nvim/init.lua<CR>', { noremap = true, silent = true })
-  vim.api.nvim_set_keymap('n', '<M-,>', '<cmd>tabe ' .. (os.getenv('ps_profile_path') or '.') .. '/Microsoft.PowerShell_profile.ps1<CR>', { noremap = true, silent = true })
-  vim.api.nvim_set_keymap('n', '<M-.>', '<cmd>tabe ' .. (os.getenv('my_notes_path') or '.') .. '/vimtutor.txt<CR>', { noremap = true, silent = true })
+  vim.api.nvim_set_keymap('n', '<M-,>', '<cmd>tabe ' .. ps_profile_path .. '/Microsoft.PowerShell_profile.ps1<CR>', { noremap = true, silent = true })
+  vim.api.nvim_set_keymap('n', '<M-.>', '<cmd>tabe ' .. my_notes_path .. '/vimtutor.txt<CR>', { noremap = true, silent = true })
 end
 
 -- map('n', '<C-c>', 'y')
@@ -935,25 +940,11 @@ function NormalizePath()
 end
 vim.api.nvim_set_keymap('n', '<leader>wp', ':lua NormalizePath()<CR>', { noremap = true, silent = true })
 
-local function normalize_path(path)
-  if not path then return nil end
-  -- Replace backslashes with forward slashes and remove duplicate forward slashes
-  path = path:gsub("\\", "/"):gsub("//+", "/")
-  return path
-end
-
 function ReplacePathBasedOnContext()
-  local my_notes_path = os.getenv("my_notes_path")
-  local code_root_dir = os.getenv("code_root_dir")
-  local ps_profile_path = tostring(os.getenv("ps_profile_path"))
-
   if not my_notes_path or not code_root_dir then
     print("Environment variables 'my_notes_path' or 'code_root_dir' are not set.")
     return
   end
-
-  my_notes_path = normalize_path(my_notes_path .. "/")
-  code_root_dir = normalize_path(code_root_dir .. "/")
 
   local line = vim.fn.getline(".")
 
@@ -968,7 +959,6 @@ function ReplacePathBasedOnContext()
   end
 
   if ps_profile_path then
-    ps_profile_path = normalize_path(ps_profile_path) .. "/"
     if line:find("{ps_profile_path}/", 1, true) then
       line = line:gsub("{ps_profile_path}/", vim.pesc(ps_profile_path))
     else
@@ -1106,7 +1096,6 @@ vim.api.nvim_set_keymap('n', '<leader>wq', ':lua ReplaceQuotes()<CR>', { noremap
 
 local function PythonCommand()
   vim.cmd('w') -- Save the file first
-  local code_root_dir = os.getenv("code_root_dir") or "~/"
   code_root_dir = code_root_dir:gsub(" ", '" "')
 
   local command = "!python " .. code_root_dir .. "Code2/Python/my_py/scripts/"
@@ -1299,7 +1288,6 @@ end
 
 -- Helper function for setting key mappings for filetypes
 local function create_hellow_mapping(ft, fe)
-  local code_root_dir = os.getenv("code_root_dir") or "~/"
   code_root_dir = code_root_dir:gsub(" ", '" "')
   local template_file = code_root_dir .. "Code2/General/utils/hellow/hellow." .. ft
   if fe then
@@ -1397,7 +1385,6 @@ map('n', '<F5>', '<Esc>:setlocal spell! spelllang=en_us<CR>')
 map('n', '<F6>', '<Esc>:setlocal spell! spelllang=sv<CR>')
 
 local function SqlExecCommand()
-  local code_root_dir = os.getenv("code_root_dir") or "~/"
   code_root_dir = code_root_dir:gsub(" ", '" "') -- Handle spaces in the path
 
   -- Add '/' at the end if it doesn't exist
@@ -1461,7 +1448,6 @@ local function SqlExecCommand()
 end
 
 local function read_config(key, default_value)
-  local my_notes_path = os.getenv("my_notes_path")
   local config_file_path = my_notes_path .. "/scripts/files/nvim_config.txt"
   local value = default_value
   local key_lower = key:lower()
@@ -1656,7 +1642,10 @@ function execute_command()
   vim.cmd(command)
 end
 
---
+-- Try with these:
+-- lua print(vim.fn.getenv("my_notes_path"))
+-- lua print(vim.fn.getenv("code_root_dir"))
+-- lua print(vim.fn.getenv("ps_profile_path"))
 vim.api.nvim_set_keymap('n', '<leader>,', ':lua execute_command()<CR>', { noremap = true, silent = true })
 vim.api.nvim_set_keymap('v', '<leader>,', ':lua execute_command()<CR>', { noremap = true, silent = true })
 
@@ -1704,15 +1693,12 @@ function copy_current_file_path(replace_env)
     return
   end
 
-  path = normalize_slashes(path)
+  path = normalize_path(path)
   path = path:gsub("oil:", "")
 
   if replace_env then
     -- Replace "my_notes_path"
-    local my_notes_path = vim.fn.getenv("my_notes_path")
     if my_notes_path then
-      my_notes_path = normalize_slashes(my_notes_path)
-
       if my_notes_path:sub(-1) == "/" then
         my_notes_path = my_notes_path:sub(1, -2)
       end
@@ -1722,10 +1708,7 @@ function copy_current_file_path(replace_env)
     end
 
     -- Replace "ps_profile_path"
-    local ps_profile_path = tostring(vim.fn.getenv("ps_profile_path"))
     if ps_profile_path then
-      ps_profile_path = normalize_slashes(ps_profile_path)
-
       if ps_profile_path:sub(-1) == "/" then
         ps_profile_path = ps_profile_path:sub(1, -2)
       end
@@ -1735,10 +1718,7 @@ function copy_current_file_path(replace_env)
     end
 
     -- Replace "code_root_dir"
-    local code_root_dir = vim.fn.getenv("code_root_dir")
     if code_root_dir then
-      code_root_dir = normalize_slashes(code_root_dir)
-
       if code_root_dir:sub(-1) == "/" then
         code_root_dir = code_root_dir:sub(1, -2)
       end
@@ -1770,7 +1750,6 @@ end, { desc = "GitGraph - Draw" })
 
 function PythonExecCommand()
   vim.cmd('w') -- Save the file first
-  local code_root_dir = os.getenv("code_root_dir") or "~/"
   code_root_dir = code_root_dir:gsub(" ", '" "')
 
   --local script_path = code_root_dir .. "Code2/Python/my_py/scripts/read_file.py"
@@ -1838,7 +1817,6 @@ vim.api.nvim_set_keymap('v', '<M-c>', '<cmd>lua PythonExecCommand()<CR>', { nore
 vim.api.nvim_set_keymap('i', '<M-c>', '<cmd>lua PythonExecCommand()<CR>', { noremap = true, silent = true })
 
 function CyclePythonExecCommand()
-  local my_notes_path = os.getenv("my_notes_path")
   local config_file_path = my_notes_path .. "/scripts/files/nvim_config.txt"
   local possible_commands = { "read_file", "gpt", "claude/claude", "gemini/gemini", "mistral/mistral" }
   local current_command = read_config("PythonExecCommand", "gpt")
@@ -1884,7 +1862,6 @@ function CyclePythonExecCommand()
 end
 
 function TogglePrioritizeBuildScript()
-  local my_notes_path = os.getenv("my_notes_path")
   local config_file_path = my_notes_path .. "/scripts/files/nvim_config.txt"
 
   local lines = {}
@@ -2586,7 +2563,6 @@ local function read_lines_from_file(file_path)
 end
 
 vim.keymap.set('n', '<leader>?', function()
-  local my_notes_path = os.getenv("my_notes_path")  -- Make sure this environment variable is set
   local file_path = my_notes_path .. "/scripts/files/nvim_keys.txt"
   local lines = read_lines_from_file(file_path)
 
@@ -2683,7 +2659,6 @@ function save_resolved_path_to_file()
   resolved_path = vim.fn.fnamemodify(resolved_path, ":p:h")
   resolved_path = resolved_path:gsub("\\", "/")
 
-  local home_dir = os.getenv("HOME") or os.getenv("USERPROFILE")
   local file_path = home_dir .. "/new_wez_dir.txt"
 
   local file = io.open(file_path, "w")
@@ -2744,10 +2719,6 @@ vim.api.nvim_create_autocmd("FileType", {
 })
 
 local function replace_env_paths(file_path)
-    local my_notes_path = normalize_path(os.getenv("my_notes_path")) .. "/"
-    local code_root_dir = normalize_path(os.getenv("code_root_dir")) .. "/"
-    local ps_profile_path = normalize_path(tostring(os.getenv("ps_profile_path"))) .. "/"
-
     if file_path:find("{my_notes_path}/", 1, true) or file_path:find("{code_root_dir}/", 1, true) or file_path:find("{ps_profile_path}/", 1, true) then
         file_path = file_path:gsub("{my_notes_path}/", vim.pesc(my_notes_path))
         file_path = file_path:gsub("{code_root_dir}/", vim.pesc(code_root_dir))
