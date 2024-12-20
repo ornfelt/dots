@@ -151,6 +151,7 @@ lain.layout.cascade.tile.extra_padding = 5
 lain.layout.cascade.tile.nmaster       = 5
 lain.layout.cascade.tile.ncol          = 2
 
+-- https://awesomewm.org/doc/api/classes/client.html
 awful.util.taglist_buttons = mytable.join(
     awful.button({ }, 1, function(t) t:view_only() end),
     awful.button({ modkey }, 1, function(t)
@@ -253,6 +254,27 @@ screen.connect_signal("arrange", function (s)
             c.border_width = beautiful.border_width
         end
     end
+
+  -- Maximize firefox when it's the only client
+  for s in screen do
+    local clients = s.clients
+    local firefox_clients = {}
+
+    for _, c in ipairs(clients) do
+      if c.class == "firefox" then
+        table.insert(firefox_clients, c)
+      end
+    end
+
+    if #clients == 1 and #firefox_clients == 1 then
+      firefox_clients[1].maximized = true
+    else
+      for _, fc in ipairs(firefox_clients) do
+        fc.maximized = false
+      end
+    end
+  end
+
 end)
 
 -- Create a wibox for each screen and add it
@@ -262,11 +284,11 @@ awful.screen.connect_for_each_screen(function(s) beautiful.at_screen_connect(s) 
 
 -- {{{ Mouse bindings
 
-root.buttons(mytable.join(
-    awful.button({ }, 3, function () awful.util.mymainmenu:toggle() end),
-    awful.button({ }, 4, awful.tag.viewnext),
-    awful.button({ }, 5, awful.tag.viewprev)
-))
+--root.buttons(mytable.join(
+--    awful.button({ }, 3, function () awful.util.mymainmenu:toggle() end),
+--    awful.button({ }, 4, awful.tag.viewnext),
+--    awful.button({ }, 5, awful.tag.viewprev)
+--))
 
 -- }}}
 
@@ -712,97 +734,247 @@ clientkeys = mytable.join(
 local last_tag = {}
 
 local function toggle_tag(tag)
-    local screen = awful.screen.focused()
-    if screen.selected_tag == tag then
-        if last_tag[screen] then
-            last_tag[screen]:view_only()
-        end
-    else
-        last_tag[screen] = screen.selected_tag
-        tag:view_only()
+  local num_screens = screen:count()
+  local current_screen = awful.screen.focused()
+
+  if current_screen.selected_tag == tag then
+    if num_screens == 1 and last_tag[current_screen] then
+      last_tag[current_screen]:view_only()
     end
+  else
+    last_tag[current_screen] = current_screen.selected_tag
+    tag:view_only()
+  end
 end
 
 local binary_mask = 341
 
--- Bind all key numbers to tags.
--- Be careful: we use keycodes to make it work on any keyboard layout.
--- This should map on the top row of your keyboard, usually 1 to 9.
-for i = 1, 9 do
-    globalkeys = mytable.join(globalkeys,
-        -- View tag only.
-        awful.key({ modkey }, "#" .. i + 9,
-                  function ()
-                      local num_screens = screen:count()
-                      if num_screens == 2 then
-                          -- Determine the screen and tag based on binary mask and tag index
-                          for s in awful.screen do
-                              if s.index == 1 and (binary_mask & (1 << (i - 1))) ~= 0 then
-                                  awful.screen.focus(s.index)
-                                  local tag = s.tags[i]
-                                  toggle_tag(tag)
-                              elseif s.index == 2 and (binary_mask & (1 << (i - 1))) == 0 then
-                                  awful.screen.focus(s.index)
-                                  local tag = s.tags[i]
-                                  toggle_tag(tag)
-                              end
-                          end
-                      else
-                        local screen = awful.screen.focused()
-                        local tag = screen.tags[i]
-                        if tag then
-                           --tag:view_only()
-                           toggle_tag(tag)
-                        end
-                      end
-                  end,
-                  {description = "view tag #"..i.." on appropriate monitor", group = "tag"}),
+local function is_odd_with_mask(tag_index)
+    return (binary_mask & (1 << (tag_index - 1))) ~= 0
+end
 
-        -- Toggle tag display.
-        --awful.key({ modkey, "Control" }, "#" .. i + 9,
-        --          function ()
-        --              local screen = awful.screen.focused()
-        --              local tag = screen.tags[i]
-        --              if tag then
-        --                 awful.tag.viewtoggle(tag)
-        --              end
-        --          end,
-        --          {description = "toggle tag #" .. i, group = "tag"}),
-        -- Move client to tag and view it.
-        awful.key({ modkey, "Shift" }, "#" .. i + 9,
-                  function ()
-                      if client.focus then
-                          local tag = client.focus.screen.tags[i]
-                          if tag then
-                              client.focus:move_to_tag(tag)
-                              toggle_tag(tag)
-                          end
-                     end
-                  end,
-                  {description = "move focused client to tag #"..i, group = "tag"}),
-        -- Move client to tag.
-        awful.key({ modkey, "Control" }, "#" .. i + 9,
-                  function ()
-                      if client.focus then
-                          local tag = client.focus.screen.tags[i]
-                          if tag then
-                              client.focus:move_to_tag(tag)
-                          end
-                     end
-                  end,
-                  {description = "move focused client to tag #"..i, group = "tag"}),
-        -- Toggle tag on focused client.
-        awful.key({ modkey, "Control", "Shift" }, "#" .. i + 9,
-                  function ()
-                      if client.focus then
-                          local tag = client.focus.screen.tags[i]
-                          if tag then
-                              client.focus:toggle_tag(tag)
-                          end
-                      end
-                  end,
-                  {description = "toggle focused client on tag #" .. i, group = "tag"})
-    )
+local EVEN_TAG_MASK = 170
+
+local function is_odd(index)
+  --return index % 2 == 1
+  return (EVEN_TAG_MASK & (1 << (index - 1))) == 0
+end
+
+local function switch_to_tag(tag_index)
+  local num_screens = screen:count()
+  if not tag_index or tag_index < 1 then return end
+
+  if num_screens == 2 then
+    -- Determine monitor based on binary mask and tag index
+    for s in screen do
+      --if is_odd(tag_index) and s.index == 1 then
+      --  awful.screen.focus(s)
+      --  local tag = s.tags[tag_index]
+      --  if tag then
+      --    tag:view_only()
+      --  end
+      --elseif not is_odd(tag_index) and s.index == 2 then
+      --  awful.screen.focus(s)
+      --  local tag = s.tags[tag_index]
+      --  if tag then
+      --    tag:view_only()
+      --  end
+      --end
+
+      if (is_odd_with_mask(tag_index) and s.index == 1) or
+        (not is_odd_with_mask(tag_index) and s.index == 2) then
+      --if (is_odd(tag_index) and s.index == 1) or
+      --  (not is_odd(tag_index) and s.index == 2) then
+        awful.screen.focus(s)
+        local tag = s.tags[tag_index]
+        if tag then
+          tag:view_only()
+        end
+        return
+      end
+    end
+  elseif num_screens > 2 then
+    local target_screen_index = ((tag_index - 1) % num_screens) + 1 -- Determine target screen cyclically
+    local target_screen = screen[target_screen_index]
+
+    awful.screen.focus(target_screen)
+    local tag = target_screen.tags[((tag_index - 1) % #target_screen.tags) + 1]
+    if tag then
+      tag:view_only()
+    end
+  else
+    local current_screen = awful.screen.focused()
+    local tag = current_screen.tags[tag_index]
+    if tag then
+      --tag:view_only()
+      --awful.tag.viewtoggle(tag)
+      toggle_tag(tag)
+    end
+  end
+end
+
+local function switch_to_tag_move(tag_index)
+  local num_screens = screen:count()
+
+  if num_screens == 2 then
+    local primary_screen = screen[1]
+    local secondary_screen = screen[2]
+    local current_screen = awful.screen.focused()
+    local client_is_odd = is_odd_with_mask(tag_index)
+    local focused_client = client.focus
+
+    if current_screen == primary_screen and not client_is_odd then
+      -- Currently on primary screen, but tag is even -> Switch to secondary screen
+      awful.screen.focus(secondary_screen)
+      focused_client:move_to_screen(secondary_screen)
+      local target_tag = secondary_screen.tags[tag_index]
+      if target_tag then
+        focused_client:move_to_tag(target_tag)
+      end
+      local target_tag = secondary_screen.tags[tag_index]
+      target_tag:view_only()
+      client.focus = focused_client
+      focused_client:raise()
+
+    elseif current_screen == secondary_screen and client_is_odd then
+      -- Currently on secondary screen, but tag is odd -> Switch to primary screen
+      awful.screen.focus(primary_screen)
+      focused_client:move_to_screen(primary_screen)
+      local target_tag = primary_screen.tags[tag_index]
+      if target_tag then
+        focused_client:move_to_tag(target_tag)
+      end
+      local target_tag = primary_screen.tags[tag_index]
+      target_tag:view_only()
+      client.focus = focused_client
+      focused_client:raise()
+
+    else
+      local target_tag = current_screen.tags[tag_index]
+      focused_client:move_to_tag(target_tag)
+      target_tag:view_only()
+    end
+
+  elseif num_screens > 2 then
+    -- Determine target screen cyclically
+    local target_screen_index = ((tag_index - 1) % num_screens) + 1
+    local target_screen = screen[target_screen_index]
+
+    awful.screen.focus(target_screen)
+    local tag = target_screen.tags[((tag_index - 1) % #target_screen.tags) + 1]
+    if client.focus.screen ~= target_screen then
+      client.focus:move_to_screen(target_screen)
+    end
+    client.focus:move_to_tag(tag)
+    tag:view_only()
+
+  else
+    local current_screen = awful.screen.focused()
+    local tag = current_screen.tags[tag_index]
+    client.focus:move_to_tag(tag)
+    toggle_tag(tag)
+  end
+end
+
+local function switch_to_tag_stay(tag_index)
+  local num_screens = screen:count()
+
+  if num_screens == 2 then
+    local primary_screen = screen[1]
+    local secondary_screen = screen[2]
+    local current_screen = awful.screen.focused()
+    local current_tag = awful.screen.focused().selected_tag
+    local client_is_odd = is_odd_with_mask(tag_index)
+    local focused_client = client.focus
+
+    if not focused_client then return end
+
+    if current_screen == primary_screen and not client_is_odd then
+      -- Currently on primary screen, but tag is even -> Switch to secondary screen
+      local target_tag = secondary_screen.tags[tag_index]
+      focused_client:move_to_tag(target_tag)
+      focused_client:move_to_screen(secondary_screen)
+      awful.screen.focus(primary_screen)
+      current_tag:view_only()
+
+    elseif current_screen == secondary_screen and client_is_odd then
+      -- Currently on secondary screen, but tag is odd -> Switch to primary screen
+      local target_tag = primary_screen.tags[tag_index]
+      focused_client:move_to_tag(target_tag)
+      focused_client:move_to_screen(primary_screen)
+      awful.screen.focus(secondary_screen)
+      current_tag:view_only()
+
+    else
+      local target_tag = current_screen.tags[tag_index]
+      focused_client:move_to_tag(target_tag)
+    end
+
+  elseif num_screens > 2 then
+    -- Determine target screen cyclically
+    local target_screen_index = ((tag_index - 1) % num_screens) + 1
+    local target_screen = screen[target_screen_index]
+
+    local tag = target_screen.tags[((tag_index - 1) % #target_screen.tags) + 1]
+    if client.focus.screen ~= target_screen then
+      client.focus:move_to_screen(target_screen)
+    end
+    client.focus:move_to_tag(tag)
+
+  else
+    local current_screen = awful.screen.focused()
+    local tag = current_screen.tags[tag_index]
+    client.focus:move_to_tag(tag)
+  end
+end
+
+-- Bind all key numbers to tags
+for i = 1, 9 do
+  globalkeys = mytable.join(globalkeys,
+    -- View tag only.
+    awful.key({ modkey }, "#" .. i + 9,
+      function ()
+        switch_to_tag(i)
+      end,
+      {description = "view tag #"..i.." on appropriate monitor", group = "tag"}),
+
+    -- Move client to tag and view it.
+    awful.key({ modkey, "Shift" }, "#" .. i + 9,
+      function ()
+        --if client.focus then
+        --  local tag = client.focus.screen.tags[i]
+        --  if tag then
+        --    client.focus:move_to_tag(tag)
+        --    toggle_tag(tag)
+        --  end
+        --end
+        switch_to_tag_move(i)
+      end,
+      {description = "move focused client to tag #"..i, group = "tag"}),
+    -- Move client to tag.
+    awful.key({ modkey, "Control" }, "#" .. i + 9,
+      function ()
+        --if client.focus then
+        --  local tag = client.focus.screen.tags[i]
+        --  if tag then
+        --    client.focus:move_to_tag(tag)
+        --  end
+        --end
+        switch_to_tag_stay(i)
+      end,
+      {description = "move focused client to tag #"..i, group = "tag"}),
+    -- Toggle tag on focused client.
+    awful.key({ modkey, "Control", "Shift" }, "#" .. i + 9,
+      function ()
+        if client.focus then
+          local tag = client.focus.screen.tags[i]
+          if tag then
+            client.focus:toggle_tag(tag)
+          end
+        end
+      end,
+      {description = "toggle focused client on tag #" .. i, group = "tag"})
+  )
 end
 
 clientbuttons = mytable.join(
@@ -993,125 +1165,132 @@ tag.connect_signal("property::selected", backham)
 
 -- }}}
 
-for s in screen do
-    s:connect_signal("arrange", function(scr)
-        local clients = scr.clients
-        local firefox_clients = {}
-        
-        -- Collect all Firefox clients
-        for _, c in ipairs(clients) do
-            if c.class == "firefox" then
-                table.insert(firefox_clients, c)
-            end
-        end
-
-        -- If there's only one client on the screen and it's Firefox, maximize it.
-        -- Otherwise, if there are multiple clients, ensure Firefox is not maximized.
-        if #clients == 1 and #firefox_clients == 1 then
-            firefox_clients[1].maximized = true
-        else
-            for _, fc in ipairs(firefox_clients) do
-                fc.maximized = false
-            end
-        end
-    end)
-end
-
 -- Multiple monitor taglist setup
 -- See: {code_root_dir}/Code2/Lua/my_lua/testing/awsm_tag_testing.lua
 
 local function setup_tags_for_monitors()
-    local num_screens = screen.count()
+  local num_screens = screen.count()
 
-    for s in screen do
-        s.tags = {}
+  for s in screen do
+    s.tags = {}
 
-        if num_screens == 2 then
-            for i = 1, 9 do
-                if s.index == 1 and (binary_mask & (1 << (i - 1))) ~= 0 then
-                  awful.tag.add(i, { screen = s, layout = awful.layout.suit.spiral })
-                elseif s.index == 2 and (binary_mask & (1 << (i - 1))) == 0 then
-                  awful.tag.add(i, { screen = s, layout = awful.layout.suit.spiral })
-                end
-            end
-        else
-            -- Cyclical tag distribution for 3 or more monitors
-            for i = 1, 9 do
-                -- Assign tag `i` to the monitor `((i - 1) % num_screens) + 1`
-                local target_screen = ((i - 1) % num_screens) + 1
-                if s.index == target_screen then
-                    awful.tag.add(i, {
-                        screen = s,
-                        layout = awful.layout.suit.spiral,
-                    })
-                end
-            end
+    if num_screens == 2 then
+      for i = 1, 9 do
+        if s.index == 1 and is_odd_with_mask(i) then
+          awful.tag.add(i, { screen = s, layout = awful.layout.suit.spiral })
+        elseif s.index == 2 and not is_odd_with_mask(i) then
+          awful.tag.add(i, { screen = s, layout = awful.layout.suit.spiral })
         end
+      end
+    else
+      -- Cyclical tag distribution for 3 or more monitors
+      for i = 1, 9 do
+        -- Assign tag `i` to the monitor `((i - 1) % num_screens) + 1`
+        local target_screen = ((i - 1) % num_screens) + 1
+        if s.index == target_screen then
+          awful.tag.add(i, {
+            screen = s,
+            layout = awful.layout.suit.spiral,
+          })
+        end
+      end
     end
+  end
 end
 
 local function move_clients_cyclically()
-    local screens = screen:count()
-    if screens < 3 then return end
+  local screens = screen:count()
+  if screens < 3 then return end
 
-    -- Move clients cyclically across all monitors based on tag index
-    for _, c in ipairs(client.get()) do
-        local tags = c:tags()
-        for _, tag in ipairs(tags) do
-            local tag_index = tonumber(tag.name)
-            if tag_index then
-                local target_screen_index = ((tag_index - 1) % screens) + 1
-                local target_screen = screen[target_screen_index]
+  -- Move clients cyclically across all monitors based on tag index
+  for _, c in ipairs(client.get()) do
+    local tags = c:tags()
+    for _, tag in ipairs(tags) do
+      local tag_index = tonumber(tag.name)
+      if tag_index then
+        local target_screen_index = ((tag_index - 1) % screens) + 1
+        local target_screen = screen[target_screen_index]
 
-                if target_screen and c.screen ~= target_screen then
-                    c:move_to_screen(target_screen)
-                end
-
-                --tag:view_only()
-                break
-            end
+        if target_screen and c.screen ~= target_screen then
+          c:move_to_screen(target_screen)
         end
+        break
+      end
     end
+  end
 end
 
-local EVEN_TAG_MASK = 170
-
 local function move_even_tag_clients()
-    local screens = screen:count()
-    if screens ~= 2 then return end
+  local screens = screen:count()
+  if screens ~= 2 then return end
 
-    local primary_screen = screen[1]
-    local secondary_screen = screen[2]
+  local primary_screen = screen[1]
+  local secondary_screen = screen[2]
+  local current_tag = awful.screen.focused().selected_tag
+  local current_tag_index = current_tag and tonumber(current_tag.name)
 
-    for _, c in ipairs(client.get()) do
-        local tags = c:tags()
-        for _, tag in ipairs(tags) do
-            local tag_index = tonumber(tag.name)
-            if tag_index and (EVEN_TAG_MASK & (1 << (tag_index - 1))) ~= 0 then
-                c:move_to_screen(secondary_screen)
-                --tag:view_only()
-                break
-            end
-        end
+  for _, c in ipairs(client.get()) do
+    local tags = c:tags()
+    for _, tag in ipairs(tags) do
+      local tag_index = tonumber(tag.name)
+      if tag_index and (EVEN_TAG_MASK & (1 << (tag_index - 1))) ~= 0 then
+        c:move_to_screen(secondary_screen)
+        local new_tag = secondary_screen.tags[tag_index]
+        c:move_to_tag(new_tag)
+        break
+      end
     end
+  end
+
+  switch_to_tag(1)
+  switch_to_tag(2)
+  switch_to_tag(current_tag_index)
+end
+
+local function handle_monitor_remove()
+  local screens = screen:count()
+  if screens ~= 1 then return end
+  local primary_screen = screen[1]
+  -- This will restore focus to selected tag on first monitor...
+  local current_tag = awful.screen.focused().selected_tag
+  local current_tag_index = current_tag and tonumber(current_tag.name)
+
+  for _, c in ipairs(client.get()) do
+    local tags = c:tags()
+    for _, tag in ipairs(tags) do
+      local tag_index = tonumber(tag.name)
+      if tag_index then
+        local new_tag = primary_screen.tags[tag_index]
+        if new_tag then
+          c:move_to_screen(primary_screen)
+          c:move_to_tag(new_tag)
+        end
+      end
+    end
+  end
+
+  switch_to_tag(current_tag_index)
 end
 
 --awful.screen.connect_for_each_screen(function(s)
---    if screen:count() == 2 then
---        move_even_tag_clients()
---    end
+--  if screen:count() == 2 then
+--    move_even_tag_clients()
+--  end
 --end)
 
 screen.connect_signal("added", function()
-    setup_tags_for_monitors()
-    -- One monitor case is handled automatically?
-    move_even_tag_clients()
-    move_clients_cyclically()
+  --setup_tags_for_monitors()
+  move_even_tag_clients()
+  move_clients_cyclically()
 end)
 
-screen.connect_signal("removed", function()
-    setup_tags_for_monitors()
+--screen.connect_signal("removed", function()
+--  setup_tags_for_monitors()
+--end)
+
+tag.connect_signal("request::screen", function(t)
+  handle_monitor_remove()
 end)
 
-setup_tags_for_monitors()
+--setup_tags_for_monitors()
 

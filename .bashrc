@@ -25,6 +25,13 @@ export PATH=$PATH:$GOPATH/bin
 export my_notes_path="$HOME/Documents/my_notes"
 export code_root_dir="$HOME"
 
+#if command -v syndaemon &> /dev/null; then
+#    # Disable touchpad while typing
+#    #syndaemon -i 1.0 -K -R -d
+#    # Disable clicks while typing
+#    syndaemon -i 1.0 -t -K -R -d
+#fi
+
 if [ -f "$HOME/.cargo/env" ]; then
     . "$HOME/.cargo/env"
 fi

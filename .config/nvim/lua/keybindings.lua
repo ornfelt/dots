@@ -243,6 +243,7 @@ function StartFinder(env_var, additional_path)
   if additional_path then
     path = path .. "/" .. additional_path
   end
+  path = normalize_path(path)
 
   if use_fzf then
     -- Search using fzf.vim
@@ -285,6 +286,8 @@ local function read_lines_from_file(file)
   local lines = {}
   for line in io.lines(file) do
     line = replace_placeholders(line)
+    line = normalize_path(line)
+    line = line:gsub("\r", "") -- Remove carriage return (^M)
     table.insert(lines, line)
   end
   return lines
@@ -478,7 +481,7 @@ end
 
 -- Key mappings
 vim.keymap.set({ 'n', 'v' }, '<M-f>', function()
-  setup_vimgrep_command(true)  -- Use word under cursor or selection
+  setup_vimgrep_command(true) -- Use word under cursor or selection
 end, { noremap = true, silent = true })
 
 vim.keymap.set('n', '<M-C-f>', function()
@@ -510,7 +513,6 @@ map('n', '<M-P>', ':clast<CR>')
 map('n', '<M-b>', ':copen<CR>')
 map('n', '<M-B>', ':cclose<CR>')
 
--- Function to toggle quickfix list
 function ToggleQuickfix()
   local is_open = false
 
@@ -582,16 +584,17 @@ if term_program ~= "wezterm" then
   map('n', '<M-y>', ':vertical resize -2<CR>')
 end
 
-map('n', '<C-d>', '<C-d>zz')
-map('n', '<C-u>', '<C-u>zz')
-map('n', '<leader>l', ':Tabmerge right<CR>')
--- Navigate between splits from terminal
+-- Navigate splits in terminal
 map('t', '<M-h>', [[<C-\><C-n><C-w>h]])
 map('t', '<M-j>', [[<C-\><C-n><C-w>j]])
 map('t', '<M-k>', [[<C-\><C-n><C-w>k]])
 map('t', '<M-l>', [[<C-\><C-n><C-w>l]])
 map('t', '<M-q>', [[<C-\><C-n>:q<CR>]])
 map('t', '<Esc>', [[<C-\><C-n>]])
+
+map('n', '<C-d>', '<C-d>zz')
+map('n', '<C-u>', '<C-u>zz')
+map('n', '<leader>l', ':Tabmerge right<CR>')
 
 vim.api.nvim_set_keymap('n', '<C-Tab>', '', { noremap = true, silent = true })
 vim.api.nvim_set_keymap('n', '<C-S-Tab>', '', { noremap = true, silent = true })
@@ -601,6 +604,7 @@ map('x', 'J', ":move '>+1<CR>gv=gv")
 map('x', 'K', ":move '<-2<CR>gv=gv")
 map('n', '<leader>j', ':join<CR>')
 map('n', '<leader>J', ':join!<CR>')
+
 --map('n', '<leader>z', '<Plug>Zoom')
 vim.keymap.set('n', '<leader>z', function()
     local zoomed = vim.w.zoomed
@@ -623,7 +627,7 @@ map('v', '>', '>gv')
 
 -- Tab keybinds
 map('n', '<M-t>', ':tabe<CR>')
-map('n', '<M-s>', ':split<CR>')
+--map('n', '<M-s>', ':split<CR>')
 map('n', '<M-Enter>', ':vsp | terminal ' .. (vim.loop.os_uname().sysname == "Windows_NT" and "powershell" or "") .. '<CR>')
 map('n', '<M-<>', ':split | terminal ' .. (vim.loop.os_uname().sysname == "Windows_NT" and "powershell" or "") .. '<CR>')
 --if vim.fn.has('win32') == 1 and vim.fn.exists('g:GuiLoaded') == 1 then
@@ -914,13 +918,12 @@ vim.api.nvim_set_keymap('n', '<leader>m', ':lua save_tabs_and_splits()<CR>', { n
 -- Open new tabs
 map('n', '<M-m>', ':tabe ~/.config/nvim/init.lua<CR>')
 map('n', '<M-,>', ':tabe ~/.zshrc<CR>')
-map('n', '<M-.>', ':tabe ~/Documents/my_notes/vimtutor.txt<CR>')
+map('n', '<M-.>', '<cmd>tabe ' .. my_notes_path .. '/vimtutor.txt<CR>')
 
 -- Windows
 if vim.fn.has('win32') == 1 then
   vim.api.nvim_set_keymap('n', '<M-m>', '<cmd>tabe ' .. vim.fn.expand('$LOCALAPPDATA') .. '/nvim/init.lua<CR>', { noremap = true, silent = true })
   vim.api.nvim_set_keymap('n', '<M-,>', '<cmd>tabe ' .. ps_profile_path .. '/Microsoft.PowerShell_profile.ps1<CR>', { noremap = true, silent = true })
-  vim.api.nvim_set_keymap('n', '<M-.>', '<cmd>tabe ' .. my_notes_path .. '/vimtutor.txt<CR>', { noremap = true, silent = true })
 end
 
 -- map('n', '<C-c>', 'y')
@@ -1753,10 +1756,6 @@ function copy_current_file_path(replace_env)
   print("Copied to clipboard: " .. path)
 end
 
--- Keybindings
-vim.api.nvim_set_keymap('n', '<leader>-', ':lua copy_current_file_path(true)<CR>', { noremap = true, silent = true })
-vim.api.nvim_set_keymap('v', '<leader>-', ':lua copy_current_file_path(false)<CR>', { noremap = true, silent = true })
-
 vim.api.nvim_set_keymap('n', '<leader>-', ':lua copy_current_file_path(true)<CR>', { noremap = true, silent = true })
 vim.api.nvim_set_keymap('v', '<leader>-', ':lua copy_current_file_path(false)<CR>', { noremap = true, silent = true })
 
@@ -1982,8 +1981,8 @@ vim.api.nvim_set_keymap('n', 'gx', ':lua open_in_firefox()<CR>', { noremap = tru
 
 local function diff_copy()
   local current_buf = vim.api.nvim_get_current_buf()
-
   local windows = vim.api.nvim_list_wins()
+
   local other_buf
   for _, win in ipairs(windows) do
     if vim.api.nvim_win_get_buf(win) ~= current_buf then
@@ -2269,6 +2268,8 @@ vim.keymap.set('n', '<leader><leader>', function()
     { label = "PackerSync", cmd = "PackerSync" },
     -- Lazy
     { label = "Lazy", cmd = "Lazy" },
+    -- Markview
+    { label = "Markview", cmd = "Markview" },
     -- Custom
     { label = "Diffi", cmd = "Diffi" },
     { label = "Diffg", cmd = "Diffg" },
@@ -2735,28 +2736,28 @@ vim.api.nvim_create_autocmd("FileType", {
 })
 
 local function replace_env_paths(file_path)
-    if file_path:find("{my_notes_path}/", 1, true) or file_path:find("{code_root_dir}/", 1, true) or file_path:find("{ps_profile_path}/", 1, true) then
-        file_path = file_path:gsub("{my_notes_path}/", vim.pesc(my_notes_path))
-        file_path = file_path:gsub("{code_root_dir}/", vim.pesc(code_root_dir))
-        file_path = file_path:gsub("{ps_profile_path}/", vim.pesc(ps_profile_path))
-        file_path = normalize_path(file_path)
-    end
-    return file_path
+  if file_path:find("{my_notes_path}/", 1, true) or file_path:find("{code_root_dir}/", 1, true) or file_path:find("{ps_profile_path}/", 1, true) then
+    file_path = file_path:gsub("{my_notes_path}/", vim.pesc(my_notes_path))
+    file_path = file_path:gsub("{code_root_dir}/", vim.pesc(code_root_dir))
+    file_path = file_path:gsub("{ps_profile_path}/", vim.pesc(ps_profile_path))
+    file_path = normalize_path(file_path)
+  end
+  return file_path
 end
 
 local function clean_selected_path(cwd, selected_path)
-    selected_path = selected_path:match("[A-Za-z].*$") or selected_path
-    if not selected_path:match("^/") and not selected_path:match("^%a:") then
-        selected_path = vim.fn.fnamemodify(cwd .. "/" .. selected_path, ":p")
-    end
+  selected_path = selected_path:match("[A-Za-z].*$") or selected_path
+  if not selected_path:match("^/") and not selected_path:match("^%a:") then
+    selected_path = vim.fn.fnamemodify(cwd .. "/" .. selected_path, ":p")
+  end
 
-    return normalize_path(selected_path)
+  return normalize_path(selected_path)
 end
 
 function diff_buffers_or_file()
   local tabpage = vim.api.nvim_get_current_tabpage()
   local windows = vim.api.nvim_tabpage_list_wins(tabpage)
-  local use_fzf_for_diff = true
+  local use_fzf_for_diff = false
   local use_fzf_lua_for_diff = false
 
   if #windows == 2 then

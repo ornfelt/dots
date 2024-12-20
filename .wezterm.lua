@@ -65,12 +65,18 @@ config.mouse_bindings = {
     event = { Up = { streak = 1, button = 'Left' } },
     mods = 'CTRL',
     action = act.OpenLinkAtMouseCursor,
-  }
+  },
+  -- https://github.com/wez/wezterm/discussions/2343
+  {
+    event = { Down = { streak = 3, button = 'Left' } },
+    action = wezterm.action.SelectTextAtMouseCursor 'SemanticZone',
+    mods = 'NONE',
+  },
 }
 
 config.unzoom_on_switch_pane = true
 config.pane_focus_follows_mouse = false
-config.scrollback_lines = 5000 -- Default is 3500
+config.scrollback_lines = 10000 -- Default is 3500
 config.use_dead_keys = false
 config.warn_about_missing_glyphs = false
 --config.window_decorations = 'TITLE | RESIZE'
@@ -269,6 +275,37 @@ local function resize_pane(key)
     end),
   }
 end
+
+-- https://wezfurlong.org/wezterm/config/lua/pane/get_lines_as_text.html
+local io = require 'io'
+wezterm.on('trigger-vim-with-scrollback', function(window, pane)
+  local text = pane:get_lines_as_text(pane:get_dimensions().scrollback_rows)
+
+  --local name = os.tmpname()
+  local name = (os.getenv("HOME") or os.getenv("USERPROFILE")) .. "/wez_text.txt"
+  -- vim $env:USERPROFILE/wez_text.txt
+  local f = io.open(name, 'w+')
+  f:write(text)
+  f:flush()
+  f:close()
+
+  --window:perform_action(
+  --  act.SpawnCommandInNewTab {
+  --    --act.SpawnCommandInNewWindow {
+  --    args = { 'vim', name },
+  --  },
+  --  pane
+  --)
+
+  -- Wait "enough" time for vim to read the file before we remove it.
+  -- The window creation and process spawn are asynchronous wrt. running
+  -- this script and are not awaitable, so we just pick a number.
+  --
+  -- Note: We don't strictly need to remove this file, but it is nice
+  -- to avoid cluttering up the temporary directory.
+  --wezterm.sleep_ms(2000)
+  --os.remove(name)
+end)
 
 -- Custom key bindings
 config.keys = {
@@ -517,6 +554,23 @@ config.keys = {
       act.ActivateTabRelative(-1),
       wezterm.action.SendKey({ key = "Tab", mods = "CTRL|SHIFT" }),
     }),
+  },
+  --{
+  --  key = 'L',
+  --  mods = 'ALT|SHIFT',
+  --  action = wezterm.action_callback(function(window, pane)
+  --    local scrollback = pane:get_lines_as_text()
+  --    window:copy_to_clipboard(scrollback)
+  --    window:toast_notification("WezTerm", "Copied all scrollback and output", nil, 3000)
+  --  end),
+  --},
+  -- wezterm cli can also be used, for example:
+  -- wezterm cli get-text --start-line -10000 > wez_text.txt
+  -- https://wezfurlong.org/wezterm/cli/cli/get-text.html
+  {
+    key = 'L',
+    mods = 'ALT|SHIFT',
+    action = act.EmitEvent 'trigger-vim-with-scrollback',
   },
 }
 
