@@ -523,7 +523,65 @@ local function update_txt_layoutbox(s)
     s.mytxtlayoutbox:set_text(txt_l)
 end
 
-function toggle_widget_visibility()
+
+local my_config_path = os.getenv("HOME") .. "/.config/my_config.txt"
+
+local function read_config()
+  local file = io.open(my_config_path, "r")
+  if not file then
+    return nil -- Return nil if the file doesn't exist
+  end
+
+  local config = {}
+  for line in io.lines(my_config_path) do
+    local key, value = line:match("^%s*(%S+)%s*:%s*(%S+)%s*$")
+    if key and value then
+      config[key] = value:lower() -- Store values in lowercase for case-insensitive comparison
+    end
+  end
+  return config
+end
+
+local function write_config(key, value)
+  local lines = {}
+  local key_found = false
+
+  -- Read existing lines if file exists
+  local file = io.open(my_config_path, "r")
+  if file then
+    for line in file:lines() do
+      local existing_key = line:match("^%s*(%S+)%s*:")
+      if existing_key == key then
+        table.insert(lines, key .. ": " .. tostring(value))
+        key_found = true
+      else
+        table.insert(lines, line)
+      end
+    end
+    file:close()
+  end
+
+  -- If key is not found, append it
+  if not key_found then
+    table.insert(lines, key .. ": " .. tostring(value))
+  end
+
+  -- Write to file (create if not exists)
+  file = io.open(my_config_path, "w")
+  if not file then
+    error("Unable to open or create file: " .. my_config_path)
+  end
+
+  for _, line in ipairs(lines) do
+    file:write(line .. "\n")
+  end
+  file:close()
+end
+
+-- Modified toggle_widget_visibility function
+function toggle_widget_visibility(update_config)
+  update_config = update_config == nil or update_config -- Default to true if not specified
+
   local widgets_to_toggle = {
     netdownicon,
     netdowninfo,
@@ -537,6 +595,20 @@ function toggle_widget_visibility()
 
   for _, widget in ipairs(widgets_to_toggle) do
     widget.visible = not widget.visible
+  end
+
+  if update_config then
+    local my_config = read_config()
+    local current_state = (my_config and my_config["awsm_bar_toggled"] == "true") or false
+    write_config("awsm_bar_toggled", tostring(not current_state))
+  end
+end
+
+function check_toggle_widget_visibility()
+  local my_config = read_config()
+
+  if my_config and my_config["awsm_bar_toggled"] == "true" then
+    toggle_widget_visibility(false) -- Do not update the file at startup
   end
 end
 

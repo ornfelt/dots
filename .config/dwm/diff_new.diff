@@ -92,7 +92,7 @@ index 6be5dee..11387e5 100644
  
  /* Wrapper to create color schemes. The caller has to call free(3) on the
 diff --git a/dwm.c b/dwm.c
-index 1ce4a38..ce6c5f5 100644
+index 1ce4a38..0d7be52 100644
 --- a/dwm.c
 +++ b/dwm.c
 @@ -62,8 +62,8 @@
@@ -877,7 +877,76 @@ index 1ce4a38..ce6c5f5 100644
  	arrange(selmon);
  }
  
-@@ -2827,16 +2939,27 @@ updatewmhints(Client *c)
+@@ -2642,11 +2754,11 @@ updategeom(void)
+ 
+ #ifdef XINERAMA
+ 	if (XineramaIsActive(dpy)) {
+-		int i, j, n, nn;
+-		Client *c;
+-		Monitor *m;
+-		XineramaScreenInfo *info = XineramaQueryScreens(dpy, &nn);
+-		XineramaScreenInfo *unique = NULL;
++        int i, j, n, nn;
++        Client *c, *next_client;
++        Monitor *m, *primary, *secondary, *current_monitor;
++        XineramaScreenInfo *info = XineramaQueryScreens(dpy, &nn);
++        XineramaScreenInfo *unique = NULL;
+ 
+ 		for (n = 0, m = mons; m; m = m->next, n++);
+ 		/* only consider unique geometries as separate screens */
+@@ -2665,6 +2777,51 @@ updategeom(void)
+ 			else
+ 				mons = createmon();
+ 		}
++
++        /* Logic for moving clients */
++        if (nn == 2) {
++            /* Case with exactly two monitors: Move even-tagged clients */
++            primary = mons;         /* First monitor */
++            secondary = mons->next; /* Second monitor */
++
++            if (primary && secondary) {
++                for (c = primary->clients; c; c = next_client) {
++                    next_client = c->next;
++
++                    /* Check if the client belongs to an even tag */
++                    if (c->tags & 0b010101010) { /* Even tags: 2, 4, 6, 8 */
++                        detach(c);               /* Detach from primary monitor */
++                        detachstack(c);
++
++                        c->mon = secondary;     /* Assign to secondary monitor */
++                        attach(c);              /* Attach to secondary monitor */
++                        attachstack(c);
++                    }
++                }
++            }
++        } else if (nn > 2) {
++            /* Case with more than two monitors: Move clients cyclically */
++            for (m = mons; m; m = m->next) {
++                current_monitor = m; /* Start with the current monitor */
++
++                for (c = current_monitor->clients; c; c = next_client) {
++                    next_client = c->next;
++
++                    /* Determine the next monitor cyclically */
++                    Monitor *next_monitor = current_monitor->next ? current_monitor->next : mons;
++
++                    detach(c);               /* Detach client from current monitor */
++                    detachstack(c);
++
++                    c->mon = next_monitor;   /* Assign client to the next monitor */
++                    attach(c);               /* Attach to the next monitor */
++                    attachstack(c);
++
++                    current_monitor = next_monitor; /* Update current monitor */
++                }
++            }
++        }
++
+ 		for (i = 0, m = mons; i < nn && m; m = m->next, i++)
+ 			if (i >= n
+ 			|| unique[i].x_org != m->mx || unique[i].y_org != m->my
+@@ -2827,16 +2984,27 @@ updatewmhints(Client *c)
  void
  view(const Arg *arg)
  {

@@ -280,6 +280,8 @@ end)
 -- Create a wibox for each screen and add it
 awful.screen.connect_for_each_screen(function(s) beautiful.at_screen_connect(s) end)
 
+check_toggle_widget_visibility()
+
 -- }}}
 
 -- {{{ Mouse bindings
@@ -360,7 +362,7 @@ globalkeys = mytable.join(
               {description = "code launcher", group = "launcher"}),
 
     awful.key({ modkey },            "r",     function ()
-    awful.util.spawn("dmenu_run -fn 'Linux Libertine Mono'")    end,
+    awful.util.spawn("dmenu_run -i -l 20")    end,
               {description = "run dmenu", group = "launcher"}),
 
     awful.key({ modkey },            "w",     function ()

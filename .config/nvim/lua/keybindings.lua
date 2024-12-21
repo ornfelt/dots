@@ -533,21 +533,23 @@ end
 -- vim.api.nvim_set_keymap('n', '<M-b>', ':lua ToggleQuickfix()<CR>', { noremap = true, silent = true })
 
 local function move_or_split(direction)
-    local current_window = vim.api.nvim_get_current_win()
-    vim.cmd("wincmd " .. direction) -- Try moving to given direction
+  if vim.fn.getcmdwintype() ~= "" then return nil end
 
-    if vim.api.nvim_get_current_win() == current_window then
-        -- If the window didn't change, create a new split
-        if direction == "h" then
-            vim.cmd("leftabove vsplit")
-        elseif direction == "l" then
-            vim.cmd("rightbelow vsplit")
-        elseif direction == "j" then
-            vim.cmd("belowright split")
-        elseif direction == "k" then
-            vim.cmd("aboveleft split")
-        end
+  local current_window = vim.api.nvim_get_current_win()
+  vim.cmd("wincmd " .. direction) -- Try moving to given direction
+
+  if vim.api.nvim_get_current_win() == current_window then
+    -- If the window didn't change, create a new split
+    if direction == "h" then
+      vim.cmd("leftabove vsplit")
+    elseif direction == "l" then
+      vim.cmd("rightbelow vsplit")
+    elseif direction == "j" then
+      vim.cmd("belowright split")
+    elseif direction == "k" then
+      vim.cmd("aboveleft split")
     end
+  end
 end
 
 -- Window management and movement
@@ -2405,6 +2407,7 @@ vim.keymap.set('n', '<leader><leader>', function()
     { label = "Treesitter Toggle Highlighting", cmd = "lua vim.cmd('TSBufToggle highlight')" },
     { label = "Treesitter Inspect Tree", cmd = "InspectTree" },
     { label = "Treesitter Install info", cmd = "TSInstallInfo" },
+    { label = "Treesitter check health", cmd = "checkhealth nvim-treesitter" },
     -- Diagnostics
     { label = "Diagnostics Buffer ", cmd = "lua print(vim.inspect(vim.diagnostic.get(0)))" },
     { label = "Diagnostics Workspace ", cmd = "lua print(vim.inspect(vim.diagnostic.get()))" },

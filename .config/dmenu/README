@@ -1,10 +1,3 @@
-Added patches:
-	Customized versions of: 
-	https://tools.suckless.org/dmenu/patches/gruvbox/
-	https://tools.suckless.org/dmenu/patches/center/
-
-I also continously add fixes from suckless git log.
-
 dmenu - dynamic menu
 ====================
 dmenu is an efficient dynamic menu for X.

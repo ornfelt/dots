@@ -1,0 +1,29 @@
+From 9ae8ea55988973aa19f1e069ee24ba7af5a669e0 Mon Sep 17 00:00:00 2001
+From: Miles Glapa-Grossklag <m.glapa.grossklag@gmail.com>
+Date: Mon, 29 Mar 2021 18:57:52 -0700
+Subject: [PATCH] Add gruvbox dark colorscheme
+
+---
+ config.def.h | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/config.def.h b/config.def.h
+index 1edb647..36105e5 100644
+--- a/config.def.h
++++ b/config.def.h
+@@ -9,9 +9,9 @@ static const char *fonts[] = {
+ static const char *prompt      = NULL;      /* -p  option; prompt to the left of input field */
+ static const char *colors[SchemeLast][2] = {
+ 	/*     fg         bg       */
+-	[SchemeNorm] = { "#bbbbbb", "#222222" },
+-	[SchemeSel] = { "#eeeeee", "#005577" },
+-	[SchemeOut] = { "#000000", "#00ffff" },
++	[SchemeNorm] = { "#ebdbb2", "#282828" },
++	[SchemeSel] = { "#ebdbb2", "#98971a" },
++	[SchemeOut] = { "#ebdbb2", "#8ec07c" },
+ };
+ /* -l option; if nonzero, dmenu uses vertical list with given number of lines */
+ static unsigned int lines      = 0;
+-- 
+2.25.1
+
