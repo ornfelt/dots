@@ -4,12 +4,11 @@
 
 ![dwm](./Screenshots/dwm.png?raw=true "dwm")
 
-
-## Hyprland
+## hyprland
 
 ![Hyprland](./Screenshots/hyprland.png?raw=true "Hyprland")
 
-## Awesome
+## awesomewm
 
 ![Awesome](./Screenshots/awesome/awesomewm.png?raw=true "Awesome")
 
