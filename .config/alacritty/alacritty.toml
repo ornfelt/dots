@@ -58,6 +58,23 @@ key = "K"
 mods = "Alt|Shift"
 action = "ScrollPageUp"
 
+[[keyboard.bindings]]
+action = "CreateNewWindow"
+key = "T"
+mods = "Alt|Control"
+
+#[[keyboard.bindings]]
+#action = "SearchForward"
+#key = "F"
+#mode = "~Search"
+#mods = "Alt|Shift"
+
+#[[keyboard.bindings]]
+#key = "E"
+#mods = "Alt|Shift"
+#command.program = "sh"
+#command.args = ["-c", "alacritty msg create-window --command ranger \"$PWD\""]
+
 #[[key_bindings]]
 #action = "Command"
 #key = "A"
