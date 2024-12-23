@@ -1,5 +1,5 @@
 # https://github.com/sxyazi/yazi/blob/main/yazi-config/preset/keymap-default.toml
-# https://github.com/sxyazi/yazi/blob/shipped/yazi-config/preset/keymap.toml
+# https://github.com/sxyazi/yazi/blob/shipped/yazi-config/preset/keymap-default.toml
 # https://yazi-rs.github.io/docs/tips/
 
 #[manager]
@@ -12,19 +12,19 @@ on   = "S"
 run  = 'shell "$SHELL" --block --confirm'
 desc = "Open shell here"
 
-[[manager.prepend_keymap]]
-on = "y"
+#[[manager.prepend_keymap]]
+#on = "y"
+##run = [
+##  '''
+##  shell 'echo "$@" > ~/.config/yazi/test.txt' --confirm
+##  '''
+##]
 #run = [
-#  '''
-#  shell 'echo "$@" > ~/.config/yazi/test.txt' --confirm
-#  '''
+# '''
+#	shell 'echo "$@" | xclip -i -selection clipboard' --confirm
+#'''
 #]
-run = [
- '''
-	shell 'echo "$@" | xclip -i -selection clipboard' --confirm
-'''
-]
-desc = "Copy selection to clipboard"
+#desc = "Copy selection to clipboard"
 
 [[manager.prepend_keymap]]
 on = "S"
@@ -93,11 +93,6 @@ run = [ '''cd /media/data/Movies''' ]
 desc = "cd to Movies"
 
 [[manager.prepend_keymap]]
-on = ["g", "f"]
-run = [ '''cd /media/data/Files''' ]
-desc = "cd to Files"
-
-[[manager.prepend_keymap]]
 on = ["g", "."]
 run = [ '''cd ~/.config''' ]
 desc = "cd to ~/.config"
@@ -106,6 +101,24 @@ desc = "cd to ~/.config"
 on = ["g", "a"]
 run = [ '''cd ~/Downloads''' ]
 desc = "cd to ~/Downloads"
+
+[[manager.prepend_keymap]]
+on = ["g", "f"]
+run = [ 
+'''
+    shell '~/.local/bin/my_scripts/term_vim.sh wezterm "$0"' --confirm 
+'''
+]
+desc = "Open file in vim inside a new wezterm window"
+
+[[manager.prepend_keymap]]
+on = ["g", "x"]
+run = [ 
+'''
+    shell 'firefox "$0"' --confirm 
+'''
+]
+desc = "Open file in firefox"
 
 #[[manager.prepend_keymap]]
 #on = ["x", "-"]
@@ -177,19 +190,31 @@ run = [ '''shell --confirm wal -c -i {{f}} && cp {{f}} ~/.config/wall.png''' ]
 desc = "Set permanent wallpaper"
 
 [[manager.prepend_keymap]]
-on = "C"
-run = [ '''shell killall w3mimgdisplay && convert -rotate 90 {{s}} {{s}}''' ]
+on = ["b", "c"]
+run = [ 
+'''
+    shell 'killall w3mimgdisplay && convert -rotate 90 "$0" "$0"' --confirm 
+'''
+]
 desc = "Rotate image"
 
 [[manager.prepend_keymap]]
-on = ["b", "l"]
-run = [ '''shell killall w3mimgdisplay && convert {{s}} -resize 1440x1080\\> bl_{{s}}''' ]
+on = ["b", "i"]
+run = [ 
+'''
+    shell 'killall convert "$0" -resize 1440x1080\> "bl_$0"' --confirm 
+'''
+]
 desc = "Resize image"
 
 [[manager.prepend_keymap]]
-on = ["T", "R"]
-run = [ '''shell convert {{s}} -transparent white {{s}}''' ]
-desc = "Make image background transparent"
+on = ["b", "t"]
+run = [ 
+'''
+    shell 'convert "$0" -transparent white "$0"' --confirm 
+'''
+]
+desc = "Resize image"
 
 ###
 # https://github.com/lpnh/fg.yazi
@@ -201,22 +226,22 @@ desc = "Make image background transparent"
 #ya pack -u
 
 [[manager.prepend_keymap]]
-on   = [ "f","g" ]
+on   = [ "f", "g" ]
 run  = "plugin fg"
 desc = "find file by content (fuzzy match)"
 
 [[manager.prepend_keymap]]
-on   = [ "f","G" ]
+on   = [ "f", "G" ]
 run  = "plugin fg --args='rg'"
 desc = "find file by content (ripgrep match)"
 
 [[manager.prepend_keymap]]
-on   = [ "f","a" ]
+on   = [ "f", "a" ]
 run  = "plugin fg --args='rga'"
 desc = "find file by content (ripgrep-all)"
 
 [[manager.prepend_keymap]]
-on   = [ "f","f" ]
+on   = [ "f", "f" ]
 run  = "plugin fg --args='fzf'"
 desc = "find file by filename"
 
