@@ -945,3 +945,57 @@ vim.api.nvim_create_autocmd("FileType", {
   end,
 })
 
+vim.o.updatetime = 1000
+local enabled_filetypes = {
+    bash = true,
+    c = true,
+    cpp = true,
+    css = true,
+    go = true,
+    graphql = true,
+    html = true,
+    java = true,
+    javascript = true,
+    jsdoc = true,
+    json = true,
+    lua = true,
+    markdown = true,
+    markdown_inline = true,
+    php = true,
+    python = true,
+    query = true,
+    regex = true,
+    rust = true,
+    scss = true,
+    sql = true,
+    tsx = true,
+    typescript = true,
+    vim = true,
+    vimdoc = true,
+    vue = true,
+    yaml = true,
+}
+
+local hover_enabled = false
+function toggle_hover()
+    hover_enabled = not hover_enabled
+    if hover_enabled then
+        print("Hover enabled")
+    else
+        print("Hover disabled")
+    end
+end
+
+vim.api.nvim_create_autocmd("CursorHold", {
+    pattern = "*", -- Apply to all files initially
+    callback = function()
+        if hover_enabled and enabled_filetypes[vim.bo.filetype] then
+            vim.lsp.buf.hover()
+        end
+    end,
+    desc = "Show LSP hover information on CursorHold for specific filetypes",
+})
+
+-- Press leader-lo to enable manually, or to go into hover-window (can also use <C-w><C-w> for this)
+vim.api.nvim_set_keymap( "n", "<leader>lot", "<cmd>lua toggle_hover()<CR>", { noremap = true, silent = true })
+
