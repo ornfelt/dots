@@ -164,7 +164,8 @@ cmd set_bg ${{
 map <c-f> $lf -remote "send $id select \"$(fzf)\""
 map <c-n> push :mkdir<space>
 map <c-r> reload
-map <c-s> set hidden!
+map <c-h> set hidden!
+map . set hidden!
 map <c-e> down
 map <c-y> up
 #map J $lf -remote "send $id cd $(sed -e 's/\s*#.*//' -e '/^$/d' -e 's/^\S*\s*//' ${XDG_CONFIG_HOME:-$HOME/.config}/shell/bm-dirs | fzf)"
@@ -213,6 +214,18 @@ map gd cd ~/Documents
 map gw cd ~/Pictures/Wallpapers
 map gc cd ~/Documents/Code
 map gm cd /media/data/Movies
-map gf cd /media/data/Files
 map g. cd ~/.config
 map ga cd ~/Downloads
+
+cmd term_vim ${{
+    ~/.local/bin/my_scripts/term_vim.sh wezterm "$fx"
+}}
+
+map gf term_vim
+
+cmd firefox_open ${{
+    firefox "$fx"
+}}
+
+map gx firefox_open
+
