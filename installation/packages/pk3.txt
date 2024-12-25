@@ -1,4 +1,3 @@
-the_silver_searcher
 thunar
 tinyobjloader
 tk

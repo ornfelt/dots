@@ -38,6 +38,8 @@ setxkbmap -option caps:escape
 xhost si:localuser:root
 #systemctl --user import-environment DISPLAY
 
+exec clipmenud &
+
 #exec i3
 exec awesome
 exec dwm &

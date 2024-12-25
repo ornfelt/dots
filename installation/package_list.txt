@@ -25,6 +25,7 @@ chafa
 chromium
 cjson
 clang
+clipmenu
 cmake
 conky
 cppcodec
