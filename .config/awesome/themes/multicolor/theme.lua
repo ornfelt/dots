@@ -16,7 +16,7 @@ local my_table = awful.util.table or gears.table -- 4.{0,1} compatibility
 
 local theme                                     = {}
 theme.confdir                                   = os.getenv("HOME") .. "/.config/awesome/themes/multicolor"
-theme.wallpaper                                 = theme.confdir .. "/wall.png"
+--theme.wallpaper                                 = theme.confdir .. "/wall.png"
 --theme.font                                      = "JetBrainsMono Nerd Font 11"
 theme.font                                      = "JetBrainsMono Nerd Font Bold 11"
 theme.taglist_font                              = "JetBrainsMono Nerd Font Bold 11"
@@ -106,6 +106,37 @@ theme.titlebar_maximized_button_normal_inactive = theme.confdir .. "/icons/title
 theme.titlebar_maximized_button_focus_inactive  = theme.confdir .. "/icons/titlebar/maximized_focus_inactive.png"
 theme.titlebar_maximized_button_normal_active   = theme.confdir .. "/icons/titlebar/maximized_normal_active.png"
 theme.titlebar_maximized_button_focus_active    = theme.confdir .. "/icons/titlebar/maximized_focus_active.png"
+
+-- Random wallpaper
+local function get_random_wallpaper(directory, extension)
+    local wallpapers = {}
+    --local command = "find " .. directory .. " -type f -name '*." .. extension .. "'"
+    local command = "find " .. directory .. " -type f \\( -name '*.png' -o -name '*.jpg' \\)"
+    local handle = io.popen(command)
+    if handle then
+        for file in handle:lines() do
+            table.insert(wallpapers, file)
+        end
+        handle:close()
+    end
+
+    if #wallpapers > 0 then
+        math.randomseed(os.time())
+        return wallpapers[math.random(#wallpapers)]
+    else
+        return nil
+    end
+end
+
+local wallpaper_directory = os.getenv("HOME") .. "/Pictures/Wallpapers"
+local wallpaper = get_random_wallpaper(wallpaper_directory, "jpg")
+
+if wallpaper then
+    theme.wallpaper = wallpaper
+else
+    print("No wallpapers found in " .. wallpaper_directory)
+    theme.wallpaper = wallpaper_directory .. "/gruv4.png"
+end
 
 local markup = lain.util.markup
 
