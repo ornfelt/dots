@@ -69,3 +69,80 @@ index 0000000..ab0dd7e
 +
 +echo "Script execution completed."
 +
+diff --git a/diff_upstream.diff b/diff_upstream.diff
+new file mode 100644
+index 0000000..d12dc4c
+--- /dev/null
++++ b/diff_upstream.diff
+@@ -0,0 +1,71 @@
++diff --git a/blocks.def.h b/blocks.def.h
++index dbb3305..1e617d6 100644
++--- a/blocks.def.h
+++++ b/blocks.def.h
++@@ -1,9 +1,14 @@
++ //Modify this file to change what commands output to your statusbar, and recompile using the make command.
++ static const Block blocks[] = {
++-	/*Icon*/	/*Command*/		/*Update Interval*/	/*Update Signal*/
++-	{"Mem:", "free -h | awk '/^Mem/ { print $3\"/\"$2 }' | sed s/i//g",	30,		0},
++-
++-	{"", "date '+%b %d (%a) %I:%M%p'",					5,		0},
+++    /*Icon*/        /*Command*/                                     /*Update Interval*/     /*Update Signal*/
+++    /* {"^c1^",        "~/.local/bin/my_scripts/spotify_dwmblocks.sh", 5,                      12}, */
+++    {"",            "~/.local/bin/my_scripts/spotify_dwmblocks.sh", 5,                      12},
+++    {"^2^  ",      "~/.local/bin/statusbar/weather",               1800,                   5},
+++    {"^3^  ",      "~/.local/bin/statusbar/cputemp",               5,                      4},
+++    {"^4^ ",        "~/.local/bin/statusbar/sb-volume",             0,                      10},
+++    /* {"^5^ ",        "~/.local/bin/statusbar/sb-internet",           5,                      3}, */
+++    {"^5^ ",        "~/.local/bin/statusbar/sb-battery",            5,                      3},
+++    {"^6^  ",      "~/.local/bin/statusbar/sb-clock",              60,                     1},
++ };
++ 
++ //sets delimiter between status commands. NULL character ('\0') means no delimiter.
++diff --git a/compile.sh b/compile.sh
++new file mode 100755
++index 0000000..ab0dd7e
++--- /dev/null
+++++ b/compile.sh
++@@ -0,0 +1,42 @@
+++#!/bin/bash
+++
+++# Paths
+++CONFIG_FILE="./config.h"
+++TEMP_FILE="./config_temp.h"
+++BACKUP_FILE="./config_backup.h"
+++
+++# Backup original config.h
+++cp "$CONFIG_FILE" "$BACKUP_FILE"
+++
+++# Check battery presence
+++battery_present=false
+++for battery in /sys/class/power_supply/BAT?*; do
+++    if [ -e "$battery" ]; then
+++        battery_present=true
+++        break
+++    fi
+++done
+++
+++# If no battery is found, use internet cmd in statusbar instead
+++if ! $battery_present; then
+++    echo "No battery found. Modifying config.h..."
+++
+++    sed 's/\(^.*sb-battery.*$\)/\/\* \1 \*\//' "$CONFIG_FILE" > "$TEMP_FILE"
+++    sed -i 's/\/\* \(.*sb-internet.*\) \*\//\1/' "$TEMP_FILE"
+++
+++    mv "$TEMP_FILE" "$CONFIG_FILE"
+++fi
+++
+++# Compile
+++sudo make clean install
+++
+++# If no battery was found, revert config.h to its original state
+++if ! $battery_present; then
+++    mv "$BACKUP_FILE" "$CONFIG_FILE"
+++    echo "config.h reverted to its original state."
+++fi
+++
+++rm -f "$BACKUP_FILE"
+++
+++echo "Script execution completed."
+++

@@ -6009,6 +6009,23 @@ diff --git a/dwm.png b/dwm.png
 new file mode 100644
 index 0000000..b1f9ba7
 Binary files /dev/null and b/dwm.png differ
+diff --git a/gen_diffs.sh b/gen_diffs.sh
+new file mode 100755
+index 0000000..2d35555
+--- /dev/null
++++ b/gen_diffs.sh
+@@ -0,0 +1,11 @@
++#! /usr/bin/bash
++
++if ! git rev-parse --verify upstream/master >/dev/null 2>&1; then
++    echo "Error: 'upstream/master' does not exist. Please add it..."
++    exit 1
++fi
++
++git diff upstream/master...master > diff_upstream.diff
++git diff origin/bkp -- . ":(exclude)*.diff" ":(exclude)config.def.h" ":(exclude).gitignore" ":(exclude)patches/**" ":(exclude)patches_git/**" > diff_bkp.diff
++git diff origin/new -- . ":(exclude)*.diff" ":(exclude)config.def.h" ":(exclude).gitignore" ":(exclude)patches/**" ":(exclude)patches_git/**" > diff_new.diff
++
 diff --git a/shiftview.c b/shiftview.c
 deleted file mode 100644
 index 7905a6d..0000000

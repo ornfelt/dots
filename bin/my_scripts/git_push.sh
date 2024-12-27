@@ -30,14 +30,18 @@ function AddUpstreamIfMissing() {
   existingUpstream="$(git remote get-url upstream 2>/dev/null)"
   if [[ -z "$existingUpstream" ]]; then
     commands+=("git remote add upstream $upstreamUrl")
+    echo "upstream url did NOT exist... Added: $upstreamUrl"
+  else
+    echo "upstream url already added: $upstreamUrl"
   fi
 }
 
 if [[ "$repoOwner" == "ornfelt" ]]; then
-  case "$repoName" in
+  #case "$repoName" in
+  case "${repoName%.git}" in
     "dwm")
       AddUpstreamIfMissing "https://git.suckless.org/dwm"
-      commands+=('git fetch upstream')
+      commands+=('git fetch --all')
       commands+=('git diff upstream/master...master > diff_upstream.diff')
       commands+=('git diff origin/bkp -- . ":(exclude)*.diff" ":(exclude)config.def.h" ":(exclude).gitignore" ":(exclude)patches/**" ":(exclude)patches_git/**" > diff_bkp.diff')
       commands+=('git diff origin/new -- . ":(exclude)*.diff" ":(exclude)config.def.h" ":(exclude).gitignore" ":(exclude)patches/**" ":(exclude)patches_git/**" > diff_new.diff')
@@ -46,7 +50,7 @@ if [[ "$repoOwner" == "ornfelt" ]]; then
       ;;
     "dmenu")
       AddUpstreamIfMissing "https://git.suckless.org/dmenu"
-      commands+=('git fetch upstream')
+      commands+=('git fetch --all')
       commands+=('git diff upstream/master...master > diff_upstream.diff')
       commands+=('git diff origin/bkp -- . ":(exclude)*.diff" ":(exclude)config.def.h" ":(exclude).gitignore" ":(exclude)patches/**" ":(exclude)patches_git/**" > diff_bkp.diff')
       commands+=('git add -A')
@@ -54,7 +58,7 @@ if [[ "$repoOwner" == "ornfelt" ]]; then
       ;;
     "st")
       AddUpstreamIfMissing "https://git.suckless.org/st"
-      commands+=('git fetch upstream')
+      commands+=('git fetch --all')
       commands+=('git diff upstream/master...master > diff_upstream.diff')
       commands+=('git diff bkp -- . ":(exclude)*.diff" ":(exclude)config.def.h" ":(exclude).gitignore" ":(exclude)patches/**" ":(exclude)patches_git/**" > diff_bkp.diff')
       commands+=('git add -A')
@@ -62,14 +66,14 @@ if [[ "$repoOwner" == "ornfelt" ]]; then
       ;;
     "dwmblocks")
       AddUpstreamIfMissing "https://github.com/torrinfail/dwmblocks"
-      commands+=('git fetch upstream')
+      commands+=('git fetch --all')
       commands+=('git diff upstream/master...master > diff_upstream.diff')
       commands+=('git add -A')
       commands+=('git commit -m "update diff files"')
       ;;
     "awsm")
       AddUpstreamIfMissing "https://github.com/lcpz/awesome-copycats"
-      commands+=('git fetch upstream')
+      commands+=('git fetch --all')
       commands+=('git diff upstream/master...master > diff_upstream.diff')
       commands+=('git diff origin/bkp -- . ":(exclude)*.diff" ":(exclude).gitignore" ":(exclude)patches/**" ":(exclude)patches_git/**" > diff_bkp.diff')
       commands+=('git diff origin/tarneaux -- . ":(exclude)*.diff" ":(exclude).gitignore" ":(exclude)patches/**" ":(exclude)patches_git/**" > diff_tarneaux.diff')

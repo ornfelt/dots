@@ -1621,6 +1621,23 @@ diff --git a/freedesktop/screenshot.png b/freedesktop/screenshot.png
 new file mode 100644
 index 0000000..bf254ac
 Binary files /dev/null and b/freedesktop/screenshot.png differ
+diff --git a/gen_diffs.sh b/gen_diffs.sh
+new file mode 100755
+index 0000000..6abcc0e
+--- /dev/null
++++ b/gen_diffs.sh
+@@ -0,0 +1,11 @@
++#! /usr/bin/bash
++
++if ! git rev-parse --verify upstream/master >/dev/null 2>&1; then
++    echo "Error: 'upstream/master' does not exist. Please add it..."
++    exit 1
++fi
++
++git diff upstream/master...master > diff_upstream.diff
++git diff origin/bkp -- . ":(exclude)*.diff" ":(exclude).gitignore" ":(exclude)patches/**" ":(exclude)patches_git/**" > diff_bkp.diff
++git diff origin/tarneaux -- . ":(exclude)*.diff" ":(exclude).gitignore" ":(exclude)patches/**" ":(exclude)patches_git/**" > diff_tarneaux.diff
++
 diff --git a/lain b/lain
 deleted file mode 160000
 index c489aa6..0000000
@@ -11452,7 +11469,7 @@ index cc12cfd..0000000
 -    layout = wibox.layout.align.vertical
 -}
 diff --git a/rc.lua b/rc.lua
-index 899a8b7..7846928 100644
+index 899a8b7..812ca0c 100644
 --- a/rc.lua
 +++ b/rc.lua
 @@ -1,107 +1,134 @@
@@ -11900,6 +11917,15 @@ index 899a8b7..7846928 100644
      -- Run launcher
      awful.key({ modkey },            "a",     function ()
      awful.util.spawn("/home/jonas/.local/bin/my_scripts/tmux_attach.sh "..terminal)  end,
+@@ -285,7 +362,7 @@ globalkeys = my_table.join(
+               {description = "code launcher", group = "launcher"}),
+ 
+     awful.key({ modkey },            "r",     function ()
+-    awful.util.spawn("dmenu_run -fn 'Linux Libertine Mono'")    end,
++    awful.util.spawn("dmenu_run -i -l 20")    end,
+               {description = "run dmenu", group = "launcher"}),
+ 
+     awful.key({ modkey },            "w",     function ()
 @@ -434,18 +511,18 @@ globalkeys = my_table.join(
          {description = "Focus previous by index", group = "client"}),
  
@@ -11931,7 +11957,33 @@ index 899a8b7..7846928 100644
  
          -- By direction client focus with arrows
      awful.key({ ctrlkey, modkey }, "Down", function() awful.client.focus.global_bydirection("down")
-@@ -491,10 +568,16 @@ globalkeys = my_table.join(
+@@ -481,20 +558,38 @@ globalkeys = my_table.join(
+         {description = "increment useless gaps", group = "tag"}),
+     awful.key({ modkey }, "-", function () lain.util.useless_gaps_resize(-1) end,
+         {description = "decrement useless gaps", group = "tag"}),
+-    awful.key({ modkey }, "z", function () lain.util.useless_gaps_resize(-8) end,
+-        {description = "No gaps", group = "tag"}),
+-    awful.key({ modkey }, "x", function () lain.util.useless_gaps_resize(8) end,
+-        {description = "Default gaps", group = "tag"}),
++
++    awful.key({ modkey }, "z", function ()
++      local t = awful.screen.focused().selected_tag
++      if t then
++        t.gap = 0
++        awful.layout.arrange(t.screen)
++      end
++    end, {description = "Disable gaps", group = "tag"}),
++
++    awful.key({ modkey }, "x", function ()
++      local t = awful.screen.focused().selected_tag
++      if t then
++        t.gap = 8
++        awful.layout.arrange(t.screen)
++      end
++    end, {description = "Enable default gaps", group = "tag"}),
+ 
+     awful.key({ modkey }, "o", function () awful.tag.incmwfact( 0.05) end,
+         {description = "increase master width factor", group = "layout"}),
      awful.key({ modkey }, "y", function () awful.tag.incmwfact(-0.05) end,
          {description = "decrease master width factor", group = "layout"}),
  
@@ -11949,7 +12001,7 @@ index 899a8b7..7846928 100644
      --     {description = "rename tag", group = "tag"}),
      -- awful.key({ modkey, "Shift" }, "Left", function () lain.util.move_tag(-1) end,
      --     {description = "move tag to the left", group = "tag"}),
-@@ -587,7 +670,7 @@ globalkeys = my_table.join(
+@@ -587,7 +682,7 @@ globalkeys = my_table.join(
      --]]
  )
  
@@ -11958,7 +12010,7 @@ index 899a8b7..7846928 100644
      -- awful.key({ altkey, "Shift" }, "m",      lain.util.magnify_client,
      --           {description = "magnify client", group = "client"}),
      awful.key({ modkey,           }, "f",
-@@ -600,8 +683,21 @@ clientkeys = my_table.join(
+@@ -600,8 +695,21 @@ clientkeys = my_table.join(
      awful.key({ modkey }, "q", function (c) c:kill() end,
        {description = "close", group = "hotkeys"}),
  
@@ -11982,7 +12034,7 @@ index 899a8b7..7846928 100644
  
      -- awful.key({ modkey, ctrlkey }, "Return", function (c) c:swap(awful.client.getmaster()) end,
      --   {description = "move to master", group = "client"}),
-@@ -618,7 +714,7 @@ clientkeys = my_table.join(
+@@ -618,7 +726,7 @@ clientkeys = my_table.join(
          function ()
              local c = client.focus
              if c then c:move_to_screen(c.screen.index-1) end
@@ -11991,7 +12043,7 @@ index 899a8b7..7846928 100644
  
      -- awful.key({ modkey,         }, "n",
      --     function (c)
-@@ -628,92 +724,262 @@ clientkeys = my_table.join(
+@@ -628,92 +736,262 @@ clientkeys = my_table.join(
      --     end ,
      -- {description = "minimize", group = "client"}),
  
@@ -12227,9 +12279,8 @@ index 899a8b7..7846928 100644
 +    client.focus:move_to_tag(tag)
 +    toggle_tag(tag)
 +  end
- end
- 
--clientbuttons = gears.table.join(
++end
++
 +local function switch_to_tag_stay(tag_index)
 +  local num_screens = screen:count()
 +
@@ -12329,13 +12380,14 @@ index 899a8b7..7846928 100644
 +      end,
 +      {description = "toggle focused client on tag #" .. i, group = "tag"})
 +  )
-+end
-+
+ end
+ 
+-clientbuttons = gears.table.join(
 +clientbuttons = mytable.join(
      awful.button({ }, 1, function (c)
          c:emit_signal("request::activate", "mouse_click", {raise = true})
      end),
-@@ -730,12 +996,33 @@ clientbuttons = gears.table.join(
+@@ -730,12 +1008,33 @@ clientbuttons = gears.table.join(
  -- Set keys
  root.keys(globalkeys)
  
@@ -12369,7 +12421,7 @@ index 899a8b7..7846928 100644
                       focus = awful.client.focus.filter,
                       raise = true,
                       keys = clientkeys,
-@@ -746,92 +1033,51 @@ awful.rules.rules = {
+@@ -746,92 +1045,51 @@ awful.rules.rules = {
       }
      },
  
@@ -12504,7 +12556,7 @@ index 899a8b7..7846928 100644
  
  -- Signal function to execute when a new client appears.
  client.connect_signal("manage", function (c)
-@@ -839,8 +1085,8 @@ client.connect_signal("manage", function (c)
+@@ -839,8 +1097,8 @@ client.connect_signal("manage", function (c)
      -- i.e. put it at the end of others instead of setting it master.
      -- if not awesome.startup then awful.client.setslave(c) end
  
@@ -12515,7 +12567,7 @@ index 899a8b7..7846928 100644
        and not c.size_hints.program_position then
          -- Prevent clients from being unreachable after screen count changes.
          awful.placement.no_offscreen(c)
-@@ -857,7 +1103,7 @@ client.connect_signal("request::titlebars", function(c)
+@@ -857,7 +1115,7 @@ client.connect_signal("request::titlebars", function(c)
  
      -- Default
      -- buttons for the titlebar
@@ -12524,7 +12576,7 @@ index 899a8b7..7846928 100644
          awful.button({ }, 1, function()
              c:emit_signal("request::activate", "titlebar", {raise = true})
              awful.mouse.client.move(c)
-@@ -868,7 +1114,7 @@ client.connect_signal("request::titlebars", function(c)
+@@ -868,7 +1126,7 @@ client.connect_signal("request::titlebars", function(c)
          end)
      )
  
@@ -12533,7 +12585,7 @@ index 899a8b7..7846928 100644
          { -- Left
              awful.titlebar.widget.iconwidget(c),
              buttons = buttons,
-@@ -894,72 +1140,159 @@ client.connect_signal("request::titlebars", function(c)
+@@ -894,72 +1152,159 @@ client.connect_signal("request::titlebars", function(c)
      }
  end)
  
@@ -12557,6 +12609,24 @@ index 899a8b7..7846928 100644
 +        c:raise()
 +    end
 +end
++
++-- attach to minimized state
++client.connect_signal("property::minimized", backham)
++-- attach to closed state
++client.connect_signal("unmanage", backham)
++-- ensure there is always a selected client during tag switching or logins
++tag.connect_signal("property::selected", backham)
++
++-- }}}
++
++-- Multiple monitor taglist setup
++-- See: {code_root_dir}/Code2/Lua/my_lua/testing/awsm_tag_testing.lua
++
++local function setup_tags_for_monitors()
++  local num_screens = screen.count()
++
++  for s in screen do
++    s.tags = {}
  
 --- No border for maximized clients
 ---function border_adjust(c)
@@ -12602,24 +12672,6 @@ index 899a8b7..7846928 100644
 ---            end
 ---        end
 ---    end
-+-- attach to minimized state
-+client.connect_signal("property::minimized", backham)
-+-- attach to closed state
-+client.connect_signal("unmanage", backham)
-+-- ensure there is always a selected client during tag switching or logins
-+tag.connect_signal("property::selected", backham)
-+
-+-- }}}
-+
-+-- Multiple monitor taglist setup
-+-- See: {code_root_dir}/Code2/Lua/my_lua/testing/awsm_tag_testing.lua
-+
-+local function setup_tags_for_monitors()
-+  local num_screens = screen.count()
-+
-+  for s in screen do
-+    s.tags = {}
-+
 +    if num_screens == 2 then
 +      for i = 1, 9 do
 +        if s.index == 1 and is_odd_with_mask(i) then
@@ -15560,7 +15612,7 @@ Binary files a/themes/multicolor/icons/stop.png and /dev/null differ
 diff --git a/themes/multicolor/theme.lua b/themes/multicolor/theme.lua
 old mode 100755
 new mode 100644
-index 98793b2..54a17e1
+index 98793b2..480af78
 --- a/themes/multicolor/theme.lua
 +++ b/themes/multicolor/theme.lua
 @@ -9,32 +9,34 @@ local gears = require("gears")
@@ -15579,7 +15631,7 @@ index 98793b2..54a17e1
 --- theme.taglist_font                              = "JetBrainsMono Nerd Font 12"
 -theme.font                                      = "JetBrainsMono Nerd Font 11"
 -theme.taglist_font                              = "JetBrainsMono Nerd Font 13"
-+theme.wallpaper                                 = theme.confdir .. "/wall.png"
++--theme.wallpaper                                 = theme.confdir .. "/wall.png"
 +--theme.font                                      = "JetBrainsMono Nerd Font 11"
 +theme.font                                      = "JetBrainsMono Nerd Font Bold 11"
 +theme.taglist_font                              = "JetBrainsMono Nerd Font Bold 11"
@@ -15649,9 +15701,31 @@ index 98793b2..54a17e1
  theme.layout_tile                               = theme.confdir .. "/icons/tile.png"
  theme.layout_tilegaps                           = theme.confdir .. "/icons/tilegaps.png"
  theme.layout_tileleft                           = theme.confdir .. "/icons/tileleft.png"
-@@ -97,67 +109,201 @@ theme.titlebar_maximized_button_focus_active    = theme.confdir .. "/icons/title
+@@ -95,69 +107,234 @@ theme.titlebar_maximized_button_focus_inactive  = theme.confdir .. "/icons/title
+ theme.titlebar_maximized_button_normal_active   = theme.confdir .. "/icons/titlebar/maximized_normal_active.png"
+ theme.titlebar_maximized_button_focus_active    = theme.confdir .. "/icons/titlebar/maximized_focus_active.png"
  
- local markup = lain.util.markup
+-local markup = lain.util.markup
++-- Random wallpaper
++local function get_random_wallpaper(directory, extension)
++    local wallpapers = {}
++    --local command = "find " .. directory .. " -type f -name '*." .. extension .. "'"
++    local command = "find " .. directory .. " -type f \\( -name '*.png' -o -name '*.jpg' \\)"
++    local handle = io.popen(command)
++    if handle then
++        for file in handle:lines() do
++            table.insert(wallpapers, file)
++        end
++        handle:close()
++    end
++
++    if #wallpapers > 0 then
++        math.randomseed(os.time())
++        return wallpapers[math.random(#wallpapers)]
++    else
++        return nil
++    end
++end
  
 -local colblue = "#458588"
 -local colblue2 = "#83a598"
@@ -15667,7 +15741,18 @@ index 98793b2..54a17e1
 -local colgrey2 = "#928374"
 -local colyellow = "#d79921"
 -local colyellow2 = "#fabd2f"
--
++local wallpaper_directory = os.getenv("HOME") .. "/Pictures/Wallpapers"
++local wallpaper = get_random_wallpaper(wallpaper_directory, "jpg")
++
++if wallpaper then
++    theme.wallpaper = wallpaper
++else
++    print("No wallpapers found in " .. wallpaper_directory)
++    theme.wallpaper = wallpaper_directory .. "/gruv4.png"
++end
++
++local markup = lain.util.markup
+ 
  -- Textclock
  os.setlocale(os.getenv("LANG")) -- to localize the clock
 -local clockicon = wibox.widget.imagebox(theme.widget_clock)
@@ -15893,7 +15978,7 @@ index 98793b2..54a17e1
  local mailicon = wibox.widget.imagebox()
  theme.mail = lain.widget.imap({
      timeout  = 180,
-@@ -180,126 +326,295 @@ theme.mail = lain.widget.imap({
+@@ -180,126 +357,295 @@ theme.mail = lain.widget.imap({
  --]]
  
  -- CPU
@@ -16257,7 +16342,7 @@ index 98793b2..54a17e1
  
      -- If wallpaper is a function, call it with the screen
      local wallpaper = theme.wallpaper
-@@ -314,93 +629,148 @@ function theme.at_screen_connect(s)
+@@ -314,93 +660,148 @@ function theme.at_screen_connect(s)
      -- Create a promptbox for each screen
      s.mypromptbox = awful.widget.prompt()
      -- Create an imagebox widget which will contains an icon indicating which layout we're using.
@@ -16880,10 +16965,6 @@ diff --git a/themes/multicolor/wall.jpg b/themes/multicolor/wall.jpg
 deleted file mode 100644
 index 9809165..0000000
 Binary files a/themes/multicolor/wall.jpg and /dev/null differ
-diff --git a/themes/multicolor/wall.png b/themes/multicolor/wall.png
-new file mode 100755
-index 0000000..a3188d0
-Binary files /dev/null and b/themes/multicolor/wall.png differ
 diff --git a/user_picture_curved.png b/user_picture_curved.png
 deleted file mode 100644
 index f3ff6f0..0000000
