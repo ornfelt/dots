@@ -167,6 +167,8 @@ alias .tcore_update='cd $HOME/Code2/C++/Trinitycore-3.3.5-with-NPCBots && git pu
 alias .tcore='cd $HOME/tcore/bin; pwd; ls'
 alias .wow='sh $HOME/.local/bin/my_scripts/wow.sh'
 alias .llama="$HOME/.local/bin/my_scripts/llama.sh"
+alias .git_push="$HOME/.local/bin/my_scripts/git_push.sh"
+alias .git_pull="$HOME/.local/bin/my_scripts/git_pull.sh"
 
 playermap ()
 {

@@ -558,10 +558,22 @@ globalkeys = mytable.join(
         {description = "increment useless gaps", group = "tag"}),
     awful.key({ modkey }, "-", function () lain.util.useless_gaps_resize(-1) end,
         {description = "decrement useless gaps", group = "tag"}),
-    awful.key({ modkey }, "z", function () lain.util.useless_gaps_resize(-8) end,
-        {description = "No gaps", group = "tag"}),
-    awful.key({ modkey }, "x", function () lain.util.useless_gaps_resize(8) end,
-        {description = "Default gaps", group = "tag"}),
+
+    awful.key({ modkey }, "z", function ()
+      local t = awful.screen.focused().selected_tag
+      if t then
+        t.gap = 0
+        awful.layout.arrange(t.screen)
+      end
+    end, {description = "Disable gaps", group = "tag"}),
+
+    awful.key({ modkey }, "x", function ()
+      local t = awful.screen.focused().selected_tag
+      if t then
+        t.gap = 8
+        awful.layout.arrange(t.screen)
+      end
+    end, {description = "Enable default gaps", group = "tag"}),
 
     awful.key({ modkey }, "o", function () awful.tag.incmwfact( 0.05) end,
         {description = "increase master width factor", group = "layout"}),

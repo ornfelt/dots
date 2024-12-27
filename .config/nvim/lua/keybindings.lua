@@ -1131,9 +1131,11 @@ local function PythonCommand()
     -- -- local pos = #command + 1
     -- vim.fn.setcmdpos(pos)
     -- end)
-    local move_left_count = #args
-    local move_left_keys = vim.api.nvim_replace_termcodes(string.rep("<Left>", move_left_count), true, false, true)
-    vim.api.nvim_feedkeys(move_left_keys, "n", false)
+    vim.schedule(function()
+      local move_left_count = #args
+      local move_left_keys = vim.api.nvim_replace_termcodes(string.rep("<Left>", move_left_count), true, false, true)
+      vim.api.nvim_feedkeys(move_left_keys, "n", false)
+    end)
   end
 end
 
