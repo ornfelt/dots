@@ -86,7 +86,7 @@ if [[ "$repoOwner" == "ornfelt" ]]; then
   esac
 fi
 
-if [[ "$repoName" == "AzerothCore-wotlk-with-NPCBots" ]]; then
+if [[ "${repoName%.git}" == "AzerothCore-wotlk-with-NPCBots" ]]; then
   AddUpstreamIfMissing "https://github.com/trickerer/AzerothCore-wotlk-with-NPCBots"
   commands+=('git fetch upstream')
   if [[ "$currentBranch" == "linux" ]]; then
@@ -98,7 +98,7 @@ if [[ "$repoName" == "AzerothCore-wotlk-with-NPCBots" ]]; then
     commands+=('git commit -m "update diff files"')
 fi
 
-if [[ "$repoName" == "TrinityCore-3.3.5-with-NPCBots" ]]; then
+if [[ "${repoName%.git}" == "TrinityCore-3.3.5-with-NPCBots" ]]; then
   AddUpstreamIfMissing "https://github.com/trickerer/TrinityCore-3.3.5-with-NPCBots"
   commands+=('git fetch upstream')
   commands+=('git diff upstream/npcbots_3.3.5...npcbots_3.3.5 -- . ":(exclude)*.conf" ":(exclude)*.patch" ":(exclude)*.diffx" | tee tcore.diffx')
@@ -130,7 +130,7 @@ case "$repoOwner" in
     ;;
 esac
 
-if [[ "$repoName" == "my_notes" ]]; then
+if [[ "${repoName%.git}" == "my_notes" ]]; then
     tokenEnvVarName="GITHUB_TOKEN"
 fi
 
