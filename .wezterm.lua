@@ -276,6 +276,27 @@ local function resize_pane(key)
   }
 end
 
+local function rotate_panes(key, direction)
+  return {
+    key = key,
+    mods = "ALT|SHIFT",
+    action = wezterm.action_callback(function(win, pane)
+      local tab = pane:tab()
+
+      if #tab:panes_with_info() > 1 then
+        win:perform_action(act.RotatePanes(direction), pane)
+        if direction == "Clockwise" then
+          win:perform_action(act.ActivatePaneDirection 'Next', pane)
+        else
+          win:perform_action(act.ActivatePaneDirection 'Prev', pane)
+        end
+      else
+        win:perform_action({ SendKey = { key = key, mods = "ALT|SHIFT" } }, pane)
+      end
+    end),
+  }
+end
+
 -- https://wezfurlong.org/wezterm/config/lua/pane/get_lines_as_text.html
 local io = require 'io'
 wezterm.on('trigger-vim-with-scrollback', function(window, pane)
@@ -430,18 +451,18 @@ config.keys = {
   --},
 
   ---- Attach to muxer
-  {
-    key = 'a',
-    mods = 'LEADER',
-    action = act.AttachDomain 'unix',
-  },
+  --{
+  --  key = 'a',
+  --  mods = 'LEADER',
+  --  action = act.AttachDomain 'unix',
+  --},
 
   -- Detach from muxer
-  {
-    key = 'd',
-    mods = 'LEADER',
-    action = act.DetachDomain { DomainName = 'unix' },
-  },
+  --{
+  --  key = 'd',
+  --  mods = 'LEADER',
+  --  action = act.DetachDomain { DomainName = 'unix' },
+  --},
 
   -- Show list of workspaces
   {
@@ -449,6 +470,7 @@ config.keys = {
     mods = 'LEADER',
     action = act.ShowLauncherArgs { flags = 'WORKSPACES' },
   },
+
   -- Rename current session; analagous to command in tmux
   {
     key = '-',
@@ -502,7 +524,8 @@ config.keys = {
   { key = "0", mods = "LEADER", action = wezterm.action{ActivateTab=9}, },
   { key = 't', mods = "LEADER", action = wezterm.action{SpawnTab="DefaultDomain"}, },
   { key = 'q', mods = 'LEADER|SHIFT', action = wezterm.action.QuitApplication },
-  -- Seamless vim pane integration
+
+  -- Seamless wezterm/tmux/vim pane integration
   split_nav("h"),
   split_nav("j"),
   split_nav("k"),
@@ -511,6 +534,9 @@ config.keys = {
   resize_pane("u"),
   resize_pane("i"),
   resize_pane("o"),
+  rotate_panes("H", "CounterClockwise"),
+  rotate_panes("L", "Clockwise"),
+
   -- QuickSelect
   -- shift-ctrl-space is provided by default
   -- https://wezfurlong.org/wezterm/config/default-keys.html
@@ -557,7 +583,7 @@ config.keys = {
   },
   --{
   --  key = 'L',
-  --  mods = 'ALT|SHIFT',
+  --  mods = 'ALT|CTRL',
   --  action = wezterm.action_callback(function(window, pane)
   --    local scrollback = pane:get_lines_as_text()
   --    window:copy_to_clipboard(scrollback)
@@ -569,7 +595,7 @@ config.keys = {
   -- https://wezfurlong.org/wezterm/cli/cli/get-text.html
   {
     key = 'L',
-    mods = 'ALT|SHIFT',
+    mods = 'ALT|CTRL',
     action = act.EmitEvent 'trigger-vim-with-scrollback',
   },
 }
