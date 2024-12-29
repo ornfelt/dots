@@ -1595,13 +1595,13 @@ function compile_run()
     if package_json_exists then
       vim.cmd(is_windows and '!npm start' or '!time npm start')
     else
-      local js_file_in_dist = "dist/" .. vim.fn.fnamemodify(js_file, ":t")
+      --local js_file = "dist/" .. vim.fn.fnamemodify(js_file, ":t")
 
       if is_windows then
-        vim.cmd('!tsc')
-        vim.cmd('!node ' .. js_file_in_dist)
+        vim.cmd('!tsc ' .. ts_file)
+        vim.cmd('!node ' .. js_file)
       else
-        vim.cmd('!tsc && time node ' .. js_file_in_dist)
+        vim.cmd('!tsc ' .. ts_file .. ' && time node ' .. js_file)
       end
     end
 

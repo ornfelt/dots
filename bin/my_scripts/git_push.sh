@@ -80,6 +80,14 @@ if [[ "$repoOwner" == "ornfelt" ]]; then
       commands+=('git add -A')
       commands+=('git commit -m "update diff files"')
       ;;
+    "stk-code")
+      AddUpstreamIfMissing "https://github.com/supertuxkart/stk-code"
+      commands+=('git fetch upstream')
+      commands+=('git diff upstream/master...HEAD > diff_upstream.diffx')
+      commands+=('git diff 3f125f6^! > changes.diffx')
+      commands+=('git add -A')
+      commands+=('git commit -m "update diff files"')
+      ;;
     *)
       # Nothing
       ;;
