@@ -42,7 +42,7 @@ if [[ "$repoOwner" == "ornfelt" ]]; then
     "dwm")
       AddUpstreamIfMissing "https://git.suckless.org/dwm"
       commands+=('git fetch --all')
-      commands+=('git diff upstream/master...master > diff_upstream.diff')
+      commands+=('git diff upstream/master..HEAD -- . ":(exclude)*.diff" > diff_upstream.diff')
       commands+=('git diff origin/bkp -- . ":(exclude)*.diff" ":(exclude)config.def.h" ":(exclude).gitignore" ":(exclude)patches/**" ":(exclude)patches_git/**" > diff_bkp.diff')
       commands+=('git diff origin/new -- . ":(exclude)*.diff" ":(exclude)config.def.h" ":(exclude).gitignore" ":(exclude)patches/**" ":(exclude)patches_git/**" > diff_new.diff')
       commands+=('git add -A')
@@ -51,7 +51,7 @@ if [[ "$repoOwner" == "ornfelt" ]]; then
     "dmenu")
       AddUpstreamIfMissing "https://git.suckless.org/dmenu"
       commands+=('git fetch --all')
-      commands+=('git diff upstream/master...master > diff_upstream.diff')
+      commands+=('git diff upstream/master..HEAD -- . ":(exclude)*.diff" > diff_upstream.diff')
       commands+=('git diff origin/bkp -- . ":(exclude)*.diff" ":(exclude)config.def.h" ":(exclude).gitignore" ":(exclude)patches/**" ":(exclude)patches_git/**" > diff_bkp.diff')
       commands+=('git add -A')
       commands+=('git commit -m "update diff files"')
@@ -59,7 +59,7 @@ if [[ "$repoOwner" == "ornfelt" ]]; then
     "st")
       AddUpstreamIfMissing "https://git.suckless.org/st"
       commands+=('git fetch --all')
-      commands+=('git diff upstream/master...master > diff_upstream.diff')
+      commands+=('git diff upstream/master..HEAD -- . ":(exclude)*.diff" > diff_upstream.diff')
       commands+=('git diff bkp -- . ":(exclude)*.diff" ":(exclude)config.def.h" ":(exclude).gitignore" ":(exclude)patches/**" ":(exclude)patches_git/**" > diff_bkp.diff')
       commands+=('git add -A')
       commands+=('git commit -m "update diff files"')
@@ -67,14 +67,15 @@ if [[ "$repoOwner" == "ornfelt" ]]; then
     "dwmblocks")
       AddUpstreamIfMissing "https://github.com/torrinfail/dwmblocks"
       commands+=('git fetch --all')
-      commands+=('git diff upstream/master...master > diff_upstream.diff')
+      commands+=('git diff upstream/master..HEAD -- . ":(exclude)*.diff" > diff_upstream.diff')
       commands+=('git add -A')
       commands+=('git commit -m "update diff files"')
       ;;
     "awsm")
       AddUpstreamIfMissing "https://github.com/lcpz/awesome-copycats"
       commands+=('git fetch --all')
-      commands+=('git diff upstream/master...master > diff_upstream.diff')
+      #commands+=('git diff upstream/master...master -- . ":(exclude)*.diff" > diff_upstream.diff')
+      commands+=('git diff upstream/master..HEAD -- . ":(exclude)*.diff" > diff_upstream.diff')
       commands+=('git diff origin/bkp -- . ":(exclude)*.diff" ":(exclude).gitignore" ":(exclude)patches/**" ":(exclude)patches_git/**" > diff_bkp.diff')
       commands+=('git diff origin/tarneaux -- . ":(exclude)*.diff" ":(exclude).gitignore" ":(exclude)patches/**" ":(exclude)patches_git/**" > diff_tarneaux.diff')
       commands+=('git add -A')
@@ -83,7 +84,7 @@ if [[ "$repoOwner" == "ornfelt" ]]; then
     "stk-code")
       AddUpstreamIfMissing "https://github.com/supertuxkart/stk-code"
       commands+=('git fetch upstream')
-      commands+=('git diff upstream/master...HEAD > diff_upstream.diffx')
+      commands+=('git diff upstream/master..HEAD -- . ":(exclude)*.diff" > diff_upstream.diffx')
       commands+=('git diff 3f125f6^! > changes.diffx')
       commands+=('git add -A')
       commands+=('git commit -m "update diff files"')
@@ -98,18 +99,22 @@ if [[ "${repoName%.git}" == "AzerothCore-wotlk-with-NPCBots" ]]; then
   AddUpstreamIfMissing "https://github.com/trickerer/AzerothCore-wotlk-with-NPCBots"
   commands+=('git fetch upstream')
   if [[ "$currentBranch" == "linux" ]]; then
-    commands+=('git diff upstream/npcbots_3.3.5...linux -- . ":(exclude)*.conf" ":(exclude)*.patch" ":(exclude)*.diffx" | tee acore.diffx')
+    #commands+=('git diff upstream/npcbots_3.3.5...linux -- . ":(exclude)*.conf" ":(exclude)*.patch" ":(exclude)*.diffx" | tee acore.diffx')
+    commands+=('git diff upstream/npcbots_3.3.5...linux -- . ":(exclude)*.conf" ":(exclude)*.patch" ":(exclude)*.diffx" > acore.diffx')
   else
-    commands+=('git diff upstream/npcbots_3.3.5...npcbots_3.3.5 -- . ":(exclude)*.conf" ":(exclude)*.patch" ":(exclude)*.diffx" | tee acore.diffx')
+    #commands+=('git diff upstream/npcbots_3.3.5...npcbots_3.3.5 -- . ":(exclude)*.conf" ":(exclude)*.patch" ":(exclude)*.diffx" | tee acore.diffx')
+    commands+=('git diff upstream/npcbots_3.3.5...npcbots_3.3.5 -- . ":(exclude)*.conf" ":(exclude)*.patch" ":(exclude)*.diffx" > acore.diffx')
   fi
     commands+=('git add -A')
     commands+=('git commit -m "update diff files"')
 fi
 
-if [[ "${repoName%.git}" == "TrinityCore-3.3.5-with-NPCBots" ]]; then
+#if [[ "${repoName%.git}" == "TrinityCore-3.3.5-with-NPCBots" ]]; then
+if [[ "${repoName%.git}" == "Trinitycore-3.3.5-with-NPCBots" ]]; then
   AddUpstreamIfMissing "https://github.com/trickerer/TrinityCore-3.3.5-with-NPCBots"
   commands+=('git fetch upstream')
-  commands+=('git diff upstream/npcbots_3.3.5...npcbots_3.3.5 -- . ":(exclude)*.conf" ":(exclude)*.patch" ":(exclude)*.diffx" | tee tcore.diffx')
+  #commands+=('git diff upstream/npcbots_3.3.5...npcbots_3.3.5 -- . ":(exclude)*.conf" ":(exclude)*.patch" ":(exclude)*.diffx" | tee tcore.diffx')
+  commands+=('git diff upstream/npcbots_3.3.5...npcbots_3.3.5 -- . ":(exclude)*.conf" ":(exclude)*.patch" ":(exclude)*.diffx" > tcore.diffx')
   commands+=('git add -A')
   commands+=('git commit -m "update diff files"')
 fi
