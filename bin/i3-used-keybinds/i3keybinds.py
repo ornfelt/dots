@@ -5,6 +5,9 @@ from pathlib import Path
 import re
 import sys
 
+# python i3keybinds.py
+# Then manually copy output to result.txt
+
 binds = []
 args = ''
 

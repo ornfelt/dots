@@ -11469,7 +11469,7 @@ index cc12cfd..0000000
 -    layout = wibox.layout.align.vertical
 -}
 diff --git a/rc.lua b/rc.lua
-index 899a8b7..812ca0c 100644
+index 899a8b7..02bd7dd 100644
 --- a/rc.lua
 +++ b/rc.lua
 @@ -1,107 +1,134 @@
@@ -12001,7 +12001,28 @@ index 899a8b7..812ca0c 100644
      --     {description = "rename tag", group = "tag"}),
      -- awful.key({ modkey, "Shift" }, "Left", function () lain.util.move_tag(-1) end,
      --     {description = "move tag to the left", group = "tag"}),
-@@ -587,7 +682,7 @@ globalkeys = my_table.join(
+@@ -544,10 +639,16 @@ globalkeys = my_table.join(
+     --     {description = "show weather", group = "widgets"}),
+ 
+     -- Brightness
+-    awful.key({ }, "XF86MonBrightnessUp", function () os.execute("xbacklight -inc 10") end,
+-        {description = "+10%", group = "hotkeys"}),
+-    awful.key({ }, "XF86MonBrightnessDown", function () os.execute("xbacklight -dec 10") end,
+-        {description = "-10%", group = "hotkeys"}),
++    --awful.key({ }, "XF86MonBrightnessUp", function () os.execute("xbacklight -inc 10") end,
++    --    {description = "+10%", group = "hotkeys"}),
++    --awful.key({ }, "XF86MonBrightnessDown", function () os.execute("xbacklight -dec 10") end,
++    --    {description = "-10%", group = "hotkeys"}),
++    awful.key({ },  "XF86MonBrightnessUp", function ()
++      awful.spawn("/home/jonas/.local/bin/my_scripts/brightness.sh +10") end,
++      {description = "Screenshot", group = "launcher"}),
++    awful.key({ },  "XF86MonBrightnessDown", function ()
++      awful.spawn("/home/jonas/.local/bin/my_scripts/brightness.sh -10") end,
++      {description = "Screenshot", group = "launcher"}),
+ 
+     -- ALSA volume control
+     --awful.key({ ctrlkey }, "Up",
+@@ -587,7 +688,7 @@ globalkeys = my_table.join(
      --]]
  )
  
@@ -12010,7 +12031,7 @@ index 899a8b7..812ca0c 100644
      -- awful.key({ altkey, "Shift" }, "m",      lain.util.magnify_client,
      --           {description = "magnify client", group = "client"}),
      awful.key({ modkey,           }, "f",
-@@ -600,8 +695,21 @@ clientkeys = my_table.join(
+@@ -600,8 +701,21 @@ clientkeys = my_table.join(
      awful.key({ modkey }, "q", function (c) c:kill() end,
        {description = "close", group = "hotkeys"}),
  
@@ -12034,7 +12055,7 @@ index 899a8b7..812ca0c 100644
  
      -- awful.key({ modkey, ctrlkey }, "Return", function (c) c:swap(awful.client.getmaster()) end,
      --   {description = "move to master", group = "client"}),
-@@ -618,7 +726,7 @@ clientkeys = my_table.join(
+@@ -618,7 +732,7 @@ clientkeys = my_table.join(
          function ()
              local c = client.focus
              if c then c:move_to_screen(c.screen.index-1) end
@@ -12043,7 +12064,7 @@ index 899a8b7..812ca0c 100644
  
      -- awful.key({ modkey,         }, "n",
      --     function (c)
-@@ -628,92 +736,262 @@ clientkeys = my_table.join(
+@@ -628,92 +742,262 @@ clientkeys = my_table.join(
      --     end ,
      -- {description = "minimize", group = "client"}),
  
@@ -12387,7 +12408,7 @@ index 899a8b7..812ca0c 100644
      awful.button({ }, 1, function (c)
          c:emit_signal("request::activate", "mouse_click", {raise = true})
      end),
-@@ -730,12 +1008,33 @@ clientbuttons = gears.table.join(
+@@ -730,12 +1014,33 @@ clientbuttons = gears.table.join(
  -- Set keys
  root.keys(globalkeys)
  
@@ -12421,7 +12442,7 @@ index 899a8b7..812ca0c 100644
                       focus = awful.client.focus.filter,
                       raise = true,
                       keys = clientkeys,
-@@ -746,92 +1045,51 @@ awful.rules.rules = {
+@@ -746,92 +1051,51 @@ awful.rules.rules = {
       }
      },
  
@@ -12556,7 +12577,7 @@ index 899a8b7..812ca0c 100644
  
  -- Signal function to execute when a new client appears.
  client.connect_signal("manage", function (c)
-@@ -839,8 +1097,8 @@ client.connect_signal("manage", function (c)
+@@ -839,8 +1103,8 @@ client.connect_signal("manage", function (c)
      -- i.e. put it at the end of others instead of setting it master.
      -- if not awesome.startup then awful.client.setslave(c) end
  
@@ -12567,7 +12588,7 @@ index 899a8b7..812ca0c 100644
        and not c.size_hints.program_position then
          -- Prevent clients from being unreachable after screen count changes.
          awful.placement.no_offscreen(c)
-@@ -857,7 +1115,7 @@ client.connect_signal("request::titlebars", function(c)
+@@ -857,7 +1121,7 @@ client.connect_signal("request::titlebars", function(c)
  
      -- Default
      -- buttons for the titlebar
@@ -12576,7 +12597,7 @@ index 899a8b7..812ca0c 100644
          awful.button({ }, 1, function()
              c:emit_signal("request::activate", "titlebar", {raise = true})
              awful.mouse.client.move(c)
-@@ -868,7 +1126,7 @@ client.connect_signal("request::titlebars", function(c)
+@@ -868,7 +1132,7 @@ client.connect_signal("request::titlebars", function(c)
          end)
      )
  
@@ -12585,7 +12606,7 @@ index 899a8b7..812ca0c 100644
          { -- Left
              awful.titlebar.widget.iconwidget(c),
              buttons = buttons,
-@@ -894,72 +1152,159 @@ client.connect_signal("request::titlebars", function(c)
+@@ -894,72 +1158,159 @@ client.connect_signal("request::titlebars", function(c)
      }
  end)
  
