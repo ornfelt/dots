@@ -666,13 +666,22 @@ table.insert(config.keys, {
 local function open_github_repo(win, pane)
   local cwd_uri = tostring(pane:get_current_working_dir())
   if not cwd_uri then
-    wezterm.log_error("Failed to determine current working directory.")
+    --wezterm.log_error("Failed to determine current working directory.")
+    win:toast_notification("WezTerm Notification", "Failed to determine current working directory.", nil, 4000)
     return
   end
 
   local cwd = cwd_uri:gsub("file://ornf", "")
   cwd = cwd:gsub("file://", "")
   cwd = cwd:gsub("^/([A-Za-z]:)", "%1")
+
+  if is_tmux(pane) then
+    -- If tmux, use: tmux display -p -F "#{pane_current_path}"
+    local success, stdout, stderr = wezterm.run_child_process({"tmux", "display", "-p", "-F", "#{pane_current_path}"})
+    if success and stdout ~= nil and stdout ~= "" then
+      cwd = stdout:gsub("[\r\n]+$", "")
+    end
+  end
 
   -- Debug
   --log_to_file(cwd)
