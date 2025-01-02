@@ -14,11 +14,8 @@ cp -r .config/awesome/ $HOME/.config/
 cp -r .config/cava/ $HOME/.config/
 cp -r .config/conky/ $HOME/.config/
 cp -r .config/dmenu/ $HOME/.config/
-cp -r .config/dmenu_git/ $HOME/.config/
 cp -r .config/dwm/ $HOME/.config/
-cp -r .config/dwm_git/ $HOME/.config/
 cp -r .config/dwmblocks/ $HOME/.config/
-cp -r .config/dwm_mul_mon/ $HOME/.config/
 cp -r .config/eww/ $HOME/.config/
 cp -r .config/hypr/ $HOME/.config/
 cp -r .config/i3/ $HOME/.config/
@@ -31,7 +28,6 @@ cp -r .config/polybar/ $HOME/.config/
 cp -r .config/ranger/ $HOME/.config/
 cp -r .config/rofi/ $HOME/.config/
 cp -r .config/st/ $HOME/.config/
-cp -r .config/st_git/ $HOME/.config/
 cp -r .config/zathura/ $HOME/.config/
 cp .config/mimeapps.list $HOME/.config/
 
@@ -41,7 +37,6 @@ cp -r bin/dwm_keybinds $HOME/.local/bin/
 cp -r bin/i3-used-keybinds $HOME/.local/bin/
 cp -r bin/my_scripts $HOME/.local/bin/
 cp -r bin/statusbar $HOME/.local/bin/
-cp -r bin/vim $HOME/.local/bin/
 cp -r bin/widgets $HOME/.local/bin/
 cp -r bin/xyz $HOME/.local/bin/
 cp bin/lfub $HOME/.local/bin/
