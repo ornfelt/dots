@@ -516,7 +516,6 @@ map('n', '<M-B>', ':cclose<CR>')
 function ToggleQuickfix()
   local is_open = false
 
-  -- Check if quickfix window is open
   for _, win in ipairs(vim.fn.getwininfo()) do
     if win.quickfix == 1 then
       is_open = true
@@ -994,7 +993,42 @@ map("n", "Q", "<nop>") -- Remove Ex Mode
 vim.keymap.set("n", "<leader>r", [[:%s/\<<C-r><C-w>\>/<C-r><C-w>/gI<Left><Left><Left>]]) -- Replace word under cursor
 vim.keymap.set("n", "<leader>ts", "<cmd>silent !tmux neww tmux-sessionizer<CR>") -- Start tmux-sessionizer
 vim.keymap.set('n', '<leader>df', '<cmd>lua vim.diagnostic.open_float()<CR>', { noremap = true, silent = true })
-vim.keymap.set('n', '<leader>db', '<cmd>lua vim.diagnostic.setqflist()<CR>', { noremap = true, silent = true })
+--vim.keymap.set('n', '<leader>db', '<cmd>lua vim.diagnostic.setqflist()<CR>', { noremap = true, silent = true })
+
+vim.keymap.set('n', '<leader>db', function()
+  local current_line = vim.fn.line('.')
+  vim.diagnostic.setqflist()
+
+  --vim.defer_fn(function()
+  local qf_items = vim.fn.getqflist()
+  for i, item in ipairs(qf_items) do
+    if item.lnum == current_line then
+      vim.cmd(tostring(i) .. 'cc')
+      vim.cmd('copen')
+      return
+    end
+  end
+
+  vim.cmd('copen')
+  --end, 100)
+
+end, { noremap = true, silent = true })
+
+vim.keymap.set('n', '<leader>dc', function()
+  local diagnostics = vim.diagnostic.get(0, { lnum = vim.fn.line('.') - 1 })
+  if #diagnostics > 0 then
+    --local message = diagnostics[1].message
+    local messages = {}
+    for _, diagnostic in ipairs(diagnostics) do
+      table.insert(messages, diagnostic.message)
+    end
+    local message = table.concat(messages, '\n')
+    vim.fn.setreg('+', message)
+    --print('Copied to clipboard:\n' .. message)
+  else
+    print('No diagnostics on this line.')
+  end
+end, { noremap = true, silent = true })
 
 -- au TabLeave * let g:lasttab = tabpagenr()
 vim.api.nvim_create_autocmd("TabLeave", {

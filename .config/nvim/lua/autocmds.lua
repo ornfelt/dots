@@ -996,6 +996,6 @@ vim.api.nvim_create_autocmd("CursorHold", {
     desc = "Show LSP hover information on CursorHold for specific filetypes",
 })
 
--- Press leader-lo to enable manually, or to go into hover-window (can also use <C-w><C-w> for this)
+-- leader-lo to enable manually. Press again or <C-w><C-w> to go into hover-window
 vim.api.nvim_set_keymap( "n", "<leader>lot", "<cmd>lua toggle_hover()<CR>", { noremap = true, silent = true })
 
