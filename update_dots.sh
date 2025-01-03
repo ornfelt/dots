@@ -80,7 +80,6 @@ cp -r $HOME/.local/bin/dwm_keybinds bin/
 cp -r $HOME/.local/bin/i3-used-keybinds bin/
 cp -r $HOME/.local/bin/my_scripts bin/
 cp -r $HOME/.local/bin/statusbar bin/
-cp -r $HOME/.local/bin/vim bin/
 cp -r $HOME/.local/bin/widgets bin/
 cp -r $HOME/.local/bin/xyz bin/
 cp -r $HOME/.local/bin/lfub bin/

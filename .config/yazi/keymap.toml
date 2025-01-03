@@ -27,6 +27,24 @@ desc = "Open shell here"
 #desc = "Copy selection to clipboard"
 
 [[manager.prepend_keymap]]
+on = [" ", "-"]
+run = [
+ '''
+	shell '/home/jonas/.local/bin/my_scripts/copy_path.sh "$@"' --confirm
+'''
+]
+desc = "Copy selection to clipboard"
+
+[[manager.prepend_keymap]]
+on = [" ", "_"]
+run = [
+ '''
+	shell '/home/jonas/.local/bin/my_scripts/copy_path.sh "$@" 1' --confirm
+'''
+]
+desc = "Copy selection to clipboard"
+
+[[manager.prepend_keymap]]
 on = "S"
 run = [ '''shell "$SHELL" --block --confirm''' ]
 desc = "Open shell here"
