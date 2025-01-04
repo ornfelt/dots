@@ -246,6 +246,13 @@ local my_plugins = {
     },
     lazy = is_raspbian,
   },
+  {
+    'adelarsq/image_preview.nvim',
+    event = 'VeryLazy',
+    config = function()
+      require("image_preview").setup()
+    end
+  },
   -- "alexghergh/nvim-tmux-navigation"
   -- "mhinz/vim-startify"
   -- "mistweaverco/kulala.nvim"
