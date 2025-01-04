@@ -10,5 +10,6 @@ else
     export CM_LAUNCHER=dmenu
 fi
 
+#clipmenu -l 20
 clipmenu
 

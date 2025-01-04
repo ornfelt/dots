@@ -55,8 +55,6 @@ cmd open ${{
     esac
 }}
 
-cmd mkdir $mkdir -p "$(echo $* | tr ' ' '\ ')"
-
 cmd extract ${{
 	clear; tput cup $(($(tput lines)/3)); tput bold
 	set -f
@@ -125,90 +123,56 @@ cmd bulk-rename ${{
 	rm $index $index_edit
 }}
 
-cmd convert_rotate ${{
-	# From ranger:
-	#map C shell killall w3mimgdisplay && convert -rotate 90 %s %s
-	convert -rotate 90 $fx $fx
-}}
+cmd mkdir $mkdir -p "$(echo $* | tr ' ' '\ ')"
 
-cmd set_bg ${{
-	# From ranger:
-	#map bg shell cp %f ~/.config/wall.png && feh --bg-scale %f && rm -rf ~/.cache/wal/schemes && wal -i ~/.config/wall.png
-	feh --bg-fill $fx
-}}
-
-#cmd setbg "$1"
-#cmd bulkrename $vidir
-
-# Default mappings:
-# https://pkg.go.dev/github.com/gokcehan/lf#section-readme
-#map e $$EDITOR "$f"
-#map i $$PAGER "$f"
-#map w $$SHELL
-#map zh set hidden!
-#map zr set reverse!
-#map zn set info
-#map zs set info size
-#map zt set info time
-#map za set info size:time
-#map sn :set sortby natural; set info
-#map ss :set sortby size; set info size
-#map st :set sortby time; set info time
-#map sa :set sortby atime; set info atime
-#map sc :set sortby ctime; set info ctime
-#map se :set sortby ext; set info
-#map gh cd ~
-#map <space> :toggle; down
-
-# Bindings
-map <c-f> $lf -remote "send $id select \"$(fzf)\""
-map <c-n> push :mkdir<space>
+# Keys
+# Defaults:
+# https://github.com/gokcehan/lf/blob/master/doc.md
 map <c-r> reload
-map <c-h> set hidden!
-map . set hidden!
 map <c-e> down
 map <c-y> up
-#map J $lf -remote "send $id cd $(sed -e 's/\s*#.*//' -e '/^$/d' -e 's/^\S*\s*//' ${XDG_CONFIG_HOME:-$HOME/.config}/shell/bm-dirs | fzf)"
-map D delete
-map E extract
-map C copyto
-map M moveto
-map <enter> shell
-map S shell
-#map X !tar -zxvf %f
-#map Z !tar -cvzf %f.tar.gz %f
-#map x $$f
-#map X !$f
+map \: shell
+map <enter> &mimeopen "$f"
 map o &mimeopen "$f"
 map O $mimeopen --ask "$f"
 
-map A rename # at the very end
-#map c push A<c-u> # new rename
-map c
-map cw push A<c-u> # new rename
-#map W bulkrename
-map cW bulk-rename
-map I push A<c-a> # at the very beginning
-map i push A<a-b><a-b><a-f> # before extension
-map a push A<a-b> # after extension
-map bg set_bg
-map bc convert_rotate
-map V push :!nvim<space>
+cmd spawn_shell ${{
+    cd "$PWD" && $SHELL
+}}
 
-#map W $setsid -f $TERMINAL >/dev/null 2>&1
-map Y $printf "%s" "$fx" | xclip -selection clipboard
+map S spawn_shell
 
-# Shortcuts
+map D delete
+#map E extract
+#map C copyto
+#map M moveto
+
+# Sorting
+map ,n :set sortby natural; set info
+map ,s :set sortby size; set info size
+map ,t :set sortby time; set info time
+map ,a :set sortby atime; set info atime
+map ,c :set sortby ctime; set info ctime
+map ,e :set sortby ext; set info
+
+# Settings
+map zh set hidden!
+map zr set reverse!
+map zn set info
+map zs set info size
+map zt set info time
+map za set info size:time
+map <c-h> set hidden!
+map . set hidden!
+
+# g-binds
 map gg top
 map ge cd /etc
 map gh cd /home/jonas
 map gu cd /usr
-#map gl cd -r .
 map gL cd -r %f
-#map gv cd /var
 map gM cd /mnt
 map gr cd /
-#map gR eval fm.cd(ranger.RANGERDIR)
 map g? cd /usr/share/doc/lf
 map gd cd ~/Documents
 map gw cd ~/Pictures/Wallpapers
@@ -228,4 +192,80 @@ cmd firefox_open ${{
 }}
 
 map gx firefox_open
+
+# Fuzzy search
+map <c-f> $lf -remote "send $id select \"$(fzf)\""
+
+# Rename
+#map c push A<c-u> # new rename
+map c
+map cw push A<c-u> # new rename
+map a push A<a-b> # after extension
+map A rename # at the very end
+map I push A<c-a> # at the very beginning
+map i push A<a-b><a-b><a-f> # before extension
+map cW bulk-rename
+
+# Tagging / marking
+map <space>
+#map <space> :toggle; down
+map <space>s :toggle; down
+
+# Custom
+map V push :!nvim<space>
+map <c-n> push :mkdir<space>
+
+# Image commands
+cmd convert_rotate ${{
+	convert -rotate 90 $fx $fx
+}}
+
+cmd set_bg ${{
+	feh --bg-fill $fx
+}}
+
+map bg set_bg
+map bc convert_rotate
+
+# Copy path
+cmd copy_path ${{
+    #/home/jonas/.local/bin/my_scripts/copy_path.sh "$fx"
+    echo "$fx" | sed 's/ /,/g' | xargs -I {} /home/jonas/.local/bin/my_scripts/copy_path.sh "{}"
+}}
+
+cmd copy_path_arg ${{
+    #/home/jonas/.local/bin/my_scripts/copy_path.sh "$fx" 1
+    echo "$fx" | sed 's/ /,/g' | xargs -I {} /home/jonas/.local/bin/my_scripts/copy_path.sh "{}" 1
+}}
+
+map <space>- copy_path
+map <space>_ copy_path_arg
+
+# Manage file
+cmd manage_file ${{
+    /home/jonas/.local/bin/my_scripts/manage_file.sh "$fx"
+    #/home/jonas/.local/bin/my_scripts/manage_file.sh "$fx" 1 # Rofi
+}}
+
+map <space><space> manage_file
+
+# Old (kept for reference)
+
+# Use space-space instead of these
+#map X !tar -zxvf %f
+#map Z !tar -cvzf %f.tar.gz %f
+#map x $$f
+#map X !$f
+
+#map e $$EDITOR "$f"
+#map i $$PAGER "$f"
+#map w $$SHELL
+
+#map gl cd -r .
+#map gv cd /var
+#map gR eval fm.cd(ranger.RANGERDIR)
+
+#map J $lf -remote "send $id cd $(sed -e 's/\s*#.*//' -e '/^$/d' -e 's/^\S*\s*//' ${XDG_CONFIG_HOME:-$HOME/.config}/shell/bm-dirs | fzf)"
+#map W $setsid -f $TERMINAL >/dev/null 2>&1
+#map Y $printf "%s" "$fx" | xclip -selection clipboard
 

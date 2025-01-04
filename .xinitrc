@@ -41,9 +41,13 @@ xhost si:localuser:root
 exec clipmenud &
 
 #exec i3
-#exec awesome
+exec awesome
 exec dwm &
 sh ~/.dwm/autostart.sh &
 #sh ~/.dwm/autostart.sh >> ~/.dwm/autostart.log 2>&1 &
-picom --animations
+if picom --help | grep -q "\-\-animations"; then
+    picom --animations
+else
+    picom
+fi
 

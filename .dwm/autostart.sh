@@ -28,7 +28,8 @@ for app in $apps; do
   fi
 done
 
-greenclip daemon &
+# Use clipmenud instead (see xinitrc)
+#greenclip daemon &
 
 # Simple version
 #xfce4-power-manager &

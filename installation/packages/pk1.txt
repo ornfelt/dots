@@ -25,7 +25,6 @@ chafa
 chromium
 cjson
 clang
-clipmenu
 cmake
 conky
 cppcodec
@@ -35,7 +34,6 @@ crow
 csfml
 dhcpcd
 diodon
-dmenu
 dosfstools
 dotnet-sdk
 doxygen
@@ -97,3 +95,4 @@ lxappearance
 m4
 maim
 make
+mako

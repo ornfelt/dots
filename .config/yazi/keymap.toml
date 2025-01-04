@@ -12,43 +12,33 @@ on   = "S"
 run  = 'shell "$SHELL" --block --confirm'
 desc = "Open shell here"
 
-#[[manager.prepend_keymap]]
-#on = "y"
-##run = [
-##  '''
-##  shell 'echo "$@" > ~/.config/yazi/test.txt' --confirm
-##  '''
-##]
-#run = [
-# '''
-#	shell 'echo "$@" | xclip -i -selection clipboard' --confirm
-#'''
-#]
-#desc = "Copy selection to clipboard"
-
-[[manager.prepend_keymap]]
-on = [" ", "-"]
-run = [
- '''
-	shell '/home/jonas/.local/bin/my_scripts/copy_path.sh "$@"' --confirm
-'''
-]
-desc = "Copy selection to clipboard"
-
-[[manager.prepend_keymap]]
-on = [" ", "_"]
-run = [
- '''
-	shell '/home/jonas/.local/bin/my_scripts/copy_path.sh "$@" 1' --confirm
-'''
-]
-desc = "Copy selection to clipboard"
-
 [[manager.prepend_keymap]]
 on = "S"
 run = [ '''shell "$SHELL" --block --confirm''' ]
 desc = "Open shell here"
 
+[[manager.prepend_keymap]]
+on = ["m", "k", "d"]
+run = [ '''mkdir''' ]
+desc = "Create a directory"
+
+[[manager.prepend_keymap]]
+on = "Ctrl-N"
+run = [ '''mkdir''' ]
+desc = "Create a directory (Ctrl+N)"
+
+[[manager.prepend_keymap]]
+on = "D"
+run = [ '''delete''' ]
+desc = "Delete file or directory"
+
+# Sorting
+# ...
+
+# Settings
+# ...
+
+# g-binds
 [[manager.prepend_keymap]]
 on = ["g", "e"]
 run = [ '''cd /etc''' ]
@@ -122,7 +112,7 @@ desc = "cd to ~/Downloads"
 
 [[manager.prepend_keymap]]
 on = ["g", "f"]
-run = [ 
+run = [
 '''
     shell '~/.local/bin/my_scripts/term_vim.sh wezterm "$0"' --confirm 
 '''
@@ -131,53 +121,14 @@ desc = "Open file in vim inside a new wezterm window"
 
 [[manager.prepend_keymap]]
 on = ["g", "x"]
-run = [ 
+run = [
 '''
     shell 'firefox "$0"' --confirm 
 '''
 ]
 desc = "Open file in firefox"
 
-#[[manager.prepend_keymap]]
-#on = ["x", "-"]
-#run = [ '''shell chmod -x {{s}}''' ]
-#desc = "Remove execute permissions"
-#
-#[[manager.prepend_keymap]]
-#on = ["x", "+"]
-#run = [ '''shell chmod +x {{s}}''' ]
-#desc = "Add execute permissions"
-
-[[manager.prepend_keymap]]
-on = "V"
-run = [ '''shell nvim -o {{s}}''' ]
-desc = "Open in nvim"
-
-[[manager.prepend_keymap]]
-on = ["c", "W"]
-run = [ '''bulkrename {{s}}''' ]
-desc = "Bulk rename"
-
-[[manager.prepend_keymap]]
-on = ["m", "k", "d"]
-run = [ '''mkdir''' ]
-desc = "Create a directory"
-
-[[manager.prepend_keymap]]
-on = "Ctrl-N"
-run = [ '''mkdir''' ]
-desc = "Create a directory (Ctrl+N)"
-
-[[manager.prepend_keymap]]
-on = "D"
-run = [ '''delete''' ]
-desc = "Delete file or directory"
-
-[[manager.prepend_keymap]]
-on = "X"
-run = [ '''shell tar -zxvf {{f}}''' ]
-desc = "Extract tar.gz"
-
+# Fuzzy search
 #[[manager.prepend_keymap]]
 #on = "Ctrl-f"
 #run = [ '''fzf_search''' ]
@@ -193,9 +144,18 @@ on = "<C-f>"
 run = [ '''plugin fzf''' ]
 desc = "Jump to a file/directory via fzf"
 
+# Rename
+# ...
+
+# Custom
+# ...
+# https://yazi-rs.github.io/features/
+# https://yazi-rs.github.io/docs/tips/
+
+# Image commands
 [[manager.prepend_keymap]]
 on = ["b", "g"]
-run = [ 
+run = [
 '''
     shell 'feh --bg-scale "$0"' --confirm 
 '''
@@ -203,13 +163,8 @@ run = [
 desc = "Set current image as background"
 
 [[manager.prepend_keymap]]
-on = ["b", "w"]
-run = [ '''shell --confirm wal -c -i {{f}} && cp {{f}} ~/.config/wall.png''' ]
-desc = "Set permanent wallpaper"
-
-[[manager.prepend_keymap]]
 on = ["b", "c"]
-run = [ 
+run = [
 '''
     shell 'killall w3mimgdisplay && convert -rotate 90 "$0" "$0"' --confirm 
 '''
@@ -218,7 +173,7 @@ desc = "Rotate image"
 
 [[manager.prepend_keymap]]
 on = ["b", "i"]
-run = [ 
+run = [
 '''
     shell 'killall convert "$0" -resize 1440x1080\> "bl_$0"' --confirm 
 '''
@@ -227,12 +182,44 @@ desc = "Resize image"
 
 [[manager.prepend_keymap]]
 on = ["b", "t"]
-run = [ 
+run = [
 '''
     shell 'convert "$0" -transparent white "$0"' --confirm 
 '''
 ]
 desc = "Resize image"
+
+# Copy path
+[[manager.prepend_keymap]]
+on = [" ", "-"]
+run = [
+	#shell '/home/jonas/.local/bin/my_scripts/copy_path.sh "$@"' --confirm
+ '''
+    shell 'echo "$@" | sed "s/ /,/g" | xargs -I {} /home/jonas/.local/bin/my_scripts/copy_path.sh "{}"' --confirm
+'''
+]
+desc = "Copy selection to clipboard"
+
+[[manager.prepend_keymap]]
+on = [" ", "_"]
+run = [
+	#shell '/home/jonas/.local/bin/my_scripts/copy_path.sh "$@" 1' --confirm
+ '''
+    shell 'echo "$@" | sed "s/ /,/g" | xargs -I {} /home/jonas/.local/bin/my_scripts/copy_path.sh "{}" 1' --confirm
+'''
+]
+desc = "Copy selection to clipboard"
+
+# Manage file
+[[manager.prepend_keymap]]
+on = [" ", " "]
+run = [
+	#shell '/home/jonas/.local/bin/my_scripts/manage_file.sh "$@" 1' --confirm
+ '''
+	shell '/home/jonas/.local/bin/my_scripts/manage_file.sh "$@"' --confirm
+'''
+]
+desc = "Copy selection to clipboard"
 
 ###
 # https://github.com/lpnh/fg.yazi
@@ -262,6 +249,37 @@ desc = "find file by content (ripgrep-all)"
 on   = [ "f", "f" ]
 run  = "plugin fg --args='fzf'"
 desc = "find file by filename"
-
 ###
+
+# Old (kept for reference)
+
+#[[manager.prepend_keymap]]
+#on = "y"
+##run = [
+##  '''
+##  shell 'echo "$@" > ~/.config/yazi/test.txt' --confirm
+##  '''
+##]
+#run = [
+# '''
+#	shell 'echo "$@" | xclip -i -selection clipboard' --confirm
+#'''
+#]
+#desc = "Copy selection to clipboard"
+
+# Use space-space instead of these. These aren't tested...
+#[[manager.prepend_keymap]]
+#on = ["x", "-"]
+#run = [ '''shell chmod -x "$0"''' ]
+#desc = "Remove execute permissions"
+#
+#[[manager.prepend_keymap]]
+#on = ["x", "+"]
+#run = [ '''shell chmod +x {{s}}''' ]
+#desc = "Add execute permissions"
+
+#[[manager.prepend_keymap]]
+#on = "X"
+#run = [ '''shell tar -zxvf {{f}}''' ]
+#desc = "Extract tar.gz"
 

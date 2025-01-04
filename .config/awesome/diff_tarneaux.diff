@@ -10043,10 +10043,10 @@ index 0000000..6052156
 diff --git a/rc.lua b/rc.lua
 old mode 100755
 new mode 100644
-index 898b85e..02bd7dd
+index 898b85e..1c6a001
 --- a/rc.lua
 +++ b/rc.lua
-@@ -1,52 +1,1316 @@
+@@ -1,52 +1,1317 @@
 +-- See original rc.lua:
 +-- https://awesomewm.org/doc/api/sample%20files/rc.lua.html
 +-- or in:
@@ -10120,6 +10120,7 @@ index 898b85e..02bd7dd
 +
 +--run_once({ "urxvtd", "unclutter -root" }) -- comma-separated entries
 +run_once({ "picom", "--animations" })
++run_once({ "xfce4-power-manager" })
 +
 +-- This function implements the XDG autostart specification
 +--[[

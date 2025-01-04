@@ -68,6 +68,7 @@ end
 
 --run_once({ "urxvtd", "unclutter -root" }) -- comma-separated entries
 run_once({ "picom", "--animations" })
+run_once({ "xfce4-power-manager" })
 
 -- This function implements the XDG autostart specification
 --[[

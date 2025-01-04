@@ -1,4 +1,3 @@
-mako
 mariadb
 mariadb-clients
 mariadb-libs

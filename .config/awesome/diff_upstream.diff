@@ -9178,10 +9178,10 @@ index 0000000..6052156
 +Where the ``show`` argument is an integer defining timeout seconds.
 diff --git a/rc.lua b/rc.lua
 new file mode 100644
-index 0000000..02bd7dd
+index 0000000..1c6a001
 --- /dev/null
 +++ b/rc.lua
-@@ -0,0 +1,1316 @@
+@@ -0,0 +1,1317 @@
 +-- See original rc.lua:
 +-- https://awesomewm.org/doc/api/sample%20files/rc.lua.html
 +-- or in:
@@ -9252,6 +9252,7 @@ index 0000000..02bd7dd
 +
 +--run_once({ "urxvtd", "unclutter -root" }) -- comma-separated entries
 +run_once({ "picom", "--animations" })
++run_once({ "xfce4-power-manager" })
 +
 +-- This function implements the XDG autostart specification
 +--[[
