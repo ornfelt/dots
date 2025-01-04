@@ -146,6 +146,53 @@ desc = "Jump to a file/directory via fzf"
 # Rename
 # ...
 
+# Tagging / marking
+#[[manager.prepend_keymap]]
+#on = ["m", "c"]
+#run = [
+#    '''
+#    shell 'echo "$PWD" > /tmp/yazi_marked_dir' --confirm
+#    '''
+#]
+#desc = "Mark current dir"
+#
+#[[manager.prepend_keymap]]
+#on = ["'", "c"]
+#run = [
+#    '''
+#    shell 'marked_dir=$(cat /tmp/yazi_marked_dir 2>/dev/null) && [ -d "$marked_dir" ] && cd "$marked_dir" || echo "No valid marked directory"' --confirm
+#    '''
+#]
+#desc = "Go back to marked dir"
+# Use plugin instead:
+###
+# https://github.com/dedukun/bookmarks.yazi
+# Add the plugin
+#ya pack -a dedukun/bookmarks
+# Install the plugin
+#ya pack -i
+# Upgrade the plugin
+#ya pack -u
+[[manager.prepend_keymap]]
+on = [ "m" ]
+run = "plugin bookmarks --args=save"
+desc = "Save current position as a bookmark"
+
+[[manager.prepend_keymap]]
+on = [ "'" ]
+run = "plugin bookmarks --args=jump"
+desc = "Jump to a bookmark"
+
+[[manager.prepend_keymap]]
+on = [ "b", "d" ]
+run = "plugin bookmarks --args=delete"
+desc = "Delete a bookmark"
+
+[[manager.prepend_keymap]]
+on = [ "b", "D" ]
+run = "plugin bookmarks --args=delete_all"
+desc = "Delete all bookmarks"
+
 # Custom
 # ...
 

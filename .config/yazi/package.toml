@@ -1,5 +1,5 @@
 [plugin]
-deps = [{ use = "lpnh/fg", rev = "a7e1a82" }]
+deps = [{ use = "lpnh/fg", rev = "a7e1a82" }, { use = "dedukun/bookmarks", rev = "35da107" }]
 
 [flavor]
 deps = []
