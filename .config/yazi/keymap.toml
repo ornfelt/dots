@@ -18,14 +18,10 @@ run = [ '''shell "$SHELL" --block --confirm''' ]
 desc = "Open shell here"
 
 [[manager.prepend_keymap]]
-on = ["m", "k", "d"]
-run = [ '''mkdir''' ]
-desc = "Create a directory"
-
-[[manager.prepend_keymap]]
-on = "Ctrl-N"
-run = [ '''mkdir''' ]
-desc = "Create a directory (Ctrl+N)"
+on = "<C-n>"
+#run = [ '''shell --block --interactive''' ]
+run = [ '''create --dir''' ]
+desc = "Create new dir"
 
 [[manager.prepend_keymap]]
 on = "D"

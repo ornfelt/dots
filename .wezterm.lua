@@ -351,6 +351,7 @@ config.keys = {
     mods = 'LEADER',
     action = act.ShowTabNavigator,
   },
+
   -- Rename current tab; analagous to command in tmux
   {
     key = ',',
@@ -510,6 +511,7 @@ config.keys = {
   { key = 'h', mods = 'ALT', action = wezterm.action.DisableDefaultAssignment, },
   { key = 'j', mods = 'ALT', action = wezterm.action.DisableDefaultAssignment, },
   { key = 'k', mods = 'ALT', action = wezterm.action.DisableDefaultAssignment, },
+  { key = 'N', mods = 'CTRL|SHIFT', action = wezterm.action.DisableDefaultAssignment },
 
   -- Tabs
   { key = "1", mods = "LEADER", action = wezterm.action{ActivateTab=0}, },
