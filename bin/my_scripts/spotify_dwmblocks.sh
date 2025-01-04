@@ -1,4 +1,5 @@
 #!/bin/sh
+
 main() {
   if ! pgrep -x spotify >/dev/null; then
     echo ""; exit

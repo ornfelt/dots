@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+
 tsla=$(tstock tsla -b 1 | sed -n -e 's/^.*change://p' | sed -r 's/\s+//g')
 evo=$(tstock evo -b 1 | sed -n -e 's/^.*change://p' | sed -r 's/\s+//g')
 

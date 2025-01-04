@@ -129,12 +129,15 @@ cmd mkdir $mkdir -p "$(echo $* | tr ' ' '\ ')"
 # Defaults:
 # https://github.com/gokcehan/lf/blob/master/doc.md
 map <c-r> reload
-map <c-e> down
-map <c-y> up
 map \: shell
-map <enter> &mimeopen "$f"
-map o &mimeopen "$f"
-map O $mimeopen --ask "$f"
+
+#map <enter> &mimeopen "$f"
+#map o &mimeopen "$f"
+#map O $mimeopen --ask "$f"
+map <enter> open "$f"
+map o shell
+
+map v invert-below
 
 cmd spawn_shell ${{
     cd "$PWD" && $SHELL
@@ -245,8 +248,11 @@ map <space>_ copy_path_arg
 
 # Manage file
 cmd manage_file ${{
-    /home/jonas/.local/bin/my_scripts/manage_file.sh "$fx"
+    #/home/jonas/.local/bin/my_scripts/manage_file.sh "$fx"
     #/home/jonas/.local/bin/my_scripts/manage_file.sh "$fx" 1 # Rofi
+
+    echo "$fx" | tr '\n' ' ' | sed 's/ /,/g' | xargs -I {} /home/jonas/.local/bin/my_scripts/manage_file.sh {}
+    #echo "$fx" | tr '\n' ' ' | sed 's/ /,/g' | xargs -I {} /home/jonas/.local/bin/my_scripts/manage_file.sh {} 1 # Rofi
 }}
 
 map <space><space> manage_file

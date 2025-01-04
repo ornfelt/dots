@@ -31,6 +31,20 @@ on = "D"
 run = [ '''delete''' ]
 desc = "Delete file or directory"
 
+# oil-like
+[[manager.prepend_keymap]]
+on = "o"
+run = [ '''create''' ]
+desc = "Create"
+
+# ranger/lf-like
+[[manager.prepend_keymap]]
+on = "l"
+run = '''
+    shell --confirm 'if [ -d "$@" ]; then ya emit enter; elif [ -f "$@" ]; then ya emit open; else echo "Unknown item"; fi'
+'''
+desc = "Enter directory or open file"
+
 # Sorting
 # ...
 
@@ -69,12 +83,6 @@ desc = "cd to /mnt"
 #desc = "cd to root"
 
 [[manager.prepend_keymap]]
-on = [ "g", "r" ]
-run = '''
-	shell 'ya pub dds-cd --str "$(git rev-parse --show-toplevel)"' --confirm
-'''
-
-[[manager.prepend_keymap]]
 on = ["g", "?"]
 run = [ '''cd /usr/share/doc/ranger''' ]
 desc = "cd to ranger docs"
@@ -110,6 +118,13 @@ run = [ '''cd ~/Downloads''' ]
 desc = "cd to ~/Downloads"
 
 [[manager.prepend_keymap]]
+on = [ "g", "r" ]
+run = '''
+	shell 'ya emit cd "$(git rev-parse --show-toplevel)"'
+'''
+desc = "cd to git root dir"
+
+[[manager.prepend_keymap]]
 on = ["g", "f"]
 run = [
 '''
@@ -138,13 +153,17 @@ desc = "Open file in firefox"
 #run = [ '''fzf_search_dirs''' ]
 #desc = "Search directories"
 
+# Default Z key can also be used instead of this
 [[manager.prepend_keymap]]
 on = "<C-f>"
 run = [ '''plugin fzf''' ]
 desc = "Jump to a file/directory via fzf"
 
 # Rename
-# ...
+[[manager.prepend_keymap]]
+on = ["c", "w"]
+run = [ '''rename''' ]
+desc = "Rename"
 
 # Tagging / marking
 #[[manager.prepend_keymap]]
@@ -156,16 +175,18 @@ desc = "Jump to a file/directory via fzf"
 #]
 #desc = "Mark current dir"
 #
+## Try in shell:
+## marked_dir=$(cat /tmp/yazi_marked_dir 2>/dev/null) && [ -d "$marked_dir" ] && cd "$marked_dir" || echo "No valid marked directory"
+## This also works (maybe redundant though):
+##shell 'marked_dir=$(cat /tmp/yazi_marked_dir 2>/dev/null) && [ -d "$marked_dir" ] && ya emit cd "$marked_dir" || echo "No valid marked directory"' --confirm
 #[[manager.prepend_keymap]]
 #on = ["'", "c"]
-#run = [
-#    '''
-#    shell 'marked_dir=$(cat /tmp/yazi_marked_dir 2>/dev/null) && [ -d "$marked_dir" ] && cd "$marked_dir" || echo "No valid marked directory"' --confirm
-#    '''
-#]
+#run = '''
+#    shell 'ya emit cd "$(cat /tmp/yazi_marked_dir 2>/dev/null)"' --confirm
+#'''
 #desc = "Go back to marked dir"
-# Use plugin instead:
-###
+
+# Use bookmark plugin instead of above:
 # https://github.com/dedukun/bookmarks.yazi
 # Add the plugin
 #ya pack -a dedukun/bookmarks
@@ -258,9 +279,11 @@ desc = "Copy selection to clipboard"
 [[manager.prepend_keymap]]
 on = [" ", " "]
 run = [
+    #shell '/home/jonas/.local/bin/my_scripts/manage_file.sh "$@"' --confirm
 	#shell '/home/jonas/.local/bin/my_scripts/manage_file.sh "$@" 1' --confirm
+    #shell 'echo "$@" | sed "s/ /,/g" | xargs -I {} /home/jonas/.local/bin/my_scripts/manage_file.sh "{}" 1' --confirm
  '''
-	shell '/home/jonas/.local/bin/my_scripts/manage_file.sh "$@"' --confirm
+    shell 'echo "$@" | sed "s/ /,/g" | xargs -I {} /home/jonas/.local/bin/my_scripts/manage_file.sh "{}"' --confirm
 '''
 ]
 desc = "Copy selection to clipboard"
@@ -307,9 +330,16 @@ desc = "find file by filename"
 #run = [
 # '''
 #	shell 'echo "$@" | xclip -i -selection clipboard' --confirm
-#'''
+#''', "yank" 
 #]
 #desc = "Copy selection to clipboard"
+
+# Wayland copy to clipboard and yank:
+#[[manager.prepend_keymap]]
+#on  = "y"
+#run = [ '''
+#	shell 'for path in "$@"; do echo "file://$path"; done | wl-copy -t text/uri-list'
+#''', "yank" ]
 
 # Use space-space instead of these. These aren't tested...
 #[[manager.prepend_keymap]]

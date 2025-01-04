@@ -69,6 +69,34 @@ if [[ -z "$input_line" ]]; then
     exit 1
 fi
 
+format_paths() {
+    local line="$1"
+    local dir
+    local formatted_line=""
+
+    # Extract dir from first file path
+    dir=$(dirname "$(echo "$line" | cut -d',' -f1)")
+
+    # Process each part separated by commas
+    IFS=',' read -ra paths <<< "$line"
+    for path in "${paths[@]}"; do
+        # Check if path contains a forward slash; if not, prepend dir path
+        if [[ "$path" != */* ]]; then
+            path="$dir/$path"
+        fi
+        formatted_line+="$path,"
+    done
+
+    # Remove trailing comma
+    echo "${formatted_line%,}"
+}
+
+if [[ "$input_line" == *,* && "$input_line" != *,*/,* ]]; then
+    input_line=$(format_paths "$input_line")
+fi
+
+echo "Updated input_line: $input_line"
+
 output_line=$(replace_path_based_on_context "$input_line" "$no_placeholders")
 echo "Processed line: $output_line"
 echo -n "$output_line" | xclip -selection clipboard
