@@ -1,6 +1,9 @@
+# See:
 # https://github.com/sxyazi/yazi/blob/main/yazi-config/preset/keymap-default.toml
 # https://github.com/sxyazi/yazi/blob/shipped/yazi-config/preset/keymap-default.toml
+# https://yazi-rs.github.io/features/
 # https://yazi-rs.github.io/docs/tips/
+# https://yazi-rs.github.io/docs/configuration/keymap/#manager.shell
 
 #[manager]
 #prepend_keymap = [
@@ -145,8 +148,6 @@ desc = "Jump to a file/directory via fzf"
 
 # Custom
 # ...
-# https://yazi-rs.github.io/features/
-# https://yazi-rs.github.io/docs/tips/
 
 # Image commands
 [[manager.prepend_keymap]]
