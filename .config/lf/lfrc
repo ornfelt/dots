@@ -230,12 +230,14 @@ map bc convert_rotate
 # Copy path
 cmd copy_path ${{
     #/home/jonas/.local/bin/my_scripts/copy_path.sh "$fx"
-    echo "$fx" | sed 's/ /,/g' | xargs -I {} /home/jonas/.local/bin/my_scripts/copy_path.sh "{}"
+    #echo "$fx" | sed 's/ /,/g' | xargs -I {} /home/jonas/.local/bin/my_scripts/copy_path.sh "{}"
+    echo "$fx" | tr '\n' ' ' | sed 's/ /,/g' | xargs -I {} /home/jonas/.local/bin/my_scripts/copy_path.sh {}
 }}
 
 cmd copy_path_arg ${{
     #/home/jonas/.local/bin/my_scripts/copy_path.sh "$fx" 1
-    echo "$fx" | sed 's/ /,/g' | xargs -I {} /home/jonas/.local/bin/my_scripts/copy_path.sh "{}" 1
+    #echo "$fx" | sed 's/ /,/g' | xargs -I {} /home/jonas/.local/bin/my_scripts/copy_path.sh "{}" 1
+    echo "$fx" | tr '\n' ' ' | sed 's/ /,/g' | xargs -I {} /home/jonas/.local/bin/my_scripts/copy_path.sh {} 1
 }}
 
 map <space>- copy_path
