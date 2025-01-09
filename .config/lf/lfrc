@@ -191,30 +191,34 @@ map . set hidden!
 
 # g-binds
 map gg top
+map gC cd /
 map ge cd /etc
-map gh cd /home/jonas
 map gu cd /usr
-map gL cd -r %f
+map gh cd /home/jonas
+map gl cd ~/.local
+map gL cd ~/.local/share
 map gM cd /mnt
-map gr cd /
-map g? cd /usr/share/doc/lf
+map ga cd ~/Downloads
 map gd cd ~/Documents
 map gw cd ~/Pictures/Wallpapers
-map gc cd ~/Documents/Code
 map gm cd /media/data/Movies
 map g. cd ~/.config
-map ga cd ~/Downloads
+#map g? cd /usr/share/doc/lf
+map g? cd ~/.config/lf
+map gc cd ~/Code2
+map gn cd ~/Documents/my_notes
+map gp cd ~/Documents/windows_dots
 
 cmd term_vim ${{
     ~/.local/bin/my_scripts/term_vim.sh wezterm "$fx"
 }}
 
-map gf term_vim
-
 cmd firefox_open ${{
     firefox "$fx"
 }}
 
+map gr $lf -remote "send cd \"$(git rev-parse --show-toplevel)\""
+map gf term_vim
 map gx firefox_open
 
 # Fuzzy search

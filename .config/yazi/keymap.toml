@@ -38,12 +38,18 @@ run = [ '''create''' ]
 desc = "Create"
 
 # ranger/lf-like
+#[[manager.prepend_keymap]]
+#on = "l"
+#run = '''
+#    shell --confirm 'if [ -d "$@" ]; then ya emit enter; elif [ -f "$@" ]; then ya emit open; else echo "Unknown item"; fi'
+#'''
+#desc = "Enter directory or open file"
+# Use plugin instead
+# https://github.com/yazi-rs/plugins/tree/main/smart-enter.yazi
 [[manager.prepend_keymap]]
-on = "l"
-run = '''
-    shell --confirm 'if [ -d "$@" ]; then ya emit enter; elif [ -f "$@" ]; then ya emit open; else echo "Unknown item"; fi'
-'''
-desc = "Enter directory or open file"
+on   = "l"
+run  = "plugin smart-enter"
+desc = "Enter the child directory, or open the file"
 
 # Sorting
 # ...
@@ -53,14 +59,14 @@ desc = "Enter directory or open file"
 
 # g-binds
 [[manager.prepend_keymap]]
+on = ["g", "C"]
+run = [ '''cd /''' ]
+desc = "cd to /"
+
+[[manager.prepend_keymap]]
 on = ["g", "e"]
 run = [ '''cd /etc''' ]
 desc = "cd to /etc"
-
-[[manager.prepend_keymap]]
-on = ["g", "h"]
-run = [ '''cd /home/jonas''' ]
-desc = "cd to /home/jonas"
 
 [[manager.prepend_keymap]]
 on = ["g", "u"]
@@ -68,24 +74,29 @@ run = [ '''cd /usr''' ]
 desc = "cd to /usr"
 
 [[manager.prepend_keymap]]
+on = ["g", "h"]
+run = [ '''cd /home/jonas''' ]
+desc = "cd to /home/jonas"
+
+[[manager.prepend_keymap]]
+on = ["g", "l"]
+run = [ '''cd ~/.local''' ]
+desc = "cd to local data"
+
+[[manager.prepend_keymap]]
 on = ["g", "L"]
-run = [ '''cd -r {{f}}''' ]
-desc = "cd to selected file's directory"
+run = [ '''cd ~/.local/share''' ]
+desc = "cd to config data"
 
 [[manager.prepend_keymap]]
 on = ["g", "M"]
 run = [ '''cd /mnt''' ]
 desc = "cd to /mnt"
 
-#[[manager.prepend_keymap]]
-#on = ["g", "r"]
-#run = [ '''cd /''' ]
-#desc = "cd to root"
-
 [[manager.prepend_keymap]]
-on = ["g", "?"]
-run = [ '''cd /usr/share/doc/ranger''' ]
-desc = "cd to ranger docs"
+on = ["g", "a"]
+run = [ '''cd ~/Downloads''' ]
+desc = "cd to ~/Downloads"
 
 [[manager.prepend_keymap]]
 on = ["g", "d"]
@@ -98,11 +109,6 @@ run = [ '''cd ~/Pictures/Wallpapers''' ]
 desc = "cd to Wallpapers"
 
 [[manager.prepend_keymap]]
-on = ["g", "c"]
-run = [ '''cd ~/Code''' ]
-desc = "cd to ~/Code"
-
-[[manager.prepend_keymap]]
 on = ["g", "m"]
 run = [ '''cd /media/data/Movies''' ]
 desc = "cd to Movies"
@@ -113,9 +119,25 @@ run = [ '''cd ~/.config''' ]
 desc = "cd to ~/.config"
 
 [[manager.prepend_keymap]]
-on = ["g", "a"]
-run = [ '''cd ~/Downloads''' ]
-desc = "cd to ~/Downloads"
+on = ["g", "?"]
+#run = [ '''cd /usr/share/doc/yazi''' ]
+run = [ '''cd ~/.config/yazi''' ]
+desc = "cd to yazi conf"
+
+[[manager.prepend_keymap]]
+on = ["g", "c"]
+run = [ '''cd ~/Code2''' ]
+desc = "cd to ~/Code2"
+
+[[manager.prepend_keymap]]
+on = ["g", "n"]
+run = [ '''cd ~/Documents/my_notes''' ]
+desc = "cd to my_notes"
+
+[[manager.prepend_keymap]]
+on = ["g", "p"]
+run = [ '''cd ~/Documents/windows_dots''' ]
+desc = "cd to ps_profile_path"
 
 [[manager.prepend_keymap]]
 on = [ "g", "r" ]

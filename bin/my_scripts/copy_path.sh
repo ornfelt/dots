@@ -8,6 +8,9 @@
 # ./copy_path.sh /home/jonas/test
 # ./copy_path.sh /home/jonas/Documents/my_notes/notes
 # ./copy_path.sh /home/jonas/Documents/my_notes/notes 1
+# Multiple files
+# ./copy_path.sh /home/jonas/Documents/my_notes/notes,/home/jonas/Documents/my_notes/test.txt
+# ./copy_path.sh "/home/jonas/Documents/my_notes/notes /home/jonas/Documents/my_notes/test.txt"
 
 if [[ -z "$my_notes_path" || -z "$code_root_dir" ]]; then
     echo "Environment variables 'my_notes_path' or 'code_root_dir' are not set."
@@ -71,29 +74,35 @@ fi
 
 format_paths() {
     local line="$1"
+    local delimiter="$2"
     local dir
     local formatted_line=""
 
     # Extract dir from first file path
-    dir=$(dirname "$(echo "$line" | cut -d',' -f1)")
+    dir=$(dirname "$(echo "$line" | cut -d"$delimiter" -f1)")
 
-    # Process each part separated by commas
-    IFS=',' read -ra paths <<< "$line"
+    # Process each part separated by delimiter
+    IFS="$delimiter" read -ra paths <<< "$line"
     for path in "${paths[@]}"; do
         # Check if path contains a forward slash; if not, prepend dir path
         if [[ "$path" != */* ]]; then
             path="$dir/$path"
         fi
-        formatted_line+="$path,"
+        formatted_line+="$path$delimiter"
     done
 
-    # Remove trailing comma
-    echo "${formatted_line%,}"
+    # Remove trailing delimiter
+    echo "${formatted_line%$delimiter}"
 }
 
+# Determine delimiter and process accordingly
 if [[ "$input_line" == *,* && "$input_line" != *,*/,* ]]; then
-    input_line=$(format_paths "$input_line")
+    input_line=$(format_paths "$input_line" ",")
+elif [[ "$input_line" == *" "* && "$input_line" != *" "*/*" "* ]]; then
+    input_line=$(format_paths "$input_line" " ")
 fi
+
+echo -n "$input_line" | xclip -selection clipboard
 
 echo "Updated input_line: $input_line"
 

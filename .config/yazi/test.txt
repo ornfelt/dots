@@ -1,1 +1,0 @@
-/home/jonas/.config/yazi/keymap.toml
