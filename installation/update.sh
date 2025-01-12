@@ -7,12 +7,13 @@ merge_requirements() {
     local temp_file="$2"
     local output_file="$req_file"
 
-    if [[ -f "$req_file" ]]; then
-        cp "$req_file" "$temp_file"
-    fi
+    pip freeze >> "$req_file"
 
-    pip freeze >> "$temp_file"
-    awk -F'==' '!seen[tolower($1)]++' "$temp_file" | sort -f > "$output_file"
+    #awk -F'==' '!seen[tolower($1)]++' "$temp_file" | sort -f > "$output_file"
+    ## Sort file case-insensitively
+    #sort -f "$output_file" -o "$output_file"
+    python3 merge_requirements.py "$req_file" "$temp_file"
+
     rm -f "$temp_file"
 }
 
@@ -20,8 +21,14 @@ if grep -q 'ID=arch' /etc/os-release; then
     pacman -Qe | awk '{print $1}' > package_list.txt
     pacman -Qm > other.txt
 
-    pip freeze > requirements.txt
-    merge_requirements "requirements.txt" "requirements_temp.txt"
+    req_file="requirements.txt"
+    temp_file="requirements_temp.txt"
+    if [[ -f "$req_file" ]]; then
+        cp "$req_file" "$temp_file"
+        merge_requirements "$req_file" "$temp_file"
+    else
+        pip freeze >> "$req_file"
+    fi
 
     # Calculate number of lines for approximately one-third of the file
     total_lines=$(wc -l < package_list.txt)
@@ -39,8 +46,14 @@ if grep -q 'ID=arch' /etc/os-release; then
 elif grep -q 'ID=debian' /etc/os-release || grep -q 'ID_LIKE=debian' /etc/os-release; then
     mkdir -p packages/debian
 
-    pip freeze > packages/debian/requirements.txt
-    merge_requirements "packages/debian/requirements.txt" "packages/debian/requirements_temp.txt"
+    req_file="packages/debian/requirements.txt"
+    temp_file="packages/debian/requirements_temp.txt"
+    if [[ -f "$req_file" ]]; then
+        cp "$req_file" "$temp_file"
+        merge_requirements "$req_file" "$temp_file"
+    else
+        pip freeze >> "$req_file"
+    fi
 
     dpkg-query -W -f='${binary:Package}\n' | awk -F: '{print $1}' > packages/debian/package_list_all.txt
     # Get manually installed packages
