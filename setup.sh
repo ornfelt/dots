@@ -1215,7 +1215,7 @@ copy_game_data() {
     mkdir -p $HOME/tcore/bin
     mkdir -p $HOME/vmangos/bin
     mkdir -p $HOME/cmangos/run/bin
-    mkdir -p $HOME/mangoszero/bin
+    mkdir -p $HOME/mangoszero/run/bin
 
     MEDIA_PATHS=("/media" "/media2")
     MEDIA_PATH=""

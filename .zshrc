@@ -146,13 +146,16 @@ alias .cnfi='cd $HOME/.config/i3; ls'
 alias .cnfp='cd $HOME/.config/picom; ls'
 alias .cnfn='cd $HOME/.config/nvim; ls'
 alias .cnfw='cd $HOME/.config/wezterm; ls'
+alias .cnfl='cd $HOME/.config/lf; ls'
+alias .cnfr='cd $HOME/.config/ranger; ls'
+alias .cnfs='cd $HOME/.config/st; ls'
 alias .cnfy='cd $HOME/.config/yazi; ls'
 alias .pics='cd $HOME/Pictures; ls'
 alias .docs='cd $HOME/Documents; ls'
+alias .down='cd $HOME/Downloads; ls'
 alias .cdc='cd $code_root_dir; ls'
 alias .cdn='cd $HOME/Documents/my_notes; ls'
 alias .cdp='cd $HOME/Documents/windows_dots; ls'
-alias .down='cd $HOME/Downloads; ls'
 alias .dots='cd $HOME/Downloads/dotfiles; ls'
 alias .ioq3='$HOME/Code2/C/ioq3/build/release-linux-x86_64/ioquake3.x86_64 +set sv_pure 0 +set vm_game 0 +set vm_cgame 0 +set vm_ui 0'
 alias .ioq32='$HOME/Code2/C/ioq3/build/release-linux-x86_64_golden/ioquake3.x86_64 +set sv_pure 0 +set vm_game 0 +set vm_cgame 0 +set vm_ui 0'
@@ -163,8 +166,16 @@ alias .openjo_sp='$HOME/.local/share/openjk/JediOutcast/openjo_sp.x86_64'
 alias .japp='$HOME/.local/share/openjk/JediAcademy/openjk.x86_64 +set fs_game "japlus"'
 alias .acore='cd $HOME/acore/bin; pwd; ls'
 alias .acore_update='cd $HOME/Code2/C++/AzerothCore-wotlk-with-NPCBots && git pull && cd modules/mod-eluna && git pull && cd ../..'
-alias .tcore_update='cd $HOME/Code2/C++/Trinitycore-3.3.5-with-NPCBots && git pull'
 alias .tcore='cd $HOME/tcore/bin; pwd; ls'
+alias .tcore_update='cd $HOME/Code2/C++/Trinitycore-3.3.5-with-NPCBots && git pull'
+alias .cmangos= 'cd $HOME/cmangos/run/bin; ls'
+alias .cmangos_update='cd $HOME/Code2/C++/mangos-classic && git pull && cd src/modules/PlayerBots && git pull && cd ../../..'
+alias .cmangos_tbc= 'cd $HOME/cmangos-tbc/run/bin; pwd; ls'
+alias .cmangos_tbc_update='cd $HOME/Code2/C++/mangos-tbc && git pull && cd src/modules/PlayerBots && git pull && cd ../../..'
+alias .vmangos='cd $HOME/vmangos/bin; pwd; ls'
+alias .vmangos_update='cd $HOME/Code2/C++/core; pwd; ls'
+alias .mangoszero= 'cd $HOME/mangoszero/run/bin; pwd; ls'
+alias .mangoszero_update= 'cd $HOME/Code2/C++/server; pwd; ls'
 alias .wow='sh $HOME/.local/bin/my_scripts/wow.sh'
 alias .llama="$HOME/.local/bin/my_scripts/llama.sh"
 alias .git_push="$HOME/.local/bin/my_scripts/git_push.sh"
@@ -254,7 +265,6 @@ else
     echo "fzf is not installed"
 fi
 export FZF_DEFAULT_COMMAND='ag --hidden --ignore .git -g ""'
-#export FZF_CTRL_T_COMMAND='ag --hidden --ignore .git -g ""'
 export FZF_CTRL_T_COMMAND='find . -type f -name ".*" -o -type f -name "*"'
 
 precmd() { eval "$PROMPT_COMMAND" }
@@ -275,6 +285,8 @@ export my_notes_path="$HOME/Documents/my_notes"
 export code_root_dir="$HOME"
 export wow_dir="/mnt/new/wow"
 export wow_classic_dir="/mnt/new/wow_classic"
+export wow_tbc_dir="/mnt/new/wow_tbc"
+export wow_cata_dir="/mnt/new/cata"
 #export PATH="${PATH}:$HOME/.fzf/bin"
 
 export LANG=en_US.UTF-8
