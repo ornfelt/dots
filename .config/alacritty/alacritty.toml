@@ -160,3 +160,25 @@ regex = '[^ ]+(?:\s*)$'
 action="Paste"
 binding = { key = "Space", mods = "Alt|Shift" }
 
+[[hints.enabled]]
+regex = "\\S{2,}"
+action="Paste"
+binding = { key = "W", mods = "Alt|Shift" }
+
+#[[hints.enabled]]
+#regex = "(?:[-._~/a-zA-Z0-9])*/(?:[-._~/a-zA-Z0-9]*)"
+#action="Paste"
+#binding = { key = "E", mods = "Alt|Shift" }
+#
+#[[hints.enabled]]
+#regex = "[a-zA-Z]:\\\\(?:[-._a-zA-Z0-9\\\\ ]+)"
+#action="Paste"
+#binding = { key = "E", mods = "Alt|Shift" }
+
+[[hints.enabled]]
+#regex = "(?:[-._~/a-zA-Z0-9])*/(?:[-._~/a-zA-Z0-9]*)|[a-zA-Z]:\\\\(?:[-._a-zA-Z0-9\\\\ ]+)"
+# Only one space
+regex = "(?:[-._~/a-zA-Z0-9])*/(?:[-._~/a-zA-Z0-9]*)|[a-zA-Z]:\\\\(?:[-._a-zA-Z0-9\\\\]+(?: [^ ]+)?\\\\*)"
+action="Paste"
+binding = { key = "E", mods = "Alt|Shift" }
+
