@@ -55,7 +55,8 @@ bindsym $mod+Control+Return exec --no-startup-id st
 bindsym $mod+q kill
 
 # Start dmenu
-bindsym $mod+r exec --no-startup-id dmenu_run -fn 'Linux Libertine Mono'
+#bindsym $mod+r exec --no-startup-id dmenu_run -fn 'Linux Libertine Mono'
+bindsym $mod+r exec --no-startup-id dmenu_run -i -l 20
 bindsym $mod+d exec --no-startup-id rofi -show run -theme ~/.config/rofi/themes/gruvbox/gruvbox-dark.rasi
 # There's also the (new) i3-dmenu-desktop which only displays applications
 # shipping a .desktop file. It is a wrapper around dmenu, so you need that
@@ -119,15 +120,14 @@ bindsym $mod+Shift+space focus mode_toggle
 # Focus the parent container
 #bindsym $mod+Shift+Control+d focus parent
 
-# i3 is meh since I don't like polybar that much, no fibonacci spiral and alternating_layouts.py...
-
 # TODO:
-# { MODKEY,                   XK_a,               spawn,              SHCMD("~/.local/bin/my_scripts/tmux_attach.sh " TERMINAL) },
+# i3 is meh since I don't like polybar that much, no fibonacci spiral and alternating_layouts.py...
+# try simple i3status with gruvbox theme?
+bindsym $mod+a exec ~/.local/bin/my_scripts/tmux_attach.sh wezterm
 
 # Open tmux
 #bindsym $mod+a exec i3-sensible-terminal -e bash -c "tmux attach || tmux"
-#bindsym $mod+a exec urxvt -e bash -c "tmux attach || tmux"
-bindsym $mod+a exec wezterm -e bash -c "tmux attach || tmux"
+#bindsym $mod+a exec wezterm -e bash -c "tmux attach || tmux"
 
 # TODO
 #{ MODKEY,                   XK_n,               spawn,              SHCMD("~/.local/bin/my_scripts/nautilus_wd.sh") },
@@ -203,11 +203,16 @@ assign [class="Code"] $ws3
 # assign [class="Steam"] $ws4
 assign [class="Vlc"] $ws4
 assign [class="Spotify"] $ws5
+
 for_window [class="Spotify"] move to workspace $ws5
-bindsym $mod+c exec --no-startup-id GTK_THEME=Adwaita:dark gnome-calculator
-for_window [class="gnome-calculator"] floating enable, move position 1520 px 60 px, exec --no-startup-id xdotool search --class Gnome-calculator getwindowpid -- windowsize %@ 250 195
-bindsym $mod+Control+c exec --no-startup-id GTK_THEME=Adwaita:dark gnome-calendar
-for_window [class="gnome-calendar"] floating enable, move position 1125 px 60 px, exec --no-startup-id xdotool search --class Gnome-calculator getwindowpid -- windowsize %@ 250 195
+
+#bindsym $mod+c exec --no-startup-id GTK_THEME=Adwaita:dark gnome-calculator
+#for_window [class="gnome-calculator"] floating enable, move position 1520 px 60 px, exec --no-startup-id xdotool search --class Gnome-calculator getwindowpid -- windowsize %@ 250 195
+bindsym $mod+c exec --no-startup-id ~/.local/bin/my_scripts/term_calc.sh wezterm
+
+#bindsym $mod+Control+c exec --no-startup-id GTK_THEME=Adwaita:dark gnome-calendar
+#for_window [class="gnome-calendar"] floating enable, move position 1125 px 60 px, exec --no-startup-id xdotool search --class Gnome-calculator getwindowpid -- windowsize %@ 250 195
+bindsym $mod+Control+c exec --no-startup-id yad --calendar --no-buttons
 #for_window [class="Yad"] floating enable, move position center, exec --no-startup-id xdotool search --class yad getwindowpid -- windowsize %@ 250 195
 for_window [class="Yad"] floating enable, move position center
 
@@ -318,7 +323,8 @@ bindsym $mod+Shift+comma exec --no-startup-id ~/.local/bin/my_scripts/alert_exit
 bindsym $mod+Shift+period exec --no-startup-id i3lock-fancy; exec --no-startup-id ~/.local/bin/my_scripts/alert_exit.sh; exec --no-startup-id systemctl suspend
 
 # Open FZF in neovim
-bindsym $mod+g exec urxvt -e bash -c 'nvim -c "FZF ~"'
+#bindsym $mod+g exec urxvt -e bash -c 'nvim -c "FZF ~"'
+bindsym $mod+g exec --no-startup-id ~/.local/bin/my_scripts/fzf_open.sh wezterm
 
 # Settings
 focus_follows_mouse no
@@ -331,19 +337,21 @@ for_window [class=".*"] border pixel 1
 gaps inner 15
 gaps outer 15
 
-# On i3 start
-exec --no-startup-id picom
-#exec --no-startup-id xfce4-power-manager
+# Startup
+exec --no-startup-id picom --animations
+exec --no-startup-id xfce4-power-manager
 #exec --no-startup-id firefox
-exec_always --no-startup-id diodon
+#exec_always --no-startup-id diodon
 
-#set wallpaper
+# Set wallpaper
 #exec_always feh --bg-scale ~/Pictures/Wallpapers/wallpaper.png
 exec_always --no-startup-id feh --bg-fill --randomize ~/Pictures/Wallpapers/*
 #exec_always --no-startup-id ~/.local/bin/my_scripts/bg_pbar.sh
+
 # Alternating layout
 exec_always --no-startup-id ~/.local/bin/my_scripts/i3-alternating-layout/alternating_layouts.py
-#run polybar
+
+# Run polybar
 #exec_always --no-startup-id ~/.config/polybar/forest/launch.sh
 exec_always --no-startup-id ~/.config/polybar/colorblocks/launch.sh
 
