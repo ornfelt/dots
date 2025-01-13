@@ -545,6 +545,31 @@ config.keys = {
   -- { key = ' ', mods = 'SHIFT|CTRL', action = wezterm.action.QuickSelect },
   { key = ' ', mods = 'ALT|SHIFT', action = wezterm.action.QuickSelect },
 
+  {
+    key = 'w',
+    mods = 'ALT|SHIFT',
+    action = wezterm.action.QuickSelectArgs {
+      label = 'quickselect words',
+      --\S+ for every word without spaces, below also makes sure there's at least 2 chars
+      patterns = {
+        [[\S{2,}]],
+      },
+      action = wezterm.action.QuickSelect
+    },
+  },
+
+  {
+    key = 'e',
+    mods = 'ALT|SHIFT',
+    action = wezterm.action.QuickSelectArgs {
+      label = 'quickselect paths',
+      patterns = {
+        [[(?:[-._~/a-zA-Z0-9])*/(?:[-._~/a-zA-Z0-9]*)]],
+        [[[a-zA-Z]:\\(?:[-._a-zA-Z0-9\\ ]+)]],
+      },
+    },
+  },
+
   -- Customizing QuickSelect
   -- https://wezfurlong.org/wezterm/config/lua/keyassignment/QuickSelectArgs.html
   {
@@ -560,6 +585,7 @@ config.keys = {
       action = wezterm.action_callback(function(window, pane)
         local url = window:get_selection_text_for_pane(pane)
         wezterm.log_info('opening: ' .. url)
+        --pane:paste(url)
         wezterm.open_with(url)
       end),
     },
