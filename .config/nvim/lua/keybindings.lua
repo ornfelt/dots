@@ -959,7 +959,8 @@ function ReplacePathBasedOnContext()
     line = line:gsub("{code_root_dir}/", vim.pesc(code_root_dir))
   else
     line = line:gsub(vim.pesc(my_notes_path), "{my_notes_path}/")
-    line = line:gsub(vim.pesc(code_root_dir), "{code_root_dir}/")
+    --line = line:gsub(vim.pesc(code_root_dir), "{code_root_dir}/")
+    line = line:gsub(vim.pesc(code_root_dir) .. "(/?Code)", "{code_root_dir}/%1")
   end
 
   if ps_profile_path then

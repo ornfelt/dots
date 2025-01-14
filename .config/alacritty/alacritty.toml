@@ -177,8 +177,13 @@ binding = { key = "W", mods = "Alt|Shift" }
 
 [[hints.enabled]]
 #regex = "(?:[-._~/a-zA-Z0-9])*/(?:[-._~/a-zA-Z0-9]*)|[a-zA-Z]:\\\\(?:[-._a-zA-Z0-9\\\\ ]+)"
-# Only one space
-regex = "(?:[-._~/a-zA-Z0-9])*/(?:[-._~/a-zA-Z0-9]*)|[a-zA-Z]:\\\\(?:[-._a-zA-Z0-9\\\\]+(?: [^ ]+)?\\\\*)"
+#regex = "(?:[-._~#/a-zA-Z0-9])*/(?:[-._~#/a-zA-Z0-9]*)|[a-zA-Z]:\\\\(?:[-._#a-zA-Z0-9\\\\]+(?: [^ ]+)?\\\\*)"
+#regex = "(?:[-._~#/a-zA-Z0-9$])*/(?:[-._~#/a-zA-Z0-9$]*)|[a-zA-Z]:\\\\(?:[-._#$:~a-zA-Z0-9\\\\ ]+)|\\\\\\\\seusers\\.ia\\.corp\\.svea\\.com\\\\(?:[-._#$:~a-zA-Z0-9\\\\ ]+)"
+#regex = "(?:[-._~#/a-zA-Z0-9$])*/(?:[-._~#/a-zA-Z0-9$]*)|[a-zA-Z]:\\\\(?:[-._#$:~a-zA-Z0-9\\\\ ]+)|\\\\\\\\seusers\\.ia\\.corp\\.svea\\.com\\\\(?:[-._#$:~a-zA-Z0-9\\\\ ]+)|\\$env:[a-zA-Z_][a-zA-Z0-9_]*[\\/](?:[-._~#/a-zA-Z0-9$]*)"
+# Mixed slashes, unix-style, windows-style and UNC paths
+#regex = "(?:[-._~#/a-zA-Z0-9$])*/(?:[-._~#/a-zA-Z0-9$]*)|[a-zA-Z]:[/\\\\](?:[-._#$:~a-zA-Z0-9/\\\\ ]+)|\\\\\\\\seusers\\.ia\\.corp\\.svea\\.com[/\\\\](?:[-._#$:~a-zA-Z0-9/\\\\ ]+)|\\$env:[a-zA-Z_][a-zA-Z0-9_]*[\\/](?:[-._~#/a-zA-Z0-9$]*)"
+# Multiple mixed slashes
+regex = "(?:[-._~#/a-zA-Z0-9$])*/(?:[-._~#/a-zA-Z0-9$]*)|[a-zA-Z]:[/\\\\]+(?:[-._#$:~a-zA-Z0-9/\\\\ ]+)|\\\\\\\\seusers\\.ia\\.corp\\.svea\\.com[/\\\\]+(?:[-._#$:~a-zA-Z0-9/\\\\ ]+)|\\$env:[a-zA-Z_][a-zA-Z0-9_]*[\\\\/]+(?:[-._~#/a-zA-Z0-9$]*)"
 action="Paste"
 binding = { key = "E", mods = "Alt|Shift" }
 

@@ -563,20 +563,19 @@ config.keys = {
     mods = 'ALT|SHIFT',
     action = wezterm.action.QuickSelectArgs {
       label = 'quickselect paths',
-      patterns = {
-        [[(?:[-._~/a-zA-Z0-9])*/(?:[-._~/a-zA-Z0-9]*)]],
-        [[[a-zA-Z]:\\(?:[-._a-zA-Z0-9\\ ]+)]],
-      },
-      -- Only match 1 space:
       --patterns = {
       --  [[(?:[-._~/a-zA-Z0-9])*/(?:[-._~/a-zA-Z0-9]*)]],
-      --  [[[a-zA-Z]:\\(?:[-._a-zA-Z0-9\\ ]*[^ ] [-._a-zA-Z0-9\\]*)]],
+      --  [[[a-zA-Z]:\\(?:[-._a-zA-Z0-9\\ ]+)]],
       --},
-      -- [a-zA-Z]:\\: Matches drive letter and the colon (C:).
-      -- (?:...): Groups path components.
-      -- [-._a-zA-Z0-9\\ ]*: Matches any valid characters in the path, including spaces.
-      -- [^ ] : Ensures a single space is followed by other valid characters.
-      -- (?!.* ): Prevents matching paths with more than one consecutive space.
+      patterns = {
+        -- Unix-style paths (including #, $ and spaces)
+        [[(?:[-._~#/a-zA-Z0-9$])*/(?:[-._~#/a-zA-Z0-9$]*)]],
+        -- Windows-style paths (including #, $ and spaces)
+        [[[a-zA-Z]:[/\\]+(?:[-._#$:~a-zA-Z0-9/\\ ]+)]],
+        [[\\\\seusers\.ia\.corp\.svea\.com[/\\](?:[-._#$:~a-zA-Z0-9/\\ ]+)]],
+        [[\\\\seusers\.ia\.corp\.svea\.com[/\\]+(?:[-._#$:~a-zA-Z0-9/\\ ]+)]],
+        [[\$env:[a-zA-Z_][a-zA-Z0-9_]*[\\/]+(?:[-._~#/a-zA-Z0-9$]*)]],
+      },
     },
   },
 
