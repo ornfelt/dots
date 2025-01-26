@@ -303,12 +303,14 @@ wezterm.on('trigger-vim-with-scrollback', function(window, pane)
   local text = pane:get_lines_as_text(pane:get_dimensions().scrollback_rows)
 
   --local name = os.tmpname()
-  local name = (os.getenv("HOME") or os.getenv("USERPROFILE")) .. "/wez_text.txt"
-  -- vim $env:USERPROFILE/wez_text.txt
+  local name = (os.getenv("HOME") or os.getenv("USERPROFILE")) .. "/wez_text_debug.txt"
+  -- vim $env:USERPROFILE/wez_text_debug.txt
   local f = io.open(name, 'w+')
   f:write(text)
   f:flush()
   f:close()
+
+  pane:paste("vim " .. name)
 
   --window:perform_action(
   --  act.SpawnCommandInNewTab {
@@ -326,6 +328,53 @@ wezterm.on('trigger-vim-with-scrollback', function(window, pane)
   -- to avoid cluttering up the temporary directory.
   --wezterm.sleep_ms(2000)
   --os.remove(name)
+end)
+
+wezterm.on('trigger-vim-with-scrollback-copy-latest', function(window, pane)
+  local text = pane:get_lines_as_text(pane:get_dimensions().scrollback_rows)
+  local prompt_pattern = "^PS%s+.+>"
+  --local prompt_pattern = "^PS%s+([^\n]+)>%s*(.*)"
+  --local prompt_pattern = "^PS%s+[^>]*\\[^>]*>"
+  local inputs_outputs = {}
+
+  for line in text:gmatch("[^\r\n]+") do
+    if line:match(prompt_pattern) then
+      table.insert(inputs_outputs, {input = line, output = nil})
+    elseif #inputs_outputs > 0 then
+      inputs_outputs[#inputs_outputs].output = (inputs_outputs[#inputs_outputs].output or "") .. line .. "\n"
+    end
+  end
+
+  local scrollback_file = (os.getenv("HOME") or os.getenv("USERPROFILE")) .. "/wez_text_debug.txt"
+  local scrollback_f = io.open(scrollback_file, 'w+')
+  scrollback_f:write(text)
+  scrollback_f:flush()
+  scrollback_f:close()
+
+  local wez_text_file = (os.getenv("HOME") or os.getenv("USERPROFILE")) .. "/wez_text.txt"
+  local wez_text_f = io.open(wez_text_file, 'w+')
+  for _, entry in ipairs(inputs_outputs) do
+    wez_text_f:write("Input:\n" .. entry.input .. "\n")
+    if entry.output then
+      wez_text_f:write("Output:\n" .. entry.output .. "\n")
+    end
+    wez_text_f:write("\n")
+  end
+  wez_text_f:flush()
+  wez_text_f:close()
+
+  local latest_entry = inputs_outputs[#inputs_outputs - 1]
+  if latest_entry then
+    local latest_input = latest_entry.input
+    local latest_output = latest_entry.output or ""
+    local clipboard_text = "Input:\n" .. latest_input .. "\n\nOutput:\n" .. latest_output
+
+    --window:copy_to_clipboard(clipboard_text, 'Clipboard')
+    window:copy_to_clipboard(clipboard_text, 'PrimarySelection')
+    --window:toast_notification("Copied to Clipboard", "Latest input and output have been copied.", nil, 5000)
+  else
+    window:toast_notification("No Input/Output Found", "No valid input/output detected in scrollback.", nil, 5000)
+  end
 end)
 
 -- Custom key bindings
@@ -568,13 +617,13 @@ config.keys = {
       --  [[[a-zA-Z]:\\(?:[-._a-zA-Z0-9\\ ]+)]],
       --},
       patterns = {
-        -- Unix-style paths (including #, $ and spaces)
-        [[(?:[-._~#/a-zA-Z0-9$])*/(?:[-._~#/a-zA-Z0-9$]*)]],
-        -- Windows-style paths (including #, $ and spaces)
-        [[[a-zA-Z]:[/\\]+(?:[-._#$:~a-zA-Z0-9/\\ ]+)]],
-        [[\\\\seusers\.ia\.corp\.svea\.com[/\\](?:[-._#$:~a-zA-Z0-9/\\ ]+)]],
-        [[\\\\seusers\.ia\.corp\.svea\.com[/\\]+(?:[-._#$:~a-zA-Z0-9/\\ ]+)]],
-        [[\$env:[a-zA-Z_][a-zA-Z0-9_]*[\\/]+(?:[-._~#/a-zA-Z0-9$]*)]],
+        -- Unix-style paths (including #, $, + and spaces)
+        [[(?:[-._~#+/a-zA-Z0-9$])*/(?:[-._~#+/a-zA-Z0-9$]*)]],
+        -- Windows-style paths (including #, $, + and spaces)
+        [[[a-zA-Z]:[/\\]+(?:[-._#$:+~a-zA-Z0-9/\\ ]+)]],
+        [[\\\\seusers\.ia\.corp\.svea\.com[/\\](?:[-._#$:+~a-zA-Z0-9/\\ ]+)]],
+        [[\\\\seusers\.ia\.corp\.svea\.com[/\\]+(?:[-._#$:+~a-zA-Z0-9/\\ ]+)]],
+        [[\$env:[a-zA-Z_][a-zA-Z0-9_]*[\\/]+(?:[-._~#+/a-zA-Z0-9$]*)]],
       },
     },
   },
@@ -633,7 +682,8 @@ config.keys = {
   {
     key = 'L',
     mods = 'ALT|CTRL',
-    action = act.EmitEvent 'trigger-vim-with-scrollback',
+    --action = act.EmitEvent 'trigger-vim-with-scrollback',
+    action = act.EmitEvent 'trigger-vim-with-scrollback-copy-latest',
   },
 }
 

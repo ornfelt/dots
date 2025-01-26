@@ -921,6 +921,24 @@ map('n', '<M-m>', ':tabe ~/.config/nvim/init.lua<CR>')
 map('n', '<M-,>', ':tabe ~/.zshrc<CR>')
 map('n', '<M-.>', '<cmd>tabe ' .. my_notes_path .. '/vimtutor.txt<CR>')
 
+local function get_file_prefix()
+  if term_program == "wezterm" or term_program:match("xterm") or term_program == "tmux" then
+    return "wez"
+  elseif term_program == "alacritty" then
+    return "alac"
+  elseif term_program:match("^st") then
+    return "st"
+  else
+    return "wez"
+  end
+end
+
+vim.keymap.set("n", "<M-;>", function()
+  local file_prefix = get_file_prefix()
+  local file_path = home_dir .. file_prefix .. "_text.txt"
+  vim.cmd("tabe " .. file_path)
+end, { noremap = true, silent = true })
+
 -- Windows
 if vim.fn.has('win32') == 1 then
   vim.api.nvim_set_keymap('n', '<M-m>', '<cmd>tabe ' .. vim.fn.expand('$LOCALAPPDATA') .. '/nvim/init.lua<CR>', { noremap = true, silent = true })
