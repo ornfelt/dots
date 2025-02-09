@@ -188,8 +188,16 @@ end
 -- end, { nargs = 0 })
 
 function toggle_filetree()
-  --local filepath = (vim.fn.expand('%:p') == '' and '~/' or vim.fn.expand('%:p'))
-  local filepath = vim.fn.expand('%:p') == '' and '~/' or './' -- or vim.fn.expand('%:p:h') -- dir
+  local filepath = vim.fn.expand('%:p') == '' and '~/' or vim.fn.expand('%:p:h')
+  -- Silly fix for making oil work with domain-based user dirs
+  if filepath:find("%.corp") then
+    filepath = filepath:gsub("\\\\seusers%.ia%.corp%.svea%.com\\homedir%$\\se%-jonornf%-01\\", "H:/")
+    filepath = filepath:gsub(" ", "\\ ")
+  else
+    filepath = "./"
+  end
+  --print(filepath)
+
   if has_oil then
     -- vim.cmd('leftabove vsplit | vertical resize 40 | Oil ' .. filepath)
     -- vim.cmd('Oil ' .. filepath)
@@ -440,7 +448,7 @@ function enter_vimgrep_command(pattern, use_current_word)
     if is_git_repo then
       cmd = string.format(':vimgrep /%s/g `git ls-files`', input)
       -- This won't jump to first match due to 'j'
-      -- cmd = string.format(':vimgrep /%s/gj `git ls-files`', input) 
+      -- cmd = string.format(':vimgrep /%s/gj `git ls-files`', input)
     else
       cmd = string.format(':vimgrep /%s/g %s/%s', input, directory, pattern)
     end
@@ -952,7 +960,7 @@ map('n', '<leader>ws', "/\\s\\+$/<CR>") -- Show extra whitespace
 map('n', '<leader>wr', ':%s/\\s\\+$<CR>') -- Remove all extra whitespace
 map('n', '<leader>wu', ':%s/\\%u200b//g<CR>') -- Remove all extra unicode chars
 map('n', '<leader>wb', ':%s/[[:cntrl:]]//g<CR>') -- Remove all hidden characters
-map('n', '<leader>wf', 'gqG<C-o>zz') -- Format rest of the text with vim formatting, go back and center screen
+--map('n', '<leader>wf', 'gqG<C-o>zz') -- Format rest of the text with vim formatting, go back and center screen
 -- map('n', '<leader>wp', ':s,\\\\,/,g<CR>') -- Normalize path
 function NormalizePath()
   vim.cmd('normal! 0')
@@ -1078,7 +1086,7 @@ function list_tabs()
   for i = 1, vim.fn.tabpagenr("$") do
     --local tabname = vim.fn.gettabvar(i, "tabname", "[No Name]")
     local bufname = vim.fn.bufname(vim.fn.tabpagebuflist(i)[1]) or "[No Buffer]"
-    table.insert(tabs, string.format("%d: (%s)", i, bufname))
+    table.insert(tabs, string.format("%d: (%s)", i, normalize_path(bufname)))
   end
 
   if use_fzf then
@@ -1831,7 +1839,7 @@ function PythonExecCommand()
   --local script_path = code_root_dir .. "Code2/Python/my_py/scripts/gemini/gemini.py"
   --local script_path = code_root_dir .. "Code2/Python/my_py/scripts/mistral/mistral.py"
   local command = read_config("PythonExecCommand", "gpt")
-  local script_path = code_root_dir .. "Code2/Python/my_py/scripts/" .. command .. ".py"
+  local script_path = code_root_dir .. "/Code2/Python/my_py/scripts/" .. command .. ".py"
   --print(script_path)
 
   local print_to_current_buffer = false
@@ -1983,7 +1991,8 @@ function open_file_with_env()
   -- print("cword: " .. cword)
 
   if cword:match("^a/") or cword:match("^b/") then
-    local git_root = vim.fn.system("git rev-parse --show-toplevel 2>/dev/null"):gsub("\n", "")
+    --local git_root = vim.fn.system("git rev-parse --show-toplevel 2>/dev/null"):gsub("\n", "")
+    local git_root = vim.fn.system('git -C "' .. vim.fn.getcwd() .. '" rev-parse --show-toplevel')
     if git_root == "" then
       print("Current file is not in a Git repository.")
       return
@@ -2131,6 +2140,7 @@ local function diff_current_lines()
   for i, file_path in ipairs(file_paths) do
     local trimmed_fp = file_path:match("([a-zA-Z]:.*)")
     if trimmed_fp ~= nil then
+      trimmed_fp = trimmed_fp:gsub("#", "\\#")
       file_paths[i] = trimmed_fp
     end
   end
@@ -2171,13 +2181,21 @@ local function diffg_command()
     return
   end
 
-  local git_root = vim.fn.system("git rev-parse --show-toplevel 2>/dev/null"):gsub("\n", "")
+  --local git_root = vim.fn.system("git rev-parse --show-toplevel 2>/dev/null"):gsub("\n", "")
+  local git_root = vim.fn.system('git -C "' .. vim.fn.getcwd() .. '" rev-parse --show-toplevel')
   if git_root == "" then
     print("Current file is not in a Git repository.")
     return
   end
+  --print(git_root)
 
-  local relative_path = current_file:sub(#git_root + 2) -- Remove git_root and the trailing '/'
+  -- Remove git_root and the trailing '/'
+  -- (this worked with commented git_root code above on linux)
+  --local relative_path = current_file:sub(#git_root + 2)
+
+  local relative_path = current_file:sub(#git_root)
+  relative_path = relative_path:gsub("^[/\\]+", "") -- Remove leading slashes
+  --print(relative_path)
 
   --local default_branch = "upstream/npcbots_3.3.5"
   local default_branch = get_default_branch()
@@ -2311,12 +2329,6 @@ vim.keymap.set('v', '<leader>r', function()
 end, { noremap = true, silent = true })
 
 -- Pick a comand to run via telescope
-local actions = require("telescope.actions")
-local action_state = require("telescope.actions.state")
-local pickers = require("telescope.pickers")
-local finders = require("telescope.finders")
-local conf = require("telescope.config").values
-
 vim.keymap.set('n', '<leader><leader>', function()
   local commands = {
     -- Packer

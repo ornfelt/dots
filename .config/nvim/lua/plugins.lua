@@ -97,7 +97,7 @@ local my_plugins = {
   },
   --{
   --  "github/copilot.vim",
-  --  lazy = true,
+  --  lazy = false,
   --},
   --
   --{
