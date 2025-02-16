@@ -190,12 +190,16 @@ end
 function toggle_filetree()
   local filepath = vim.fn.expand('%:p') == '' and '~/' or vim.fn.expand('%:p:h')
   -- Silly fix for making oil work with domain-based user dirs
+  --if filepath:find("%.homedir") then
   if filepath:find("%.corp") then
-    filepath = filepath:gsub("\\\\seusers%.ia%.corp%.svea%.com\\homedir%$\\se%-jonornf%-01\\", "H:/")
+    filepath = filepath:gsub(".*se%-jonornf%-01\\", "H:/")
     filepath = filepath:gsub(" ", "\\ ")
   else
-    filepath = "./"
+    if not filepath:lower():find("h:") then
+      filepath = "./"
+    end
   end
+
   --print(filepath)
 
   if has_oil then

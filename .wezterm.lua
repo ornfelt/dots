@@ -547,7 +547,8 @@ config.keys = {
   -- Copying
   --if wezterm.target_triple ~= "x86_64-pc-windows-msvc" and wezterm.target_triple ~= "x86_64-pc-windows-gnu" then
   { key = 'C', mods = 'ALT|SHIFT', action = wezterm.action.CopyTo 'ClipboardAndPrimarySelection', },
-  { key = 'V', mods = 'ALT|SHIFT', action = wezterm.action.PasteFrom 'Clipboard', },
+  --{ key = 'V', mods = 'ALT|SHIFT', action = wezterm.action.PasteFrom 'Clipboard', },
+  { key = 'V', mods = 'ALT|SHIFT', action = wezterm.action.PasteFrom 'PrimarySelection', },
 
   -- Session manager
   {key = "m", mods = "LEADER", action = wezterm.action{EmitEvent = "save_session"}},
@@ -603,7 +604,7 @@ config.keys = {
       patterns = {
         [[\S{2,}]],
       },
-      action = wezterm.action.QuickSelect
+      --action = wezterm.action.QuickSelect
     },
   },
 
