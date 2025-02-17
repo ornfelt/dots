@@ -377,6 +377,8 @@ wezterm.on('trigger-vim-with-scrollback-copy-latest', function(window, pane)
   end
 end)
 
+local is_linux = (wezterm.target_triple ~= "x86_64-pc-windows-msvc" and wezterm.target_triple ~= "x86_64-pc-windows-gnu")
+
 -- Custom key bindings
 config.keys = {
   -- Leader is defined as Ctrl-A but this allows it to be sent to programs like vim when pressed twice
@@ -545,10 +547,8 @@ config.keys = {
   { key = 'K', mods = 'ALT|SHIFT', action = wezterm.action.ScrollByLine(-1), },
 
   -- Copying
-  --if wezterm.target_triple ~= "x86_64-pc-windows-msvc" and wezterm.target_triple ~= "x86_64-pc-windows-gnu" then
   { key = 'C', mods = 'ALT|SHIFT', action = wezterm.action.CopyTo 'ClipboardAndPrimarySelection', },
-  --{ key = 'V', mods = 'ALT|SHIFT', action = wezterm.action.PasteFrom 'Clipboard', },
-  { key = 'V', mods = 'ALT|SHIFT', action = wezterm.action.PasteFrom 'PrimarySelection', },
+  { key = 'V', mods = 'ALT|SHIFT', action = is_linux and wezterm.action.PasteFrom 'Clipboard' or wezterm.action.PasteFrom 'PrimarySelection' },
 
   -- Session manager
   {key = "m", mods = "LEADER", action = wezterm.action{EmitEvent = "save_session"}},
