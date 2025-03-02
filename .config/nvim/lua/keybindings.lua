@@ -985,8 +985,8 @@ function ReplacePathBasedOnContext()
   -- vim.pesc will escape the string for use in Vim regular expressions
   -- It adds necessary backslashes to special chars etc.
   if line:find("{my_notes_path}/", 1, true) or line:find("{code_root_dir}/", 1, true) then
-    line = line:gsub("{my_notes_path}/", vim.pesc(my_notes_path))
-    line = line:gsub("{code_root_dir}/", vim.pesc(code_root_dir))
+    line = line:gsub("{my_notes_path}", vim.pesc(my_notes_path))
+    line = line:gsub("{code_root_dir}", vim.pesc(code_root_dir))
   else
     line = line:gsub(vim.pesc(my_notes_path), "{my_notes_path}/")
     --line = line:gsub(vim.pesc(code_root_dir), "{code_root_dir}/")
@@ -995,7 +995,7 @@ function ReplacePathBasedOnContext()
 
   if ps_profile_path then
     if line:find("{ps_profile_path}/", 1, true) then
-      line = line:gsub("{ps_profile_path}/", vim.pesc(ps_profile_path))
+      line = line:gsub("{ps_profile_path}", vim.pesc(ps_profile_path))
     else
       line = line:gsub(vim.pesc(ps_profile_path), "{ps_profile_path}/")
     end
@@ -1993,6 +1993,8 @@ function open_file_with_env()
   -- hmmm
   cword = cword:gsub("#", "\\#")
   -- print("cword: " .. cword)
+  -- Remove some characters: ', ", parenthesis and brackets
+  cword = cword:gsub("[\'\"()%[%]]", "")
 
   if cword:match("^a/") or cword:match("^b/") then
     --local git_root = vim.fn.system("git rev-parse --show-toplevel 2>/dev/null"):gsub("\n", "")

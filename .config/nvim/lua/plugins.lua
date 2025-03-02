@@ -244,15 +244,15 @@ local my_plugins = {
       "nvim-treesitter/nvim-treesitter",
       "nvim-tree/nvim-web-devicons",
     },
-    lazy = is_raspbian,
+    lazy = is_raspbian
   },
-  {
-    'adelarsq/image_preview.nvim',
-    event = 'VeryLazy',
-    config = function()
-      require("image_preview").setup()
-    end
-  },
+  --{
+  --  'adelarsq/image_preview.nvim',
+  --  event = 'VeryLazy',
+  --  config = function()
+  --    require("image_preview").setup()
+  --  end
+  --},
   -- "alexghergh/nvim-tmux-navigation"
   -- "mhinz/vim-startify"
   -- "mistweaverco/kulala.nvim"
