@@ -127,6 +127,8 @@ config.colors = {
   }
 }
 
+config.force_reverse_video_cursor = true
+
 -- Setup muxing by default
 config.unix_domains = {
   {

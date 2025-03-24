@@ -61,6 +61,51 @@ map('i', '<C-v>', '<Esc>"+p')
 map('i', '<S-Insert>', '<Esc><MiddleMouse>A')
 map('n', '<S-Insert>', '<MiddleMouse>')
 
+local config_file_path = my_notes_path .. "scripts/files/nvim_config.txt"
+local function print_config_contents()
+    local file = io.open(config_file_path, "r")
+    if not file then
+        vim.notify("Config file not found: " .. config_file_path, vim.log.levels.ERROR)
+        return
+    end
+
+    vim.notify("Contents of " .. config_file_path, vim.log.levels.INFO)
+    for line in file:lines() do
+        print(line)
+    end
+
+    file:close()
+end
+
+vim.api.nvim_create_user_command("PrintConfig", print_config_contents, {})
+
+local function read_config(key, default_value)
+  local value = default_value
+  local key_lower = key:lower()
+
+  for line in io.lines(config_file_path) do
+    local line_lower = line:lower()
+    if line_lower:match("^" .. key_lower .. ":") then
+      value = line:match(key .. ": (%S+)")
+      if value then
+        value = value:match("^%s*(.-)%s*$") -- Trim leading and trailing whitespace
+      end
+      if not value or value == "" then
+        value = default_value
+      end
+      break
+    end
+  end
+
+  return value
+end
+
+-- Check if DebugPrint is enabled
+local function should_debug_print()
+  local prioritize = read_config("DebugPrint", "false")
+  return prioritize:lower() == "true"
+end
+
 --map('n', '<M-q>', ':q<CR>') -- Quit
 -- Close and restore tab
 local last_closed_tab = nil
@@ -189,6 +234,7 @@ end
 
 function toggle_filetree()
   local filepath = vim.fn.expand('%:p') == '' and '~/' or vim.fn.expand('%:p:h')
+
   -- Silly fix for making oil work with domain-based user dirs
   --if filepath:find("%.homedir") then
   if filepath:find("%.corp") then
@@ -200,7 +246,9 @@ function toggle_filetree()
     end
   end
 
-  --print(filepath)
+  if should_debug_print() then
+    print(filepath)
+  end
 
   if has_oil then
     -- vim.cmd('leftabove vsplit | vertical resize 40 | Oil ' .. filepath)
@@ -408,13 +456,13 @@ local function get_git_root()
 end
 
 function enter_vimgrep_command(pattern, use_current_word)
-  -- local current_word = use_current_word and vim.fn.expand("<cword>") or ""
+  --local current_word = use_current_word and vim.fn.expand("<cword>") or ""
 
   -- Support visual selection
   local current_word = ""
   if use_current_word then
     if vim.fn.mode() == "v" or vim.fn.mode() == "V" then
-      -- current_word = vim.fn.getreg('"') -- Last yanked text
+      --current_word = vim.fn.getreg('"') -- Last yanked text
       local start_pos = vim.fn.getpos("v")
       local end_pos = vim.fn.getpos(".")
       if start_pos[2] > end_pos[2] or (start_pos[2] == end_pos[2] and start_pos[3] > end_pos[3]) then
@@ -428,7 +476,7 @@ function enter_vimgrep_command(pattern, use_current_word)
         current_word = lines[1]:sub(start_pos[3], end_pos[3])
       else
         -- Multi-line selection, use only the last line
-        -- current_word = lines[#lines]:sub(1, end_pos[3])
+        --current_word = lines[#lines]:sub(1, end_pos[3])
         -- Just take current word to simplify this
         current_word = vim.fn.expand("<cword>")
       end
@@ -437,10 +485,10 @@ function enter_vimgrep_command(pattern, use_current_word)
     end
   end
 
-  -- vim.ui.input({ prompt = 'vimgrep ' .. pattern .. ': ' }, function(input)
+  --vim.ui.input({ prompt = 'vimgrep ' .. pattern .. ': ' }, function(input)
   vim.ui.input({ prompt = 'vimgrep ' .. pattern .. ': ', default = current_word }, function(input)
     if not input or input == '' then
-      -- vim.notify('No search keyword provided.', vim.log.levels.WARN)
+      --vim.notify('No search keyword provided.', vim.log.levels.WARN)
       return
     end
 
@@ -452,21 +500,24 @@ function enter_vimgrep_command(pattern, use_current_word)
     if is_git_repo then
       cmd = string.format(':vimgrep /%s/g `git ls-files`', input)
       -- This won't jump to first match due to 'j'
-      -- cmd = string.format(':vimgrep /%s/gj `git ls-files`', input)
+      --cmd = string.format(':vimgrep /%s/gj `git ls-files`', input)
     else
       cmd = string.format(':vimgrep /%s/g %s/%s', input, directory, pattern)
     end
 
-    -- print(cmd)
+    if should_debug_print() then
+      print(cmd)
+    end
+
     vim.cmd(cmd)
-    -- vim.cmd('copen') -- Open quickfix window
-    -- vim.notify(string.format('vimgrep search executed for keyword: "%s"', input), vim.log.levels.INFO)
+    --vim.cmd('copen') -- Open quickfix window
+    --vim.notify(string.format('vimgrep search executed for keyword: "%s"', input), vim.log.levels.INFO)
   end)
 end
 
 local function get_current_buffer_extension()
   if vim.bo.filetype == '' and vim.fn.expand('%') == '' then
-    -- vim.notify("Current buffer is not associated with a file.", vim.log.levels.WARN)
+    --vim.notify("Current buffer is not associated with a file.", vim.log.levels.WARN)
     return nil
   end
 
@@ -1053,9 +1104,13 @@ vim.keymap.set('n', '<leader>dc', function()
     for _, diagnostic in ipairs(diagnostics) do
       table.insert(messages, diagnostic.message)
     end
+
     local message = table.concat(messages, '\n')
     vim.fn.setreg('+', message)
-    --print('Copied to clipboard:\n' .. message)
+
+    if should_debug_print() then
+      print('Copied to clipboard:\n' .. message)
+    end
   else
     print('No diagnostics on this line.')
   end
@@ -1519,45 +1574,6 @@ local function SqlExecCommand()
   --vim.api.nvim_buf_set_option(new_buf, "bufhidden", "wipe") -- Automatically wipe the buffer when closed
 end
 
-local config_file_path = my_notes_path .. "scripts/files/nvim_config.txt"
-local function print_config_contents()
-    local file = io.open(config_file_path, "r")
-    if not file then
-        vim.notify("Config file not found: " .. config_file_path, vim.log.levels.ERROR)
-        return
-    end
-
-    vim.notify("Contents of " .. config_file_path, vim.log.levels.INFO)
-    for line in file:lines() do
-        print(line)
-    end
-
-    file:close()
-end
-
-vim.api.nvim_create_user_command("PrintConfig", print_config_contents, {})
-
-local function read_config(key, default_value)
-  local value = default_value
-  local key_lower = key:lower()
-
-  for line in io.lines(config_file_path) do
-    local line_lower = line:lower()
-    if line_lower:match("^" .. key_lower .. ":") then
-      value = line:match(key .. ": (%S+)")
-      if value then
-        value = value:match("^%s*(.-)%s*$") -- Trim leading and trailing whitespace
-      end
-      if not value or value == "" then
-        value = default_value
-      end
-      break
-    end
-  end
-
-  return value
-end
-
 -- Check if prioritizing build scripts is enabled
 local function should_prioritize_build_script()
   local prioritize = read_config("PrioritizeBuildScript", "false")
@@ -1724,11 +1740,14 @@ function execute_command()
     command = vim.fn.getline('.')
   end
 
-  -- Copy to clipboard
-  -- vim.fn.setreg('+', command)
-  -- print("Copied to clipboard: " .. command)
-  -- Execute it
-  vim.cmd(command)
+  if should_debug_print() then
+    -- Copy to clipboard
+    vim.fn.setreg('+', command)
+    print("Copied to clipboard: " .. command)
+  else
+    -- Execute it
+    vim.cmd(command)
+  end
 end
 
 -- Try with these:
@@ -1844,7 +1863,12 @@ function PythonExecCommand()
   --local script_path = code_root_dir .. "Code2/Python/my_py/scripts/mistral/mistral.py"
   local command = read_config("PythonExecCommand", "gpt")
   local script_path = code_root_dir .. "/Code2/Python/my_py/scripts/" .. command .. ".py"
-  --print(script_path)
+
+  local use_debug_print = should_debug_print()
+
+  if use_debug_print then
+    print(script_path)
+  end
 
   local print_to_current_buffer = false
   local current_file = vim.fn.expand('%:p')
@@ -1882,7 +1906,10 @@ function PythonExecCommand()
   local formatted_args = table.concat(args, " ")
   local cmd = "python " .. script_path .. " " .. formatted_args
   local output = vim.fn.system(cmd)
-  --print("args: " .. formatted_args)
+
+  if use_debug_print then
+    print("args: " .. formatted_args)
+  end
 
   if print_to_current_buffer then
     local current_buf = vim.api.nvim_get_current_buf()
@@ -1945,25 +1972,27 @@ function CyclePythonExecCommand()
   print("New PythonExecCommand: " .. new_command)
 end
 
-function TogglePrioritizeBuildScript()
+vim.api.nvim_create_user_command('CyclePythonExecCommand', CyclePythonExecCommand, {})
+
+function ToggleBooleanSetting(settingKey)
   local lines = {}
   local current_value = "false"
   local updated = false
 
   for line in io.lines(config_file_path) do
-    if line:match("^PrioritizeBuildScript:") then
-      current_value = line:match("PrioritizeBuildScript: (%S+)")
+    if line:match("^" .. settingKey .. ":") then
+      current_value = line:match(settingKey .. ": (%S+)")
       local new_value = current_value:lower() == "true" and "false" or "true"
-      table.insert(lines, "PrioritizeBuildScript: " .. new_value)
+      table.insert(lines, settingKey .. ": " .. new_value)
       updated = true
     else
       table.insert(lines, line)
     end
   end
 
-  -- If the key wasn't found, append it with the new value
+  -- If the key wasn't found, append it with a true value
   if not updated then
-    table.insert(lines, "PrioritizeBuildScript: true")
+    table.insert(lines, settingKey .. ": true")
   end
 
   -- Write changes back to file
@@ -1974,11 +2003,19 @@ function TogglePrioritizeBuildScript()
   file:close()
 
   local new_value = current_value:lower() == "true" and "false" or "true"
-  print("PrioritizeBuildScript toggled to: " .. new_value)
+  print(settingKey .. " toggled to: " .. new_value)
 end
 
-vim.api.nvim_create_user_command('CyclePythonExecCommand', CyclePythonExecCommand, {})
+function TogglePrioritizeBuildScript()
+  ToggleBooleanSetting("PrioritizeBuildScript")
+end
+
+function ToggleDebugPrint()
+  ToggleBooleanSetting("DebugPrint")
+end
+
 vim.api.nvim_create_user_command('TogglePrioritizeBuildScript', TogglePrioritizeBuildScript, {})
+vim.api.nvim_create_user_command('ToggleDebugPrint', ToggleDebugPrint, {})
 
 -- lua print(vim.fn.expand("<cWORD>"))
 function open_file_with_env()
@@ -1990,11 +2027,16 @@ function open_file_with_env()
     cword = trimmed_cword
   end
 
+  local use_debug_print = should_debug_print()
+
   -- hmmm
   cword = cword:gsub("#", "\\#")
-  -- print("cword: " .. cword)
+  if use_debug_print then
+    print("cword: " .. cword)
+  end
+
   -- Remove some characters: ', ", parenthesis and brackets
-  cword = cword:gsub("[\'\"()%[%]]", "")
+  cword = cword:gsub("[\'\"(),%[%] ]", "")
 
   if cword:match("^a/") or cword:match("^b/") then
     --local git_root = vim.fn.system("git rev-parse --show-toplevel 2>/dev/null"):gsub("\n", "")
@@ -2022,7 +2064,10 @@ function open_file_with_env()
     if new_cword == cword then
       return
     end
-    -- print("new_cword: " .. new_cword)
+
+    if use_debug_print then
+      print("new_cword: " .. new_cword)
+    end
 
     -- vim.cmd("edit " .. new_cword)
     vim.cmd("tabe " .. new_cword)
@@ -2133,10 +2178,12 @@ local function diff_current_lines()
     end
   end
 
-  --print("File paths read:")
-  --for i, file_path in ipairs(file_paths) do
-  --  print(string.format("File %d: %s", i, file_path))
-  --end
+  if should_debug_print() then
+    print("File paths read:")
+    for i, file_path in ipairs(file_paths) do
+      print(string.format("File %d: %s", i, file_path))
+    end
+  end
 
   if #file_paths < 2 then
     print("Not enough file paths found for diff.")
@@ -2162,9 +2209,11 @@ local function get_default_branch()
   if vim.loop.os_uname().sysname == "Windows_NT" then
     local cmd = [[powershell -Command "(git remote show upstream | Select-String -Pattern 'HEAD branch' | ForEach-Object { $_.Line }) -replace '^.*HEAD branch: ', ''''"]]
     local output = vim.fn.system(cmd):gsub("\n", "")
+
     if vim.v.shell_error ~= 0 or output == "" then
       return ""
     end
+
     -- Extract last word (branch name)
     local branch_name = output:match("%S+$") or ""
     -- Remove any quotes or single quotes (')
@@ -2193,7 +2242,11 @@ local function diffg_command()
     print("Current file is not in a Git repository.")
     return
   end
-  --print(git_root)
+
+  local use_debug_print = should_debug_print()
+  if use_debug_print then
+    print("git_root: " .. git_root)
+  end
 
   -- Remove git_root and the trailing '/'
   -- (this worked with commented git_root code above on linux)
@@ -2201,7 +2254,9 @@ local function diffg_command()
 
   local relative_path = current_file:sub(#git_root)
   relative_path = relative_path:gsub("^[/\\]+", "") -- Remove leading slashes
-  --print(relative_path)
+  if use_debug_print then
+    print("relative_path: " .. relative_path)
+  end
 
   --local default_branch = "upstream/npcbots_3.3.5"
   local default_branch = get_default_branch()
@@ -2235,14 +2290,21 @@ local function diffg_command()
 
   local checkout_command = string.format("git show %s:%s > %s", branch_name, relative_path, target_file2)
   checkout_command = checkout_command:gsub("\\", "/"):gsub("//+", "/")
-  --print(checkout_command)
+
+  if use_debug_print then
+    print("checkout_command: " .. checkout_command)
+  end
+
   vim.fn.system(checkout_command)
   if vim.v.shell_error ~= 0 then
     print("Failed to checkout file from branch: " .. branch_name)
     return
   end
 
-  --print("File checked out to: " .. target_file2)
+  if use_debug_print then
+    print("File checked out to: " .. target_file2)
+  end
+
   vim.cmd("vert diffsplit " .. vim.fn.fnameescape(target_file2))
 end
 
@@ -2353,6 +2415,7 @@ vim.keymap.set('n', '<leader><leader>', function()
     { label = "GoLangTestFiles", cmd = "GoLangTestFiles" },
     { label = "Config - CyclePythonExecCommand", cmd = "CyclePythonExecCommand" },
     { label = "Config - TogglePrioritizeBuildScript", cmd = "TogglePrioritizeBuildScript" },
+    { label = "Config - ToggleDebugPrint", cmd = "ToggleDebugPrint" },
     { label = "Config - PrintConfig", cmd = "PrintConfig" },
     { label = "Llama", cmd = "Llm" },
     -- SQL
@@ -2527,6 +2590,7 @@ vim.keymap.set('n', '<leader><leader>', function()
     ["messages"] = true,
     ["CyclePythonExecCommand"] = true,
     ["TogglePrioritizeBuildScript"] = true,
+    ["ToggleDebugPrint"] = true,
     ["PrintConfig"] = true,
   }
 
@@ -2729,7 +2793,9 @@ function split_pane_in_wezterm()
   -- if vim.fn.isdirectory(resolved_path) == 1 then
   if resolved_path:find("/") then
     local wezterm_command = "wezterm cli split-pane --right --percent 50 --cwd " .. vim.fn.shellescape(resolved_path)
-    -- print("wezterm_command: " .. wezterm_command)
+    if should_debug_print() then
+      print("wezterm_command: " .. wezterm_command)
+    end
     os.execute(wezterm_command)
   else
     print("Error: Invalid directory path: " .. resolved_path)

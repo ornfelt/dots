@@ -50,6 +50,8 @@ function project_files_opts(opts)
 end
 -- vim.api.nvim_set_keymap('n', '<M-a>', '<cmd>lua project_files_opts({ hidden = true })<CR>', { noremap = true, silent = true })
 
+-- Make sure you have ripgrep installed!
+
 --vim.api.nvim_set_keymap('n', '<leader>tf', '<cmd>Telescope find_files<CR>', { noremap = true, silent = true })
 --vim.api.nvim_set_keymap('n', '<M-a>', '<cmd>Telescope git_files<CR>', { noremap = true, silent = true })
 vim.api.nvim_set_keymap('n', '<M-A>', '<cmd>Telescope find_files<CR>', { noremap = true, silent = true })

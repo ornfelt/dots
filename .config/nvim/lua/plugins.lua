@@ -269,11 +269,15 @@ local my_plugins = {
   -- "folke/which-key.nvim"
 }
 
-if is_raspbian then
-  my_plugins = vim.tbl_filter(function(plugin)
-    return plugin[1] ~= "OXY2DEV/markview.nvim"
-  end, my_plugins)
-end
+--if is_raspbian then
+--  my_plugins = vim.tbl_filter(function(plugin)
+--    return plugin[1] ~= "OXY2DEV/markview.nvim"
+--  end, my_plugins)
+--end
+
+my_plugins = vim.tbl_filter(function(plugin)
+  return plugin[1] ~= "OXY2DEV/markview.nvim"
+end, my_plugins)
 
 require("lazy").setup(my_plugins , {
     install = {
