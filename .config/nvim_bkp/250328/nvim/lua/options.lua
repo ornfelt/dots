@@ -186,11 +186,3 @@ vim.env.LANG = "en_US.UTF-8"
 --  return s
 --end
 
--- https://gpanders.com/blog/whats-new-in-neovim-0-11/#diagnostics
-vim.diagnostic.config({ virtual_text = true })
-
---vim.diagnostic.config({
---  virtual_text = { current_line = true }
---})
---
-
