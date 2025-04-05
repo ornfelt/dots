@@ -29,7 +29,7 @@ return {
   require("plugins.actions-preview"),
   require("plugins.Comment"),
   require("plugins.vim-emoji"),
-  require("plugins.markview"),
+  --require("plugins.markview"),
   require("plugins.sqls"),
   --require("plugins.python-syntax"),
   --require("plugins.vim-commentary"),

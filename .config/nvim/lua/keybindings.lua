@@ -845,6 +845,49 @@ function load_tabs_and_splits()
   end
 end
 
+--local hardcoded_patterns = {
+--  "Code/ml/llama2.c",
+--  "Code/ml/llama.cpp",
+--}
+local function read_patterns_from_file(filepath)
+  local patterns = {}
+  local file = io.open(filepath, "r")
+  if file then
+    for line in file:lines() do
+      -- Trim trailing whitespace
+      line = line:gsub("%s+$", "")
+      -- Only store non-empty lines
+      if #line > 0 then
+        table.insert(patterns, line)
+      end
+    end
+    file:close()
+  else
+    print("Could not open file: " .. filepath)
+  end
+  return patterns
+end
+
+-- Return last n slash-delimited components joined with underscores
+-- e.g.: path="Code/ml/llama.cpp", n=3 => "Code_ml_llama.cpp"
+local function last_n_dirs_underscored(path, n)
+  local parts = {}
+  for p in path:gmatch("[^/]+") do
+    table.insert(parts, p)
+  end
+
+  local total = #parts
+  if total < n then
+    return table.concat(parts, "_")
+  end
+
+  local slice = {}
+  for i = total - n + 1, total do
+    table.insert(slice, parts[i])
+  end
+  return table.concat(slice, "_")
+end
+
 function save_tabs_and_splits()
   local tab_count = vim.fn.tabpagenr('$')
 
@@ -859,7 +902,16 @@ function save_tabs_and_splits()
   local current_tab = vim.fn.tabpagenr()
   local current_win = vim.fn.winnr()
 
-  -- Iterate over tabs to count tabs containing "my_notes_path"
+  local hard_coded_paths_file = my_notes_path .. ".vim/hard_coded_paths.txt"
+  local hardcoded_patterns = read_patterns_from_file(hard_coded_paths_file)
+
+  -- Track how often each hardcoded pattern is seen
+  local pattern_counts = {}
+  for _, pattern in ipairs(hardcoded_patterns) do
+    pattern_counts[pattern] = 0
+  end
+
+  -- Iterate over tabs to count tabs containing "my_notes_path" and to update pattern counts
   for i = 1, tab_count do
     vim.cmd(i .. "tabnext")
 
@@ -879,7 +931,6 @@ function save_tabs_and_splits()
         -- [^/]+$ matches the filename after the last directory.
         local final_dir = full_path:match(".*/([^/]+/[^/]+)/[^/]+$") or ""
         final_dir = final_dir:gsub("/", "_")
-
         -- Count occurrences of the final directory
         if final_dir ~= "" then
           dir_counts[final_dir] = (dir_counts[final_dir] or 0) + 1
@@ -888,6 +939,14 @@ function save_tabs_and_splits()
         if full_path:find(my_notes_path, 1, true) then
           found_my_notes = true
         end
+
+        -- Also check which of our hardcoded patterns is matched
+        for _, pattern in ipairs(hardcoded_patterns) do
+          if full_path:find(pattern, 1, true) then
+            pattern_counts[pattern] = pattern_counts[pattern] + 1
+          end
+        end
+
       end
     end
 
@@ -900,14 +959,29 @@ function save_tabs_and_splits()
   vim.cmd(current_tab .. "tabnext")
   vim.cmd(current_win .. "wincmd w")
 
-  -- Determine the most common final directory
+  -- Determine if any of our hardcoded patterns surpass the threshold (≥2 files)
+  local forced_subpath = nil
+  local max_pattern_count = 0
+  for pattern, count in pairs(pattern_counts) do
+    if count >= 2 and count > max_pattern_count then
+      max_pattern_count = count
+      forced_subpath   = pattern
+    end
+  end
+
+  -- If no forced subpath, fall back to the 'most common directory' approach
   local most_common_dir = nil
   local max_count = 0
-  for dir, count in pairs(dir_counts) do
-    if count > max_count then
-      max_count = count
-      most_common_dir = dir
+  if not forced_subpath then
+    for dir, count in pairs(dir_counts) do
+      if count > max_count then
+        max_count = count
+        most_common_dir = dir
+      end
     end
+  else
+    -- forced_subpath is set, so we’ll convert that path to only its last 3 directories underscored
+    most_common_dir = last_n_dirs_underscored(forced_subpath, 3)
   end
 
   -- Determine session filenames

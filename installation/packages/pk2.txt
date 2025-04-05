@@ -46,6 +46,7 @@ python-pyaudio
 qrencode
 qt5-webengine
 ranger
+reflector
 ripgrep
 rofi
 rofi-greenclip
@@ -95,4 +96,3 @@ texlive-plaingeneric
 texlive-pstricks
 texlive-publishers
 texlive-xetex
-the_silver_searcher

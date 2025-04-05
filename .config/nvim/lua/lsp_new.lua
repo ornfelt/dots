@@ -1,6 +1,11 @@
+--local autocomplete = require("autocomplete")
+
 vim.api.nvim_create_autocmd('LspAttach', {
   desc = 'LSP actions',
   callback = function(event)
+
+    --autocomplete.setup(event)
+
     local opts = { buffer = event.buf, noremap = true, silent = true }
 
     vim.keymap.set('n', '<M-r>', '<cmd>lua vim.lsp.buf.references()<CR>', opts)
@@ -19,6 +24,7 @@ vim.api.nvim_create_autocmd('LspAttach', {
   end,
 })
 
+-- blink.cmp
 local capabilities = {
   textDocument = {
     foldingRange = {
@@ -35,6 +41,7 @@ vim.lsp.config('*', {
   root_markers = { '.git' },
 })
 
+-- Enable servers
 --vim.lsp.enable({'clangd', 'gopls', 'rust-analyzer'})
 
 -- Automatically enable LSP for all lsp files found in my runtimepath
@@ -47,7 +54,7 @@ end
 
 vim.lsp.enable(vim.tbl_keys(configs))
 
--- Completion
+-- Completion (see autocomplete instead)
 --vim.api.nvim_create_autocmd('LspAttach', {
 --  callback = function(ev)
 --    local client = vim.lsp.get_client_by_id(ev.data.client_id)
@@ -56,4 +63,16 @@ vim.lsp.enable(vim.tbl_keys(configs))
 --    end
 --  end,
 --})
+
+-- toggle LSP for the current buffer
+--vim.keymap.set('n', '<F10>', function()
+--  -- clients active for the current buffer
+--  local clients = vim.lsp.get_clients({ bufnr = vim.api.nvim_get_current_buf() })
+--
+--  if vim.tbl_isempty(clients) then
+--    vim.cmd("LspStart")
+--  else
+--    vim.cmd("LspStop")
+--  end
+--end)
 

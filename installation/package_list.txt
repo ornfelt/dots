@@ -144,6 +144,7 @@ python-pyaudio
 qrencode
 qt5-webengine
 ranger
+reflector
 ripgrep
 rofi
 rofi-greenclip

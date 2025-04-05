@@ -190,7 +190,9 @@ vim.env.LANG = "en_US.UTF-8"
 vim.diagnostic.config({ virtual_text = true })
 
 --vim.diagnostic.config({
---  virtual_text = { current_line = true }
+--  virtual_text = { current_line = true },
+--  virtual_lines = false,
 --})
---
+
+--opt.messagesopt = 'wait:1000,history:500'
 
