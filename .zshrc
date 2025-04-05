@@ -288,6 +288,10 @@ export wow_classic_dir="/mnt/new/wow_classic"
 export wow_tbc_dir="/mnt/new/wow_tbc"
 export wow_cata_dir="/mnt/new/cata"
 #export PATH="${PATH}:$HOME/.fzf/bin"
+export wow_mpq_dir="/mnt/new/mpq/Export"
+#export wow_classic_mpq_dir=""
+#export wow_tbc_mpq_dir=""
+#export wow_cata_mpq_dir=""
 
 export LANG=en_US.UTF-8
 export LANGUAGE=en

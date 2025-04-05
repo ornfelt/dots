@@ -45,6 +45,7 @@ tinyobjloader 2.0.0rc13-1
 tinyobjloader-debug 2.0.0rc13-1
 tstock 2.2.6-1
 ttf-icomoon-feather 1.0-2
+ttf-joypixels 8.0.0-2
 ueberzugpp-debug 2.9.6-2
 urxvt-resize-font-git 27.b593580-1
 vlc-git-debug 4.0.0.r20918.g02c95ad381-1
