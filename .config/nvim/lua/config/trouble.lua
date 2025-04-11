@@ -35,3 +35,4 @@ require("trouble").setup({})
 --local actions = require("trouble.sources.fzf").actions
 --config.defaults.actions.files["ctrl-t"] = actions.open
 --
+

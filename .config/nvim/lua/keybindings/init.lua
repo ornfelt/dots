@@ -7,7 +7,6 @@ require("keybindings.diff")
 require("keybindings.filetree")
 require("keybindings.formatting")
 require("keybindings.fuzzy")
-require("keybindings.hellow")
 require("keybindings.nav")
 require("keybindings.path_operations")
 require("keybindings.py_exec")
@@ -101,7 +100,7 @@ end)
 
 myconfig.map("n", "Q", "<nop>") -- Remove Ex Mode
 
--- Function keys mappings
+-- Function keys
 myconfig.map('n', '<F4>', '<Esc>:set cursorline!<CR>')
 myconfig.map('n', '<F5>', '<Esc>:setlocal spell! spelllang=en_us<CR>')
 myconfig.map('n', '<F6>', '<Esc>:setlocal spell! spelllang=sv<CR>')

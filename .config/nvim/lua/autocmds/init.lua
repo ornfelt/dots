@@ -1,5 +1,6 @@
-require("autocmds.sql_autocmds")
+require("autocmds.hellow")
 require("autocmds.code_autocmds")
+require("autocmds.sql_autocmds")
 require("autocmds.treesitter_autocmds")
 
 -- Automatic command to adjust format options
@@ -9,7 +10,7 @@ vim.cmd [[
 
 -- vim.api.nvim_command('autocmd BufEnter *.tex :set wrap linebreak nolist spell')
 
--- Automatically load the session when entering vim
+-- Automatically load main session when entering vim
 -- vim.api.nvim_create_autocmd("VimEnter", {
 --   pattern = "*",
 --   command = "source ~/.vim/sessions/s.vim"

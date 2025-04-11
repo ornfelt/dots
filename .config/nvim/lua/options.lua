@@ -139,7 +139,7 @@ vim.cmd [[
 ]]
 
 -- Plugin settings
-vim.g['jedi#popup_on_dot'] = 1
+--vim.g['jedi#popup_on_dot'] = 1
 
 -- Syntastic Plugin Settings
 -- vim.g['syntastic_always_populate_loc_list'] = 0
@@ -147,7 +147,7 @@ vim.g['jedi#popup_on_dot'] = 1
 -- vim.g['syntastic_check_on_wq'] = 0
 
 -- Vimwiki Plugin Settings
-vim.g['vimwiki_key_mappings'] = { table_mappings = 0 }
+--vim.g['vimwiki_key_mappings'] = { table_mappings = 0 }
 
 -- local ok, _ = pcall(vim.cmd, 'colorscheme base16-gruvbox-dark-medium')
 -- vim.g.gruvbox_contrast_dark = 'hard'
