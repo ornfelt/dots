@@ -18,6 +18,7 @@ local on_attach = function(client, bufnr)
   buf_set_keymap('n', '<leader>lo', '<cmd>lua vim.lsp.buf.hover()<CR>', { noremap = true, silent = true })
   buf_set_keymap('n', '<leader>ld', '<cmd>lua vim.lsp.buf.type_definition()<CR>', { noremap = true, silent = true })
   buf_set_keymap('n', '<leader>lc', '<cmd>lua vim.lsp.buf.declaration()<CR>', { noremap = true, silent = true })
+  buf_set_keymap('n', '<leader>ls', '<cmd>lua vim.lsp.buf.document_symbol()<CR>', { noremap = true, silent = true })
 end
 
 -- Python language server
@@ -281,4 +282,61 @@ local capabilities = require('cmp_nvim_lsp').default_capabilities(vim.lsp.protoc
 -- require('lspconfig')['<YOUR_LSP_SERVER>'].setup {
 -- capabilities = capabilities
 -- }
+
+--
+-- LSP hover keybind/autocmd
+--
+vim.o.updatetime = 1000
+local enabled_filetypes = {
+    bash = true,
+    c = true,
+    cpp = true,
+    css = true,
+    go = true,
+    graphql = true,
+    html = true,
+    java = true,
+    javascript = true,
+    jsdoc = true,
+    json = true,
+    lua = true,
+    markdown = true,
+    markdown_inline = true,
+    php = true,
+    python = true,
+    query = true,
+    regex = true,
+    rust = true,
+    scss = true,
+    sql = true,
+    tsx = true,
+    typescript = true,
+    vim = true,
+    vimdoc = true,
+    vue = true,
+    yaml = true,
+}
+
+local hover_enabled = false
+function toggle_hover()
+    hover_enabled = not hover_enabled
+    if hover_enabled then
+        print("Hover enabled")
+    else
+        print("Hover disabled")
+    end
+end
+
+vim.api.nvim_create_autocmd("CursorHold", {
+    pattern = "*", -- Apply to all files initially
+    callback = function()
+        if hover_enabled and enabled_filetypes[vim.bo.filetype] then
+            vim.lsp.buf.hover()
+        end
+    end,
+    desc = "Show LSP hover information on CursorHold for specific filetypes",
+})
+
+-- leader-lo to enable manually. Press again or <C-w><C-w> to go into hover-window
+vim.api.nvim_set_keymap( "n", "<leader>lot", "<cmd>lua toggle_hover()<CR>", { noremap = true, silent = true })
 

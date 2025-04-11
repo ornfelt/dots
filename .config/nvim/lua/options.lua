@@ -1,5 +1,6 @@
 local o   = vim.o
 local opt = vim.opt
+local g   = vim.g
 --local A   = vim.api
 
 -- cmd('syntax on')
@@ -195,4 +196,8 @@ vim.diagnostic.config({ virtual_text = true })
 --})
 
 --opt.messagesopt = 'wait:1000,history:500'
+
+-- Map <leader> to space
+g.mapleader = ' '
+g.maplocalleader = ' '
 
