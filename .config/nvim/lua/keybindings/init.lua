@@ -18,6 +18,10 @@ require("keybindings.showbinds")
 require("keybindings.utility")
 require("keybindings.vimgrep")
 
+-- Close tab
+--myconfig.map('n', '<M-q>', ':q<CR>') -- Quit
+-- See restore_tab instead (customized bind for M-q)...
+
 -- Fix * (Keep the cursor position, don't move to next match)
 -- myconfig.map('n', '*', '*N')
 -- Fix n and N. Keeping cursor in center

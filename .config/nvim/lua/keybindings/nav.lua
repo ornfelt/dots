@@ -81,11 +81,6 @@ end, { desc = "Toggle Zoom for Current Split" })
 
 -- Tab keybinds
 
--- Close tab
---myconfig.map('n', '<M-q>', ':q<CR>') -- Quit
--- Close and restore tab (customized bind for M-q)
-require("keybindings.restore_tab")
-
 myconfig.map('n', '<M-t>', ':tabe<CR>')
 --myconfig.map('n', '<M-s>', ':split<CR>')
 myconfig.map('n', '<M-Enter>', ':vsp | terminal ' .. (vim.loop.os_uname().sysname == "Windows_NT" and "powershell" or "") .. '<CR>')

@@ -234,8 +234,10 @@ end
 function diff_buffers_or_file()
   local tabpage = vim.api.nvim_get_current_tabpage()
   local windows = vim.api.nvim_tabpage_list_wins(tabpage)
-  local use_fzf_for_diff = false
-  local use_fzf_lua_for_diff = false
+
+  local use_fzf_for_diff = myconfig.get_file_picker() == myconfig.FilePicker.FZF
+  local use_fzf_lua_for_diff = myconfig.get_file_picker() == myconfig.FilePicker.FZF_LUA
+  local use_debug_print = myconfig.should_debug_print()
 
   if #windows == 2 then
     vim.cmd("windo diffthis")
@@ -256,9 +258,13 @@ function diff_buffers_or_file()
                 local selected_path = selected_paths[1]
 
                 if selected_path then
-                  print("path: " .. selected_path)
+                  if use_debug_print then
+                    print("path: " .. selected_path)
+                  end
                   selected_path = clean_selected_path(cwd, selected_path)
-                  print("Cleaned path: " .. selected_path)
+                  if use_debug_print then
+                    print("Cleaned path: " .. selected_path)
+                  end
 
                   vim.cmd("vsplit " .. vim.fn.fnameescape(selected_path))
                   vim.cmd("diffthis")
