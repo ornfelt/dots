@@ -21,6 +21,17 @@ local on_attach = function(client, bufnr)
   buf_set_keymap('n', '<leader>ls', '<cmd>lua vim.lsp.buf.document_symbol()<CR>', { noremap = true, silent = true })
 end
 
+vim.keymap.set('n', '<M-r>', '<cmd>lua vim.lsp.buf.references()<CR>', { noremap = true, silent = true })
+vim.keymap.set('n', '<M-d>', '<cmd>lua vim.lsp.buf.definition()<CR>', { noremap = true, silent = true })
+vim.keymap.set('n', '<M-s-D>', '<cmd>lua vim.lsp.buf.implementation()<CR>', { noremap = true, silent = true })
+vim.keymap.set('n', '<leader>la', '<cmd>lua vim.lsp.buf.code_action()<CR>', { noremap = true, silent = true })
+vim.keymap.set('n', '<leader>lr', '<cmd>lua vim.lsp.buf.rename()<CR>', { noremap = true, silent = true })
+vim.keymap.set('n', '<leader>lh', '<cmd>lua vim.lsp.buf.signature_help()<CR>', { noremap = true, silent = true })
+vim.keymap.set('n', '<leader>lo', '<cmd>lua vim.lsp.buf.hover()<CR>', { noremap = true, silent = true })
+vim.keymap.set('n', '<leader>ld', '<cmd>lua vim.lsp.buf.type_definition()<CR>', { noremap = true, silent = true })
+vim.keymap.set('n', '<leader>lc', '<cmd>lua vim.lsp.buf.declaration()<CR>', { noremap = true, silent = true })
+vim.keymap.set('n', '<leader>ls', '<cmd>lua vim.lsp.buf.document_symbol()<CR>', { noremap = true, silent = true })
+
 -- Python language server
 --require'lspconfig'.pyright.setup {
 --    on_attach = on_attach,
@@ -121,59 +132,61 @@ if vim.fn.executable("yaml-language-server") == 1 then
   }
 end
 
-local omnisharp_path = os.getenv('OMNISHARP_PATH')
-if omnisharp_path then
-  local cmd
-
-  if vim.fn.has('unix') == 1 then
-    cmd = { "dotnet", omnisharp_path .. "/OmniSharp.dll" }
-  else
-    cmd = { omnisharp_path .. "/OmniSharp.exe", "--languageserver", "--hostPID", tostring(vim.fn.getpid()) }
-  end
-
-  require'lspconfig'.omnisharp.setup {
-    on_attach = on_attach,
-    cmd = cmd,
-    settings = {
-      FormattingOptions = {
-        -- Enables support for reading code style, naming convention and analyzer
-        -- settings from .editorconfig.
-        EnableEditorConfigSupport = true,
-        -- Specifies whether 'using' directives should be grouped and sorted during
-        -- document formatting.
-        OrganizeImports = nil,
-      },
-      MsBuild = {
-        -- If true, MSBuild project system will only load projects for files that
-        -- were opened in the editor. This setting is useful for big C# codebases
-        -- and allows for faster initialization of code navigation features only
-        -- for projects that are relevant to code that is being edited. With this
-        -- setting enabled OmniSharp may load fewer projects and may thus display
-        -- incomplete reference lists for symbols.
-        LoadProjectsOnDemand = nil,
-      },
-      RoslynExtensionsOptions = {
-        -- Enables support for roslyn analyzers, code fixes and rulesets.
-        EnableAnalyzersSupport = nil,
-        -- Enables support for showing unimported types and unimported extension
-        -- methods in completion lists. When committed, the appropriate using
-        -- directive will be added at the top of the current file. This option can
-        -- have a negative impact on initial completion responsiveness,
-        -- particularly for the first few completion sessions after opening a
-        -- solution.
-        EnableImportCompletion = nil,
-        -- Only run analyzers against open files when 'enableRoslynAnalyzers' is
-        -- true
-        AnalyzeOpenDocumentsOnly = nil,
-      },
-      Sdk = {
-        -- Specifies whether to include preview versions of the .NET SDK when
-        -- determining which version to use for project loading.
-        IncludePrereleases = true,
-      },
-    },
-  }
-end
+--local omnisharp_path = os.getenv('OMNISHARP_PATH')
+--if omnisharp_path then
+--  local cmd
+--
+--  if vim.fn.has('unix') == 1 then
+--    cmd = { "dotnet", omnisharp_path .. "/OmniSharp.dll" }
+--  else
+--    cmd = { omnisharp_path .. "/OmniSharp.exe", "--languageserver", "--hostPID", tostring(vim.fn.getpid()) }
+--  end
+--
+--  require'lspconfig'.omnisharp.setup {
+--    on_attach = on_attach,
+--    cmd = cmd,
+--    settings = {
+--      FormattingOptions = {
+--        -- Enables support for reading code style, naming convention and analyzer
+--        -- settings from .editorconfig.
+--        EnableEditorConfigSupport = true,
+--        -- Specifies whether 'using' directives should be grouped and sorted during
+--        -- document formatting.
+--        OrganizeImports = nil,
+--      },
+--      MsBuild = {
+--        -- If true, MSBuild project system will only load projects for files that
+--        -- were opened in the editor. This setting is useful for big C# codebases
+--        -- and allows for faster initialization of code navigation features only
+--        -- for projects that are relevant to code that is being edited. With this
+--        -- setting enabled OmniSharp may load fewer projects and may thus display
+--        -- incomplete reference lists for symbols.
+--        LoadProjectsOnDemand = nil,
+--      },
+--      RoslynExtensionsOptions = {
+--        -- Enables support for roslyn analyzers, code fixes and rulesets.
+--        EnableAnalyzersSupport = nil,
+--        -- Enables support for showing unimported types and unimported extension
+--        -- methods in completion lists. When committed, the appropriate using
+--        -- directive will be added at the top of the current file. This option can
+--        -- have a negative impact on initial completion responsiveness,
+--        -- particularly for the first few completion sessions after opening a
+--        -- solution.
+--        EnableImportCompletion = nil,
+--        -- Only run analyzers against open files when 'enableRoslynAnalyzers' is
+--        -- true
+--        AnalyzeOpenDocumentsOnly = nil,
+--      },
+--      Sdk = {
+--        -- Specifies whether to include preview versions of the .NET SDK when
+--        -- determining which version to use for project loading.
+--        IncludePrereleases = true,
+--      },
+--    },
+--  }
+--end
+-- Use roslyn instead of omnisharp:
+-- {conf_dir}/nvim/lua/plugins/roslyn.lua
 
 if vim.fn.has('win32') == 1 then
   local binary_name = 'powershell.exe'
@@ -286,7 +299,7 @@ local capabilities = require('cmp_nvim_lsp').default_capabilities(vim.lsp.protoc
 --
 -- LSP hover keybind/autocmd
 --
-vim.o.updatetime = 1000
+--vim.o.updatetime = 1000
 local enabled_filetypes = {
     bash = true,
     c = true,

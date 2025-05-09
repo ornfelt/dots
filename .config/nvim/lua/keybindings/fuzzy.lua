@@ -10,11 +10,13 @@ function ts_project_files()
   if ret == 0 then
     --builtin.git_files()
     builtin.git_files({
+      cwd = utils.buffer_dir(),
       previewer = true,
     })
   else
     --builtin.find_files()
     builtin.find_files({
+      cwd = utils.buffer_dir(),
       previewer = true,
     })
   end
@@ -53,7 +55,11 @@ function fuzzy_project_files()
     cwd = cwd:gsub(" ", '\\ ')
     vim.cmd("FZF " .. cwd)
   elseif file_picker == myconfig.FilePicker.FZF_LUA then
-    require("fzf-lua").git_files({ cwd = cwd })
+    if is_git then
+      require("fzf-lua").git_files({ cwd = cwd })
+    else
+      require("fzf-lua").files({})
+    end
   else
     ts_project_files()
   end
@@ -67,14 +73,15 @@ function fuzzy_files()
   elseif file_picker == myconfig.FilePicker.FZF_LUA then
     require("fzf-lua").files({})
   else
-    vim.cmd("Telescope find_files")
+    --vim.cmd("Telescope find_files")
+    require('telescope.builtin').find_files({ cwd = utils.buffer_dir() })
   end
 end
 
 vim.api.nvim_set_keymap('n', '<M-a>', '<cmd>lua fuzzy_project_files()<CR>', { noremap = true, silent = true, desc = "Project Files (git-aware)" })
 vim.api.nvim_set_keymap('n', '<M-A>', '<cmd>lua fuzzy_files()<CR>', { noremap = true, silent = true, desc = "All Files" })
 
--- Fuzzy search C:/ drive
+-- fuzzy search at '/' or 'C:/'
 vim.keymap.set('n', '<M-S>', function()
   local use_fzf = myconfig.get_file_picker() == myconfig.FilePicker.FZF
   local use_fzf_lua = myconfig.get_file_picker() == myconfig.FilePicker.FZF_LUA

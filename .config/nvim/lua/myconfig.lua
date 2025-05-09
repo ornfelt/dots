@@ -4,7 +4,7 @@ local M = {} -- Module table
 function M.normalize_path(path)
   if not path then return nil end
   -- Replace backslashes with forward slashes and remove duplicate forward slashes
-  path = path:gsub("\\", "/"):gsub("//+", "/")
+  path = path:gsub("\\", "/"):gsub("//+", "/"):gsub("/#", "\\#")
   return path
 end
 
@@ -68,11 +68,13 @@ local home_dir = M.normalize_path((os.getenv("HOME") or os.getenv("USERPROFILE")
 local my_notes_path = M.normalize_path((os.getenv("my_notes_path") or home_dir) .. "/")
 local code_root_dir = M.normalize_path((os.getenv("code_root_dir") or home_dir) .. "/")
 local ps_profile_path = M.normalize_path((tostring(os.getenv("ps_profile_path")) or home_dir) .. "/")
+local user_domain = os.getenv("UserDomain") or home_dir
 
 M.home_dir = home_dir
 M.my_notes_path = my_notes_path
 M.code_root_dir = code_root_dir
 M.ps_profile_path = ps_profile_path
+M.user_domain = user_domain
 
 -- Get nvim config dir
 function M.get_conf_dir()
@@ -127,14 +129,19 @@ end
 
 -- Check if DebugPrint is enabled
 function M.should_debug_print()
-  local prioritize = read_config("DebugPrint", "false")
-  return prioritize:lower() == "true"
+  local debug_print = read_config("DebugPrint", "false")
+  return debug_print:lower() == "true"
 end
 
 -- Check if prioritizing build scripts is enabled
 function M.should_prioritize_build_script()
   local prioritize = read_config("PrioritizeBuildScript", "false")
   return prioritize:lower() == "true"
+end
+
+function M.use_file_picker_for_commands()
+  local use_file_picker = read_config("UseFilePickerForCommands", "false")
+  return use_file_picker:lower() == "true"
 end
 
 function M.get_py_command()
@@ -227,8 +234,13 @@ function ToggleDebugPrint()
   ToggleBooleanSetting("DebugPrint")
 end
 
+function ToggleUseFilePickerForCommands()
+  ToggleBooleanSetting("UseFilePickerForCommands")
+end
+
 vim.api.nvim_create_user_command('TogglePrioritizeBuildScript', TogglePrioritizeBuildScript, {})
 vim.api.nvim_create_user_command('ToggleDebugPrint', ToggleDebugPrint, {})
+vim.api.nvim_create_user_command('ToggleUseFilePickerForCommands', ToggleUseFilePickerForCommands, {})
 
 -- Dynamic filepicker selection
 local FilePicker = {

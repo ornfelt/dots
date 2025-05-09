@@ -370,11 +370,12 @@ require('telescope').setup({
       i = {
         ["<esc>"] = actions.close,
         ["<C-b>"] = open_with_trouble,
-        ["<C-s>"] = document_symbols_for_selected, -- Bind <C-s> in insert mode
+        -- map: 'i', 'n' '<C-s>' -> document_symbols_for_selected
+        ["<C-s>"] = document_symbols_for_selected,
       },
       n = {
         ["<C-b>"] = open_with_trouble,
-        ["<C-s>"] = document_symbols_for_selected, -- Bind <C-s> in normal mode
+        ["<C-s>"] = document_symbols_for_selected,
       },
     },
   },

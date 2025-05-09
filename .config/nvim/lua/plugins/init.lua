@@ -32,6 +32,7 @@ return {
   require("plugins.undotree"),
   --require("plugins.markview"),
   require("plugins.sqls"),
+  require("plugins.roslyn"),
   --require("plugins.python-syntax"),
   --require("plugins.vim-commentary"),
   --require("plugins.vim-fugitive"),

@@ -7,6 +7,18 @@ fi
 
 InputFile="$1"
 
+# Append .txt if no extension present
+if [[ "$InputFile" != *.* ]]; then
+    InputFile="${InputFile}.txt"
+    echo "No extension detected; trying input file '$InputFile'..."
+fi
+
+# Check that the file exists
+if [ ! -f "$InputFile" ]; then
+    echo "Error: Input file '$InputFile' not found."
+    exit 1
+fi
+
 if [ -z "$my_notes_path" ]; then
     echo "Error: Environment variable 'my_notes_path' is not set."
     exit 1
@@ -19,7 +31,8 @@ if [ ! -f "$plantUmlJar" ]; then
     exit 1
 fi
 
-echo "Running command: java -jar $plantUmlJar $InputFile"
+#echo "Running command: java -jar $plantUmlJar $InputFile"
+echo "Running command: java -jar \"$plantUmlJar\" \"$InputFile\""
 java -jar "$plantUmlJar" "$InputFile"
 
 if [ $? -eq 0 ]; then

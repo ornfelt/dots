@@ -6,8 +6,34 @@ local function getWords()
   end
 end
 
+local function lsp_clients()
+  -- Neovim ≥0.10: pass { bufnr = 0 } for "current buffer"
+  -- For 0.9-: use vim.lsp.get_active_clients() and filter manually
+  local clients = vim.lsp.get_clients({ bufnr = 0 })
+
+  if #clients == 0 then
+    return '' -- no LSP for this buffer
+  end
+
+  local names = {}
+  for _, c in pairs(clients) do
+    -- Skip pseudo-clients such as null-ls
+    if c.name ~= 'null-ls' then
+      table.insert(names, c.name)
+    end
+  end
+  if vim.tbl_isempty(names) then
+    return ''
+  end
+
+  --return '  ' .. table.concat(names, ', ')
+  --return 'lsp: ' .. table.concat(names, ', ')
+  return table.concat(names, ', ')
+end
+
 local options = {
-  icons_enabled = true,
+  --icons_enabled = true,
+  icons_enabled = false,
   theme = 'gruvbox',
   -- globalstatus = true,
   refresh = {
@@ -28,6 +54,7 @@ require('lualine').setup {
     lualine_b = {'branch', 'diff', 'diagnostics'},
     lualine_c = {'filename'},
     lualine_x = {
+      lsp_clients,
       getWords,
       'encoding',
       {

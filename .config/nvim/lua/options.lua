@@ -14,9 +14,15 @@ require'colorizer'.setup()
 -- o.hidden = true
 
 -- Decrease update time
+-- Time to wait for a mapped sequence to complete (lower value = faster fallback to normal input.)
+--o.timeoutlen = 1000 -- Default
 o.timeoutlen = 500
---o.updatetime = 200
-o.updatetime = 50
+
+-- Time of inactivity before things like the CursorHold autocommand trigger and swap files are written.
+-- Lower value = more responsive diagnostics, LSP, etc.
+--o.updatetime = 4000 -- Default
+o.updatetime = 500
+--o.updatetime = 50
 
 -- Number of screen lines to keep above and below the cursor
 o.scrolloff = 8
