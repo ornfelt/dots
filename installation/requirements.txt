@@ -218,4 +218,5 @@ Werkzeug==3.0.3
 wheel==0.45.1
 xmltodict==0.14.2
 yq==3.4.3
+yt-dlp==2025.4.30
 zipp==3.21.0

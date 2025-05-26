@@ -145,7 +145,7 @@ create_mappings("py,python", {
   ["sout<Tab>"] = 'print("")<Esc>?""<Enter>li',
   ["souti<Tab>"] = 'print(f"x: {x}")<Esc>Fxciw',
   ["souts<Tab>"] = 'print(f"x: {x}")<Esc>Fxciw',
-  ["soutb<Tab>"] = 'print(f"x: {"true" if x else "false"}")<Esc>Fxciw',
+  ["soutb<Tab>"] = 'print(f"x: {\'true\' if x else \'false\'}")<Esc>Fxciw',
   ["soutf<Tab>"] = 'print(f"x: {x:.2f}")<Esc>Fxciw',
   ["soutd<Tab>"] = 'print(f"x: {x:.6f}")<Esc>Fxciw',
   ["soutc<Tab>"] = 'print(f"x: {chr(x)}")<Esc>Fxciw',

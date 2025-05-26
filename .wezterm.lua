@@ -603,9 +603,16 @@ config.keys = {
     action = wezterm.action.QuickSelectArgs {
       label = 'quickselect words',
       --\S+ for every word without spaces, below also makes sure there's at least 2 chars
+      --patterns = {
+      --  [[\S{2,}]],
+      --},
+      -- Same as above but the match stops at the first colon.
+      -- \S+? — a non-greedy match of non-space characters
+      -- (?=:\d) — a lookahead to ensure the match stops before a colon followed by a digit
+      -- | \S{2,} — fallback to match full non-space words of at least 2 characters when the lookahead doesn’t apply
       patterns = {
-        [[\S{2,}]],
-      },
+        [[\S+?(?=:\d)|\S{2,}]]
+      }
       --action = wezterm.action.QuickSelect
     },
   },
@@ -935,6 +942,10 @@ end
 
 wezterm.on("format-tab-title", function(tab)
   local new_title = tostring(tab.active_pane.current_working_dir):gsub("^file:///", "")
+  -- Normalize slashes
+  new_title = new_title:gsub("\\", "/")
+  new_title = new_title:gsub("//+", "/")
+
   --local max_title_len = 20 -- If use_fancy_tab_bar
   local max_title_len = 15
   if #new_title > max_title_len then

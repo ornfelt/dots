@@ -91,7 +91,7 @@ function compile_run()
     local build_script_exists = vim.fn.filereadable(build_script) == 1
     if build_script_exists then
       if is_windows then
-        vim.cmd('!powershell -ExecutionPolicy ByPass -File build.ps1')
+        vim.cmd('!powershell -NoProfile -ExecutionPolicy ByPass -File build.ps1')
       else
         vim.cmd('!bash ./build.sh')
       end

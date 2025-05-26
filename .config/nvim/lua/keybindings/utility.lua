@@ -74,6 +74,10 @@ function execute_command()
     command = vim.fn.getline('.')
   end
 
+  -- Remove comment prefix and trim leading whitespace
+  command = command:gsub("^%s*([#/]?/?%-?%-?)", "")
+  command = command:gsub("^%s+", "")
+
   if myconfig.should_debug_print() then
     -- Copy to clipboard
     vim.fn.setreg('+', command)
