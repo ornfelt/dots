@@ -7,6 +7,7 @@ require("nvim-treesitter.configs").setup({
   ensure_installed = {
     'bash',
     'c',
+    'c_sharp',
     'cpp',
     'css',
     'go',
@@ -182,12 +183,15 @@ function select_function_node(inner)
   -- climb until we hit a function-like node
   while node do
     if vim.tbl_contains({
-      "function",
-      "function_definition",
-      "method_definition",
-      "arrow_function",
-      "function_declaration",
-      "class_method",
+      "function",                     -- generic
+      "function_definition",          -- python
+      "function_declaration",         -- c, cpp, js, ts
+      "method_declaration",           -- java
+      "function_expression",          -- js, ts
+      "generator_function_declaration",-- js, ts generators
+      "method_definition",            -- js, ts, java
+      "arrow_function",               -- js, ts
+      "class_method",                 -- ruby, python
     }, node:type()) then
       break
     end
@@ -223,31 +227,31 @@ function select_function_node(inner)
     end
     start_row = earliest
 
-    -- special-case for cpp and cs to avoid curly braces
+    -- special-case for C-style brace bodies
     local ft = vim.bo.filetype
-    if ft == "cpp" or ft == "cs" then
-      -- avoid selecting the brace lines themselves
-      start_row = start_row + 1
-      end_row   = end_row   - 1
+    local brace_langs = {
+      cpp         = true,
+      cs          = true,
+      java        = true,
+      javascript  = true,
+      jsx         = true,
+      typescript  = true,
+      tsx         = true,
+      go          = true,
+      rust        = true,
+    }
+
+    if brace_langs[ft] then
+      -- fetch the very first line of the body (0-based start_row)
+      local line = vim.api.nvim_buf_get_lines(bufnr, start_row, start_row + 1, false)[1] or ""
+      -- trim trailing whitespace
+      local trimmed = line:match("^(.-)%s*$")
+      -- if it truly ends with '{', skip that entire line
+      if trimmed:sub(-1) == "{" then
+        start_row = start_row + 1
+        end_row   = end_row   - 1
+      end
     end
-
-    -- Same as above but only avoid lines if they’re pure braces
-    --local ft = vim.bo.filetype
-    --if ft == "cpp" or ft == "cs" then
-    --  -- get the text of the start line
-    --  local sline = vim.api.nvim_buf_get_lines(bufnr, start_row, start_row+1, false)[1]
-    --  local stripped = sline:match("^%s*(.-)%s*$")
-    --  if stripped == "{" then
-    --    start_row = start_row + 1
-    --  end
-
-    --  -- get the text of the end line
-    --  local eline = vim.api.nvim_buf_get_lines(bufnr, end_row, end_row+1, false)[1]
-    --  local stripped2 = eline:match("^%s*(.-)%s*$")
-    --  if stripped2 == "}" then
-    --    end_row = end_row - 1
-    --  end
-    --end
 
   else
     start_row, start_col, end_row, end_col = node:range()
@@ -283,13 +287,15 @@ function select_class_node(inner)
   while node do
     if vim.tbl_contains({
         -- TS node types for class/struct/etc in various langs
-        "class_declaration", -- java, csharp
-        "class_specifier",   -- cpp
-        "struct_specifier",  -- cpp
-        "class_definition",  -- python
-        "type_declaration",  -- go (covers struct, interface, aliases)
-        "struct_item",       -- rust
-        "impl_item",         -- rust impl blocks
+        "class_declaration",               -- java, csharp, js, ts
+        "class_expression",                -- js, ts inline
+        "export_default_class_declaration",-- js, ts default exports
+        "class_specifier",                 -- cpp
+        "struct_specifier",                -- cpp
+        "class_definition",                -- python
+        "type_declaration",                -- go
+        "struct_item",                     -- rust
+        "impl_item",                       -- rust impl blocks
       }, node:type())
     then
       break
@@ -328,57 +334,210 @@ vim.api.nvim_set_keymap("n", "vic", ":lua select_class_node(true)<CR>", { norema
 vim.api.nvim_set_keymap("n", "vac", ":lua select_class_node(false)<CR>", { noremap = true, silent = true })
 
 -- WIP: copy current buffer but replace every function body with "..."
-vim.api.nvim_create_user_command("CppSimplifyCopy", function()
+vim.api.nvim_create_user_command("SkeletonCopy", function(opts)
   local bufnr = vim.api.nvim_get_current_buf()
-  local ft = vim.bo.filetype
-  if ft ~= "cpp" and ft ~= "c" and ft ~= "h" then
-    vim.notify(":CppSimplifyCopy only works on C/C++ files", vim.log.levels.WARN)
+  local ft   = vim.bo.filetype
+  local remove_comments = not opts.bang
+
+  -- filetype -> treesitter language name
+  local lang_map = {
+    c           = "c",
+    cpp         = "cpp",
+    h           = "c",
+    cs          = "c_sharp",
+    python      = "python",
+    go          = "go",
+    rust        = "rust",
+    lua         = "lua",
+    java        = "java",
+    js          = "javascript",
+    javascript  = "javascript",
+    jsx         = "javascript",
+    ts          = "typescript",
+    typescript  = "typescript",
+    tsx         = "tsx",
+  }
+  local ts_lang = lang_map[ft]
+  if not ts_lang then
+    vim.notify(
+      ":SkeletonCopy only supported on C/C++/C#/Python/Go/Rust/Lua/Java/JS/TS (got '" .. ft .. "')",
+      vim.log.levels.WARN
+    )
     return
   end
 
+  -- per-language queries to capture function/method nodes
+  local queries = {
+    c         = [[ (function_definition) @func ]],
+    cpp       = [[ (function_definition) @func ]],
+    h         = [[ (function_definition) @func ]],
+    c_sharp   = [[
+      (method_declaration)        @func
+      (constructor_declaration)   @func
+    ]],
+    python    = [[ (function_definition) @func ]],
+    go        = [[ (function_declaration) @func ]],
+    rust      = [[ (function_item) @func ]],
+    lua       = [[ 
+      (function_declaration) @func 
+    ]],
+    java = [[
+      (method_declaration)        @func
+      (constructor_declaration)   @func
+    ]],
+    javascript = [[
+      (function_declaration) @func
+      (method_definition)   @func
+      (arrow_function)      @func
+    ]],
+    typescript = [[
+      (function_declaration) @func
+      (method_definition)   @func
+      (arrow_function)      @func
+    ]],
+    tsx       = [[
+      (function_declaration) @func
+      (method_definition)   @func
+      (arrow_function)      @func
+    ]],
+  }
+  local qstr = queries[ts_lang]
+  if not qstr then
+    vim.notify("No query defined for TS language: " .. ts_lang, vim.log.levels.ERROR)
+    return
+  end
+
+  -- grab all original lines
   local orig = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
-  local parser = vim.treesitter.get_parser(bufnr, ft)
-  local tree   = parser:parse()[1]
-  local root   = tree:root()
 
-  -- Fallback for parse_query vs parse
-  local ts_query = vim.treesitter.query or vim.treesitter
-  local parse    = ts_query.parse_query or ts_query.parse
-  if not parse then
-    vim.notify("Treesitter query parser not found in this Neovim build", vim.log.levels.ERROR)
+  -- treesitter setup
+  local ok, parser = pcall(vim.treesitter.get_parser, bufnr, ts_lang)
+  if not ok or not parser then
+    vim.notify("Could not create TS parser for “" .. ts_lang .. "”", vim.log.levels.ERROR)
     return
   end
-  local query = parse(ft, [[
-    (function_definition) @func
-  ]])
+  local tree  = parser:parse()[1]
+  local root  = tree:root()
+  local tsq   = vim.treesitter.query or vim.treesitter
+  local parse = tsq.parse_query or tsq.parse
+  if not parse then
+    vim.notify("Treesitter query parser not available", vim.log.levels.ERROR)
+    return
+  end
+  local query = parse(ts_lang, qstr)
 
+  -- collect all function-body ranges
   local ranges = {}
   for id, node in query:iter_captures(root, bufnr, 0, -1) do
     if query.captures[id] == "func" then
       local body = node:field("body")[1]
       if body then
-        local sr = select(1, body:range())
-        local er = select(3, body:range())
-        table.insert(ranges, { sr = sr, er = er })
+        -- body:range() returns (start_row, start_col, end_row, end_col), ALL zero-based
+        local sr, sc, er, ec = body:range()
+        table.insert(ranges, { sr = sr, sc = sc, er = er, ec = ec })
       end
     end
   end
 
-  table.sort(ranges, function(a,b) return a.sr > b.sr end)
+  -- sort descending by start_row so that earlier edits don't shift later ranges
+  table.sort(ranges, function(a, b)
+    if a.sr ~= b.sr then
+      return a.sr > b.sr
+    else
+      -- if two bodies start on same line, put the one that ends later first
+      return a.ec > b.ec
+    end
+  end)
+
+  -- Apply skeleton replacement
   local out = vim.deepcopy(orig)
 
   for _, r in ipairs(ranges) do
-    local sr, er = r.sr, r.er
-    local indent = orig[sr+1]:match("^%s*") or ""
-    for i = er+1, sr+1, -1 do
-      table.remove(out, i)
+    local sr, sc, er, ec = r.sr, r.sc, r.er, r.ec
+    local first_line = out[sr + 1] -- Lua list is 1-based, sr is 0-based
+    if sr == er then
+      -- single-line function body (everything from col sc to ec on the same line)
+      -- prefix = chars before the opening brace/indent
+      local prefix = first_line:sub(1, sc)
+      -- suffix = chars after the closing brace on that same line
+      -- (ec is zero-based, so ec+1 is the last char in the body; the next char is ec+2 in 1-based)
+      local suffix = first_line:sub(ec + 2)
+      out[sr + 1] = prefix .. "..." .. suffix
+
+    else
+      -- multi-line function body
+      -- First line: keep up to sc, then append "..."
+      local prefix = first_line:sub(1, sc)
+
+      -- Last line: keep from ec+1 onward
+      local last_line = out[er + 1]
+      local suffix = last_line:sub(ec + 2)
+
+      -- Remove all the “middle” lines (and the original last line),
+      --    i.e. lines (sr+2) .. (er+1) in 1-based indexing. We do this in reverse:
+      for i = (er + 1), (sr + 2), -1 do
+        table.remove(out, i)
+      end
+
+      out[sr + 1] = prefix .. "..."
+
+      -- If there's a non-empty suffix on the last line, insert it right after
+      if suffix ~= "" then
+        table.insert(out, sr + 2, suffix)
+      end
     end
-    table.insert(out, sr+1, indent .. "...")
   end
 
+  if remove_comments then
+    local filtered = {}
+    for _, line in ipairs(out) do
+      local trimmed = line:match("^%s*(.-)%s*$")
+      local skip = false
+
+      -- language-specific single‐line comment prefixes
+      local single = {
+        c           = "//",
+        cpp         = "//",
+        h           = "//",
+        c_sharp     = "//",
+        java        = "//",
+        go          = "//",
+        rust        = "//",
+        javascript  = "//",
+        typescript  = "//",
+        tsx         = "//",
+        python      = "#",
+        lua         = "--",
+      }
+
+      -- skip if only a single-line comment
+      local prefix = single[ts_lang]
+      if prefix and trimmed:match("^" .. vim.pesc(prefix)) then
+        skip = true
+      end
+
+      -- also skip block‐comment lines for JS/TS
+      if not skip and (ts_lang == "javascript" or ts_lang == "typescript" or ts_lang == "tsx") then
+        if trimmed:match("^/%*") or trimmed:match("^%*") or trimmed:match("%*/$") then
+          skip = true
+        end
+      end
+
+      if not skip then
+        table.insert(filtered, line)
+      end
+    end
+    out = filtered
+  end
+
+  -- yank to system clipboard
   vim.fn.setreg("+", table.concat(out, "\n"))
-  vim.notify("C/C++ buffer simplified and copied to clipboard", vim.log.levels.INFO)
+  vim.notify(
+    ("Buffer skeleton %scopied to clipboard"):format(remove_comments and "(no comments) " or ""),
+    vim.log.levels.INFO
+  )
 end, {
-  desc = "Copy buffer with every C/C++ function body replaced by '...'",
+  bang = true,
+  desc = "Copy buffer skeleton (replace bodies with '...'); use ! to drop comment‐only lines",
 })
 

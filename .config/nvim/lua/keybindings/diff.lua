@@ -110,11 +110,25 @@ local function diff_current_lines()
 end
 
 local function get_default_branch()
+  local use_debug_print = myconfig.should_debug_print()
   if vim.loop.os_uname().sysname == "Windows_NT" then
-    local cmd = [[powershell -Command "(git remote show upstream | Select-String -Pattern 'HEAD branch' | ForEach-Object { $_.Line }) -replace '^.*HEAD branch: ', ''''"]]
+    -- Test in ps:
+    -- (git remote show upstream | Select-String -Pattern 'HEAD branch' | ForEach-Object { $_.Line }) -replace '^.*HEAD branch: ', ''
+    local cmd = [[powershell -NoProfile -Command "(git remote show upstream | Select-String -Pattern 'HEAD branch' | ForEach-Object { $_.Line }) -replace '^.*HEAD branch: ', ''''"]]
+    if use_debug_print then
+      print("[get_default_branch] cmd: " .. cmd)
+    end
+
     local output = vim.fn.system(cmd):gsub("\n", "")
+    if output and use_debug_print then
+      print("[get_default_branch] output: " .. output)
+    end
 
     if vim.v.shell_error ~= 0 or output == "" then
+      return ""
+    end
+
+    if output:lower():find("fatal:") then
       return ""
     end
 
@@ -122,6 +136,7 @@ local function get_default_branch()
     local branch_name = output:match("%S+$") or ""
     -- Remove any quotes or single quotes (')
     branch_name = branch_name:gsub("[\"']", "")
+
     return "upstream/" .. branch_name
   else
     local cmd = "git remote show upstream | grep 'HEAD branch' | awk '{print $NF}'"
@@ -133,50 +148,229 @@ local function get_default_branch()
   end
 end
 
-local function diffg_command()
-  local current_file = vim.fn.expand('%:p')
-  if current_file == "" then
-    print("No file is currently open.")
-    return
-  end
-
-  --local git_root = vim.fn.system("git rev-parse --show-toplevel 2>/dev/null"):gsub("\n", "")
-  local git_root = vim.fn.system('git -C "' .. vim.fn.getcwd() .. '" rev-parse --show-toplevel')
-  if git_root == "" then
-    print("Current file is not in a Git repository.")
-    return
-  end
-
+local function get_branches_sorted()
   local use_debug_print = myconfig.should_debug_print()
+  local cmd = "git branch --sort=-committerdate -v"
+
   if use_debug_print then
-    print("git_root: " .. git_root)
+    print("[get_branches_sorted] cmd: " .. cmd)
   end
 
-  -- Remove git_root and the trailing '/'
-  -- (this worked with commented git_root code above on linux)
-  --local relative_path = current_file:sub(#git_root + 2)
-
-  local relative_path = current_file:sub(#git_root)
-  relative_path = relative_path:gsub("^[/\\]+", "") -- Remove leading slashes
-  if use_debug_print then
-    print("relative_path: " .. relative_path)
+  local output = vim.fn.system(cmd)
+  if vim.v.shell_error ~= 0 then
+    if use_debug_print then
+      print("[get_branches_sorted] Error getting branches")
+    end
+    return {}
   end
 
-  --local default_branch = "upstream/npcbots_3.3.5"
+  -- Get current branch name
+  local current_branch_cmd = "git branch --show-current"
+  local current_branch = vim.fn.system(current_branch_cmd):gsub("\n", "")
+  if use_debug_print then
+    print("[get_branches_sorted] Current branch: " .. current_branch)
+  end
+
+  local branches = {}
+  local found_master = false
+  local found_main = false
+
+  for line in output:gmatch("[^\r\n]+") do
+    -- Check if this is the current branch (marked with *)
+    local is_current = line:match("^%s*%*")
+
+    -- Remove leading spaces and asterisk (current branch marker)
+    local branch_info = line:gsub("^%s*%*?%s*", "")
+    if branch_info ~= "" then
+      -- Extract just the branch name (first word)
+      local branch_name = branch_info:match("^(%S+)")
+      if branch_name then
+        -- Skip current branch
+        if not is_current and branch_name ~= current_branch then
+          -- Track if we found master or main
+          if branch_name == "master" then
+            found_master = true
+          elseif branch_name == "main" then
+            found_main = true
+          end
+
+          table.insert(branches, branch_name)
+        end
+      end
+    end
+  end
+
+  -- Add origin versions for master and main if they were found
+  if found_master then
+    table.insert(branches, "origin/master")
+  end
+
+  if found_main then
+    table.insert(branches, "origin/main")
+  end
+
+  if use_debug_print then
+    print("[get_branches_sorted] Found branches (excluding current): " .. vim.inspect(branches))
+    if found_master then
+      print("[get_branches_sorted] Added origin/master")
+    end
+    if found_main then
+      print("[get_branches_sorted] Added origin/main")
+    end
+  end
+
+  return branches
+end
+
+local function select_branch(callback)
+  local use_debug_print = myconfig.should_debug_print()
+
+  -- Get any existing upstream branch
   local default_branch = get_default_branch()
-  local branch_name = vim.fn.input("Enter the Git branch name: ", default_branch)
-  if branch_name == "" then
-    print("Branch name cannot be empty.")
+
+  -- Get all branches sorted by commit date
+  local branches = get_branches_sorted()
+
+  if #branches == 0 and not default_branch then
+    print("No branches found.")
+    if callback then callback("") end
     return
   end
 
-  -- Comment for now since I sometimes want to diff upstream branch
-  --local _ = vim.fn.system("git show-ref --verify --quiet refs/heads/" .. branch_name)
-  --if vim.v.shell_error ~= 0 then
-  --  print("Branch does not exist: " .. branch_name)
-  --  return
-  --end
+  -- Create options list
+  local options = {}
+  local labels = {}
+  local has_upstream = default_branch ~= ""
 
+  -- Add upstream branch as first option if it exists
+  if has_upstream then
+    table.insert(options, default_branch)
+    table.insert(labels, "[upstream] " .. default_branch)
+  end
+
+  -- Add other branches, avoiding duplicates
+  for _, branch in ipairs(branches) do
+    local should_add = true
+
+    -- Skip if it's the same as upstream branch (without upstream/ prefix)
+    --if has_upstream then
+    --  local upstream_branch_name = default_branch:match("upstream/(.+)")
+    --  if upstream_branch_name and branch == upstream_branch_name then
+    --    should_add = false
+    --  end
+    --end
+
+    if should_add then
+      table.insert(options, branch)
+      table.insert(labels, branch)
+    end
+  end
+
+  if use_debug_print then
+    print("[select_branch] Options: " .. vim.inspect(options))
+    print("[select_branch] Labels: " .. vim.inspect(labels))
+  end
+
+  local function run_selection(selected_label)
+    if use_debug_print then
+      print("[select_branch] Selected label: " .. selected_label)
+    end
+
+    -- Find the corresponding branch name
+    local selected_branch = ""
+    for i, label in ipairs(labels) do
+      if label == selected_label then
+        selected_branch = options[i]
+        break
+      end
+    end
+
+    if use_debug_print then
+      print("[select_branch] Selected branch: " .. selected_branch)
+    end
+
+    if callback then
+      callback(selected_branch)
+    end
+  end
+
+  -- Use fzf/telescope or vim.ui.select fallback
+  local picker = myconfig.get_file_picker()
+  local use_fzf = picker == myconfig.FilePicker.FZF
+  local use_fzf_lua = picker == myconfig.FilePicker.FZF_LUA
+  local use_file_picker = myconfig.use_file_picker_for_commands()
+
+  if use_file_picker then
+    -- fzf
+    if use_fzf then
+      vim.fn["fzf#run"]({
+        source  = labels,
+        sink    = run_selection,
+        options = "--prompt 'Branch> ' --reverse",
+      })
+    -- fzf-lua
+    elseif use_fzf_lua then
+      require("fzf-lua").fzf_exec(labels, {
+        prompt  = "Branch> ",
+        actions = {
+          ["default"] = function(selected)
+            run_selection(selected[1])
+          end,
+        },
+      })
+    else
+      -- telescope
+      local actions = require("telescope.actions")
+      local action_state = require("telescope.actions.state")
+      local pickers = require("telescope.pickers")
+      local finders = require("telescope.finders")
+      local conf = require("telescope.config").values
+
+      -- Create entries for telescope
+      local entries = {}
+      for i, label in ipairs(labels) do
+        table.insert(entries, {
+          branch = options[i],
+          label = label,
+        })
+      end
+
+      pickers.new({}, {
+        prompt_title = "Choose Branch",
+        finder = finders.new_table({
+          results = entries,
+          entry_maker = function(entry)
+            return {
+              value   = entry.branch,
+              display = entry.label,
+              ordinal = entry.label,
+            }
+          end,
+        }),
+        sorter = conf.generic_sorter({}),
+        attach_mappings = function(prompt_bufnr, map)
+          actions.select_default:replace(function()
+            local sel = action_state.get_selected_entry()
+            actions.close(prompt_bufnr)
+            run_selection(sel.display)
+          end)
+          return true
+        end,
+      }):find()
+    end
+  else
+    -- vim.ui.select fallback
+    vim.ui.select(labels, { prompt = "Choose Branch:" }, function(choice)
+      if choice then
+        run_selection(choice)
+      elseif callback then
+        callback("")
+      end
+    end)
+  end
+end
+
+function continue_diff_process(current_file, relative_path, branch_name, use_debug_print)
   local target_dir = vim.loop.os_uname().sysname == "Windows_NT"
       and "C:/local/testing_files"
       or os.getenv("HOME") .. "/Documents/local/testing_files"
@@ -210,6 +404,97 @@ local function diffg_command()
   end
 
   vim.cmd("vert diffsplit " .. vim.fn.fnameescape(target_file2))
+end
+
+local function diffg_command()
+  local current_file = vim.fn.expand('%:p')
+  if current_file == "" then
+    print("No file is currently open.")
+    return
+  end
+
+  --local git_root = vim.fn.system("git rev-parse --show-toplevel 2>/dev/null"):gsub("\n", "")
+  local git_root = vim.fn.system('git -C "' .. vim.fn.getcwd() .. '" rev-parse --show-toplevel')
+  if git_root == "" then
+    print("Current file is not in a Git repository.")
+    return
+  end
+
+  local use_debug_print = myconfig.should_debug_print()
+  if use_debug_print then
+    print("git_root: " .. git_root)
+  end
+
+  -- Remove git_root and the trailing '/'
+  -- (this worked with commented git_root code above on linux)
+  --local relative_path = current_file:sub(#git_root + 2)
+
+  local relative_path = current_file:sub(#git_root)
+  relative_path = relative_path:gsub("^[/\\]+", "") -- Remove leading slashes
+  if use_debug_print then
+    print("relative_path: " .. relative_path)
+  end
+
+  select_branch(function(branch_name)
+    if branch_name == "" then
+      if use_debug_print then
+        print("No branch selected.")
+      end
+      return
+    end
+
+    continue_diff_process(current_file, relative_path, branch_name, use_debug_print)
+  end)
+end
+
+-- Same as diffg but enter branch name via free text
+local function diffgf_command()
+  local current_file = vim.fn.expand('%:p')
+  if current_file == "" then
+    print("No file is currently open.")
+    return
+  end
+
+  --local git_root = vim.fn.system("git rev-parse --show-toplevel 2>/dev/null"):gsub("\n", "")
+  local git_root = vim.fn.system('git -C "' .. vim.fn.getcwd() .. '" rev-parse --show-toplevel')
+  if git_root == "" then
+    print("Current file is not in a Git repository.")
+    return
+  end
+
+  local use_debug_print = myconfig.should_debug_print()
+  if use_debug_print then
+    print("git_root: " .. git_root)
+  end
+
+  -- Remove git_root and the trailing '/'
+  -- (this worked with commented git_root code above on linux)
+  --local relative_path = current_file:sub(#git_root + 2)
+
+  local relative_path = current_file:sub(#git_root)
+  relative_path = relative_path:gsub("^[/\\]+", "") -- Remove leading slashes
+  if use_debug_print then
+    print("relative_path: " .. relative_path)
+  end
+
+  --local default_branch = "upstream/npcbots_3.3.5"
+  local default_branch = get_default_branch()
+  local branch_name = vim.fn.input("Enter the Git branch name: ", default_branch)
+  if branch_name == "" then
+    if use_debug_print then
+      print("Branch name cannot be empty.")
+    end
+    return
+  end
+
+  -- Comment for now since I sometimes want to diff upstream branch
+  --local _ = vim.fn.system("git show-ref --verify --quiet refs/heads/" .. branch_name)
+  --if vim.v.shell_error ~= 0 then
+  --  print("Branch does not exist: " .. branch_name)
+  --  return
+  --end
+
+    continue_diff_process(current_file, relative_path, branch_name, use_debug_print)
 end
 
 local function replace_env_paths(file_path)
@@ -328,5 +613,6 @@ end
 vim.api.nvim_create_user_command('DiffCp', diff_copy, {})
 vim.api.nvim_create_user_command('Diffi', diff_current_lines, {})
 vim.api.nvim_create_user_command('Diffg', diffg_command, {})
+vim.api.nvim_create_user_command('Diffgf', diffgf_command, {})
 vim.api.nvim_set_keymap("n", "<leader>di", ":lua diff_buffers_or_file()<CR>", { noremap = true, silent = true })
 
