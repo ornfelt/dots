@@ -70,6 +70,36 @@ local lsp_attach_config = {
 
 local lua_ls_config = {
   on_attach = on_attach,
+  root_dir = function(fname)
+    local util = require("lspconfig.util")
+
+    local git = util.find_git_ancestor(fname)
+    if git then
+      return git
+    end
+
+    --local root_pattern = require("lspconfig.util").root_pattern(
+    --  ".luarc.json",
+    --  ".luarc.jsonc",
+    --  ".luacheckrc",
+    --  ".stylua.toml",
+    --  "stylua.toml",
+    --  "selene.toml",
+    --  "selene.yml",
+    --  ".git"
+    --)
+    ----return root_pattern(fname) or vim.fn.getcwd()
+    --return root_pattern(fname) or util.path.dirname(fname)
+
+    -- Debug:
+    --:lua print(vim.inspect(require("lspconfig").lua_ls.document_config.default_config.root_dir(vim.fn.expand("%:p"))))
+
+    -- fallback to just the file's directory
+    -- return vim.fn.fnamemodify(fname, ":p:h")
+    -- This should be the same:
+    return util.path.dirname(fname)
+  end,
+  single_file_support = true,
   settings = {
     Lua = {
       diagnostics = {
