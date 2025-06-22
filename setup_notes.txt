@@ -43,8 +43,6 @@ fix pip conf:
 fix mysql extension in:
 /etc/php/php.ini
 
-add re3 to hdd
-
 yazi urls:
 https://github.com/yazi-rs/plugins/tree/main/smart-enter.yazi
 https://github.com/dedukun/bookmarks.yazi
@@ -63,7 +61,13 @@ https://github.com/archornf/tcore_db
 playermap:
 http://192.168.1.114:8000/
 
-mysql setup:
+for tcore 7z:
+sudo pacman -S p7zip
+7z x file.7z
+
+******************************************
+# mysql setup
+
 sudo pacman -S mariadb
 
 Setup the data directory:
@@ -89,13 +93,24 @@ FLUSH PRIVILEGES;
 
 then:
 mysql -u root -p
+...
 
-POSSIBLY DO THIS:
+Debug:
+Check authentication plugin
+Ensure the root user is using the mysql_native_password or
+caching_sha2_password plugin (instead of unix_socket):
+SELECT user, host, plugin FROM mysql.user;
 
+If you see unix_socket for root, update it:
+ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY '...';
+FLUSH PRIVILEGES;
 
-for tcore 7z:
-sudo pacman -S p7zip
-7z x file.7z
+To suppress or prevent the mysql/mariadb deprecation warning:
+Option 1: Use mariadb directly:
+mariadb -u root -p
+Or:
+alias mysql='mariadb'
+Add to ~/.bashrc or ~/.zshrc...
 
 ******************************************
 TODO:
