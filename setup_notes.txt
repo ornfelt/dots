@@ -8,7 +8,24 @@ TODOs:
 # wotlk-simulationscraft (MY) compile and test!
 
 alacritty conf (only do if alacritty config dir exists)
-craft glfw cmake fix.
+craft glfw cmake fix. Comment this:
+#cmake_policy(SET CMP0042 OLD)
+in file:
+{code_root_dir}/Code2/C++/small_games/Craft/deps/glfw/CMakeLists.txt
+
+to fix wowser npm install:
+yay -S nvm
+nvm install 16
+npm install...
+
+Fix blpconverter:
+{code_root_dir}/Code2/Wow/tools/BLPConverter/dependencies/FreeImage/CMakeLists.txt
+
+After:
+add_compile_options(-Wno-narrowing)
+add:
+add_compile_options(-w -fPIC -Wno-incompatible-pointer-types)
+
 TODO: wc, my_wow, my_web_wow or do these manually?
 llama.cpp
 
