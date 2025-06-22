@@ -26,7 +26,16 @@ add_compile_options(-Wno-narrowing)
 add:
 add_compile_options(-w -fPIC -Wno-incompatible-pointer-types)
 
-TODO: wc, my_wow, my_web_wow or do these manually?
+For arch, use nwg-look (via aur) instead of lxappearance...
+fix check of /mnt/new and maybe just check if its mounted / exists? 
+fix dwmblocks...
+
+alias for all games and some alias for listing all available aliases
+(categorize by game etc). Could add a universal cmake like cmake_run or similar
+that will run appropriate cmake depending on dir and print some info... If arg
+(like git_push/pull), just informative print!
+
+TODO: wc, my_wow, my_web_wow or do them manually?
 llama.cpp
 
 ******************************************
