@@ -303,6 +303,12 @@ clone_projects() {
     ACORE_DIR="AzerothCore-wotlk-with-NPCBots/modules"
     if [ -d "$ACORE_DIR" ]; then
         cd "$ACORE_DIR"
+
+        if [ -f /etc/arch-release ]; then
+            echo "Arch Linux detected, checking out 'linux' branch..."
+            git checkout linux || { echo "Failed to checkout linux branch"; exit 1; }
+        fi
+
         clone_repo_if_missing "mod-eluna" "https://github.com/azerothcore/mod-eluna"
         cd ../..
     else
@@ -596,6 +602,8 @@ compile_projects() {
     install_if_missing dmenu dmenu
     install_if_missing st st
 
+    export CMAKE_POLICY_VERSION_MINIMUM=3.5
+
     print_and_cd_to_dir "$HOME/Code/c" "Compiling"
 
     #if grep -q -E "Debian|Raspbian" /etc/os-release; then
@@ -620,18 +628,32 @@ compile_projects() {
 
     if check_dir "openmw"; then
         # Check MyGUI version
-        mygui_version=$(dpkg -l | grep mygui | awk '{print $3}')
+        if [ -f /etc/arch-release ]; then
+            # For Arch Linux using pacman
+            mygui_version=$(pacman -Q mygui 2>/dev/null | awk '{print $2}')
+        elif [ -f /etc/debian_version ]; then
+            # For Debian based systems using dpkg
+            mygui_version=$(dpkg -l | grep mygui | awk '{print $3}')
+        else
+            echo "Unsupported Linux distribution."
+            exit 1
+        fi
+
         if [ ! -z "$mygui_version" ]; then
             echo "MyGUI version detected: $mygui_version"
-            if [[ "$mygui_version" == "3.4.2"* ]]; then
-                echo "MyGUI version is 3.4.2"
-                git checkout 1c2f92cac9
-            elif [[ "$mygui_version" == "3.4.1"* ]]; then
-                echo "MyGUI version is 3.4.1"
-                git checkout abb71eeb
-            else
-                echo "MyGUI version is: $mygui_version"
+
+            if [ -f /etc/debian_version ]; then
+                if [[ "$mygui_version" == "3.4.2"* ]]; then
+                    echo "MyGUI version is 3.4.2"
+                    git checkout 1c2f92cac9
+                elif [[ "$mygui_version" == "3.4.1"* ]]; then
+                    echo "MyGUI version is 3.4.1"
+                    git checkout abb71eeb
+                else
+                    echo "MyGUI version is: $mygui_version"
+                fi
             fi
+            #cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_POLICY_VERSION_MINIMUM=3.5
             cmake .. -DCMAKE_BUILD_TYPE=Release
             make -j$(nproc)
             sudo make install

@@ -7,6 +7,11 @@ TODOs:
 
 # wotlk-simulationscraft (MY) compile and test!
 
+alacritty conf (only do if alacritty config dir exists)
+craft glfw cmake fix.
+TODO: wc, my_wow, my_web_wow or do these manually?
+llama.cpp
+
 ******************************************
 TODO:
 blpconverter, wowmapview broken compiles?...

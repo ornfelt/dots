@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Boolean for testing mode (dry / wet run)
-testing_mode=true
+testing_mode=false
 
 # Array of packages to exclude from installation
 exclude_packages=("linux" "linux-firmware" "yay" "yay-git" "vlc")
