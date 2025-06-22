@@ -298,6 +298,8 @@ export LANG=en_US.UTF-8
 export LANGUAGE=en
 export LC_ALL=en_US.UTF-8 
 
+export CMAKE_POLICY_VERSION_MINIMUM=3.5
+
 alias f='fuzzyfind'
 bindkey '^ ' autosuggest-accept
 LS_COLORS+=':ow=01;33'

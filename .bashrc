@@ -24,6 +24,7 @@ export GOPATH=$HOME/go
 export PATH=$PATH:$GOPATH/bin
 export my_notes_path="$HOME/Documents/my_notes"
 export code_root_dir="$HOME"
+export CMAKE_POLICY_VERSION_MINIMUM=3.5
 
 #if command -v syndaemon &> /dev/null; then
 #    # Disable touchpad while typing
