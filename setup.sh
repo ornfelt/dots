@@ -766,42 +766,46 @@ compile_projects() {
 
     print_and_cd_to_dir "$HOME/Code/rust" "Compiling"
 
-    # Only compile if rust version is > 1.63
-    #rust_version=$(rustc --version | awk '{print $2}') # Also works...
-    rust_version=$(rustc --version | grep -oP 'rustc \K[^\s]+')
-    major_version=$(echo "$rust_version" | cut -d'.' -f1)
-    minor_version=$(echo "$rust_version" | cut -d'.' -f2)
-    echo "Rust version: $rust_version"
-    echo "major: $major_version"
-    echo "minor: $minor_version"
-
-    if grep -qEi 'arch' /etc/os-release; then
-        if check_dir "eww" "target"; then
-            if [ "$major_version" -gt 1 ] || { [ "$major_version" -eq 1 ] && [ "$minor_version" -gt 63 ]; }; then
-                echo "rustc version is above 1.63"
-                cargo build --release --no-default-features --features x11
-                cd target/release
-                chmod +x ./eww
-            else
-                cd ..
-                echo "rustc version is 1.63 or below. Skipping rust project..."
-            fi
-            cd "$HOME/Code/rust"
-        fi
-
-        if check_dir "swww" "target"; then
-            if [ "$major_version" -gt 1 ] || { [ "$major_version" -eq 1 ] && [ "$minor_version" -gt 63 ]; }; then
-                echo "rustc version is above 1.63"
-                cargo build --release
-            else
-                cd ..
-                echo "rustc version is 1.63 or below. Skipping rust project..."
-            fi
-            cd "$HOME/Code/rust"
-        fi
+    if ! command -v rustc &>/dev/null; then
+        echo "rustc is not installed. Skipping rust projects..."
     else
-        OS_ID=$(grep "^ID=" /etc/os-release | cut -d'=' -f2)
-        echo "Skipping compilation of eww and swww (only for Arch). Found os: $OS_ID"
+        # Only compile if rust version is > 1.63
+        #rust_version=$(rustc --version | awk '{print $2}') # Also works...
+        rust_version=$(rustc --version | grep -oP 'rustc \K[^\s]+')
+        major_version=$(echo "$rust_version" | cut -d'.' -f1)
+        minor_version=$(echo "$rust_version" | cut -d'.' -f2)
+        echo "Rust version: $rust_version"
+        echo "major: $major_version"
+        echo "minor: $minor_version"
+
+        if grep -qEi 'arch' /etc/os-release; then
+            if check_dir "eww" "target"; then
+                if [ "$major_version" -gt 1 ] || { [ "$major_version" -eq 1 ] && [ "$minor_version" -gt 63 ]; }; then
+                    echo "rustc version is above 1.63"
+                    cargo build --release --no-default-features --features x11
+                    cd target/release
+                    chmod +x ./eww
+                else
+                    cd ..
+                    echo "rustc version is 1.63 or below. Skipping rust project..."
+                fi
+                cd "$HOME/Code/rust"
+            fi
+
+            if check_dir "swww" "target"; then
+                if [ "$major_version" -gt 1 ] || { [ "$major_version" -eq 1 ] && [ "$minor_version" -gt 63 ]; }; then
+                    echo "rustc version is above 1.63"
+                    cargo build --release
+                else
+                    cd ..
+                    echo "rustc version is 1.63 or below. Skipping rust project..."
+                fi
+                cd "$HOME/Code/rust"
+            fi
+        else
+            OS_ID=$(grep "^ID=" /etc/os-release | cut -d'=' -f2)
+            echo "Skipping compilation of eww and swww (only for Arch). Found os: $OS_ID"
+        fi
     fi
 
     print_and_cd_to_dir "$HOME/Code2/C" "Compiling"
@@ -1026,8 +1030,10 @@ compile_projects() {
 
     print_and_cd_to_dir "$HOME/Code2/Wow/tools" "Compiling"
 
-    if check_file "mpq" "gophercraft_mpq_set"; then
-        go build github.com/Gophercraft/mpq/cmd/gophercraft_mpq_set
+    #if check_file "mpq" "gophercraft_mpq_set"; then
+    if check_file "mpq" "mopaq"; then
+        #go build github.com/Gophercraft/mpq/cmd/gophercraft_mpq_set
+        go build github.com/Gophercraft/mpq/cmd/mopaq
         cd "$HOME/Code2/Wow/tools"
     fi
 
@@ -1837,7 +1843,8 @@ fix_other_files() {
         fi
 
         if [ ! -d "$HOME/Code2/Wow/tools/mpq/Export" ]; then
-            printf "You should run: cd $HOME/Code2/Wow/tools/mpq && ./gophercraft_mpq_set export --chain-json docs/wotlk-chain.json --working-directory \"%s/wow/Data\" --export-directory \"%s/Export\"\n" "$dir_to_use" "$export_dir"
+            #printf "You should run: cd $HOME/Code2/Wow/tools/mpq && ./gophercraft_mpq_set export --chain-json docs/wotlk-chain.json --working-directory \"%s/wow/Data\" --export-directory \"%s/Export\"\n" "$dir_to_use" "$export_dir"
+            printf "You should run: cd $HOME/Code2/Wow/tools/mpq && ./mopaq export --chain-json docs/wotlk-chain.json --working-directory \"%s/wow/Data\" --export-directory \"%s/Export\"\n" "$dir_to_use" "$export_dir"
         else
             echo "$HOME/Code2/Wow/tools/mpq/Export already exists. All good!"
         fi
