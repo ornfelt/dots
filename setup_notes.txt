@@ -38,6 +38,65 @@ that will run appropriate cmake depending on dir and print some info... If arg
 TODO: wc, my_wow, my_web_wow or do them manually?
 llama.cpp
 
+fix pip conf:
+~/.config/pip/pip.conf
+fix mysql extension in:
+/etc/php/php.ini
+
+add re3 to hdd
+
+yazi urls:
+https://github.com/yazi-rs/plugins/tree/main/smart-enter.yazi
+https://github.com/dedukun/bookmarks.yazi
+https://gitee.com/DreamMaoMao/fg.yazi
+
+https://github.com/Gophercraft/mpq/blob/master/docs/mopaq.md
+
+https://www.azerothcore.org/wiki/linux-core-installation
+https://github.com/rewow/AzerothCore-wotlk-with-NPCBots
+https://github.com/trickerer/Trinity-Bots?tab=readme-ov-file#introduction
+https://trinitycore.info/install/Database-Installation
+
+https://github.com/archornf/acore_db
+https://github.com/archornf/tcore_db
+
+playermap:
+http://192.168.1.114:8000/
+
+mysql setup:
+sudo pacman -S mariadb
+
+Setup the data directory:
+sudo mariadb-install-db --user=mysql --basedir=/usr --datadir=/var/lib/mysql
+
+Start mariadb.service
+systemctl start mariadb.service
+systemctl enable mariadb.service
+
+Add user
+In the below example, the user monty with some~pass~ as password is being
+created, then granted full permissions to the database mydb:
+sudo mysql -u root -p
+MariaDB> CREATE USER 'monty'@'localhost' IDENTIFIED BY 'some_pass';
+MariaDB> GRANT ALL PRIVILEGES ON mydb.* TO 'monty'@'localhost';
+MariaDB> FLUSH PRIVILEGES;
+MariaDB> quit
+
+Do this instead (to allow mysql root without sudo):
+sudo mysql -u root -p
+ALTER USER 'root'@'localhost' IDENTIFIED BY '...';
+FLUSH PRIVILEGES;
+
+then:
+mysql -u root -p
+
+POSSIBLY DO THIS:
+
+
+for tcore 7z:
+sudo pacman -S p7zip
+7z x file.7z
+
 ******************************************
 TODO:
 blpconverter, wowmapview broken compiles?...
