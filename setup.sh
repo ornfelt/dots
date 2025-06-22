@@ -28,6 +28,7 @@ cp -r .config/polybar/ $HOME/.config/
 cp -r .config/ranger/ $HOME/.config/
 cp -r .config/rofi/ $HOME/.config/
 cp -r .config/st/ $HOME/.config/
+cp -r .config/yazi/ $HOME/.config/
 cp -r .config/zathura/ $HOME/.config/
 cp .config/mimeapps.list $HOME/.config/
 
