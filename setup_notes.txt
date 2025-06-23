@@ -79,6 +79,11 @@ xset s off
 source:
 https://wiki.archlinux.org/title/Display_Power_Management_Signaling
 
+TODO:
+run diff script on mpq dirs!
+add copy fixes for lsps (similar to how jars are copied)? List exactly what the
+setup.sh is doing in each step...
+
 ******************************************
 # mysql setup
 
