@@ -1,6 +1,6 @@
 #!/bin/bash
 
-theme="/home/jonas/.config/rofi/themes/gruvbox/gruvbox-dark2.rasi"
+theme="/home/jonas/.config/rofi/themes/gruvbox/gruvbox-dark.rasi"
 input_file="/home/jonas/Documents/my_notes/linux/oneliners_raw.txt"
 
 # Get user selection via Rofi from the input file

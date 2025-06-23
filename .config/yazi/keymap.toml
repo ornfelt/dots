@@ -10,24 +10,24 @@
 #    { on = [ "g", "e" ], run = "cd /etc", desc = "cd to /etc" },
 #]
 
-[[manager.prepend_keymap]]
+[[mgr.prepend_keymap]]
 on   = "S"
 run  = 'shell "$SHELL" --block --confirm'
 desc = "Open shell here"
 
-[[manager.prepend_keymap]]
+[[mgr.prepend_keymap]]
 on = "<C-n>"
 #run = [ '''shell --block --interactive''' ]
 run = [ '''create --dir''' ]
 desc = "Create new dir"
 
-[[manager.prepend_keymap]]
+[[mgr.prepend_keymap]]
 on = "D"
 run = [ '''delete''' ]
 desc = "Delete file or directory"
 
 # oil-like
-[[manager.prepend_keymap]]
+[[mgr.prepend_keymap]]
 on = "o"
 run = [ '''create''' ]
 desc = "Create"
@@ -41,7 +41,7 @@ desc = "Create"
 #desc = "Enter directory or open file"
 # Use plugin instead
 # https://github.com/yazi-rs/plugins/tree/main/smart-enter.yazi
-[[manager.prepend_keymap]]
+[[mgr.prepend_keymap]]
 on   = "l"
 run  = "plugin smart-enter"
 desc = "Enter the child directory, or open the file"
@@ -53,95 +53,95 @@ desc = "Enter the child directory, or open the file"
 # ...
 
 # g-binds
-[[manager.prepend_keymap]]
+[[mgr.prepend_keymap]]
 on = ["g", "C"]
 run = [ '''cd /''' ]
 desc = "cd to /"
 
-[[manager.prepend_keymap]]
+[[mgr.prepend_keymap]]
 on = ["g", "e"]
 run = [ '''cd /etc''' ]
 desc = "cd to /etc"
 
-[[manager.prepend_keymap]]
+[[mgr.prepend_keymap]]
 on = ["g", "u"]
 run = [ '''cd /usr''' ]
 desc = "cd to /usr"
 
-[[manager.prepend_keymap]]
+[[mgr.prepend_keymap]]
 on = ["g", "h"]
 run = [ '''cd /home/jonas''' ]
 desc = "cd to /home/jonas"
 
-[[manager.prepend_keymap]]
+[[mgr.prepend_keymap]]
 on = ["g", "l"]
 run = [ '''cd ~/.local''' ]
 desc = "cd to local data"
 
-[[manager.prepend_keymap]]
+[[mgr.prepend_keymap]]
 on = ["g", "L"]
 run = [ '''cd ~/.local/share''' ]
 desc = "cd to config data"
 
-[[manager.prepend_keymap]]
+[[mgr.prepend_keymap]]
 on = ["g", "M"]
 run = [ '''cd /mnt''' ]
 desc = "cd to /mnt"
 
-[[manager.prepend_keymap]]
+[[mgr.prepend_keymap]]
 on = ["g", "a"]
 run = [ '''cd ~/Downloads''' ]
 desc = "cd to ~/Downloads"
 
-[[manager.prepend_keymap]]
+[[mgr.prepend_keymap]]
 on = ["g", "d"]
 run = [ '''cd ~/Documents''' ]
 desc = "cd to ~/Documents"
 
-[[manager.prepend_keymap]]
+[[mgr.prepend_keymap]]
 on = ["g", "w"]
 run = [ '''cd ~/Pictures/Wallpapers''' ]
 desc = "cd to Wallpapers"
 
-[[manager.prepend_keymap]]
+[[mgr.prepend_keymap]]
 on = ["g", "m"]
 run = [ '''cd /media/data/Movies''' ]
 desc = "cd to Movies"
 
-[[manager.prepend_keymap]]
+[[mgr.prepend_keymap]]
 on = ["g", "."]
 run = [ '''cd ~/.config''' ]
 desc = "cd to ~/.config"
 
-[[manager.prepend_keymap]]
+[[mgr.prepend_keymap]]
 on = ["g", "?"]
 #run = [ '''cd /usr/share/doc/yazi''' ]
 run = [ '''cd ~/.config/yazi''' ]
 desc = "cd to yazi conf"
 
-[[manager.prepend_keymap]]
+[[mgr.prepend_keymap]]
 on = ["g", "c"]
 run = [ '''cd ~/Code2''' ]
 desc = "cd to ~/Code2"
 
-[[manager.prepend_keymap]]
+[[mgr.prepend_keymap]]
 on = ["g", "n"]
 run = [ '''cd ~/Documents/my_notes''' ]
 desc = "cd to my_notes"
 
-[[manager.prepend_keymap]]
+[[mgr.prepend_keymap]]
 on = ["g", "p"]
 run = [ '''cd ~/Documents/windows_dots''' ]
 desc = "cd to ps_profile_path"
 
-[[manager.prepend_keymap]]
+[[mgr.prepend_keymap]]
 on = [ "g", "r" ]
 run = '''
 	shell 'ya emit cd "$(git rev-parse --show-toplevel)"'
 '''
 desc = "cd to git root dir"
 
-[[manager.prepend_keymap]]
+[[mgr.prepend_keymap]]
 on = ["g", "f"]
 run = [
 '''
@@ -150,7 +150,7 @@ run = [
 ]
 desc = "Open file in vim inside a new wezterm window"
 
-[[manager.prepend_keymap]]
+[[mgr.prepend_keymap]]
 on = ["g", "x"]
 run = [
 '''
@@ -171,13 +171,13 @@ desc = "Open file in firefox"
 #desc = "Search directories"
 
 # Default Z key can also be used instead of this
-[[manager.prepend_keymap]]
+[[mgr.prepend_keymap]]
 on = "<C-f>"
 run = [ '''plugin fzf''' ]
 desc = "Jump to a file/directory via fzf"
 
 # Rename
-[[manager.prepend_keymap]]
+[[mgr.prepend_keymap]]
 on = ["c", "w"]
 run = [ '''rename''' ]
 desc = "Rename"
@@ -211,31 +211,31 @@ desc = "Rename"
 #ya pack -i
 # Upgrade the plugin
 #ya pack -u
-[[manager.prepend_keymap]]
+[[mgr.prepend_keymap]]
 on = [ "m" ]
-run = "plugin bookmarks --args=save"
+run = "plugin bookmarks save"
 desc = "Save current position as a bookmark"
 
-[[manager.prepend_keymap]]
+[[mgr.prepend_keymap]]
 on = [ "'" ]
-run = "plugin bookmarks --args=jump"
+run = "plugin bookmarks jump"
 desc = "Jump to a bookmark"
 
-[[manager.prepend_keymap]]
+[[mgr.prepend_keymap]]
 on = [ "b", "d" ]
-run = "plugin bookmarks --args=delete"
+run = "plugin bookmarks delete"
 desc = "Delete a bookmark"
 
-[[manager.prepend_keymap]]
+[[mgr.prepend_keymap]]
 on = [ "b", "D" ]
-run = "plugin bookmarks --args=delete_all"
+run = "plugin bookmarks delete_all"
 desc = "Delete all bookmarks"
 
 # Custom
 # ...
 
 # Image commands
-[[manager.prepend_keymap]]
+[[mgr.prepend_keymap]]
 on = ["b", "g"]
 run = [
 '''
@@ -244,7 +244,7 @@ run = [
 ]
 desc = "Set current image as background"
 
-[[manager.prepend_keymap]]
+[[mgr.prepend_keymap]]
 on = ["b", "c"]
 run = [
 '''
@@ -253,7 +253,7 @@ run = [
 ]
 desc = "Rotate image"
 
-[[manager.prepend_keymap]]
+[[mgr.prepend_keymap]]
 on = ["b", "i"]
 run = [
 '''
@@ -262,7 +262,7 @@ run = [
 ]
 desc = "Resize image"
 
-[[manager.prepend_keymap]]
+[[mgr.prepend_keymap]]
 on = ["b", "t"]
 run = [
 '''
@@ -272,7 +272,7 @@ run = [
 desc = "Resize image"
 
 # Copy path
-[[manager.prepend_keymap]]
+[[mgr.prepend_keymap]]
 on = [" ", "-"]
 run = [
 	#shell '/home/jonas/.local/bin/my_scripts/copy_path.sh "$@"' --confirm
@@ -282,7 +282,7 @@ run = [
 ]
 desc = "Copy selection to clipboard"
 
-[[manager.prepend_keymap]]
+[[mgr.prepend_keymap]]
 on = [" ", "_"]
 run = [
 	#shell '/home/jonas/.local/bin/my_scripts/copy_path.sh "$@" 1' --confirm
@@ -293,7 +293,7 @@ run = [
 desc = "Copy selection to clipboard"
 
 # Manage file
-[[manager.prepend_keymap]]
+[[mgr.prepend_keymap]]
 on = [" ", " "]
 run = [
     #shell '/home/jonas/.local/bin/my_scripts/manage_file.sh "$@"' --confirm
@@ -314,22 +314,22 @@ desc = "Copy selection to clipboard"
 # Upgrade the plugin
 #ya pack -u
 
-[[manager.prepend_keymap]]
+[[mgr.prepend_keymap]]
 on   = [ "f", "g" ]
 run  = "plugin fg"
 desc = "find file by content (fuzzy match)"
 
-[[manager.prepend_keymap]]
+[[mgr.prepend_keymap]]
 on   = [ "f", "G" ]
 run  = "plugin fg --args='rg'"
 desc = "find file by content (ripgrep match)"
 
-[[manager.prepend_keymap]]
+[[mgr.prepend_keymap]]
 on   = [ "f", "a" ]
 run  = "plugin fg --args='rga'"
 desc = "find file by content (ripgrep-all)"
 
-[[manager.prepend_keymap]]
+[[mgr.prepend_keymap]]
 on   = [ "f", "f" ]
 run  = "plugin fg --args='fzf'"
 desc = "find file by filename"

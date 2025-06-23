@@ -276,6 +276,8 @@ clone_projects() {
     # Copy via hdd instead of cloning these:
     #clone_repo_if_missing "re3" "https://github.com/halpz/re3"
     #clone_repo_if_missing "re3_vice" "https://github.com/halpz/re3" "miami"
+    # cp -r re3 ~/Code/c++
+    # cp -r re3_vice ~/Code/c++
     clone_repo_if_missing "reone" "https://github.com/seedhartha/reone"
 
     print_and_cd_to_dir "$HOME/Code/js" "Cloning"
@@ -1857,6 +1859,11 @@ fix_other_files() {
     else
         echo "$HOME/Code2/Wow/tools/mpq does NOT exist. Skipping."
     fi
+
+    # Note: also copy go-extracted mpq files and classic/tbc via:
+    # cp -r mpq /mnt/new/my_files
+    # cp -r tbc /mnt/new/my_files/mpq_tbc
+    # cp -r classic /mnt/new/my_files/mpq_classic
 
     echo -e "\nChecking databases...\n"
     check_dbs

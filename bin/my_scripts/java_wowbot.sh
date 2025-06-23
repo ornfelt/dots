@@ -42,7 +42,9 @@ JAVA_COMMAND="$java_path -jar $HOME/Code2/C#/WowBot/java/wowbot.jar 1 1"
 # Run compiled classes instead:
 cd "$HOME/Code2/C#/WowBot/java"
 javac -d . -cp $CLASSPATH $(find . -name "*.java" ! -name "WowTabFinder_windows.java")
-JAVA_COMMAND="$java_path -cp .:$CLASSPATH wowbot.Main 1 1"
+
+JAVA_COMMAND="$java_path -cp .:$CLASSPATH wowbot.Main 1 1" # acore
+#JAVA_COMMAND="$java_path -cp .:$CLASSPATH wowbot.Main 1 0" # tcore
 
 # Copy run command instead?
 #echo "$JAVA_COMMAND 1 1" | xclip -selection clipboard
