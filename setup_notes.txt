@@ -65,6 +65,20 @@ for tcore 7z:
 sudo pacman -S p7zip
 7z x file.7z
 
+Power manager fixes:
+ps -ef | grep power
+
+run xfce4-power-manager in debug mode:
+xfce4-power-manager -q
+xfce4-power-manager --debug
+
+Better:
+xset q
+xset s off
+
+source:
+https://wiki.archlinux.org/title/Display_Power_Management_Signaling
+
 ******************************************
 # mysql setup
 
