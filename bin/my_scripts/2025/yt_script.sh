@@ -1,0 +1,32 @@
+#! /bin/bash
+
+yt-dlp -S "res:1080" "https://www.youtube.com/watch?v=JjF-CFhF1X8" &&
+yt-dlp -S "res:1080" "https://www.youtube.com/watch?v=cRV0tclxXMQ" &&
+yt-dlp -S "res:1080" "https://www.youtube.com/watch?v=OD85Hnz2uyw" &&
+yt-dlp -S "res:1080" "https://www.youtube.com/watch?v=B37cH_Nc8Ak" &&
+yt-dlp -S "res:1080" "https://www.youtube.com/watch?v=OR-bIxvAzR0" &&
+yt-dlp -S "res:1080" "https://www.youtube.com/watch?v=v_OoUNtunIw" &&
+yt-dlp -S "res:1080" "https://www.youtube.com/watch?v=MsWHzb_WhJI" &&
+yt-dlp -S "res:1080" "https://www.youtube.com/watch?v=N049IjM4Cfs" &&
+yt-dlp -S "res:1080" "https://www.youtube.com/watch?v=UNl0Crb9_T4" &&
+yt-dlp -S "res:1080" "https://www.youtube.com/watch?v=d2ComIws-r8" &&
+yt-dlp -S "res:1080" "https://www.youtube.com/watch?v=S8IIZ13L24k" &&
+yt-dlp -S "res:1080" "https://www.youtube.com/watch?v=iNZIJ_Le-nE" &&
+yt-dlp -S "res:1080" "https://www.youtube.com/watch?v=z00VKHWutg4" &&
+yt-dlp -S "res:1080" "https://www.youtube.com/watch?v=usE1EbRbazM" &&
+yt-dlp -S "res:1080" "https://www.youtube.com/watch?v=WQiBexvbLeY" &&
+yt-dlp -S "res:1080" "https://www.youtube.com/watch?v=XQwH0atQZ0Q" &&
+yt-dlp -S "res:1080" "https://www.youtube.com/watch?v=KISF13T5HAQ" &&
+yt-dlp -S "res:1080" "https://www.youtube.com/watch?v=OTDSLDKf5Ws" &&
+yt-dlp -S "res:1080" "https://www.youtube.com/watch?v=Lgd-IrSWtNE" &&
+yt-dlp -S "res:1080" "https://www.youtube.com/watch?v=y_GfaSCNlkk" &&
+yt-dlp -S "res:1080" "https://www.youtube.com/watch?v=PjoXLq7fqXY" &&
+yt-dlp -S "res:1080" "https://www.youtube.com/watch?v=4p8BxMzGgIY" &&
+yt-dlp -S "res:1080" "https://www.youtube.com/watch?v=smttkZ06oYg" &&
+yt-dlp -S "res:1080" "https://www.youtube.com/watch?v=Kngoc0oIx04" &&
+yt-dlp -S "res:1080" "https://www.youtube.com/watch?v=jBhlaViYnCU" &&
+yt-dlp -S "res:1080" "https://www.youtube.com/watch?v=NwqN_l1uqXc" &&
+yt-dlp -S "res:1080" "https://www.youtube.com/watch?v=JM_d-2spYPI" &&
+yt-dlp -S "res:1080" "https://www.youtube.com/watch?v=d5poTvpiM-Q" &&
+yt-dlp -S "res:1080" "https://www.youtube.com/watch?v=pWTAs3HP_VI" &&
+yt-dlp -S "res:1080" "https://www.youtube.com/watch?v=1Mz5xwNX2CI"
