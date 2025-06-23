@@ -84,6 +84,10 @@ run diff script on mpq dirs!
 add copy fixes for lsps (similar to how jars are copied)? List exactly what the
 setup.sh is doing in each step...
 
+Also fix mkdir -p $HOME/.tmux/plugins
+and clone this if it doesnt exist:
+git clone --recurse-submodules -j8 https://github.com/tmux-plugins/tmux-resurrect
+
 ******************************************
 # mysql setup
 
