@@ -18,7 +18,9 @@ merge_requirements() {
 }
 
 if grep -q 'ID=arch' /etc/os-release; then
-    pacman -Qe | awk '{print $1}' > package_list.txt
+    #pacman -Qe | awk '{print $1}' > package_list.txt
+    # Use -Q to also include dependencies. Or -Qd to list dependencies only...
+    pacman -Q | awk '{print $1}' > package_list.txt
     pacman -Qm > other.txt
 
     req_file="requirements.txt"

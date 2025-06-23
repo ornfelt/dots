@@ -6,5 +6,7 @@ imgui-debug 1.91.6-1
 neofetch 7.1.0-2
 omnisharp-roslyn 1.39.13-2
 omnisharp-roslyn-debug 1.39.13-2
+picom-pijulius-next-git 2832_Next.1270.gcd609d21_2025.06.22-1
+picom-pijulius-next-git-debug 2832_Next.1270.gcd609d21_2025.06.22-1
 yay 12.5.0-1
 yay-debug 12.5.0-1
