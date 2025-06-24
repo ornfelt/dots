@@ -220,6 +220,12 @@ account create mangoszero 123
 account set gmlevel mangoszero 3
 
 ###
+# mangos tbc install notes
+###
+
+TODO...
+
+###
 # TrinityCore (manual installation)
 ###
 
@@ -311,6 +317,7 @@ cp $HOME/Code/c++/re3_vice/bin/linux-amd64-librw_gl3_glfw-oal/Release/reVC to $D
 .stk
 
 # OpenJKDF2
+cd /home/jonas/Code2/C++/OpenJKDF2/build_linux64
 cp openjkdf2 $HOME/.local/share/OpenJKDF2/openjkdf2/
 Run in $HOME/.local/share/OpenJKDF2/openjkdf2/
 
@@ -384,13 +391,23 @@ web: npm install -g typescript
 npm run dev
 
 # spelunker
+You might need to run this before npm install in spelunker package dirs:
+export CXXFLAGS="-fpermissive"
+You might need to adjust mpq dir paths in setup.sh!
 Run $HOME/Documents/my_notes/scripts/wow/spelunker/setup.sh
 start file server and do:
 source ../../.envrc && npm start in both spelunker-api and spelunker-web
 
+If needed for file server (if mounted) you might need:
+npm install express cors --no-bin-links
+
 # wowser
+nvm install 18
+nvm use 18
 Run script in my_notes
 npm run serve
+SET client dir afer running serve as well!
+you may also need: npm run reset
 npm run web-dev
 
 # wowmapview
