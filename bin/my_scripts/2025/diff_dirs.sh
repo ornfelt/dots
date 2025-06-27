@@ -4,14 +4,17 @@ set -euo pipefail
 
 # Hard-coded dirs to compare
 
-#dir1="/media2/my_files/my_docs"
-#dir2="/media/my_files/my_docs"
+dir1="/media2/my_files/my_docs"
+dir2="/media/my_files/my_docs"
 
 #dir1="/home/jonas/Downloads/yt/test/dir1"
 #dir2="/home/jonas/Downloads/yt/test/dir2"
 
-dir1="/media2/Movies"
-dir2="/media/Movies"
+#dir1="/media2/Movies"
+#dir2="/media/Movies"
+
+#dir1="/media2/2025/mpq"
+#dir2="/media/2025/mpq"
 
 # Log file
 target_log="diff_check.log"
