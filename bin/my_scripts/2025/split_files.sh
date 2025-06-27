@@ -2,6 +2,24 @@
 
 # Hardcoded input path
 input_dir="/media2/my_files/my_docs/img/pin/Anime"
+#input_dir="/media2/my_files/my_docs/img/pin/Anime Art"
+#input_dir="/media2/my_files/my_docs/img/pin/Appa"
+#input_dir="/media2/my_files/my_docs/img/pin/Archer"
+#input_dir="/media2/my_files/my_docs/img/pin/Assassin’s"
+#input_dir="/media2/my_files/my_docs/img/pin/Avatar"
+#input_dir="/media2/my_files/my_docs/img/pin/Druid"
+#input_dir="/media2/my_files/my_docs/img/pin/Fantasy art"
+#input_dir="/media2/my_files/my_docs/img/pin/Monsters"
+#input_dir="/media2/my_files/my_docs/img/pin/Pokemon"
+#input_dir="/media2/my_files/my_docs/img/pin/priest"
+#input_dir="/media2/my_files/my_docs/img/pin/Programming"
+#input_dir="/media2/my_files/my_docs/img/pin/Shooter"
+#input_dir="/media2/my_files/my_docs/img/pin/Star wars"
+#input_dir="/media2/my_files/my_docs/img/pin/Warcraft art"
+#input_dir="/media2/my_files/my_docs/img/pin/Wizardry"
+#input_dir="/media2/my_files/my_docs/img/wow/imgur_tbc"
+#input_dir="/media2/my_files/my_docs/img/wow/imgur_vanilla"
+#input_dir="/media2/my_files/my_docs/img/wow/imgur_wotlk"
 
 chunk_size=50
 
