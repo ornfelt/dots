@@ -57,7 +57,17 @@ cp .zshrc $HOME/.zshrc
 
 # Update alacritty, preserving custom font size (if any)
 DEFAULT_FONT_SIZE="7.0"
-CURRENT_FONT_SIZE=$(grep -oP 'size:\s*\K[0-9.]*' "$HOME/.config/alacritty/alacritty.yml")
+ALACRITTY_CONFIG_DIR="$HOME/.config/alacritty"
+YML_FILE="$ALACRITTY_CONFIG_DIR/alacritty.yml"
+TOML_FILE="$ALACRITTY_CONFIG_DIR/alacritty.toml"
+
+# Check for config directory and YAML file
+if [[ -d "$ALACRITTY_CONFIG_DIR" && -f "$YML_FILE" ]]; then
+    CURRENT_FONT_SIZE=$(grep -oP 'size:\s*\K[0-9.]+' "$YML_FILE")
+else
+    echo "Alacritty config directory or alacritty.yml not found, skipping font-size sync."
+    CURRENT_FONT_SIZE=""
+fi
 
 update_font_size() {
   local file=$1
@@ -1728,6 +1738,8 @@ fix_other_files() {
         echo "Skipping copy of python binary (only for Debian or Raspbian architectures). Found os: $OS_ID"
     fi
 
+    CLASSIC_CONF_SCRIPT="$HOME/Documents/my_notes/scripts/wow/update_conf_classic.py"
+
     # vmangos
     print_and_cd_to_dir "$HOME/Code2/C++" "Cloning"
     clone_repo_if_missing "vmangos_db" "https://github.com/brotalnia/database"
@@ -1735,7 +1747,12 @@ fix_other_files() {
     echo -e "\nSetting up vmangos conf files\n"
     #cp $HOME/vmangos/etc/mangosd.conf.dist $HOME/vmangos/etc/mangosd.conf
     #cp $HOME/vmangos/etc/realmd.conf.dist $HOME/vmangos/etc/realmd.conf
-    python3 $HOME/Documents/my_notes/scripts/wow/update_conf_classic.py "vmangos"
+    #python3 $HOME/Documents/my_notes/scripts/wow/update_conf_classic.py "vmangos"
+    if [[ -d "$HOME/vmangos/etc" && -f "$HOME/vmangos/etc/mangosd.conf.dist" && -f "$HOME/vmangos/etc/realmd.conf.dist" ]]; then
+        python3 "$CLASSIC_CONF_SCRIPT" vmangos
+    else
+        echo "Skipping vmangos conf script: missing one of ~/vmangos/etc/{mangosd.conf.dist,realmd.conf.dist}"
+    fi
     # Follow vmangos install notes from setup_notes.txt...
 
     # cmangos
@@ -1747,7 +1764,12 @@ fix_other_files() {
     #cp $HOME/cmangos/run/etc/ahbot.conf.dist $HOME/cmangos/run/etc/ahbot.conf
     #cp $HOME/cmangos/run/etc/mangosd.conf.dist $HOME/cmangos/run/etc/mangosd.conf
     #cp $HOME/cmangos/run/etc/realmd.conf.dist $HOME/cmangos/run/etc/realmd.conf
-    python3 $HOME/Documents/my_notes/scripts/wow/update_conf_classic.py "cmangos"
+    #python3 $HOME/Documents/my_notes/scripts/wow/update_conf_classic.py "cmangos"
+    if [[ -d "$HOME/cmangos/run/etc" && -f "$HOME/cmangos/run/etc/mangosd.conf.dist" && -f "$HOME/cmangos/run/etc/realmd.conf.dist" && -f "$HOME/cmangos/run/etc/aiplayerbot.conf.dist" && -f "$HOME/cmangos/run/etc/ahbot.conf.dist" ]]; then
+        python3 "$CLASSIC_CONF_SCRIPT" cmangos
+    else
+        echo "Skipping cmangos: missing one of ~/cmangos/run/etc/{mangosd.conf.dist,realmd.conf.dist,aiplayerbot.conf.dist,ahbot.conf.dist}"
+    fi
     # Follow cmangos install notes from setup_notes.txt...
 
     # mangoszero
@@ -1799,7 +1821,12 @@ fix_other_files() {
         #cp "$HOME/mangoszero/run/etc/ahbot.conf.dist" "$HOME/mangoszero/run/etc/ahbot.conf"
         #cp "$HOME/mangoszero/run/etc/mangosd.conf.dist" "$HOME/mangoszero/run/etc/mangosd.conf"
         #cp "$HOME/mangoszero/run/etc/realmd.conf.dist" "$HOME/mangoszero/run/etc/realmd.conf"
-        python3 $HOME/Documents/my_notes/scripts/wow/update_conf_classic.py "mangoszero"
+        #python3 $HOME/Documents/my_notes/scripts/wow/update_conf_classic.py "mangoszero"
+        if [[ -d "$HOME/mangoszero/run/etc" && -f "$HOME/mangoszero/run/etc/mangosd.conf.dist" && -f "$HOME/mangoszero/run/etc/realmd.conf.dist" && -f "$HOME/mangoszero/run/etc/aiplayerbot.conf.dist" && -f "$HOME/mangoszero/run/etc/ahbot.conf.dist" ]]; then
+            python3 "$CLASSIC_CONF_SCRIPT" mangoszero
+        else
+            echo "Skipping mangoszero: missing one of ~/mangoszero/run/etc/{mangosd.conf.dist,realmd.conf.dist,aiplayerbot.conf.dist,ahbot.conf.dist}"
+        fi
         # Follow mangoszero install notes from setup_notes.txt...
     else
         echo "$HOME/mangoszero/run/bin does NOT exist. Skipping."
