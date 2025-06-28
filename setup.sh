@@ -50,6 +50,7 @@ cp Screenshots/space.jpg $HOME/Pictures/Wallpapers/
 cp .bashrc $HOME/.bashrc
 cp .tmux.conf $HOME/.tmux.conf
 cp .wezterm.lua $HOME/.wezterm.lua
+sudo chown $USER:$USER $HOME/.xinitrc
 cp .xinitrc $HOME/.xinitrc
 cp .Xresources $HOME/.Xresources
 cp .Xresources_cat $HOME/.Xresources_cat
