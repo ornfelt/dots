@@ -7,6 +7,8 @@ openmw and unvanquished compile fails...
 craft fix... Only do if cmake version if above X?
 fix vmangos cxx version (only for arch?)
 
+fix apt thing in wotlk-sims...
+
 copy re3 if hdd is mounted and not already copied!
 
 # Fix acore/tcore and classic characters! Drop and import from other sql

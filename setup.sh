@@ -1031,6 +1031,7 @@ compile_projects() {
         else
             echo "Go version is 1.21.1 or higher. Continuing with install..."
         fi
+        # TODO: check if debian/raspberry
         #sudo apt update && sudo apt upgrade
         sudo apt install protobuf-compiler
         go get -u -v google.golang.org/protobuf
