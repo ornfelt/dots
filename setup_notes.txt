@@ -87,6 +87,11 @@ Better:
 xset q
 xset s off
 
+Look for screen saver when running xset -q (or xset q).
+if screen goes black even if above is set, then try:
+xset -dpms (this or above should be enough)
+or to prevent "screen blanking": xset s noblank
+
 source:
 https://wiki.archlinux.org/title/Display_Power_Management_Signaling
 
