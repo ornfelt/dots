@@ -1780,7 +1780,7 @@ fix_other_files() {
     #cp $HOME/cmangos/run/etc/mangosd.conf.dist $HOME/cmangos/run/etc/mangosd.conf
     #cp $HOME/cmangos/run/etc/realmd.conf.dist $HOME/cmangos/run/etc/realmd.conf
     #python3 $HOME/Documents/my_notes/scripts/wow/update_conf_classic.py "cmangos"
-    if [[ -d "$HOME/cmangos/run/etc" && -f "$HOME/cmangos/run/etc/mangosd.conf.dist" && -f "$HOME/cmangos/run/etc/realmd.conf.dist" && -f "$HOME/cmangos/run/etc/aiplayerbot.conf.dist" && -f "$HOME/cmangos/run/etc/ahbot.conf.dist" ]]; then
+    if [[ -d "$HOME/cmangos/run/etc" && -f "$HOME/cmangos/run/etc/mangosd.conf.dist" && -f "$HOME/cmangos/run/etc/realmd.conf.dist" && -f "$HOME/cmangos/run/etc/aiplayerbot.conf.dist" ]]; then
         python3 "$CLASSIC_CONF_SCRIPT" cmangos
     else
         echo "Skipping cmangos: missing one of ~/cmangos/run/etc/{mangosd.conf.dist,realmd.conf.dist,aiplayerbot.conf.dist,ahbot.conf.dist}"
