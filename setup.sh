@@ -24,6 +24,7 @@ cp -r .config/lf/ $HOME/.config/
 cp -r .config/neofetch/ $HOME/.config/
 cp -r .config/nvim/ $HOME/.config/
 cp -r .config/picom/ $HOME/.config/
+cp -r .config/pip/ $HOME/.config/
 cp -r .config/polybar/ $HOME/.config/
 cp -r .config/ranger/ $HOME/.config/
 cp -r .config/rofi/ $HOME/.config/
@@ -167,6 +168,17 @@ if [ ! -d "$HOME/.config/wezterm/wezterm-session-manager" ]; then
     echo "wezterm-session-manager installed!"
 else
     echo "wezterm-session-manager already installed."
+fi
+
+# tmux-ressurect plugin
+if [ ! -d "$HOME/.tmux/plugins" ]; then
+    mkdir -p "$HOME/.tmux/plugins"
+fi
+if [ ! -d "$HOME/.tmux/plugins/tmux-resurrect/.git" ]; then
+    git clone --recurse-submodules -j8 https://github.com/tmux-plugins/tmux-resurrect "$HOME/.tmux/plugins/tmux-resurrect"
+    echo "tmux-resurrect installed!"
+else
+    echo "tmux-resurrect already installed."
 fi
 
 # jetbrains nerd fonts
@@ -401,9 +413,12 @@ fi
 install_if_missing() {
     local binary=$1
     local directory=$2
+    local binary_path="$HOME/.config/$directory/$binary"
 
     echo "--------------------------------------------------------"
-    if ! command -v $binary &> /dev/null; then
+    #if ! command -v $binary &> /dev/null; then
+    # Check if the binary exists instead of the command
+    if [ ! -f "$binary_path" ]; then
         echo "$binary NOT found..."
         if $justInform; then
             return 0
@@ -1031,16 +1046,21 @@ compile_projects() {
         else
             echo "Go version is 1.21.1 or higher. Continuing with install..."
         fi
-        # TODO: check if debian/raspberry
-        #sudo apt update && sudo apt upgrade
-        sudo apt install protobuf-compiler
+
+        if grep -qEi 'debian|raspbian' /etc/os-release; then
+            #sudo apt update && sudo apt upgrade
+            sudo apt install protobuf-compiler
+        fi
+
         go get -u -v google.golang.org/protobuf
         go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
         npm install
+
         #make setup
         #make test
         #make host
         make wowsimwotlk
+
         cd "$HOME/Code2/Go"
     fi
 

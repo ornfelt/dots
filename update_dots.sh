@@ -31,6 +31,7 @@ rm -rf .config/lf
 rm -rf .config/neofetch
 rm -rf .config/nvim
 rm -rf .config/picom
+rm -rf .config/pip
 rm -rf .config/polybar
 rm -rf .config/ranger
 rm -rf .config/yazi
@@ -65,6 +66,7 @@ cp -r $HOME/.config/lf .config/lf/
 cp -r $HOME/.config/neofetch .config/neofetch/
 cp -r $HOME/.config/nvim .config/nvim/
 cp -r $HOME/.config/picom .config/picom/
+cp -r $HOME/.config/pip .config/pip/
 cp -r $HOME/.config/polybar .config/polybar/
 cp -r $HOME/.config/ranger .config/ranger/
 cp -r $HOME/.config/yazi .config/yazi/

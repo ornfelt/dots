@@ -1,8 +1,20 @@
+diff --git a/Makefile b/Makefile
+index 75109ac..0ffb05d 100644
+--- a/Makefile
++++ b/Makefile
+@@ -1,6 +1,6 @@
+ PREFIX  := /usr/local
+ CC      := cc
+-CFLAGS  := -pedantic -Wall -Wno-deprecated-declarations -Os
++CFLAGS  := -pedantic -Wall -Wno-deprecated-declarations -Os -Wno-error=incompatible-pointer-types
+ LDFLAGS := -lX11
+ 
+ # FreeBSD (uncomment)
 diff --git a/blocks.def.h b/blocks.def.h
-index dbb3305..1e617d6 100644
+index dbb3305..8049710 100644
 --- a/blocks.def.h
 +++ b/blocks.def.h
-@@ -1,9 +1,14 @@
+@@ -1,11 +1,16 @@
  //Modify this file to change what commands output to your statusbar, and recompile using the make command.
  static const Block blocks[] = {
 -	/*Icon*/	/*Command*/		/*Update Interval*/	/*Update Signal*/
@@ -21,20 +33,23 @@ index dbb3305..1e617d6 100644
  };
  
  //sets delimiter between status commands. NULL character ('\0') means no delimiter.
+-static char delim[] = " | ";
++static char delim[] = " ";
+ static unsigned int delimLen = 5;
 diff --git a/compile.sh b/compile.sh
 new file mode 100755
-index 0000000..ab0dd7e
+index 0000000..b59c514
 --- /dev/null
 +++ b/compile.sh
 @@ -0,0 +1,42 @@
 +#!/bin/bash
 +
 +# Paths
-+CONFIG_FILE="./config.h"
++CONFIG_FILE="./blocks.h"
 +TEMP_FILE="./config_temp.h"
 +BACKUP_FILE="./config_backup.h"
 +
-+# Backup original config.h
++# Backup original blocks.h
 +cp "$CONFIG_FILE" "$BACKUP_FILE"
 +
 +# Check battery presence
@@ -48,7 +63,7 @@ index 0000000..ab0dd7e
 +
 +# If no battery is found, use internet cmd in statusbar instead
 +if ! $battery_present; then
-+    echo "No battery found. Modifying config.h..."
++    echo "No battery found. Modifying blocks.h..."
 +
 +    sed 's/\(^.*sb-battery.*$\)/\/\* \1 \*\//' "$CONFIG_FILE" > "$TEMP_FILE"
 +    sed -i 's/\/\* \(.*sb-internet.*\) \*\//\1/' "$TEMP_FILE"
@@ -59,10 +74,10 @@ index 0000000..ab0dd7e
 +# Compile
 +sudo make clean install
 +
-+# If no battery was found, revert config.h to its original state
++# If no battery was found, revert blocks.h to its original state
 +if ! $battery_present; then
 +    mv "$BACKUP_FILE" "$CONFIG_FILE"
-+    echo "config.h reverted to its original state."
++    echo "blocks.h reverted to its original state."
 +fi
 +
 +rm -f "$BACKUP_FILE"

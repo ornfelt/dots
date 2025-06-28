@@ -1,6 +1,6 @@
 PREFIX  := /usr/local
 CC      := cc
-CFLAGS  := -pedantic -Wall -Wno-deprecated-declarations -Os
+CFLAGS  := -pedantic -Wall -Wno-deprecated-declarations -Os -Wno-error=incompatible-pointer-types
 LDFLAGS := -lX11
 
 # FreeBSD (uncomment)

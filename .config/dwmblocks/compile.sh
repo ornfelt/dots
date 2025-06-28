@@ -1,11 +1,11 @@
 #!/bin/bash
 
 # Paths
-CONFIG_FILE="./config.h"
+CONFIG_FILE="./blocks.h"
 TEMP_FILE="./config_temp.h"
 BACKUP_FILE="./config_backup.h"
 
-# Backup original config.h
+# Backup original blocks.h
 cp "$CONFIG_FILE" "$BACKUP_FILE"
 
 # Check battery presence
@@ -19,7 +19,7 @@ done
 
 # If no battery is found, use internet cmd in statusbar instead
 if ! $battery_present; then
-    echo "No battery found. Modifying config.h..."
+    echo "No battery found. Modifying blocks.h..."
 
     sed 's/\(^.*sb-battery.*$\)/\/\* \1 \*\//' "$CONFIG_FILE" > "$TEMP_FILE"
     sed -i 's/\/\* \(.*sb-internet.*\) \*\//\1/' "$TEMP_FILE"
@@ -30,10 +30,10 @@ fi
 # Compile
 sudo make clean install
 
-# If no battery was found, revert config.h to its original state
+# If no battery was found, revert blocks.h to its original state
 if ! $battery_present; then
     mv "$BACKUP_FILE" "$CONFIG_FILE"
-    echo "config.h reverted to its original state."
+    echo "blocks.h reverted to its original state."
 fi
 
 rm -f "$BACKUP_FILE"
