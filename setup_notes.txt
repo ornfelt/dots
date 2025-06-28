@@ -9,6 +9,11 @@ fix vmangos cxx version (only for arch?)
 
 fix apt thing in wotlk-sims...
 
+fix pip conf (add to dots and include mkdir and copy step)
+
+azeroth-web-proxy, spelunker, wowser npm install fails...
+blpconverter fails (see below)...
+
 copy re3 if hdd is mounted and not already copied!
 
 # Fix acore/tcore and classic characters! Drop and import from other sql
