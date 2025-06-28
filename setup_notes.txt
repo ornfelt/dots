@@ -1,5 +1,10 @@
 TODOs:
 
+FIX dwmblocks
+CFLAGS  := -pedantic -Wall -Wno-deprecated-declarations -Os -Wno-error=incompatible-pointer-types
+and fix separator...
+openmw and unvanquished compile fails...
+
 # Fix acore/tcore and classic characters! Drop and import from other sql
 # files, issue with updates then? Would be so nice if I could just import
 # all characters instead for all servers... sql diff somehow?

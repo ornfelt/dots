@@ -39,7 +39,7 @@ install_arch() {
                     echo "Testing mode: Installing $pkg"
                 else
                     sudo pacman -S --noconfirm "$pkg" 2>&1 | tee -a log.txt
-                    sleep 3
+                    sleep 5
                 fi
             fi
         done < "$file"
@@ -55,7 +55,7 @@ install_debian() {
                     echo "Testing mode: Installing $pkg"
                 else
                     sudo apt-get install -y "$pkg" 2>&1 | tee -a log.txt
-                    sleep 3
+                    sleep 5
                 fi
             fi
         done < "$file"

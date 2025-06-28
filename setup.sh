@@ -658,17 +658,19 @@ compile_projects() {
         if [ ! -z "$mygui_version" ]; then
             echo "MyGUI version detected: $mygui_version"
 
-            if [ -f /etc/debian_version ]; then
-                if [[ "$mygui_version" == "3.4.2"* ]]; then
-                    echo "MyGUI version is 3.4.2"
-                    git checkout 1c2f92cac9
-                elif [[ "$mygui_version" == "3.4.1"* ]]; then
-                    echo "MyGUI version is 3.4.1"
-                    git checkout abb71eeb
-                else
-                    echo "MyGUI version is: $mygui_version"
-                fi
+            #if [ -f /etc/debian_version ]; then
+            if [[ "$mygui_version" == "3.4.2"* ]]; then
+                echo "MyGUI version is 3.4.2"
+                git checkout 1c2f92cac9
+            elif [[ "$mygui_version" == "3.4.1"* ]]; then
+                echo "MyGUI version is 3.4.1"
+                git checkout abb71eeb
+            else
+                echo "MyGUI version is: $mygui_version"
             fi
+            #fi
+
+            #export CXXFLAGS="-fpermissive"
             #cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_POLICY_VERSION_MINIMUM=3.5
             cmake .. -DCMAKE_BUILD_TYPE=Release
             make -j$(nproc)
