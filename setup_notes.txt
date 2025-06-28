@@ -17,6 +17,11 @@ azeroth-web-proxy, spelunker, wowser npm install fails...
 blpconverter fails (see below)...
 WebWoWViewercpp fails.
 
+fix cmangos ahbot conf file? Is it needed? Its being copied somewhere:
+cp: cannot stat '/home/jonas/cmangos/run/etc/ahbot.conf.dist': No such file or directory
+
+fix / check jar_files!
+
 copy re3 if hdd is mounted and not already copied!
 
 # Fix acore/tcore and classic characters! Drop and import from other sql
