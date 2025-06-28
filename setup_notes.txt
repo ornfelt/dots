@@ -10,9 +10,6 @@ TODOs:
 * azeroth-web-proxy, spelunker, wowser npm install fails...
 * WebWoWViewercpp fails.
 
-fix cmangos ahbot conf file? Is it needed? Its being copied somewhere:
-cp: cannot stat '/home/jonas/cmangos/run/etc/ahbot.conf.dist': No such file or directory
-
 * maybe copy re3 if hdd is mounted and not already copied?
 
 * fix / check and compare jar_files!
