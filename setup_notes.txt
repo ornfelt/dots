@@ -22,6 +22,9 @@ cp: cannot stat '/home/jonas/cmangos/run/etc/ahbot.conf.dist': No such file or d
 
 fix / check jar_files!
 
+change check in install_if_missing to check if the file binary/executable
+exists in the dir...
+
 copy re3 if hdd is mounted and not already copied!
 
 # Fix acore/tcore and classic characters! Drop and import from other sql
