@@ -108,6 +108,9 @@ rm --f .config/dwm/*.o
 rm --f .config/dwmblocks/*.o
 rm --f .config/st/*.o
 
+sudo rm -r --f .config/dwmblocks/build
+sudo rm -r --f .config/awesome/.git
+
 # Remove .git dirs from dmenu, dwm and st
 dirs=(
   ".config/dmenu/.git"

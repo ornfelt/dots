@@ -152,15 +152,15 @@ else
     echo "fzf already installed."
 fi
 
-# packer.nvim
-if [ ! -d "$HOME/.local/share/nvim/site/pack/packer/start/packer.nvim/.git" ]; then
-    git clone --depth 1 https://github.com/wbthomason/packer.nvim "$HOME/.local/share/nvim/site/pack/packer/start/packer.nvim"
-    mv $HOME/.config/nvim/init.lua $HOME/.config/nvim/temp.lua
-    mv $HOME/.config/nvim/install.lua $HOME/.config/nvim/init.lua
-    echo "Packer installed! Now open vim and do :PackerInstall and then move temp.lua to init.lua in $HOME/.config/nvim"
-else
-    echo "packer already installed."
-fi
+# packer.nvim (old)
+#if [ ! -d "$HOME/.local/share/nvim/site/pack/packer/start/packer.nvim/.git" ]; then
+#    git clone --depth 1 https://github.com/wbthomason/packer.nvim "$HOME/.local/share/nvim/site/pack/packer/start/packer.nvim"
+#    mv $HOME/.config/nvim/init.lua $HOME/.config/nvim/temp.lua
+#    mv $HOME/.config/nvim/install.lua $HOME/.config/nvim/init.lua
+#    echo "Packer installed! Now open vim and do :PackerInstall and then move temp.lua to init.lua in $HOME/.config/nvim"
+#else
+#    echo "packer already installed."
+#fi
 
 # wezterm session manager
 if [ ! -d "$HOME/.config/wezterm/wezterm-session-manager" ]; then
