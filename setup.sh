@@ -1158,14 +1158,63 @@ compile_projects() {
         cd "$HOME/Code2/Wow/tools"
     fi
 
-    # TODO: fix appropriate check_file
-    #if check_dir "wc"; then
-    #    sudo ln -s /usr/bin/ranlib /usr/bin/x86_64-linux-gnu-ranlib
-    #    cp config.sample config
-    #    make lib
-    #    make
-    #    cd "$HOME/Code2/Wow/tools"
-    #fi
+    if check_file "wc" "wow"; then
+        #sudo ln -s /usr/bin/ranlib /usr/bin/x86_64-linux-gnu-ranlib
+        RANLIB_TARGET="/usr/bin/ranlib"
+        RANLIB_LINK="/usr/bin/x86_64-linux-gnu-ranlib"
+
+        # First check if the target exists
+        if [ ! -e "$RANLIB_TARGET" ]; then
+            echo "$RANLIB_TARGET does not exist. Please install the proper package."
+            exit 1
+        fi
+
+        # Check if the symlink already exists
+        if [ ! -e "$RANLIB_LINK" ]; then
+            echo "$RANLIB_LINK not found. Creating symlink..."
+            sudo ln -s "$RANLIB_TARGET" "$RANLIB_LINK"
+        else
+            echo "$RANLIB_LINK already exists. Skipping symlink creation."
+        fi
+
+        # Check if Vulkan header exists
+        VULKAN_HEADER="/usr/include/vulkan/vulkan.h"
+        if [ -f "$VULKAN_HEADER" ]; then
+            echo "Found Vulkan header at $VULKAN_HEADER"
+            for i in {3..1}; do
+                echo "Proceeding with wc compilation in $i..."
+                sleep 1
+            done
+            # Do the thing
+            cp config.sample config
+            make lib
+            make
+        else
+            echo "Vulkan header not found!"
+            
+            # Check distro using /etc/os-release if available
+            if [ -f /etc/os-release ]; then
+                . /etc/os-release
+                case "$ID" in
+                    debian|raspbian)
+                        echo "Please install the Vulkan headers by running:"
+                        echo "  sudo apt update && sudo apt install libvulkan-dev (and possibly sudo apt install vulkan-headers)"
+                        ;;
+                    arch)
+                        echo "Please install the Vulkan headers by running:"
+                        echo "  sudo pacman -S vulkan-headers"
+                        ;;
+                    *)
+                        echo "Please install the Vulkan headers for your distribution."
+                        ;;
+                esac
+            else
+                echo "Unable to detect distribution. Please install Vulkan headers manually."
+            fi
+        fi
+
+        cd "$HOME/Code2/Wow/tools"
+    fi
 
     cd "$original_dir"
 }
