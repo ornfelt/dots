@@ -9,6 +9,7 @@ TODOs:
 * wc dot-command alias (cd and print info via one-liner). openjkdf2 alias.
 * mangos-tbc
 * package list per pc
+* cleanup todos and change print to say [ok] or similar?
 * improve health-check script
 
 * sync hdd with others and remove my_docs from 2024 and dont copy in

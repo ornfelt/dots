@@ -822,9 +822,9 @@ compile_projects() {
         echo "minor: $minor_version"
 
         if grep -qEi 'arch' /etc/os-release; then
-            if command -v eww &>/dev/null; then
-              echo "eww is already installed"
-            elif check_dir "eww" "target"; then
+            if command -v eww &>/dev/null; then
+                echo "eww is already installed"
+            elif check_dir "eww" "target"; then
                 if [ "$major_version" -gt 1 ] || { [ "$major_version" -eq 1 ] && [ "$minor_version" -gt 63 ]; }; then
                     echo "rustc version is above 1.63"
                     cargo build --release --no-default-features --features x11
@@ -837,9 +837,9 @@ compile_projects() {
                 cd "$HOME/Code/rust"
             fi
 
-            if command -v swww &>/dev/null; then
-              echo "swww is already installed"
-            elif check_dir "swww" "target"; then
+            if command -v swww &>/dev/null; then
+                echo "swww is already installed"
+            elif check_dir "swww" "target"; then
                 if [ "$major_version" -gt 1 ] || { [ "$major_version" -eq 1 ] && [ "$minor_version" -gt 63 ]; }; then
                     echo "rustc version is above 1.63"
                     cargo build --release
@@ -2006,6 +2006,7 @@ fix_other_files() {
         echo "$HOME/Code2/Wow/tools/mpq does NOT exist. Skipping."
     fi
 
+    echo -e "\nChecking php.ini file\n"
     # Fix mysql extension in php.ini
     PHP_INI_FILE="/etc/php/php.ini"
 
