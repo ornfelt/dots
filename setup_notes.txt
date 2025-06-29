@@ -1,20 +1,32 @@
 TODOs:
 
+* at the end of copy_game_data:
+# TODO:
+# Copy llama models?
+# baby-yoda and other joja mods...
+# star_wars_ja_mods
+# star_wars_jo_mods
+# wezterm compile for deb...
+
+* try jkmv and galaxies!
+
 * Fix nvm in bashrc/ zshrc? Possibly do nvm version check and install 16 if
   needed before installing node packages...
 * openmw, unvanquished, WebWoWViewercpp compile fails...
 
-* clone yazi plugins and create plugins dir if it doesnt exist...
-* wow_tbc copy
 * wc dot-command alias (cd and print info via one-liner). openjkdf2 alias.
-* mangos-tbc
 * package list per pc
-* cleanup todos and change print to say [ok] or similar?
+* Change print to say [ok] or similar?
 * improve health-check script
 
-* sync hdd with others and remove my_docs from 2024 and dont copy in
-  setup.sh...
-* fix / check and compare jar_files!
+* create new db backups (fresh and with changes and chars) Also name them with
+  date... Do for both windows and linux.
+
+* wow_tbc copy
+* add cmangos-tbc extracted data for windows.
+
+* sync hdd with others
+* fix/check and compare jar_files!
 * add copy fixes for lsps (similar to how jars are copied)?
 
 * maybe copy re3 if hdd is mounted and not already copied?
@@ -37,7 +49,8 @@ that will run appropriate cmake depending on dir and print some info... If arg
 (like git_push/pull), just informative print!
 
 * wotlk-simulationscraft (my version) compile and test!
-* wc, my_wow, my_web_wow or do them manually? llama.cpp
+* llama.cpp
+* compile my_wow, my_web_wow manually?
 
 Note for WC:
 If getting X Error of failed request: GLXBadFBConfig:

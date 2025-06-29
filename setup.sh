@@ -189,6 +189,28 @@ else
     echo "tmux-resurrect already installed."
 fi
 
+# yazi plugins
+if command -v yazi &>/dev/null && command -v ya &>/dev/null; then
+    PLUGIN_DIR="$HOME/.config/yazi/plugins"
+    if [ ! -d "$PLUGIN_DIR" ]; then
+        echo "yazi plugins dir missing. Creating it and installing plugins..."
+        mkdir -p "$PLUGIN_DIR"
+
+        ya pack -a lpnh/fg
+        ya pack -a dedukun/bookmarks
+        # ya pkg add immediately downloads and installs the plugin from the registry.
+        # However, it does not modify the persistent plugin config (plugins.toml).
+        #ya pkg add yazi-rs/plugins:smart-enter
+        ya pack -a yazi-rs/plugins:smart-enter
+
+        # Run install once after all packs are added
+        ya pack -i
+        echo "yazi plugins installed!"
+    fi
+else
+    echo "yazi or ya command not found, skipping yazi plugin installation."
+fi
+
 # jetbrains nerd fonts
 check_font_exists() {
     if ls $HOME/.local/share/fonts/*JetBrainsMonoNerdFont*.ttf 1> /dev/null 2>&1 || ls $HOME/.fonts/*JetBrainsMonoNerdFont*.ttf 1> /dev/null 2>&1; then
@@ -304,12 +326,47 @@ clone_projects() {
     clone_repo_if_missing "JediKnightGalaxies" "https://github.com/JKGDevs/JediKnightGalaxies"
     clone_repo_if_missing "jk2mv" "https://github.com/mvdevs/jk2mv"
     clone_repo_if_missing "Unvanquished" "https://github.com/Unvanquished/Unvanquished"
+
     # Copy via hdd instead of cloning these:
     #clone_repo_if_missing "re3" "https://github.com/halpz/re3"
     #clone_repo_if_missing "re3_vice" "https://github.com/halpz/re3" "miami"
-    # cd /media2/2025
-    # cp -r re3 ~/Code/c++
-    # cp -r re3_vice ~/Code/c++
+    #cd /media2/2025
+    #cp -r re3 ~/Code/c++
+    #cp -r re3_vice ~/Code/c++
+    MEDIA_PATHS=("/media" "/media2")
+    MEDIA_PATH=""
+
+    # Find existing dir
+    for path in "${MEDIA_PATHS[@]}"; do
+        if [ -d "$path/2025/re3" ]; then
+            MEDIA_PATH="$path"
+            echo -e "\nFound mounted hard drive at: $MEDIA_PATH\n"
+            break
+        fi
+    done
+
+    # Check if MEDIA_PATH was set
+    if [ -z "$MEDIA_PATH" ]; then
+        echo "The hard drive is not mounted. Can't copy re3 dirs."
+    else
+        TARGET_DIR="$HOME/Code/c++"
+        SOURCE_DIR="/media2/2025"
+
+        if [ ! -d "$TARGET_DIR/re3" ] && [ -d "$SOURCE_DIR/re3" ]; then
+            echo "Copying re3 to $TARGET_DIR..."
+            cp -r "$SOURCE_DIR/re3" "$TARGET_DIR"
+        else
+            echo "Skipping re3 copy - already exists or source is missing."
+        fi
+
+        if [ ! -d "$TARGET_DIR/re3_vice" ] && [ -d "$SOURCE_DIR/re3_vice" ]; then
+            echo "Copying re3_vice to $TARGET_DIR..."
+            cp -r "$SOURCE_DIR/re3_vice" "$TARGET_DIR"
+        else
+            echo "Skipping re3_vice copy - already exists or source is missing."
+        fi
+    fi
+
     clone_repo_if_missing "reone" "https://github.com/seedhartha/reone"
 
     print_and_cd_to_dir "$HOME/Code/js" "Cloning"
@@ -702,15 +759,15 @@ compile_projects() {
             make -j$(nproc)
             sudo make install
             
-            # Note** If you are having undefined reference errors while
+            # Note: If you are having undefined reference errors while
             # compiling, its possible that you have previously installed a
-            # different openscenegraph version than what openMW depends on.
-            # To remove it, you can use:
-            # #removes just package
-            # apt-get remove <yourOSGversion>
-            # #or 
-            # #removes configurations as well
-            # apt-get remove --purge <yourOSGversion>
+            # different openscenegraph version than what openmw depends on.
+            # To remove it, try:
+            # removes just package
+            #apt-get remove <yourOSGversion>
+            #or 
+            # removes configurations as well
+            #apt-get remove --purge <yourOSGversion>
 
             #cd ...
             #cd ../..
@@ -864,6 +921,7 @@ compile_projects() {
         cd "$HOME/Code2/C"
     fi
 
+    # Do this manually instead since picom needs to be uninstalled and thus can't be running
     #if check_file "picom-animations" "bin/picom-trans"; then
     #    meson --buildtype=release . build
     #    ninja -C build
@@ -1540,6 +1598,15 @@ copy_game_data() {
     copy_dir_to_target "$MEDIA_PATH/2024/mangoszero/RelWithDebInfo/maps" "$DEST_DIR/maps"
     copy_dir_to_target "$MEDIA_PATH/2024/mangoszero/RelWithDebInfo/mmaps" "$DEST_DIR/mmaps"
     copy_dir_to_target "$MEDIA_PATH/2024/mangoszero/RelWithDebInfo/vmaps" "$DEST_DIR/vmaps"
+
+    # Cmangos-tbc
+    DEST_DIR="$HOME/cmangos-tbc/run/bin"
+    echo -e "\n***Copying cmangos-tbc files to $DEST_DIR***"
+    copy_dir_to_target "$MEDIA_PATH/2024/cmangos-tbc/Cameras" "$DEST_DIR/Cameras"
+    copy_dir_to_target "$MEDIA_PATH/2024/cmangos-tbc/dbc" "$DEST_DIR/dbc"
+    copy_dir_to_target "$MEDIA_PATH/2024/cmangos-tbc/maps" "$DEST_DIR/maps"
+    copy_dir_to_target "$MEDIA_PATH/2024/cmangos-tbc/mmaps" "$DEST_DIR/mmaps"
+    copy_dir_to_target "$MEDIA_PATH/2024/cmangos-tbc/vmaps" "$DEST_DIR/vmaps"
     
     # db backups
     echo -e "\n***Copying db_bkp files to $HOME/Documents***"
@@ -1614,8 +1681,8 @@ copy_game_data() {
     fi
 
     # my_docs
-    echo -e "\n***Copying my_docs files to $HOME/Documents***"
-    copy_dir_to_target "$MEDIA_PATH/2024/my_docs" "$HOME/Documents/my_docs"
+    #echo -e "\n***Copying my_docs files to $HOME/Documents***"
+    #copy_dir_to_target "$MEDIA_PATH/2024/my_docs" "$HOME/Documents/my_docs"
 
     # openmw
     echo -e "\n***Copying openmw files to $DOWNLOADS_DIR***"
@@ -1691,13 +1758,6 @@ copy_game_data() {
     # Jar files
     echo -e "\n***Copying jar files to $DOWNLOADS_DIR***"
     copy_dir_to_target "$MEDIA_PATH/2024/jar_files" "$DOWNLOADS_DIR/jar_files"
-
-    # TODO:
-    # Copy llama models?
-    # baby-yoda and other joja mods...
-    # star_wars_ja_mods
-    # star_wars_jo_mods
-    # wezterm compile for deb...
 }
 
 if $justDoIt; then
