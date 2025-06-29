@@ -362,6 +362,7 @@ clone_projects() {
     clone_repo_if_missing "mangos-classic" "https://github.com/ornfelt/mangos-classic"
     clone_repo_if_missing "core" "https://github.com/ornfelt/core"
     clone_repo_if_missing "server" "https://github.com/ornfelt/server"
+    clone_repo_if_missing "mangos-tbc" "https://github.com/ornfelt/mangos-tbc"
 
     print_and_cd_to_dir "$HOME/Code2/General" "Cloning"
     clone_repo_if_missing "Svea-Examples" "https://github.com/ornfelt/Svea-Examples"
@@ -1027,6 +1028,17 @@ compile_projects() {
         make -j$(nproc)
         sudo make install
         sudo chown -R $USER:$USER $HOME/mangoszero
+        cd "$HOME/Code2/C++"
+    fi
+
+    if check_dir "mangos-tbc"; then
+        cmake -S .. -B ./ -DCMAKE_INSTALL_PREFIX=~/cmangos-tbc/run -DBUILD_EXTRACTORS=ON -DPCH=1 -DDEBUG=0 -DBUILD_PLAYERBOTS=ON
+        # with clang:
+        # cmake ../mangos -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++
+        # see: https://github.com/cmangos/issues/wiki/Installation-Instructions
+        make -j$(nproc)
+        sudo make install
+        sudo chown -R $USER:$USER $HOME/cmangos-tbc
         cd "$HOME/Code2/C++"
     fi
 
