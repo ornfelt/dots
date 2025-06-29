@@ -3,6 +3,8 @@ abseil-cpp
 ace
 ace-debug
 acl
+advancecomp
+advancecomp-debug
 adwaita-cursors
 adwaita-fonts
 adwaita-icon-theme
@@ -58,6 +60,8 @@ cairomm
 cava
 cblas
 cdparanoia
+cglm
+cglm-debug
 chafa
 chromium
 cjson
@@ -70,6 +74,7 @@ coreutils
 cppcodec
 cppdap
 cronie
+crow
 cryptsetup
 csfml
 curl
@@ -166,6 +171,7 @@ gnupg
 gnuplot
 gnutls
 go
+gobject-introspection
 gobject-introspection-runtime
 gopls
 gparted
@@ -276,6 +282,7 @@ jbig2dec
 jbigkit
 jdk-openjdk
 jdk21-openjdk
+jdtls
 jemalloc
 jq
 json-c
@@ -518,6 +525,8 @@ libyaml
 libyuv
 libzip
 licenses
+light
+light-debug
 linux
 linux-api-headers
 linux-firmware
@@ -635,6 +644,7 @@ perl-mailtools
 perl-rename
 perl-timedate
 php
+phpactor
 picom
 pinentry
 pipewire
@@ -708,6 +718,8 @@ python-jupyter-client
 python-jupyter-core
 python-jupyter-events
 python-jupyterlab-server
+python-mako
+python-markdown
 python-markdown-it-py
 python-markupsafe
 python-matplotlib-inline
@@ -715,6 +727,7 @@ python-mdurl
 python-mistune
 python-more-itertools
 python-nest-asyncio
+python-numpy
 python-overrides
 python-packaging
 python-pandocfilters
@@ -842,6 +855,7 @@ rhash
 ripgrep
 rnnoise
 rofi
+rofi-greenclip
 rtkit
 rubberband
 run-parts
@@ -929,6 +943,8 @@ texlive-publishers
 texlive-xetex
 the_silver_searcher
 thunar
+tinyobjloader
+tinyobjloader-debug
 tinysparql
 tk
 tlp
@@ -943,10 +959,13 @@ tree-sitter-query
 tree-sitter-vim
 tree-sitter-vimdoc
 tslib
+tstock
 ttf-font-awesome
+ttf-icomoon-feather
 ttf-iosevka-nerd
 ttf-jetbrains-mono
 ttf-jetbrains-mono-nerd
+ttf-joypixels
 ttf-liberation
 ttf-nerd-fonts-symbols
 ttf-nerd-fonts-symbols-common
@@ -987,6 +1006,10 @@ wine
 wine-gecko
 wireless_tools
 wl-clipboard
+wlogout
+wlogout-debug
+wlroots-asan-git
+wlroots-asan-git-debug
 woff2
 wofi
 wpa_supplicant

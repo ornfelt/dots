@@ -3,6 +3,8 @@ abseil-cpp
 ace
 ace-debug
 acl
+advancecomp
+advancecomp-debug
 adwaita-cursors
 adwaita-fonts
 adwaita-icon-theme
@@ -58,6 +60,8 @@ cairomm
 cava
 cblas
 cdparanoia
+cglm
+cglm-debug
 chafa
 chromium
 cjson
@@ -70,6 +74,7 @@ coreutils
 cppcodec
 cppdap
 cronie
+crow
 cryptsetup
 csfml
 curl
@@ -166,6 +171,7 @@ gnupg
 gnuplot
 gnutls
 go
+gobject-introspection
 gobject-introspection-runtime
 gopls
 gparted
@@ -276,6 +282,7 @@ jbig2dec
 jbigkit
 jdk-openjdk
 jdk21-openjdk
+jdtls
 jemalloc
 jq
 json-c

@@ -1,4 +1,3 @@
-python-pure-eval
 python-pyaudio
 python-pycparser
 python-pygments
@@ -112,6 +111,7 @@ rhash
 ripgrep
 rnnoise
 rofi
+rofi-greenclip
 rtkit
 rubberband
 run-parts
@@ -199,6 +199,8 @@ texlive-publishers
 texlive-xetex
 the_silver_searcher
 thunar
+tinyobjloader
+tinyobjloader-debug
 tinysparql
 tk
 tlp
@@ -213,10 +215,13 @@ tree-sitter-query
 tree-sitter-vim
 tree-sitter-vimdoc
 tslib
+tstock
 ttf-font-awesome
+ttf-icomoon-feather
 ttf-iosevka-nerd
 ttf-jetbrains-mono
 ttf-jetbrains-mono-nerd
+ttf-joypixels
 ttf-liberation
 ttf-nerd-fonts-symbols
 ttf-nerd-fonts-symbols-common
@@ -257,6 +262,10 @@ wine
 wine-gecko
 wireless_tools
 wl-clipboard
+wlogout
+wlogout-debug
+wlroots-asan-git
+wlroots-asan-git-debug
 woff2
 wofi
 wpa_supplicant

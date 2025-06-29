@@ -153,6 +153,8 @@ libyaml
 libyuv
 libzip
 licenses
+light
+light-debug
 linux
 linux-api-headers
 linux-firmware
@@ -270,6 +272,7 @@ perl-mailtools
 perl-rename
 perl-timedate
 php
+phpactor
 picom
 pinentry
 pipewire
@@ -343,6 +346,8 @@ python-jupyter-client
 python-jupyter-core
 python-jupyter-events
 python-jupyterlab-server
+python-mako
+python-markdown
 python-markdown-it-py
 python-markupsafe
 python-matplotlib-inline
@@ -350,6 +355,7 @@ python-mdurl
 python-mistune
 python-more-itertools
 python-nest-asyncio
+python-numpy
 python-overrides
 python-packaging
 python-pandocfilters
@@ -363,3 +369,4 @@ python-prometheus_client
 python-prompt_toolkit
 python-psutil
 python-ptyprocess
+python-pure-eval

@@ -228,6 +228,7 @@ traitlets==5.14.3
 transformers==4.53.0
 triton==3.3.1
 trove-classifiers==2025.5.9.12
+tstock==2.2.6
 typeguard==4.4.4
 types-python-dateutil==2.9.0.20250516
 typing-inspect==0.9.0
