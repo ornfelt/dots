@@ -178,6 +178,7 @@ alias .vmangos_update='cd $HOME/Code2/C++/core && git pull; pwd; ls'
 alias .mangoszero='cd $HOME/mangoszero/run/bin; pwd; ls'
 alias .mangoszero_update='cd $HOME/Code2/C++/server && git pull; pwd; ls'
 alias .wow='sh $HOME/.local/bin/my_scripts/wow.sh'
+alias .wc='cd $HOME/Code2/Wow/tools/wc && echo -e "./wow -h\n./wow -p /mnt/new/wow_tbc -w x11 -s FrameXML\n./wow -p /mnt/new/wow_tbc -x gl4"'
 alias .llama="$HOME/.local/bin/my_scripts/llama.sh"
 alias .git_push="$HOME/.local/bin/my_scripts/git_push.sh"
 alias .git_pull="$HOME/.local/bin/my_scripts/git_pull.sh"
