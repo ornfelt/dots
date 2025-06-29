@@ -29,9 +29,17 @@ cp -r .config/polybar/ $HOME/.config/
 cp -r .config/ranger/ $HOME/.config/
 cp -r .config/rofi/ $HOME/.config/
 cp -r .config/st/ $HOME/.config/
-cp -r .config/yazi/ $HOME/.config/
 cp -r .config/zathura/ $HOME/.config/
 cp .config/mimeapps.list $HOME/.config/
+
+#cp -r .config/yazi/ $HOME/.config/
+mkdir -p "$HOME/.config/yazi"
+for entry in .config/yazi/*; do
+    # Only copy files
+    if [ -f "$entry" ]; then
+        cp "$entry" "$HOME/.config/yazi/"
+    fi
+done  
 
 cp -r .dwm/ $HOME/
 cp -r bin/cron $HOME/.local/bin/
