@@ -5,22 +5,21 @@ TODOs:
 * craft fix... Only do if cmake version if above X?
 * fix vmangos cxx version (only for arch?)
 
-* sync hdd with others and remove my_docs from 2024 and dont copy in setup.sh...
+* fix mysql extension in (maybe grep and do sed replace):
+/etc/php/php.ini
+
+* sync hdd with others and remove my_docs from 2024 and dont copy in
+  setup.sh...
+* fix / check and compare jar_files!
+* add copy fixes for lsps (similar to how jars are copied)?
 
 * azeroth-web-proxy, spelunker, wowser npm install fails...
 * WebWoWViewercpp fails.
 
 * maybe copy re3 if hdd is mounted and not already copied?
 
-* fix / check and compare jar_files!
-* add copy fixes for lsps (similar to how jars are copied)?
-
-# Fix acore/tcore and classic characters! Drop and import from other sql
-# files, issue with updates then? Would be so nice if I could just import
-# all characters instead for all servers... sql diff somehow?
-# Fix wow_classic config.wtf etc if needed...
-
-# wotlk-simulationscraft (MY) compile and test!
+* Fix acore/tcore and classic characters!
+* Fix wow_classic config.wtf etc if needed...
 
 to fix wowser npm install:
 yay -S nvm
@@ -34,11 +33,8 @@ alias for all games and some alias for listing all available aliases
 that will run appropriate cmake depending on dir and print some info... If arg
 (like git_push/pull), just informative print!
 
-TODO: wc, my_wow, my_web_wow or do them manually?
-llama.cpp
-
-fix mysql extension in (maybe grep and do sed replace):
-/etc/php/php.ini
+* wotlk-simulationscraft (my version) compile and test!
+* wc, my_wow, my_web_wow or do them manually? llama.cpp
 
 ******************************************
 yazi urls:
