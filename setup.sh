@@ -234,7 +234,7 @@ clone_repo_if_missing() {
     local branch=$3
     local parent_dir="."
 
-    my_repo_dirs=("my_notes" "utils" "my_js" "my_cplusplus" "my_lua")
+    my_repo_dirs=("my_notes" "utils" "my_js" "my_cplusplus" "my_lua" "wc" "my_wow")
 
     echo "--------------------------------------------------------"
     if printf '%s\n' "${my_repo_dirs[@]}" | grep -q "^$repo_dir$"; then
@@ -382,6 +382,8 @@ clone_projects() {
     clone_repo_if_missing "wowmapview" "https://github.com/ornfelt/wowmapview" "linux"
     clone_repo_if_missing "wowmapviewer" "https://github.com/ornfelt/wowmapviewer" "linux"
     clone_repo_if_missing "WebWoWViewer" "https://github.com/ornfelt/WebWoWViewer" "new"
+    clone_repo_if_missing "wc" "https://github.com/ornfelt/wc"
+    clone_repo_if_missing "my_wow" "https://github.com/ornfelt/my_wow"
 
     architecture=$(uname -m)
     #if grep -q -i 'raspbian\|raspberry pi os' /etc/os-release; then
@@ -989,8 +991,19 @@ compile_projects() {
     # https://github.com/vmangos/wiki/wiki/Compiling-on-Linux
     # Or, better:
     # yay -S ace
-    # Also change CXX version from 14 -> 17... Possibly only for arch
     if check_dir "core"; then
+        # Fix CXX version for arch
+        VMANGOS_CMAKE_FILE="$HOME/Code2/C++/core/CMakeLists.txt"
+        if [ -f /etc/os-release ] && grep -qi '^ID=arch' /etc/os-release; then
+            # Note the space after CMAKE_CXX_STANDARD (needed to not match CMAKE_CXX_STANDARD_REQUIRED etc.)
+            occurrence_count=$(grep -c 'CMAKE_CXX_STANDARD ' "$VMANGOS_CMAKE_FILE")
+            echo "Found CMAKE_CXX_STANDARD occurrences: $occurrence_count"
+            if [ "$occurrence_count" -eq 1 ]; then
+                echo "Changing C++ standard version from 14 to 17 in $VMANGOS_CMAKE_FILE"
+                sed -i 's/CMAKE_CXX_STANDARD 14/CMAKE_CXX_STANDARD 17/' "$VMANGOS_CMAKE_FILE"
+            fi
+        fi
+
         cmake .. -DDEBUG=0 -DSUPPORTED_CLIENT_BUILD=5875 -DUSE_EXTRACTORS=1 -DCMAKE_INSTALL_PREFIX=$HOME/vmangos
         make -j$(nproc)
         sudo make install
@@ -1144,6 +1157,15 @@ compile_projects() {
         cmake .. && make -j$(nproc)
         cd "$HOME/Code2/Wow/tools"
     fi
+
+    # TODO: fix appropriate check_file
+    #if check_dir "wc"; then
+    #    sudo ln -s /usr/bin/ranlib /usr/bin/x86_64-linux-gnu-ranlib
+    #    cp config.sample config
+    #    make lib
+    #    make
+    #    cd "$HOME/Code2/Wow/tools"
+    #fi
 
     cd "$original_dir"
 }
@@ -1921,6 +1943,17 @@ fix_other_files() {
         fi
     else
         echo "$HOME/Code2/Wow/tools/mpq does NOT exist. Skipping."
+    fi
+
+    # Fix mysql extension in php.ini
+    PHP_INI_FILE="/etc/php/php.ini"
+
+    # If the PHP_INI_FILE contains ";extension=mysqli"
+    if grep -q ";extension=mysqli" "$PHP_INI_FILE"; then
+        echo "Found ';extension=mysqli' - updating to 'extension=mysqli'"
+        sudo sed -i 's/;extension=mysqli/extension=mysqli/g' "$PHP_INI_FILE"
+    else
+        echo "'extension=mysqli' already fixed in $PHP_INI_FILE"
     fi
 
     # Note: also copy go-extracted mpq files and classic/tbc via:
