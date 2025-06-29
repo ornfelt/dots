@@ -1,3 +1,4 @@
+libgtop
 libgudev
 libgweather-4
 libheif

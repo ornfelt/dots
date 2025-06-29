@@ -4,7 +4,7 @@ arg=$(echo "$1" | tr '[:upper:]' '[:lower:]')
 
 if [ $# -eq 0 ]; then
 #if [ -z "$arg" ]; then
-    echo "No arguments provided."
+    echo "No arguments provided. Updating installation docs..."
     cd $HOME/Documents/installation && ./update.sh && cd - > /dev/null
     rm -rf installation
     cp -r $HOME/Documents/installation installation/

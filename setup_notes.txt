@@ -4,6 +4,13 @@ TODOs:
   needed before installing node packages...
 * openmw, unvanquished, WebWoWViewercpp compile fails...
 
+* clone yazi plugins and create plugins dir if it doesnt exist...
+* wow_tbc copy
+* wc dot-command alias (cd and print info via one-liner). openjkdf2 alias.
+* mangos-tbc
+* package list per pc
+* improve health-check script
+
 * sync hdd with others and remove my_docs from 2024 and dont copy in
   setup.sh...
 * fix / check and compare jar_files!

@@ -5,6 +5,8 @@ advancecomp-debug 2.6-2
 cglm 0.9.6-1
 cglm-debug 0.9.6-1
 crow 1.2.1.2-1
+eww 0.6.0-1
+eww-debug 0.6.0-1
 gruvbox-dark-gtk 1.0.2-1
 imgui 1.91.6-1
 imgui-debug 1.91.6-1

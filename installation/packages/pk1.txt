@@ -107,6 +107,8 @@ efibootmgr
 efivar
 enchant
 evolution-data-server
+eww
+eww-debug
 exo
 expat
 fakeroot
@@ -369,4 +371,3 @@ libgit2
 libglvnd
 libgoa
 libgpg-error
-libgtop
