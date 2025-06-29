@@ -46,7 +46,7 @@ boost
 boost-libs
 brotli
 bubblewrap
-bullet
+bullet-dp
 bzip2
 c-ares
 ca-certificates
@@ -173,6 +173,7 @@ gperftools
 gpgme
 gpgmepp
 gpm
+gpsd
 gradle
 graphene
 graphite
@@ -350,3 +351,15 @@ libepoxy
 libev
 libevdev
 libevent
+libexif
+libffi
+libfontenc
+libgcrypt
+libgdiplus
+libgee
+libgirepository
+libgit2
+libglvnd
+libgoa
+libgpg-error
+libgtop

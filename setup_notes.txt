@@ -31,6 +31,19 @@ that will run appropriate cmake depending on dir and print some info... If arg
 * wotlk-simulationscraft (my version) compile and test!
 * wc, my_wow, my_web_wow or do them manually? llama.cpp
 
+Note for WC:
+If getting X Error of failed request: GLXBadFBConfig:
+Check GL version:
+glxinfo | grep "OpenGL version"
+
+Use MESA_GL_VERSION_OVERRIDE: This environment variable lets you force Mesa to
+report a different OpenGL version than what it would normally advertise. For
+example, if you want an application to believe your driver supports OpenGL 4.5
+(or perhaps you’re trying to work around an app’s version check), you can set
+it like so:
+export MESA_GL_VERSION_OVERRIDE="4.5"
+then: use ts.sh and vs.sh to compile shaders for correct gl version... 
+
 ******************************************
 yazi urls:
 https://github.com/yazi-rs/plugins/tree/main/smart-enter.yazi
