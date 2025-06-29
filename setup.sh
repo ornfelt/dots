@@ -409,6 +409,7 @@ clone_projects() {
     fi
     clone_repo_if_missing "Trinitycore-3.3.5-with-NPCBots" "https://github.com/rewow/Trinitycore-3.3.5-with-NPCBots" "npcbots_3.3.5"
     clone_repo_if_missing "simc" "https://github.com/ornfelt/simc"
+    clone_repo_if_missing "simc_wotlk" "https://github.com/ornfelt/simc_wotlk"
     clone_repo_if_missing "OpenJKDF2" "https://github.com/ornfelt/OpenJKDF2" "linux"
     clone_repo_if_missing "devilutionX" "https://github.com/ornfelt/devilutionX"
     clone_repo_if_missing "crispy-doom" "https://github.com/ornfelt/crispy-doom"
