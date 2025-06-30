@@ -22,13 +22,6 @@ TODOs:
 * create new db backups (fresh and with changes and chars) Also name them with
   date... Do for both windows and linux.
 
-* wow_tbc copy
-* add cmangos-tbc extracted data for windows.
-
-* sync hdd with others
-* fix/check and compare jar_files!
-* add copy fixes for lsps (similar to how jars are copied)?
-
 * maybe copy re3 if hdd is mounted and not already copied?
 
 * Fix acore/tcore and classic characters!

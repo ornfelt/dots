@@ -1472,7 +1472,7 @@ copy_game_data() {
     fi
 
     # Directories to copy from 2024
-    DIRS=("wow" "wow_classic" "wow_retail" "cata")
+    DIRS=("wow" "wow_classic" "wow_tbc" "wow_retail" "cata")
     if [ -d "/mnt/new/other" ]; then
         DOWNLOADS_DIR="/mnt/new"
     else
@@ -1492,7 +1492,7 @@ copy_game_data() {
         fi
     fi
 
-    echo -e "\n***Copying wow, wow_classic, wow_retail and cata to $DOWNLOADS_DIR***"
+    echo -e "\n***Copying wow, wow_classic, wow_tbc, wow_retail and cata to $DOWNLOADS_DIR***"
     for dir in "${DIRS[@]}"; do
         SRC="$MEDIA_PATH/2024/$dir"
         DEST="$DOWNLOADS_DIR/$dir"
@@ -1603,6 +1603,7 @@ copy_game_data() {
     # Cmangos-tbc
     DEST_DIR="$HOME/cmangos-tbc/run/bin"
     echo -e "\n***Copying cmangos-tbc files to $DEST_DIR***"
+    copy_dir_to_target "$MEDIA_PATH/2024/cmangos-tbc/Buildings" "$DEST_DIR/Buildings"
     copy_dir_to_target "$MEDIA_PATH/2024/cmangos-tbc/Cameras" "$DEST_DIR/Cameras"
     copy_dir_to_target "$MEDIA_PATH/2024/cmangos-tbc/dbc" "$DEST_DIR/dbc"
     copy_dir_to_target "$MEDIA_PATH/2024/cmangos-tbc/maps" "$DEST_DIR/maps"
@@ -1758,7 +1759,7 @@ copy_game_data() {
 
     # Jar files
     echo -e "\n***Copying jar files to $DOWNLOADS_DIR***"
-    copy_dir_to_target "$MEDIA_PATH/2024/jar_files" "$DOWNLOADS_DIR/jar_files"
+    copy_dir_to_target "$MEDIA_PATH/my_files/my_docs/jar_files/linux" "$DOWNLOADS_DIR/jar_files"
 }
 
 if $justDoIt; then

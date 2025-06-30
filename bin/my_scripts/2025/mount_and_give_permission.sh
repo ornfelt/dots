@@ -18,3 +18,9 @@ sudo umount /media2
 sudo mount -t exfat -o uid=$(id -u $USER),gid=$(id -g $USER),umask=000 /dev/sdb1 /media
 sudo mount -t exfat -o uid=$(id -u $USER),gid=$(id -g $USER),umask=000 /dev/sda1 /media2
 
+# For Seagate Expansion hdd (ntfs):
+# sudo blkid /dev/sda1                                                                  [12:08:03]
+# /dev/sda1: LABEL="Seagate Expansion Drive" BLOCK_SIZE="512" UUID="08BCEB86BCEB6D1E" TYPE="ntfs" PARTUUID="4f3f1114-01"
+# Do this instead:
+#sudo mount -t ntfs -o uid=$(id -u),gid=$(id -g),umask=000 /dev/sda1 /media2
+
