@@ -1425,7 +1425,7 @@ copy_dir_to_target() {
 check_space() {
     printf "Checking disk space...\n"
     local dir=$1
-    local min_space_gb=40
+    local min_space_gb=30
     local available_space_kb=$(df "$dir" --output=avail | tail -n 1)
     local available_space_gb=$((available_space_kb / 1024 / 1024))
 
