@@ -7,7 +7,7 @@ mkdir -p $HOME/.config/
 mkdir -p $HOME/.config/wezterm
 mkdir -p $HOME/.local/bin/
 mkdir -p $HOME/Documents $HOME/Downloads $HOME/Pictures/Wallpapers
-mkdir -p $HOME/Code/c $HOME/Code/c++ $HOME/Code/c# $HOME/Code/go $HOME/Code/js $HOME/Code/python $HOME/Code/rust $HOME/Code2/C $HOME/Code2/C++ $HOME/Code2/C# $HOME/Code2/General $HOME/Code2/Go $HOME/Code2/Javascript $HOME/Code2/Lua $HOME/Code2/Python $HOME/Code2/Wow/tools
+mkdir -p $HOME/Code/c $HOME/Code/c++ $HOME/Code/c# $HOME/Code/go $HOME/Code/ml $HOME/Code/js $HOME/Code/python $HOME/Code/rust $HOME/Code2/C $HOME/Code2/C++ $HOME/Code2/C# $HOME/Code2/General $HOME/Code2/Go $HOME/Code2/Javascript $HOME/Code2/Lua $HOME/Code2/Python $HOME/Code2/Wow/tools
 
 # Copy stuff
 cp -r .config/awesome/ $HOME/.config/
@@ -368,6 +368,10 @@ clone_projects() {
     fi
 
     clone_repo_if_missing "reone" "https://github.com/seedhartha/reone"
+
+    print_and_cd_to_dir "$HOME/Code/ml" "Cloning"
+    clone_repo_if_missing "llama.cpp" "https://github.com/ggml-org/llama.cpp"
+    clone_repo_if_missing "ollama" "https://github.com/ollama/ollama"
 
     print_and_cd_to_dir "$HOME/Code/js" "Cloning"
     clone_repo_if_missing "KotOR.js" "https://github.com/KobaltBlu/KotOR.js"
@@ -856,6 +860,14 @@ compile_projects() {
     #    sudo make install
     #    cd "$HOME/Code/c++"
     #fi
+
+    print_and_cd_to_dir "$HOME/Code/ml" "Compiling"
+
+    # https://github.com/ggml-org/llama.cpp/blob/master/docs/build.md#cpu-build
+    if check_dir "llama.cpp" "build"; then
+        cmake .. -DCMAKE_BUILD_TYPE=Release
+        make -j$(nproc)
+    fi
 
     print_and_cd_to_dir "$HOME/Code/js" "Compiling"
 
