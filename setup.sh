@@ -1083,7 +1083,9 @@ compile_projects() {
     fi
 
     if check_dir "server"; then
-        cmake -S .. -B ./ -DBUILD_MANGOSD=1 -DBUILD_REALMD=1 -DBUILD_TOOLS=1 -DUSE_STORMLIB=1 -DSCRIPT_LIB_ELUNA=1 -DSCRIPT_LIB_SD3=1 -DPLAYERBOTS=1 -DPCH=1 -DCMAKE_INSTALL_PREFIX=$HOME/mangoszero/run
+        #cmake -S .. -B ./ -DBUILD_MANGOSD=1 -DBUILD_REALMD=1 -DBUILD_TOOLS=1 -DUSE_STORMLIB=1 -DSCRIPT_LIB_ELUNA=1 -DSCRIPT_LIB_SD3=1 -DPLAYERBOTS=1 -DPCH=1 -DCMAKE_INSTALL_PREFIX=$HOME/mangoszero/run
+        # skip eluna
+        cmake -S .. -B ./ -DBUILD_MANGOSD=1 -DBUILD_REALMD=1 -DBUILD_TOOLS=1 -DUSE_STORMLIB=1 -DSCRIPT_LIB_ELUNA=0 -DSCRIPT_LIB_SD3=1 -DPLAYERBOTS=1 -DPCH=1 -DCMAKE_INSTALL_PREFIX=$HOME/mangoszero/run
         make -j$(nproc)
         sudo make install
         sudo chown -R $USER:$USER $HOME/mangoszero
@@ -1978,6 +1980,18 @@ fix_other_files() {
     else
         echo -e "\n$src_dir does NOT exist. Can't copy mangoszero sql files from it..."
     fi
+
+    # cmangos-tbc
+    print_and_cd_to_dir "$HOME/Code2/C++" "Cloning"
+    clone_repo_if_missing "tbc-db" "https://github.com/cmangos/tbc-db"
+
+    # TODO:
+    #echo -e "\nSetting up cmangos-tbc conf files\n"
+    #if [[ -d "$HOME/cmangos-tbc/run/etc" && -f "$HOME/cmangos-tbc/run/etc/mangosd.conf.dist" && -f "$HOME/cmangos-tbc/run/etc/realmd.conf.dist" && -f "$HOME/cmangos-tbc/run/etc/aiplayerbot.conf.dist" ]]; then
+    #    python3 "$CLASSIC_CONF_SCRIPT" cmangos
+    #else
+    #    echo "Skipping cmangos-tbc: missing one of ~/cmangos-tbc/run/etc/{mangosd.conf.dist,realmd.conf.dist,aiplayerbot.conf.dist,ahbot.conf.dist}"
+    #fi
 
     # Fix liblua...
     if grep -qEi 'debian|raspbian' /etc/os-release; then
