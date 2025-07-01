@@ -236,8 +236,7 @@ account set gmlevel cmangos 3
 ###
 
 When running install script in mangoszero_db, press n at start and then only
-change password to mangos.
-First run user.sql (run clean.sql if needed to reset)...
+change password default
 
 account create mangoszero 123
 account set gmlevel mangoszero 3
