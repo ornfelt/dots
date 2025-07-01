@@ -8,6 +8,10 @@ TODOs:
 # star_wars_jo_mods
 # wezterm compile for deb...
 
+* fix tcore full copy in copy_step.
+* possibly rename mangos-tbc db with tbc suffix to avoid conflict with classic.
+* fix ahbot (disable in conf) for cmangos and others...
+
 jk2mv works fine! just copy *.pk3 from $HOME/Downloads/jedi_outcast_gamedata/base into:
 /home/jonas/Code/c++/jk2mv/build_new/out/Release
 then run with:
@@ -18,7 +22,8 @@ then run with:
   needed before installing node packages...
 * openmw, unvanquished, WebWoWViewercpp compile fails...
 
-* wc dot-command alias (cd and print info via one-liner). openjkdf2 alias.
+* openjkdf2, jk2mvmp and other aliases. Do some checks and print info if
+  missing?
 * package list per pc
 * Change print to say [ok] or similar?
 * improve health-check script
@@ -197,7 +202,8 @@ source logon_db_updates.sql
 use vmangos_mangos
 source world_db_updates.sql
 
-Also execute this in vmangos_realmd:
+Also do this:
+use vmangos_realmd
 INSERT INTO realmlist (name, address) VALUES ('vmangos', '127.0.0.1');
 
 account create vmangos 123
@@ -239,7 +245,23 @@ account set gmlevel mangoszero 3
 # mangos tbc install notes
 ###
 
-TODO...
+cd $HOME/Documents/my_notes/sql/wow
+source cmangos_create.sql
+
+cd $HOME/Code2/C++/classic-db
+run ./InstallFullDB.sh once and quit to generate config
+
+Edit config with this:
+MYSQL_USERNAME="cmangos"
+MYSQL_PASSWORD="cmangos"
+AHBOT="YES"
+PLAYERBOTS_DB="YES"
+
+run ./InstallFullDB.sh again and press 4. enter root and pass press 1 (Full
+default...)
+
+account create cmangos 123
+account set gmlevel cmangos 3
 
 ###
 # TrinityCore (manual installation)
