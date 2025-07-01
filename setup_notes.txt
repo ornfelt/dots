@@ -8,7 +8,11 @@ TODOs:
 # star_wars_jo_mods
 # wezterm compile for deb...
 
-* try jkmv and galaxies!
+jk2mv works fine! just copy *.pk3 from $HOME/Downloads/jedi_outcast_gamedata/base into:
+/home/jonas/Code/c++/jk2mv/build_new/out/Release
+then run with:
+./jk2mvmp
+(or see jk2mv notes further down)...
 
 * Fix nvm in bashrc/ zshrc? Possibly do nvm version check and install 16 if
   needed before installing node packages...
@@ -244,14 +248,19 @@ TODO...
 Download latest 3.3.5 db from: https://github.com/TrinityCore/TrinityCore/releases
 Place in ~/tcore/bin
 source create_mysql.sl in $HOME/Code2/C++/Trinitycore-3.3.5-with-NPCBots/sql/create
-cp authserver.conf.dist authserver.conf
-cp worldserver.conf.dist worldserver.conf
 start worldserver
 
 mkdir -p $HOME/Code2/Wow/general
 cd $HOME/Code2/Wow/general
 git clone --recurse-submodules https://github.com/trickerer/Trinity-Bots
 cd $HOME/Code2/Wow/general/Trinity-Bots/SQL
+
+Above Trinity-Bots is only needed if using tcore branch without bots. If using
+pre-patched branch, then just do:
+cd /home/jonas/Code2/C++/Trinitycore-3.3.5-with-NPCBots/sql/Bots
+and:
+chmod +x ./*.sh 
+then source sql files similar to below...
 
 wow_classic: prevent message about restore default settings...
 Also fix one wow startup script and call classic / 3.3.5 depending on server...
@@ -278,7 +287,7 @@ chmod +x merge_sqls_auth_unix.sh
 
 mysql -u root -p
 use world
-source ALL_word.sql
+source ALL_world.sql
 
 use characters
 source ALL_characters.sql
@@ -286,10 +295,9 @@ source ALL_characters.sql
 use auth
 source ALL_auth.sql
 
-Some updates were missing from trinity-bots repo so I had to install the two
-updates (1 character and 1 world) in rewow repo updates...). Source the ones
-later than 2024_03_19...
-Copy overwrite.py and gdb.conf to $HOME/tcore/bin
+Now do:
+use characters
+source create_playermap_tcore.sql
 
 ###
 # AzerothCore (manual installation)
@@ -298,10 +306,21 @@ Copy overwrite.py and gdb.conf to $HOME/tcore/bin
 cd $HOME/Code2/C++/AzerothCore-wotlk-with-NPCBots/data/sql/create
 mysql -u root -p
 source create_mysql.sql
-cp authserver.conf.dist authserver.conf
-cp worldserver.conf.dist worldserver.conf
-Run worldserver...
-Apply customworldboss sql ($HOME/Code2/Wow/lua/azerothcore_lua_scripts/Acore_eventScripts/database/world/customWorldboss.sql)
+Run worldserver (you will get an error about some table missing)...
+Source customworldboss sql ($HOME/Code2/Wow/lua/azerothcore_lua_scripts/Acore_eventScripts/database/world/customWorldboss.sql)
+or here:
+cd /home/jonas/Documents/my_notes/sql/wow
+mysql -u root -p
+use acore_world
+source customWorldBoss.sql
+Also source create_playermap_acore.sql (acore_characters)
+or just import from db_bkp...
+
+Optional:
+ip a
+use acore_auth / aut
+select * from realmlist;
+UPDATE realmlist SET address = '192.168.1.XXX' WHERE id = 1;
 
 ###############################################################
 
@@ -318,9 +337,13 @@ run ./openmw from: /usr/local/bin (should be in path)
 
 # re3
 cp $HOME/Code/c++/re3/bin/linux-amd64-librw_gl3_glfw-oal/Release/re3 to $DOWNLOADS_DIR/gta3/
+like:
+cp $HOME/Code/c++/re3/bin/linux-amd64-librw_gl3_glfw-oal/Release/re3 $HOME/Downloads/gta3/
 
 # re3_vice
 cp $HOME/Code/c++/re3_vice/bin/linux-amd64-librw_gl3_glfw-oal/Release/reVC to $DOWNLOADS_DIR/gta_vice
+like:
+cp $HOME/Code/c++/re3_vice/bin/linux-amd64-librw_gl3_glfw-oal/Release/reVC $HOME/Downloads/gta_vice
 
 # ioq3
 .ioq3
@@ -366,9 +389,11 @@ $HOME/Code2/C++/devilutionX/build
 
 # crispy:
 $HOME/Code2/C++/crispy-doom/src
+./crispy-doom -iwad /home/jonas/Downloads/doom/DOOM/DOOM.WAD 
 
 # dhewm3
 $HOME/Code2/C++/dhewm3/build
+copy doom3 files to build dir or dhewm3 files to downloads dir...
 
 # simc
 $HOME/Code2/C++/simc/build/qt
