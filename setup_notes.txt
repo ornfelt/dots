@@ -4,8 +4,7 @@ TODOs:
 # TODO:
 # Copy llama models?
 # baby-yoda and other joja mods...
-# star_wars_ja_mods
-# star_wars_jo_mods
+# star_wars_ja_mods # star_wars_jo_mods
 # wezterm compile for deb...
 
 * fix tcore full copy in copy_step.
@@ -481,4 +480,30 @@ npm run start
 
 # WebWoWViewercpp
 ./AWebWoWViewerCpp
+
+# llama.cpp
+./llama-server -hf bartowski/Llama-3.2-3B-Instruct-GGUF
+./llama-cli -hf ggml-org/gemma-3-1b-it-GGUF
+https://huggingface.co/MaziyarPanahi/Llama-3.2-1B-Instruct-GGUF
+better:
+https://huggingface.co/bartowski/Llama-3.2-3B-Instruct-GGUF/tree/main
+
+see models:
+https://huggingface.co/models?num_parameters=min:0,max:6B&library=gguf&sort=downloads
+
+To try:
+https://huggingface.co/MaziyarPanahi/Qwen3-1.7B-GGUF
+https://huggingface.co/MaziyarPanahi/Mistral-7B-Instruct-v0.3-GGUF
+
+fast:
+https://huggingface.co/google/gemma-2b-it
+
+https://huggingface.co/unsloth/DeepSeek-R1-0528-Qwen3-8B-GGUF
+./llama-cli -hf unsloth/DeepSeek-R1-0528-Qwen3-8B-GGUF
+ollama run hf.co/unsloth/DeepSeek-R1-0528-Qwen3-8B-GGUF:Q4_K_XL
+
+models are stored here:
+/home/jonas/.cache/llama.cpp
+
+----------------------------------------------------------------------------------
 
