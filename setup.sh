@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# {my_notes_path}/linux/setup_notes.txt
+
 printf "\n***** Setting up config files! *****\n\n"
 
 # Setup required dirs
