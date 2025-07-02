@@ -74,6 +74,7 @@ cp -r $HOME/.config/rofi .config/rofi/
 cp -r $HOME/.config/st .config/st/
 cp -r $HOME/.config/zathura .config/zathura/
 cp $HOME/.config/mimeapps.list .config/
+cp $HOME/.config/gtk-3.0/bookmarks .config/gtk-3.0/
 
 cp -r $HOME/.dwm .dwm/
 mkdir -p bin

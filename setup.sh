@@ -5,6 +5,7 @@ printf "\n***** Setting up config files! *****\n\n"
 # Setup required dirs
 mkdir -p $HOME/.config/
 mkdir -p $HOME/.config/wezterm
+mkdir -p $HOME/.config/gtk-3.0
 mkdir -p $HOME/.local/bin/
 mkdir -p $HOME/Documents $HOME/Downloads $HOME/Pictures/Wallpapers
 mkdir -p $HOME/Code/c $HOME/Code/c++ $HOME/Code/c# $HOME/Code/go $HOME/Code/ml $HOME/Code/js $HOME/Code/python $HOME/Code/rust $HOME/Code2/C $HOME/Code2/C++ $HOME/Code2/C# $HOME/Code2/General $HOME/Code2/Go $HOME/Code2/Javascript $HOME/Code2/Lua $HOME/Code2/Python $HOME/Code2/Wow/tools
@@ -31,6 +32,7 @@ cp -r .config/rofi/ $HOME/.config/
 cp -r .config/st/ $HOME/.config/
 cp -r .config/zathura/ $HOME/.config/
 cp .config/mimeapps.list $HOME/.config/
+cp .config/gtk-3.0/bookmarks $HOME/.config/gtk-3.0/
 
 #cp -r .config/yazi/ $HOME/.config/
 mkdir -p "$HOME/.config/yazi"
