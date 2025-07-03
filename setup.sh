@@ -2044,10 +2044,10 @@ fix_other_files() {
         #cp "$HOME/mangoszero/run/etc/mangosd.conf.dist" "$HOME/mangoszero/run/etc/mangosd.conf"
         #cp "$HOME/mangoszero/run/etc/realmd.conf.dist" "$HOME/mangoszero/run/etc/realmd.conf"
         #python3 $HOME/Documents/my_notes/scripts/wow/update_conf_classic.py "mangoszero"
-        if [[ -d "$HOME/mangoszero/run/etc" && -f "$HOME/mangoszero/run/etc/mangosd.conf.dist" && -f "$HOME/mangoszero/run/etc/realmd.conf.dist" && -f "$HOME/mangoszero/run/etc/aiplayerbot.conf.dist" && -f "$HOME/mangoszero/run/etc/ahbot.conf.dist" ]]; then
+        if [[ -d "$HOME/mangoszero/run/etc" && -f "$HOME/mangoszero/run/etc/mangosd.conf.dist" && -f "$HOME/mangoszero/run/etc/realmd.conf.dist" && -f "$HOME/mangoszero/run/etc/aiplayerbot.conf.dist" ]]; then
             python3 "$CLASSIC_CONF_SCRIPT" mangoszero
         else
-            echo "Skipping mangoszero: missing one of ~/mangoszero/run/etc/{mangosd.conf.dist,realmd.conf.dist,aiplayerbot.conf.dist,ahbot.conf.dist}"
+            echo "Skipping mangoszero: missing one of ~/mangoszero/run/etc/{mangosd.conf.dist,realmd.conf.dist,aiplayerbot.conf.dist}"
         fi
         # Follow mangoszero install notes from setup_notes.txt...
     else
