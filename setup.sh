@@ -1841,6 +1841,7 @@ check_dbs() {
     databases=(
         "vmangos_realmd" "vmangos_mangos" "vmangos_characters" "vmangos_logs"
         "classicrealmd" "classicmangos" "classiccharacters" "classiclogs"
+        "tbcrealmd" "tbcmangos" "tbccharacters" "tbclogs"
         "realmd" "mangos0" "character0"
         "acore_auth" "acore_world" "acore_characters" "ac_eluna"
         "auth" "world" "characters"
@@ -1978,7 +1979,7 @@ fix_other_files() {
     if [[ -d "$HOME/cmangos/run/etc" && -f "$HOME/cmangos/run/etc/mangosd.conf.dist" && -f "$HOME/cmangos/run/etc/realmd.conf.dist" && -f "$HOME/cmangos/run/etc/aiplayerbot.conf.dist" ]]; then
         python3 "$CLASSIC_CONF_SCRIPT" cmangos
     else
-        echo "Skipping cmangos: missing one of ~/cmangos/run/etc/{mangosd.conf.dist,realmd.conf.dist,aiplayerbot.conf.dist,ahbot.conf.dist}"
+        echo "Skipping cmangos: missing one of ~/cmangos/run/etc/{mangosd.conf.dist,realmd.conf.dist,aiplayerbot.conf.dist}"
     fi
     # Follow cmangos install notes from setup_notes.txt...
 
@@ -2001,13 +2002,12 @@ fix_other_files() {
     print_and_cd_to_dir "$HOME/Code2/C++" "Cloning"
     clone_repo_if_missing "tbc-db" "https://github.com/cmangos/tbc-db"
 
-    # TODO:
-    #echo -e "\nSetting up cmangos-tbc conf files\n"
-    #if [[ -d "$HOME/cmangos-tbc/run/etc" && -f "$HOME/cmangos-tbc/run/etc/mangosd.conf.dist" && -f "$HOME/cmangos-tbc/run/etc/realmd.conf.dist" && -f "$HOME/cmangos-tbc/run/etc/aiplayerbot.conf.dist" ]]; then
-    #    python3 "$CLASSIC_CONF_SCRIPT" cmangos
-    #else
-    #    echo "Skipping cmangos-tbc: missing one of ~/cmangos-tbc/run/etc/{mangosd.conf.dist,realmd.conf.dist,aiplayerbot.conf.dist,ahbot.conf.dist}"
-    #fi
+    echo -e "\nSetting up cmangos-tbc conf files\n"
+    if [[ -d "$HOME/cmangos-tbc/run/etc" && -f "$HOME/cmangos-tbc/run/etc/mangosd.conf.dist" && -f "$HOME/cmangos-tbc/run/etc/realmd.conf.dist" && -f "$HOME/cmangos-tbc/run/etc/aiplayerbot.conf.dist" ]]; then
+        python3 "$CLASSIC_CONF_SCRIPT" cmangos-tbc
+    else
+        echo "Skipping cmangos-tbc: missing one of ~/cmangos-tbc/run/etc/{mangosd.conf.dist,realmd.conf.dist,aiplayerbot.conf.dist}"
+    fi
 
     # Fix liblua...
     if grep -qEi 'debian|raspbian' /etc/os-release; then
@@ -2121,12 +2121,6 @@ fix_other_files() {
     else
         echo "'extension=mysqli' already fixed in $PHP_INI_FILE"
     fi
-
-    # Note: also copy go-extracted mpq files and classic/tbc via:
-    # cd /media2/2025
-    # cp -r mpq /mnt/new/my_files
-    # cp -r tbc /mnt/new/my_files/mpq_tbc
-    # cp -r classic /mnt/new/my_files/mpq_classic
 
     echo -e "\nChecking databases...\n"
     check_dbs
