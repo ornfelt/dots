@@ -1,3 +1,4 @@
+libgpg-error
 libgtop
 libgudev
 libgweather-4
@@ -234,6 +235,7 @@ nvm
 nwg-look
 obs-studio
 ocl-icd
+ogre
 omnisharp-roslyn
 omnisharp-roslyn-debug
 onetbb
@@ -243,7 +245,7 @@ opencore-amr
 opencv
 openexr
 openjpeg2
-openscenegraph
+openscenegraph-openmw-git
 openssh
 openssl
 openxr
@@ -370,4 +372,3 @@ python-prometheus_client
 python-prompt_toolkit
 python-psutil
 python-ptyprocess
-python-pure-eval

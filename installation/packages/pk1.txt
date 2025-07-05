@@ -48,7 +48,7 @@ boost
 boost-libs
 brotli
 bubblewrap
-bullet-dp
+bullet
 bzip2
 c-ares
 ca-certificates
@@ -67,6 +67,8 @@ chromium
 cjson
 clang
 cmake
+collada-dom
+collada-dom-debug
 compiler-rt
 confuse
 conky
@@ -370,4 +372,3 @@ libgirepository
 libgit2
 libglvnd
 libgoa
-libgpg-error

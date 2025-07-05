@@ -1,3 +1,4 @@
+python-pure-eval
 python-pyaudio
 python-pycparser
 python-pygments

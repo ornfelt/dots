@@ -48,7 +48,7 @@ boost
 boost-libs
 brotli
 bubblewrap
-bullet-dp
+bullet
 bzip2
 c-ares
 ca-certificates
@@ -67,6 +67,8 @@ chromium
 cjson
 clang
 cmake
+collada-dom
+collada-dom-debug
 compiler-rt
 confuse
 conky
@@ -607,6 +609,7 @@ nvm
 nwg-look
 obs-studio
 ocl-icd
+ogre
 omnisharp-roslyn
 omnisharp-roslyn-debug
 onetbb
@@ -616,7 +619,7 @@ opencore-amr
 opencv
 openexr
 openjpeg2
-openscenegraph
+openscenegraph-openmw-git
 openssh
 openssl
 openxr
