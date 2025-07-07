@@ -4,8 +4,8 @@ set -euo pipefail
 
 # Hard-coded dirs to compare
 
-dir1="/media2/my_files/my_docs"
-dir2="/media/my_files/my_docs"
+#dir1="/media2/my_files/my_docs"
+#dir2="/media/my_files/my_docs"
 
 #dir1="/home/jonas/Downloads/yt/test/dir1"
 #dir2="/home/jonas/Downloads/yt/test/dir2"
@@ -15,6 +15,18 @@ dir2="/media/my_files/my_docs"
 
 #dir1="/media2/2025/mpq"
 #dir2="/media/2025/mpq"
+
+#dir1="/media2/my_files"
+#dir2="/media/my_files"
+
+#dir1="/media2/2024"
+#dir2="/media/2024"
+
+#dir1="/media2/2025"
+#dir2="/media/2025"
+
+dir1="/media2"
+dir2="/media"
 
 # Log file
 target_log="diff_check.log"
@@ -47,11 +59,36 @@ if [[ -z "$missing_in_2" && -z "$missing_in_1" ]]; then
 else
   if [[ -n "$missing_in_2" ]]; then
     echo "Entries in $dir1 missing in $dir2:" | tee -a "$target_log"
-    echo "$missing_in_2" | tee -a "$target_log"
+    #echo "$missing_in_2" | tee -a "$target_log"
+
+    # Smarter way of printing by only printing top-level missing paths by
+    # checking each new path against previously seen paths... If it's a subpath
+    # of something already printed (e.g., a/b/c.txt under a/), it's skipped.
+    echo "$missing_in_2" | awk '
+    {
+        for (i in paths) {
+            if (index($0, paths[i]) == 1 && length($0) > length(paths[i]) && substr($0, length(paths[i])+1, 1) == "/") next
+        }
+        paths[++count] = $0
+        print
+    }
+    ' | tee -a "$target_log"
+
   fi
   if [[ -n "$missing_in_1" ]]; then
     echo "Entries in $dir2 missing in $dir1:" | tee -a "$target_log"
-    echo "$missing_in_1" | tee -a "$target_log"
+    #echo "$missing_in_1" | tee -a "$target_log"
+
+    echo "$missing_in_1" | awk '
+    {
+        for (i in paths) {
+            if (index($0, paths[i]) == 1 && length($0) > length(paths[i]) && substr($0, length(paths[i])+1, 1) == "/") next
+        }
+        paths[++count] = $0
+        print
+    }
+    ' | tee -a "$target_log"
+
   fi
 fi
 
