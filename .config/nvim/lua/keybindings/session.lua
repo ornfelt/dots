@@ -28,6 +28,8 @@ function load_session()
     return
   end
 
+  local prefix_with_index = true
+
   -- Extract session and indices
   local sessions = {}
   local index = 0
@@ -45,8 +47,11 @@ function load_session()
 
   -- Build options for user selection
   local options = {}
+  local label_to_session_name = {}
   for _, session in ipairs(sessions) do
-    table.insert(options, session.name)
+    local label = prefix_with_index and string.format("%d: %s", session.index, session.name) or session.name
+    table.insert(options, label)
+    label_to_session_name[label] = session.name
   end
 
   local use_file_picker = myconfig.use_file_picker_for_commands()
@@ -60,7 +65,8 @@ function load_session()
       vim.fn["fzf#run"]({
         source = options,
         sink = function(selected)
-          source_session_by_name(selected, sessions)
+          local session_name = label_to_session_name[selected]
+          source_session_by_name(session_name, sessions)
         end,
         options = "--prompt 'Session> ' --reverse",
       })
@@ -71,8 +77,8 @@ function load_session()
         prompt = "Session> ",
         actions = {
           ["default"] = function(selected)
-            local sel_name = selected[1]
-            source_session_by_name(sel_name, sessions)
+            local session_name = label_to_session_name[selected[1]]
+            source_session_by_name(session_name, sessions)
           end,
         },
       })
@@ -101,7 +107,8 @@ function load_session()
           local function on_select()
             local selected = action_state.get_selected_entry()
             actions.close(prompt_bufnr)
-            source_session_by_name(selected.value, sessions)
+            local session_name = label_to_session_name[selected.value]
+            source_session_by_name(session_name, sessions)
           end
 
           map("i", "<CR>", on_select)
@@ -114,7 +121,8 @@ function load_session()
     -- Prompt user to select a session
     vim.ui.select(options, { prompt = 'Select a session to load:' }, function(choice)
       if choice then
-        source_session_by_name(choice, sessions)
+        local session_name = label_to_session_name[choice]
+        source_session_by_name(session_name, sessions)
       else
         print('No session selected.')
       end

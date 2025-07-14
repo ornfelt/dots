@@ -213,8 +213,14 @@ local function extract_tables_from_buffer()
     -- Extract all occurrences of "from <table_name>" case-insensitively
     --for table_name in line:lower():gmatch("from%s+([%w_]+)") do
     -- Make sure we get schema as well...
-    for table_name in line:lower():gmatch("from%s+([%w_%.]+)") do
-      tables[table_name] = true
+    --for table_name in line:lower():gmatch("from%s+([%w_%.]+)") do
+    --  tables[table_name] = true
+    --end
+    -- Make it work for this select format: So [db].[schema].[MyTable] -> MyTable
+    -- Fallback via full_match for basic table name support
+    for full_match in line:lower():gmatch("from%s+([%w_%.%[%]-]+)") do
+      local last_part = full_match:match(".*%.%[?([%w_%-]+)%]?%s*$") or full_match
+      tables[last_part] = true
     end
   end
 
@@ -291,6 +297,14 @@ function insert_engine_env_from_db()
 
   local db_data, engine_env_map = parse_db_files(db_path)
   local tables = extract_tables_from_buffer()
+
+  if myconfig.should_debug_print() then
+    print("[debug] Tables found in buffer:")
+    for _, tbl in ipairs(tables) do
+      print(" - " .. tbl)
+    end
+  end
+
   local matches = find_matching_databases(tables, db_data)
 
   if myconfig.should_debug_print() then
