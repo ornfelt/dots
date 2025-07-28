@@ -1110,6 +1110,8 @@ compile_projects() {
 
     if check_dir "mangos-tbc"; then
         cmake -S .. -B ./ -DCMAKE_INSTALL_PREFIX=~/cmangos-tbc/run -DBUILD_EXTRACTORS=ON -DPCH=1 -DDEBUG=0 -DBUILD_PLAYERBOTS=ON
+        # Debug:
+        # cmake -S .. -B ./ -DCMAKE_INSTALL_PREFIX=~/cmangos-tbc/run -DBUILD_EXTRACTORS=ON -DPCH=1 -DDEBUG=1 -DBUILD_PLAYERBOTS=ON -DCMAKE_BUILD_TYPE=Debug
         # with clang:
         # cmake ../mangos -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++
         # see: https://github.com/cmangos/issues/wiki/Installation-Instructions
