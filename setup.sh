@@ -1491,13 +1491,14 @@ copy_game_data() {
         return 1
     fi
 
-    # Directories to copy from 2024
-    DIRS=("wow" "wow_classic" "wow_tbc" "wow_retail" "cata")
     if [ -d "/mnt/new/other" ]; then
         DOWNLOADS_DIR="/mnt/new"
     else
         DOWNLOADS_DIR="$HOME/Downloads"
     fi
+
+    # Directories to copy from 2024
+    DIRS=("wow" "wow_classic" "wow_tbc" "wow_retail" "cata")
 
     # Check space 
     if [ "$DOWNLOADS_DIR" = "/mnt/new" ]; then
@@ -1780,6 +1781,19 @@ copy_game_data() {
     # Jar files
     echo -e "\n***Copying jar files to $DOWNLOADS_DIR***"
     copy_dir_to_target "$MEDIA_PATH/my_files/my_docs/jar_files/linux" "$DOWNLOADS_DIR/jar_files"
+
+    # local config file
+    if [ ! -f "$HOME/Documents/local/config.txt" ]; then
+        mkdir -p "$HOME/Documents/local"
+        if [ -f "$MEDIA_PATH/my_files/my_docs/local/config_home_pc.txt" ]; then
+            cp "$MEDIA_PATH/my_files/my_docs/local/config_home_pc.txt" "$HOME/Documents/local/config.txt"
+            echo "Copied config file to $HOME/Documents/local/config.txt"
+        else
+            echo "Source config file at $MEDIA_PATH/my_files/my_docs/local/config_home_pc.txt not found."
+        fi
+    else
+        echo "Config file already exists at $HOME/Documents/local/config.txt"
+    fi
 }
 
 if $justDoIt; then

@@ -13,10 +13,12 @@ local function SqlExecCommand()
   -- Remove '/' at the end if it exists (not necessary really)
   code_root_dir = code_root_dir:gsub("/$", "")
 
+  local executable_net9 = code_root_dir .. '/Code2/Sql/my_sql/SqlExec/SqlExec/bin/Debug/net9.0/SqlExec.exe'
   local executable_net8 = code_root_dir .. '/Code2/SQL/my_sql/SqlExec/SqlExec/bin/Debug/net8.0/SqlExec.exe'
   local executable_net7 = code_root_dir .. '/Code2/SQL/my_sql/SqlExec/SqlExec/bin/Debug/net7.0/SqlExec.exe'
 
   if vim.fn.has('win32') == 0 then
+    executable_net9 = executable_net9:gsub("%.exe$", "")
     executable_net8 = executable_net8:gsub("%.exe$", "")
     executable_net7 = executable_net7:gsub("%.exe$", "")
   end
@@ -25,7 +27,12 @@ local function SqlExecCommand()
     local stat = vim.loop.fs_stat(path)
     return stat ~= nil
   end
-  local executable = file_exists(executable_net8) and executable_net8 or executable_net7
+  --local executable = file_exists(executable_net8) and executable_net8 or executable_net7
+  -- Priority: net9.0 > net8.0 > net7.0
+  local executable =
+      file_exists(executable_net9) and executable_net9 or
+      file_exists(executable_net8) and executable_net8 or
+      executable_net7
 
   local current_file = vim.fn.expand('%:p') -- Full path of current file
   local mode = vim.fn.mode()
