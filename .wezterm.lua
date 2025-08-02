@@ -613,9 +613,12 @@ config.keys = {
       -- patterns = {
       --   [[\S+?(?=:\d)|\S{2,}]]
       -- }
-      -- Same as above but remove leading tmux split char
+      -- Same as above but use (?:│)? to optionally match a leading tmux separator 
+      -- into a non-capturing group. (\S+?(?=:\d)|\S{2,}) will either get a non-greedy 
+      -- match non-space chars that stops before a colon followed by a digit 
+      -- or (as a fallback) matches a word of at least 2 non-space characters.
       patterns = {
-        [[[^│\s]\S*?(?=:\d)|[^│\s]\S{2,}]]
+        [[(?:│)?(\S+?(?=:\d)|\S{2,})]]
       }
       --action = wezterm.action.QuickSelect
     },
