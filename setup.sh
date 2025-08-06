@@ -1788,6 +1788,12 @@ copy_game_data() {
         if [ -f "$MEDIA_PATH/my_files/my_docs/local/config_home_pc.txt" ]; then
             cp "$MEDIA_PATH/my_files/my_docs/local/config_home_pc.txt" "$HOME/Documents/local/config.txt"
             echo "Copied config file to $HOME/Documents/local/config.txt"
+            windows_path="C:/Users/jonas/OneDrive/Documents/Code2/c#/BloogBot/Bot/db.db"
+            unix_path="$HOME/Code2/C#/BloogBot/Bot/db.db"
+            if grep -Fq "$windows_path" "$HOME/Documents/local/config.txt"; then
+                sed -i "s|$windows_path|$unix_path|g" "$HOME/Documents/local/config.txt"
+                echo "Updated database path in config file."
+            fi
         else
             echo "Source config file at $MEDIA_PATH/my_files/my_docs/local/config_home_pc.txt not found."
         fi
