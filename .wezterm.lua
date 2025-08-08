@@ -678,14 +678,14 @@ config.keys = {
     }),
   },
 
-  --{
-  --  key = "Tab",
-  --  mods = "CTRL|SHIFT",
-  --  action = wezterm.action.Multiple({
-  --    act.ActivateTabRelative(-1),
-  --    wezterm.action.SendKey({ key = "Tab", mods = "CTRL|SHIFT" }),
-  --  }),
-  --},
+  {
+    key = "Tab",
+    mods = "CTRL|SHIFT",
+    action = wezterm.action.Multiple({
+      act.ActivateTabRelative(-1),
+      wezterm.action.SendKey({ key = "Tab", mods = "CTRL|SHIFT" }),
+    }),
+  },
   -- Fix for debian...
   {
     key = "Tab",
@@ -697,7 +697,8 @@ config.keys = {
           wezterm.log_error("Failed to switch tmux window: " .. (stderr or "unknown error"))
         end
       else
-        act.ActivateTabRelative(-1)
+        window:perform_action(act.ActivateTabRelative(-1), pane)
+        --window:perform_action(act.SendKey({ key = "Tab", mods = "CTRL|SHIFT" }), pane)
       end
     end),
   },

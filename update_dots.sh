@@ -34,7 +34,13 @@ rm -rf .config/picom
 rm -rf .config/pip
 rm -rf .config/polybar
 rm -rf .config/ranger
-rm -rf .config/yazi
+
+if [[ -d "$HOME/.config/yazi/plugins" ]]; then
+    rm -rf .config/yazi
+else
+    echo "Directory $HOME/.config/yazi/plugins does not exist. Skipping copy."
+fi
+
 rm -rf .config/rofi
 rm -rf .config/st
 rm -rf .config/zathura
@@ -69,7 +75,13 @@ cp -r $HOME/.config/picom .config/picom/
 cp -r $HOME/.config/pip .config/pip/
 cp -r $HOME/.config/polybar .config/polybar/
 cp -r $HOME/.config/ranger .config/ranger/
-cp -r $HOME/.config/yazi .config/yazi/
+
+if [[ -d "$HOME/.config/yazi/plugins" ]]; then
+    cp -r $HOME/.config/yazi .config/yazi/
+else
+    echo "Directory $HOME/.config/yazi/plugins does not exist. Skipping copy."
+fi
+
 cp -r $HOME/.config/rofi .config/rofi/
 cp -r $HOME/.config/st .config/st/
 cp -r $HOME/.config/zathura .config/zathura/
