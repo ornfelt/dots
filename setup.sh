@@ -1655,8 +1655,8 @@ copy_game_data() {
     copy_dir_to_target "$MEDIA_PATH/2024/cmangos-tbc/vmaps" "$DEST_DIR/vmaps"
     
     # db backups
-    echo -e "\n***Copying db_bkp files to $HOME/Documents***"
-    copy_dir_to_target "$MEDIA_PATH/2024/db_bkp" "$HOME/Documents/db_bkp"
+    #echo -e "\n***Copying db_bkp files to $HOME/Documents***"
+    #copy_dir_to_target "$MEDIA_PATH/2024/db_bkp" "$HOME/Documents/db_bkp"
 
     # Diablo
     SRC_DIABLO="$MEDIA_PATH/2024/diasurgical/devilution"
