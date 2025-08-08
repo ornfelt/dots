@@ -194,7 +194,8 @@ playermap ()
         cd $HOME/Code2/Python/wander_nodes_util/acore_map/playermap && php -S $(ip addr show | grep -v 'inet6' | grep -v 'inet 127' | grep 'inet' | head -n 1 | awk '{print $2}' | cut -d/ -f1):8000;
     fi
 }
-alias .playermap='playermap'
+alias .playermap_old='playermap'
+alias .playermap="$HOME/.local/bin/my_scripts/playermap.sh"
 
 # use the vi navigation keys in menu completion
 #bindkey -M menuselect 'h' vi-backward-char

@@ -1,4 +1,4 @@
-#! /bin/sh
+#! /bin/bash
 
 arg=$(echo "$1" | tr '[:upper:]' '[:lower:]')
 
@@ -114,19 +114,19 @@ sudo rm -r --f .config/awesome/.git
 
 # Remove .git dirs from dmenu, dwm and st
 dirs=(
-  ".config/dmenu/.git"
-  ".config/dwm/.git"
-  ".config/dwmblocks/.git"
-  ".config/st/.git"
+    ".config/dmenu/.git"
+    ".config/dwm/.git"
+    ".config/dwmblocks/.git"
+    ".config/st/.git"
 )
 
 for dir in "${dirs[@]}"; do
-  if [ -d "$dir" ]; then
-    echo "Removing $dir"
-    rm -rf "$dir"
-  else
-    echo "$dir does not exist, skipping."
-  fi
+    if [ -d "$dir" ]; then
+        echo "Removing $dir"
+        rm -rf "$dir"
+    else
+        echo "$dir does not exist, skipping."
+    fi
 done
 
 # Update alacritty, preserving custom font size (if any)

@@ -63,8 +63,13 @@ cp Screenshots/space.jpg $HOME/Pictures/Wallpapers/
 cp .bashrc $HOME/.bashrc
 cp .tmux.conf $HOME/.tmux.conf
 cp .wezterm.lua $HOME/.wezterm.lua
-sudo chown $USER:$USER $HOME/.xinitrc
+if [[ -f "$HOME/.xinitrc" ]]; then
+  sudo chown "$USER:$USER" "$HOME/.xinitrc"
+else
+  echo "No ~/.xinitrc to chown, skipping."
+fi
 cp .xinitrc $HOME/.xinitrc
+sudo chown "$USER:$USER" "$HOME/.xinitrc"
 cp .Xresources $HOME/.Xresources
 cp .Xresources_cat $HOME/.Xresources_cat
 cp .zshrc $HOME/.zshrc
@@ -504,7 +509,25 @@ install_if_missing() {
         cd $HOME/.config/$directory || exit
 
         if [ "$binary" == "dwmblocks" ]; then
-            ./compile.sh
+            # if blocks.h is missing, try to seed it from blocks.def.h
+            if [[ ! -f "blocks.h" ]]; then
+                if [[ -f "blocks.def.h" ]]; then
+                echo "-> blocks.h missing; copying blocks.def.h -> blocks.h"
+                cp blocks.def.h blocks.h
+                else
+                echo "-> blocks.def.h also missing; skipping dwmblocks compile."
+                cd - >/dev/null
+                return 0
+                fi
+            fi
+
+            if [[ -f "blocks.h" ]]; then
+                echo "-> Compiling dwmblocks"
+                ./compile.sh
+            else
+                echo "-> blocks.h still not found; compilation skipped."
+            fi
+
         else
             sudo make clean install
         fi

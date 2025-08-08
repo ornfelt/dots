@@ -1,4 +1,16 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Ensure we're in a dir with the necessary files, or fall back
+if [[ -f "./blocks.h" && -f "./dwmblocks.c" && -f "./Makefile" ]]; then
+    echo "Using dwmblocks sources in $(pwd)"
+elif [[ -f "$HOME/.config/dwmblocks/blocks.h" ]]; then
+    echo "Switching to ~/.config/dwmblocks"
+    cd "$HOME/.config/dwmblocks"
+else
+    echo "Error: blocks.h, dwmblocks.c or Makefile not found here or in ~/.config/dwmblocks."
+    exit 1
+fi
 
 # Paths
 CONFIG_FILE="./blocks.h"

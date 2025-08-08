@@ -53,12 +53,13 @@ cd wezterm
 git submodule update --init --recursive
 ./get-deps
 cargo build --release
+
 Running:
 cargo run --release --bin wezterm -- start
 no wayland support:
 cargo build --release --no-default-features --features vendored-fonts
 
-Copy files:
+Copy files (use sudo installs from below instead):
 source_dir="$CODE_ROOT_DIR/Code2/Rust/wezterm/target/release/"
 dest_dir="/usr/local/bin"
 
@@ -67,7 +68,7 @@ dest_dir="/usr/local/bin"
 find "$source_dir" -type f -exec cp {} "$dest_dir" \;
 
 Do this instead:
-cd target/release
+###cd target/release
 mkdir -p /usr/local/bin /etc/profile.d
 sudo install -Dm755 assets/open-wezterm-here wezterm wezterm-gui wezterm-mux-server strip-ansi-escapes -t /usr/local/bin
 sudo install -Dm644 assets/shell-integration/* -t /etc/profile.d
