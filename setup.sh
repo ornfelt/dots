@@ -2155,16 +2155,40 @@ fix_other_files() {
         echo "$HOME/Code2/Wow/tools/mpq does NOT exist. Skipping."
     fi
 
-    echo -e "\nChecking php.ini file\n"
     # Fix mysql extension in php.ini
+    echo -e "\nChecking php.ini file\n"
+    # Prefer the global php.ini if it exists
     PHP_INI_FILE="/etc/php/php.ini"
+    PHP_INI_FOUND=false
+
+    if [[ -f "$PHP_INI_FILE" ]]; then
+        PHP_INI_FOUND=true
+    else
+        # Fallback: derive major.minor from `php -v` (e.g., "8.2")
+        if command -v php >/dev/null 2>&1; then
+            PHP_MM_VERSION="$(php -v 2>/dev/null | awk '/^PHP/{print $2}' | awk -F. '{print $1 "." $2}')"
+            FALLBACK="/etc/php/${PHP_MM_VERSION}/cli/php.ini"
+
+            if [[ -f "$FALLBACK" ]]; then
+                PHP_INI_FILE="$FALLBACK"
+                PHP_INI_FOUND=true
+                echo "Using fallback php.ini: $PHP_INI_FILE"
+            else
+                echo "Neither /etc/php/php.ini nor $FALLBACK exists. Skipping."
+            fi
+        else
+            echo "php not found and /etc/php/php.ini missing. Skipping."
+        fi
+    fi
 
     # If the PHP_INI_FILE contains ";extension=mysqli"
-    if grep -q ";extension=mysqli" "$PHP_INI_FILE"; then
-        echo "Found ';extension=mysqli' - updating to 'extension=mysqli'"
-        sudo sed -i 's/;extension=mysqli/extension=mysqli/g' "$PHP_INI_FILE"
-    else
-        echo "'extension=mysqli' already fixed in $PHP_INI_FILE"
+    if [ "$PHP_INI_FOUND" = true ]; then
+        if grep -q ";extension=mysqli" "$PHP_INI_FILE"; then
+            echo "Found ';extension=mysqli' - updating to 'extension=mysqli'"
+            sudo sed -i 's/;extension=mysqli/extension=mysqli/g' "$PHP_INI_FILE"
+        else
+            echo "'extension=mysqli' already fixed in $PHP_INI_FILE"
+        fi
     fi
 
     echo -e "\nChecking databases...\n"
