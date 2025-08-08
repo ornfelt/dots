@@ -914,11 +914,15 @@ compile_projects() {
 
     print_and_cd_to_dir "$HOME/Code/js" "Compiling"
 
-    if check_dir "KotOR.js" "node_modules"; then
-        npm install
-        #npm run webpack:dev-watch
-        npm run webpack:dev -- --no-watch # No watch to exit after compile
-        cd "$HOME/Code/js"
+    # skip for now
+    COMPILE_KOTOR_JS=false
+    if [ "$COMPILE_KOTOR_JS" = true ]; then
+        if check_dir "KotOR.js" "node_modules"; then
+            npm install
+            #npm run webpack:dev-watch
+            npm run webpack:dev -- --no-watch # No watch to exit after compile
+            cd "$HOME/Code/js"
+        fi
     fi
 
     print_and_cd_to_dir "$HOME/Code/rust" "Compiling"
