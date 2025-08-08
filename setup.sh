@@ -187,7 +187,7 @@ else
     echo "wezterm-session-manager already installed."
 fi
 
-# tmux-ressurect plugin
+# tmux-resurrect plugin
 if [ ! -d "$HOME/.tmux/plugins" ]; then
     mkdir -p "$HOME/.tmux/plugins"
 fi
@@ -196,6 +196,22 @@ if [ ! -d "$HOME/.tmux/plugins/tmux-resurrect/.git" ]; then
     echo "tmux-resurrect installed!"
 else
     echo "tmux-resurrect already installed."
+fi
+
+# Copy tmux session (resurrect) file if none exist
+TMUX_TARGET_DIR="/home/jonas/.local/share/tmux/resurrect"
+TMUX_SOURCE_FILE="./tmux_session/tmux_resurrect_20250808T225157.txt"
+# Check if the target directory exists
+if [[ ! -d "$TMUX_TARGET_DIR" ]]; then
+    echo "Directory $TMUX_TARGET_DIR does not exist. Creating it."
+    mkdir -p "$TMUX_TARGET_DIR"
+fi
+# Check if there are any .txt files in the directory
+if ! find "$TMUX_TARGET_DIR" -type f -name "*.txt" | read; then
+    echo "No .txt files found in $TMUX_TARGET_DIR. Copying $TMUX_SOURCE_FILE to $TMUX_TARGET_DIR."
+    cp "$TMUX_SOURCE_FILE" "$TMUX_TARGET_DIR"
+else
+    echo "Directory $TMUX_TARGET_DIR contains session files already."
 fi
 
 # yazi plugins

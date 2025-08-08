@@ -1,0 +1,20 @@
+pane	0	1	1	:*	1	ornf	:/home/jonas/Documents/my_notes	1	zsh	:/bin/sh ./sync_dots.sh
+pane	0	1	1	:*	2	ornf	:/home/jonas/Downloads/dotfiles	0	zsh	:/bin/sh ./sync_dots.sh
+pane	0	2	0	:-	1	ornf	:/home/jonas/Code2/Wow/tools/my_wow	0	zsh	:/bin/sh ./sync_dots.sh
+pane	0	2	0	:-	2	ornf	:/home/jonas/Code2/Wow/tools/my_wow	1	zsh	:
+pane	0	3	0	:	1	ornf	:/home/jonas/Code2/Wow/tools/wowmapviewer	0	zsh	:
+pane	0	3	0	:	2	ornf	:/home/jonas/Code2/Wow/tools/wowmapview	1	zsh	:
+pane	0	4	0	:	1	ornf	:/home/jonas/Code2/Wow/tools/WebWoWViewer	1	zsh	:
+pane	0	4	0	:	2	ornf	:/home/jonas/Code2/General/utils/nodes	0	zsh	:
+pane	0	5	0	:	1	ornf	:/home/jonas/acore/bin	1	zsh	:
+pane	0	5	0	:	2	ornf	:/home/jonas/acore/bin	0	zsh	:
+pane	1	1	0	:-	1	ornf	:/home/jonas/Code2/C++/Trinitycore-3.3.5-with-NPCBots	1	zsh	:
+pane	1	2	1	:*	1	ornf	:/home/jonas/Code2/C++/Trinitycore-3.3.5-with-NPCBots	1	zsh	:
+window	0	1	:..ents/my_notes	1	:*	ffa1,207x49,0,0{103x49,0,0,1,103x49,104,0,2}	off
+window	0	2	:../tools/my_wow	0	:-	7fa8,207x49,0,0{103x49,0,0,4,103x49,104,0,9}	off
+window	0	3	:..ls/wowmapview	0	:	ffa7,207x49,0,0{103x49,0,0,5,103x49,104,0,6}	off
+window	0	4	:../WebWoWViewer	0	:	7b95,207x49,0,0{103x49,0,0,10,103x49,104,0,11}	off
+window	0	5	:~/acore/bin	0	:	7b97,207x49,0,0{103x49,0,0,12,103x49,104,0,13}	off
+window	1	1	:..-with-NPCBots	0	:-	d224,207x49,0,0,7	off
+window	1	2	:..-with-NPCBots	1	:*	d225,207x49,0,0,8	off
+state	0	
