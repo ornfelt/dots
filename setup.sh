@@ -1468,7 +1468,7 @@ copy_dir_to_target() {
 check_space() {
     printf "Checking disk space...\n"
     local dir=$1
-    local min_space_gb=20
+    local min_space_gb=30
     local available_space_kb=$(df "$dir" --output=avail | tail -n 1)
     local available_space_gb=$((available_space_kb / 1024 / 1024))
 
@@ -1654,9 +1654,9 @@ copy_game_data() {
     copy_dir_to_target "$MEDIA_PATH/2024/cmangos-tbc/mmaps" "$DEST_DIR/mmaps"
     copy_dir_to_target "$MEDIA_PATH/2024/cmangos-tbc/vmaps" "$DEST_DIR/vmaps"
     
-    # db backups - TODO
-    #echo -e "\n***Copying db_bkp files to $HOME/Documents***"
-    #copy_dir_to_target "$MEDIA_PATH/2024/db_bkp" "$HOME/Documents/db_bkp"
+    # db backups
+    echo -e "\n***Copying db_bkp files to $HOME/Documents***"
+    copy_dir_to_target "$MEDIA_PATH/2024/db_bkp" "$HOME/Documents/db_bkp"
 
     # Diablo
     SRC_DIABLO="$MEDIA_PATH/2024/diasurgical/devilution"
