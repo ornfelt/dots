@@ -215,25 +215,46 @@ else
 fi
 
 # yazi plugins
-if command -v yazi &>/dev/null && command -v ya &>/dev/null; then
-    PLUGIN_DIR="$HOME/.config/yazi/plugins"
-    if [ ! -d "$PLUGIN_DIR" ]; then
-        echo "yazi plugins dir missing. Creating it and installing plugins..."
-        mkdir -p "$PLUGIN_DIR"
+ADD_YAZI_PLUGINS=false
+PLUGIN_DIR="$HOME/.config/yazi/plugins"
+if [ "$ADD_YAZI_PLUGINS" = true ]; then
+    if command -v yazi &>/dev/null && command -v ya &>/dev/null; then
+        if [ ! -d "$PLUGIN_DIR" ]; then
+            echo "yazi plugins dir missing. Creating it and installing plugins..."
+            mkdir -p "$PLUGIN_DIR"
 
-        ya pack -a lpnh/fg
-        ya pack -a dedukun/bookmarks
-        # ya pkg add immediately downloads and installs the plugin from the registry.
-        # However, it does not modify the persistent plugin config (plugins.toml).
-        #ya pkg add yazi-rs/plugins:smart-enter
-        ya pack -a yazi-rs/plugins:smart-enter
+            ya pack -a lpnh/fg
+            ya pack -a dedukun/bookmarks
+            # ya pkg add immediately downloads and installs the plugin from the registry.
+            # However, it does not modify the persistent plugin config (plugins.toml).
+            #ya pkg add yazi-rs/plugins:smart-enter
+            ya pack -a yazi-rs/plugins:smart-enter
 
-        # Run install once after all packs are added
-        ya pack -i
-        echo "yazi plugins installed!"
+            # Run install once after all packs are added
+            ya pack -i
+            echo "yazi plugins installed!"
+        fi
+    else
+        echo "yazi or ya command not found, skipping yazi plugin installation."
     fi
 else
-    echo "yazi or ya command not found, skipping yazi plugin installation."
+    if [ ! -d "$PLUGIN_DIR" ]; then
+        cat <<EOF
+yazi plugins dir missing. You should run the following:
+  ya pkg add lpnh/fg
+  ya pkg add dedukun/bookmarks
+  ya pkg add yazi-rs/plugins:smart-enter
+  ya pkg install
+EOF
+        # alternative print
+        #printf "yazi plugins dir missing. You should run the following commands:\n"
+        #printf "  ya pkg add lpnh/fg\n"
+        #printf "  ya pkg add dedukun/bookmarks\n"
+        #printf "  ya pkg add yazi-rs/plugins:smart-enter\n"
+        #printf "  ya pkg install\n"
+    else
+        echo "yazi plugins installed already."
+    fi
 fi
 
 # jetbrains nerd fonts
