@@ -1262,6 +1262,10 @@ compile_projects() {
     fi
 
     if check_dir "StormLib"; then
+        # Commit 486a7dd29f3bdf884d4be5588d9171daa5da1bae (Replaced GetLastError 
+        # with SErrGetLastError) messed up the library link for wowser and 
+        # azeroth-web, go back to this commit:
+        git checkout b41cda40f9c3fbdb802cf63e739425cd805eecaa
         cmake .. -DBUILD_SHARED_LIBS=ON
         sudo make install
         sudo cp /usr/local/lib/libstorm.so /usr/lib/
