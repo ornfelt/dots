@@ -545,8 +545,14 @@ install_if_missing() {
         if $justInform; then
             return 0
         fi
+
         echo "installing: $binary"
-        cd $HOME/.config/$directory || exit
+
+        if [ "$binary" == "clipmenu" ]; then
+            cd $HOME/.config/$binary || exit
+        else
+            cd $HOME/.config/$directory || exit
+        fi
 
         if [ "$binary" == "dwmblocks" ]; then
             # if blocks.h is missing, try to seed it from blocks.def.h
@@ -569,9 +575,6 @@ install_if_missing() {
             fi
 
         else
-            if [ "$binary" == "clipmenu" ]; then
-                cd ..
-            fi
             sudo make clean install
         fi
 
