@@ -6,15 +6,46 @@ if [[ -z "$code_root_dir" ]]; then
     exit 1
 fi
 
-# Define the model path
-#MODEL_PATH="/mnt/new/2024/llama/Meta-Llama-3.1-8B-Instruct/Meta-Llama-3.1-8B-Instruct-ggml-model-Q4_K_M.gguf"
-# TODO: first look in some local dir (in Documents somewhere)
-# new paths 
-#MODEL_PATH="/media/my_files/my_docs/ai/models/Meta-Llama-3.1-8B-Instruct-ggml-model-Q4_K_M.gguf"
-MODEL_PATH="/media/my_files/my_docs/ai/models/bartowski_Llama-3.2-3B-Instruct-GGUF_Llama-3.2-3B-Instruct-Q4_K_M.gguf"
-#MODEL_PATH="/media/my_files/my_docs/ai/models/ggml-org_gemma-3-1b-it-GGUF_gemma-3-1b-it-Q4_K_M.gguf"
-#MODEL_PATH="/media/my_files/my_docs/ai/models/unsloth_DeepSeek-R1-0528-Qwen3-8B-GGUF_DeepSeek-R1-0528-Qwen3-8B-Q4_K_M.gguf"
-#MODEL_PATH="/media/my_files/my_docs/ai/models/unsloth_DeepSeek-R1-0528-Qwen3-8B-GGUF_DeepSeek-R1-0528-Qwen3-8B-Q4_K_M.gguf.json"
+# Define a list of potential model paths
+MODEL_PATHS=(
+    "$HOME/Documents/local/ai/models/bartowski_Llama-3.2-3B-Instruct-GGUF_Llama-3.2-3B-Instruct-Q4_K_M.gguf"
+    "$HOME/Documents/local/ai/models/ggml-org_gemma-3-1b-it-GGUF_gemma-3-1b-it-Q4_K_M.gguf"
+    "$HOME/Documents/local/ai/models/Meta-Llama-3.1-8B-Instruct-ggml-model-Q4_K_M.gguf"
+    "$HOME/Documents/local/ai/models/unsloth_DeepSeek-R1-0528-Qwen3-8B-GGUF_DeepSeek-R1-0528-Qwen3-8B-Q4_K_M.gguf"
+    "/media/my_files/my_docs/ai/models/bartowski_Llama-3.2-3B-Instruct-GGUF_Llama-3.2-3B-Instruct-Q4_K_M.gguf"
+    "/media/my_files/my_docs/ai/models/ggml-org_gemma-3-1b-it-GGUF_gemma-3-1b-it-Q4_K_M.gguf"
+    "/media/my_files/my_docs/ai/models/unsloth_DeepSeek-R1-0528-Qwen3-8B-GGUF_DeepSeek-R1-0528-Qwen3-8B-Q4_K_M.gguf"
+    "/media/my_files/my_docs/ai/models/Meta-Llama-3.1-8B-Instruct-ggml-model-Q4_K_M.gguf"
+    "/mnt/new/2024/llama/Meta-Llama-3.1-8B-Instruct/Meta-Llama-3.1-8B-Instruct-ggml-model-Q4_K_M.gguf"
+)
+
+# Check which models exist and print them
+AVAILABLE_MODELS=()
+echo "Checking available models:"
+for path in "${MODEL_PATHS[@]}"; do
+    if [[ -f "$path" ]]; then
+        echo "- Model available: $path"
+        AVAILABLE_MODELS+=("$path")
+    fi
+done
+
+# Ensure at least one model is available
+if [[ ${#AVAILABLE_MODELS[@]} -eq 0 ]]; then
+    echo "Error: No model files found in the provided paths."
+    exit 1
+fi
+
+# Get index from arguments (optional second argument)
+MODEL_IDX="${2:-0}"
+
+# Validate the model index
+if ! [[ "$MODEL_IDX" =~ ^[0-9]+$ ]] || [[ "$MODEL_IDX" -ge "${#AVAILABLE_MODELS[@]}" ]]; then
+    echo "Error: Invalid model index '$MODEL_IDX'. Valid indices: 0 to $((${#AVAILABLE_MODELS[@]} - 1))"
+    exit 1
+fi
+
+MODEL_PATH="${AVAILABLE_MODELS[$MODEL_IDX]}"
+echo "Selected model: $MODEL_PATH"
 
 # Define the binary directory based on `code_root_dir`
 BINARY_DIR="${code_root_dir}/Code/ml/llama.cpp/build/bin"
@@ -24,15 +55,15 @@ COMMON_ARGS="--threads $(nproc) -c 2048"
 
 # Handle arguments passed to the script
 if [[ $# -eq 0 ]]; then
-    echo "Usage: .llama [cli|chat|server|help]"
+    echo "Usage: .llama [cli|chat|server|help] [model_index]"
     exit 1
 fi
 
 # Check if the model exists
-if [[ ! -f "$MODEL_PATH" ]]; then
-    echo "Error: Model file not found at $MODEL_PATH"
-    exit 1
-fi
+#if [[ ! -f "$MODEL_PATH" ]]; then
+#    echo "Error: Model file not found at $MODEL_PATH"
+#    exit 1
+#fi
 
 # Check if the binary directory exists
 if [[ ! -d "$BINARY_DIR" ]]; then
@@ -50,16 +81,17 @@ case $1 in
         "${BINARY_DIR}/llama-server" -m "$MODEL_PATH" $COMMON_ARGS
         ;;
     help)
-        echo "Usage: .llama [cli|chat|server|help]"
+        echo "Usage: .llama [cli|chat|server|help] [model_index]"
         echo "Commands:"
         echo "  cli    Run llama in CLI mode"
         echo "  chat   Alias for CLI mode"
         echo "  server Run llama in Server mode"
         echo "  help   Show this help message"
+        echo "  model_index Optional, 0-based index to select model."
         ;;
     *)
         echo "Unknown command: $1"
-        echo "Usage: .llama [cli|chat|server|help]"
+        echo "Usage: .llama [cli|chat|server|help] [model_index]"
         exit 1
         ;;
 esac

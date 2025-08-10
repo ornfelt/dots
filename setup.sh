@@ -569,6 +569,9 @@ install_if_missing() {
             fi
 
         else
+            if [ "$binary" == "clipmenu" ]; then
+                cd ..
+            fi
             sudo make clean install
         fi
 
@@ -772,6 +775,10 @@ compile_projects() {
     install_if_missing dwmblocks dwmblocks
     install_if_missing dmenu dmenu
     install_if_missing st st
+    # Compile clipmenu for debian-based
+    if grep -qEi 'debian|raspbian' /etc/os-release; then
+        install_if_missing clipmenu "src/clipmenu"
+    fi
 
     export CMAKE_POLICY_VERSION_MINIMUM=3.5
 
