@@ -1666,7 +1666,9 @@ copy_game_data() {
     copy_dir_to_target "$MEDIA_PATH/2024/tcore/mmaps" "$DEST_DIR/mmaps"
     copy_dir_to_target "$MEDIA_PATH/2024/tcore/vmaps" "$DEST_DIR/vmaps"
     #[ -f "$HOME/tcore/bin/TDB_full_world_335.23061_2023_06_14.sql" ] && echo "File already exists, skipping copy." || (cp "$MEDIA_PATH/2024/tcore/TDB_full_world_335.23061_2023_06_14.sql" "$HOME/tcore/bin/" && echo "Copied TDB_full_world_335.23061_2023_06_14.sql to $HOME/tcore/bin")
-    FILE_NAME="TDB_full_world_335.23061_2023_06_14.sql"
+    # Better (easier to adjust) version:
+    #FILE_NAME="TDB_full_world_335.23061_2023_06_14.sql"
+    FILE_NAME="TDB_full_world_335.24111_2024_11_22.sql"
     SRC_FILE="$MEDIA_PATH/2024/tcore/$FILE_NAME"
     DEST_FILE="$HOME/tcore/bin/$FILE_NAME"
     if [ -f "$DEST_FILE" ]; then

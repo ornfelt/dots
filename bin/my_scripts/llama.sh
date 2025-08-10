@@ -79,6 +79,7 @@ case $1 in
     server)
         echo "Running llama in Server mode..."
         "${BINARY_DIR}/llama-server" -m "$MODEL_PATH" $COMMON_ARGS
+        #"${BINARY_DIR}/llama-server" -m "$MODEL_PATH" $COMMON_ARGS --host $(ip addr show | grep -v 'inet6' | grep -v 'inet 127' | grep 'inet' | head -n 1 | awk '{print $2}' | cut -d/ -f1)
         ;;
     help)
         echo "Usage: .llama [cli|chat|server|help] [model_index]"

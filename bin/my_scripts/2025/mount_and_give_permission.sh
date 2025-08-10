@@ -3,6 +3,14 @@
 sudo umount /media
 sudo umount /media2
 
+# useful for checking device name / mountpoints etc:
+# lsblk
+# or:
+# sudo fdisk -l
+# Also do these if needed:
+# sudo mkdir -p /media
+# sudo mkdir -p /media2
+
 # To check file system type before mounting:
 # sudo blkid /dev/sda1
 # sudo blkid /dev/sdb1
@@ -17,6 +25,8 @@ sudo umount /media2
 # exfat:
 sudo mount -t exfat -o uid=$(id -u $USER),gid=$(id -g $USER),umask=000 /dev/sdb1 /media
 sudo mount -t exfat -o uid=$(id -u $USER),gid=$(id -g $USER),umask=000 /dev/sda1 /media2
+# or:
+#sudo mount -t exfat -o uid=$(id -u $USER),gid=$(id -g $USER),umask=000 /dev/sdc1 /media2
 
 # For Seagate Expansion hdd (ntfs):
 # sudo blkid /dev/sda1                                                                  [12:08:03]
