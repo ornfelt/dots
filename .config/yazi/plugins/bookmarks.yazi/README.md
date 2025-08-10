@@ -18,7 +18,7 @@ https://github.com/dedukun/bookmarks.yazi/assets/25795432/9a9fe345-dd06-442e-99f
 ## Installation
 
 ```sh
-ya pack -a dedukun/bookmarks
+ya pkg add dedukun/bookmarks
 ```
 
 ## Import/Export bookmarks
@@ -33,22 +33,23 @@ the bookmarks are saved in DDS's state file (`~/.local/state/yazi/.dds` on Linux
 Add this to your `keymap.toml`:
 
 ```toml
-[[manager.prepend_keymap]]
+# If your yazi version is lower than v25.5.28, repleace "mgr" by "manager".
+[[mgr.prepend_keymap]]
 on = [ "m" ]
 run = "plugin bookmarks save"
 desc = "Save current position as a bookmark"
 
-[[manager.prepend_keymap]]
+[[mgr.prepend_keymap]]
 on = [ "'" ]
 run = "plugin bookmarks jump"
 desc = "Jump to a bookmark"
 
-[[manager.prepend_keymap]]
+[[mgr.prepend_keymap]]
 on = [ "b", "d" ]
 run = "plugin bookmarks delete"
 desc = "Delete a bookmark"
 
-[[manager.prepend_keymap]]
+[[mgr.prepend_keymap]]
 on = [ "b", "D" ]
 run = "plugin bookmarks delete_all"
 desc = "Delete all bookmarks"
@@ -67,6 +68,7 @@ require("bookmarks"):setup({
 	desc_format = "full",
 	file_pick_mode = "hover",
 	custom_desc_input = false,
+	show_keys = false,
 	notify = {
 		enable = false,
 		timeout = 1,
@@ -144,3 +146,13 @@ For the `new` and `delete` messages, the `<key>` and `<folder>` keywords can be 
 When enabled, user can change description for new bookmark before it is saved.
 
 By default the custom description input is filled with path.
+
+### `show_keys`
+
+When enabled, saving a new bookmark will display a list of all available keys.
+
+If a key already has a saved bookmark, its description will be shown.
+
+This helps prevent accidental overwriting of existing bookmarks.
+
+By default no information is shown.
