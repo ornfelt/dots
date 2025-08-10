@@ -20,6 +20,8 @@ function ReplacePathBasedOnContext()
   end
 
   local line = vim.fn.getline(".")
+  local is_windows = vim.loop.os_uname().sysname:lower():find("windows") ~= nil
+  local home_directory = os.getenv("HOME")
 
   if myconfig.should_debug_print() then
     print("input line: " .. line)
@@ -27,6 +29,7 @@ function ReplacePathBasedOnContext()
     print("code_root_dir: " .. code_root_dir)
     print("ps_profile_path: " .. ps_profile_path)
     print("conf_dir: " .. myconfig.get_conf_dir())
+    print("home_directory: " .. (home_directory or "nil"))
   end
 
   -- vim.pesc will escape the string for use in Vim regular expressions
@@ -48,6 +51,44 @@ function ReplacePathBasedOnContext()
     else
       line = line:gsub(vim.pesc(ps_profile_path), "{ps_profile_path}/")
     end
+  end
+
+  -- HOME replacement handling for unix
+  -- Keep track of home replacement since we don't want to translate
+  -- /home/jonas -> $HOME and then translate back later...
+  local home_replaced = false
+  if not is_windows and home_directory then
+    if line:find(home_directory, 1, true) then
+      line = line:gsub(vim.pesc(home_directory), "$HOME")
+      home_replaced = true
+    else
+      line = line:gsub("%$HOME", home_directory)
+    end
+  end
+
+  -- Generalized Unix-like environment variables replacement
+  line = line:gsub('%$([%w_]+)', function(env_var_name)
+    if env_var_name == "HOME" and home_replaced then
+      return "$" .. env_var_name
+    end
+    local env_var_value = os.getenv(env_var_name)
+    if env_var_value then
+      return vim.pesc(env_var_value)
+    else
+      return "$" .. env_var_name -- Leave as is if not found
+    end
+  end)
+
+  -- Handle potential Windows environment paths like $env:variable_name
+  if is_windows then
+    line = line:gsub('%$env:([%w_]+)', function(env_var_name)
+      local env_var_value = os.getenv(env_var_name)
+      if env_var_value then
+        return vim.pesc(env_var_value)
+      else
+        return "$env:" .. env_var_name -- Leave as is if not found
+      end
+    end)
   end
 
   line = myconfig.normalize_path(line) -- Just to replace any consecutive slashes again...
