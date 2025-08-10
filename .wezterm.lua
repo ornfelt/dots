@@ -618,8 +618,14 @@ config.keys = {
       --   [[\S+?(?=:\d)|\S{2,}]]
       -- }
       -- Same as above but remove leading tmux split char
+      --patterns = {
+      --  [[[^│\s]\S*?(?=:\d)|[^│\s]\S{2,}]]
+      --}
+      -- Same as above but remove any trailing > or ' or "
+      -- [>"'] → matches a greater-than, double quote, or single quote.
+      -- This is inside a lookahead (?=...), so it stops before those characters rather than consuming them.
       patterns = {
-        [[[^│\s]\S*?(?=:\d)|[^│\s]\S{2,}]]
+        [[[^│\s]\S*?(?=:\d|[>"']|$)|[^│\s]\S{2,}?(?=[>"']|$| )]]
       }
       --action = wezterm.action.QuickSelect
     },
