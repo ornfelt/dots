@@ -601,6 +601,7 @@ config.keys = {
   -- { key = ' ', mods = 'SHIFT|CTRL', action = wezterm.action.QuickSelect },
   { key = ' ', mods = 'ALT|SHIFT', action = wezterm.action.QuickSelect },
 
+  -- For below regex, see test cases: {my_notes_path}/wez_quickselect_test.txt
   {
     key = 'w',
     mods = 'ALT|SHIFT',
