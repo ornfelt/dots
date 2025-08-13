@@ -30,22 +30,22 @@ if ! $use_lspci; then
 fi
 
 # Alternative function using lspci for CPU (proxy using lscpu)
-get_cpu_info_alternate() {
+get_cpu_info_lspci() {
     local cpu_info=$(lscpu | grep 'Model name' | cut -d ':' -f2 | xargs)
     echo "$cpu_info"
 }
 
 # Alternative function using lspci for GPU
-get_gpu_info_alternate() {
+get_gpu_info_lspci() {
     local gpu_info=$(lspci | grep -iE 'vga|3d' | head -n1 | cut -d ':' -f3 | xargs)
     echo "$gpu_info"
 }
 
 # Determine method and retrieve information
 if $use_lspci; then
-    echo "Using alternate methods for retrieving hardware info:"
-    cpu_info=$(get_cpu_info_alternate)
-    gpu_info=$(get_gpu_info_alternate)
+    echo "Using lspci methods for retrieving hardware info:"
+    cpu_info=$(get_cpu_info_lspci)
+    gpu_info=$(get_gpu_info_lspci)
 else
     echo "Using lshw for retrieving hardware info:"
     cpu_info=$(get_cpu_info)
