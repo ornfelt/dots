@@ -6,8 +6,20 @@ if [[ -z "$code_root_dir" ]]; then
     exit 1
 fi
 
+# Define the binary directory based on `code_root_dir`
+BINARY_DIR="${code_root_dir}/Code/ml/llama.cpp/build/bin"
+
+# Check if the binary directory exists
+if [[ ! -d "$BINARY_DIR" ]]; then
+    echo "Error: Binary directory not found at $BINARY_DIR"
+    exit 1
+fi
+
 # Define a list of potential model paths
-MODEL_PATHS=(
+MODELPATHS=(
+    "../../../models/Meta-Llama-3.1-8B-Instruct/Meta-Llama-3.1-8B-Instruct-ggml-model-Q4_K_M.gguf"
+    "../../../models/meta-llama-3.1-8b-instruct-q4_k_m-gguf/meta-llama-3.1-8b-instruct-q4_k_m.gguf"
+    "../../../models/Meta-Llama-3.1-8B/Meta-Llama-3.1-8B-ggml-model-Q4_K_M.gguf"
     "$HOME/Documents/local/ai/models/bartowski_Llama-3.2-3B-Instruct-GGUF_Llama-3.2-3B-Instruct-Q4_K_M.gguf"
     "$HOME/Documents/local/ai/models/ggml-org_gemma-3-1b-it-GGUF_gemma-3-1b-it-Q4_K_M.gguf"
     "$HOME/Documents/local/ai/models/Meta-Llama-3.1-8B-Instruct-ggml-model-Q4_K_M.gguf"
@@ -22,10 +34,17 @@ MODEL_PATHS=(
 # Check which models exist and print them
 AVAILABLE_MODELS=()
 echo "Checking available models:"
-for path in "${MODEL_PATHS[@]}"; do
-    if [[ -f "$path" ]]; then
-        echo "- Model available: $path"
-        AVAILABLE_MODELS+=("$path")
+for path in "${MODELPATHS[@]}"; do
+    # Check if the path is absolute (starts with / or ~), otherwise treat it as relative to $BINARY_DIR
+    if [[ "$path" = /* || "$path" = ~* ]]; then
+        resolved_path="$path"
+    else
+        resolved_path="$BINARY_DIR/$path"
+    fi
+
+    if [[ -f "$resolved_path" ]]; then
+        echo "- Model available: $resolved_path"
+        AVAILABLE_MODELS+=("$resolved_path")
     fi
 done
 
@@ -47,9 +66,6 @@ fi
 MODEL_PATH="${AVAILABLE_MODELS[$MODEL_IDX]}"
 echo "Selected model: $MODEL_PATH"
 
-# Define the binary directory based on `code_root_dir`
-BINARY_DIR="${code_root_dir}/Code/ml/llama.cpp/build/bin"
-
 # Command-line arguments for llama-cli and llama-server
 COMMON_ARGS="--threads $(nproc) -c 2048"
 
@@ -64,12 +80,6 @@ fi
 #    echo "Error: Model file not found at $MODEL_PATH"
 #    exit 1
 #fi
-
-# Check if the binary directory exists
-if [[ ! -d "$BINARY_DIR" ]]; then
-    echo "Error: Binary directory not found at $BINARY_DIR"
-    exit 1
-fi
 
 case $1 in
     cli | chat)

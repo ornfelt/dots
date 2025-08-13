@@ -781,7 +781,7 @@ compile_projects() {
     install_if_missing st st
     # Compile clipmenu for debian-based
     if grep -qEi 'debian|raspbian' /etc/os-release; then
-        install_if_missing clipmenu "src/clipmenu"
+        install_if_missing clipmenu "clipmenu/src"
     fi
 
     export CMAKE_POLICY_VERSION_MINIMUM=3.5
