@@ -182,6 +182,8 @@ alias .wc='cd $HOME/Code2/Wow/tools/wc && echo -e "./wow -h\n./wow -p \$wow_tbc_
 alias .llama="$HOME/.local/bin/my_scripts/llama.sh"
 alias .git_push="$HOME/.local/bin/my_scripts/git_push.sh"
 alias .git_pull="$HOME/.local/bin/my_scripts/git_pull.sh"
+alias .cmake="$HOME/.local/bin/my_scripts/2025/cmake.sh"
+alias .health_check="$HOME/Documents/my_notes/scripts/health_check.sh"
 
 playermap ()
 {
