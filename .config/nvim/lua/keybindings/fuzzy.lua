@@ -311,6 +311,10 @@ local function norm_date(iso)
   return (iso:gsub("T", " "):gsub("%+.*$", ""))
 end
 
+local function exists_at_root(root, rel)
+  return rel and rel ~= "" and root and vim.loop.fs_stat(root .. "/" .. rel) ~= nil
+end
+
 -- Build recent files via git log
 local function git_recent_files(max_commits, max_files, path_filters)
   local root, is_git = myconfig.get_git_root()
@@ -346,7 +350,7 @@ local function git_recent_files(max_commits, max_files, path_filters)
       if #parts >= 2 then
         local status = parts[1]
         local file = (status:sub(1,1) == "R" and #parts >= 3) and parts[3] or parts[2]
-        if file and file ~= "" and not seen[file] then
+        if not seen[file] and exists_at_root(root, file) then
           seen[file] = true
           table.insert(out, { date = current_date, file = file })
           if #out >= max_files then break end
