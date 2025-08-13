@@ -184,6 +184,8 @@ alias .git_push="$HOME/.local/bin/my_scripts/git_push.sh"
 alias .git_pull="$HOME/.local/bin/my_scripts/git_pull.sh"
 alias .cmake="$HOME/.local/bin/my_scripts/2025/cmake.sh"
 alias .health_check="$HOME/Documents/my_notes/scripts/health_check.sh"
+alias .wow_wtf_update="$HOME/.local/bin/my_scripts/2025/wow_wtf_update.sh"
+alias .wow_wtf_fix="$HOME/.local/bin/my_scripts/2025/wow_wtf_fix.sh"
 
 playermap ()
 {

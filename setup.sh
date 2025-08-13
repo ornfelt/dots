@@ -310,7 +310,7 @@ clone_repo_if_missing() {
     local branch=$3
     local parent_dir="."
 
-    my_repo_dirs=("my_notes" "utils" "my_js" "my_cplusplus" "my_lua" "wc" "my_wow", "my_sql")
+    my_repo_dirs=("my_notes" "utils" "my_js" "my_cplusplus" "my_lua" "wc" "my_wow", "my_sql", "my_c")
 
     echo "--------------------------------------------------------"
     if printf '%s\n' "${my_repo_dirs[@]}" | grep -q "^$repo_dir$"; then
@@ -427,6 +427,7 @@ clone_projects() {
     clone_repo_if_missing "swww" "https://github.com/LGFae/swww"
 
     print_and_cd_to_dir "$HOME/Code2/C" "Cloning"
+    clone_repo_if_missing "my_c" "https://github.com/ornfelt/my_c"
     clone_repo_if_missing "ioq3" "https://github.com/ornfelt/ioq3"
     clone_repo_if_missing "picom-animations" "https://github.com/ornfelt/picom-animations"
 

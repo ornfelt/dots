@@ -369,7 +369,7 @@ local function git_recent_files(max_commits, max_files, path_filters)
 end
 
 -- Picker entrypoint
-function _G.list_recent_files_indexed()
+function _G.list_recent_files()
   local items, root = git_recent_files(100, 30, {})
   if not items or #items == 0 then return end
 
@@ -473,5 +473,5 @@ function _G.list_recent_files_indexed()
   end
 end
 
-vim.keymap.set("n", "<M-S>", _G.list_recent_files_indexed, { noremap = true, silent = true, desc = "Recent git files" })
+vim.keymap.set("n", "<M-S>", _G.list_recent_files, { noremap = true, silent = true, desc = "Recent git files" })
 
