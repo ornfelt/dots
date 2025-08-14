@@ -1094,7 +1094,7 @@ compile_projects() {
 
     if check_dir "OpenJKDF2" "build*"; then
         if ! python3 -c "import cogapp" &> /dev/null; then
-            echo "The Python package 'cogapp' needs to be installed for compiling OpenJKDF2..."
+            echo "[warn] The Python package 'cogapp' needs to be installed for compiling OpenJKDF2..."
         else
             export CC=clang
             export CXX=clang++
@@ -1218,7 +1218,7 @@ compile_projects() {
         GO_VERSION=$(go version 2>/dev/null)
 
         if [ -z "$GO_VERSION" ]; then
-            echo "Go is not installed..."
+            echo "[warn] Go is not installed..."
             exit 1
         fi
 
@@ -1379,7 +1379,7 @@ compile_projects() {
             make lib
             make
         else
-            echo "Vulkan header not found!"
+            echo "[warn] Vulkan header not found!"
             
             # Check distro using /etc/os-release if available
             if [ -f /etc/os-release ]; then
@@ -1398,7 +1398,7 @@ compile_projects() {
                         ;;
                 esac
             else
-                echo "Unable to detect distribution. Please install Vulkan headers manually."
+                echo "[warn] Unable to detect distribution. Please install Vulkan headers manually."
             fi
         fi
 
@@ -1462,8 +1462,8 @@ check_pip_packages() {
 
 install_pip_packages() {
     printf "\n***** Installing pip packages! *****\n\n"
-    #pip3 install -r $HOME/Documents/installation/requirements.txt
-    requirements_path="$HOME/Documents/installation/requirements.txt"
+    #pip3 install -r $HOME/Documents/installation/old/requirements.txt
+    requirements_path="$HOME/Documents/installation/old/requirements.txt"
 
     # Read each line in requirements.txt, remove version specifications, and install
     while read -r package || [[ -n $package ]]; do
@@ -1524,7 +1524,7 @@ copy_dir_to_target() {
             echo "[ok] $DEST already exists, skipping copy."
         fi
     else
-        echo "$SRC does NOT exist, skipping."
+        echo "[warn] $SRC does NOT exist, skipping."
     fi
 }
 
@@ -1657,7 +1657,7 @@ copy_game_data() {
             fi
         done
     else
-        echo "$LUA_SRC does NOT exist, skipping."
+        echo "[warn] $LUA_SRC does NOT exist, skipping."
     fi
 
     # TrinityCore
@@ -1739,7 +1739,7 @@ copy_game_data() {
             fi
         done
     else
-        echo "$SRC_DIABLO does NOT exist, skipping."
+        echo "[warn] $SRC_DIABLO does NOT exist, skipping."
     fi
 
     # doom3
@@ -1882,7 +1882,7 @@ copy_game_data() {
             echo "***Copying $JOML_JAR to $LWJGL_JARS_DIR***"
             cp "$JOML_JAR" "$LWJGL_JARS_DIR"
         else
-            echo "Warning: $JOML_JAR does not exist."
+            echo "[warn] $JOML_JAR does not exist."
         fi
 
         # Array of dirs to copy .jar files from
@@ -1898,7 +1898,7 @@ copy_game_data() {
                 echo "***Copying .jar files from $DIR to $LWJGL_JARS_DIR***"
                 cp "$DIR"/*.jar "$LWJGL_JARS_DIR"
             else
-                echo "Warning: Source directory $DIR does not exist."
+                echo "[warn] Source directory $DIR does not exist."
             fi
         done
     fi
@@ -1916,7 +1916,7 @@ copy_game_data() {
                 echo "Updated database path in config file."
             fi
         else
-            echo "Source config file at $MEDIA_PATH/my_files/my_docs/local/config_home_pc.txt not found."
+            echo "[warn] Source config file at $MEDIA_PATH/my_files/my_docs/local/config_home_pc.txt not found."
         fi
     else
         echo "[ok] Config file already exists at $HOME/Documents/local/config.txt"
@@ -1947,9 +1947,9 @@ check_database_exists() {
     local db_name=$1
     result=$(mysql -u"$MYSQL_USER" -p"$MYSQL_PASSWORD" -h"$MYSQL_HOST" -P"$MYSQL_PORT" -e "SHOW DATABASES LIKE '$db_name';" 2>/dev/null)
     if [[ "$result" == *"$db_name"* ]]; then
-        echo "Database $db_name exists."
+        echo "[ok] Database $db_name exists."
     else
-        echo "Database $db_name does NOT exist."
+        echo "[warn] Database $db_name does NOT exist."
     fi
 }
 
