@@ -1573,7 +1573,7 @@ copy_game_data() {
         return 1
     fi
 
-    if [ -d "/mnt/new/other" ]; then
+    if [ -d "/mnt/new/other" ] || [ -d "/mnt/new/my_files" ]; then
         DOWNLOADS_DIR="/mnt/new"
     else
         DOWNLOADS_DIR="$HOME/Downloads"
