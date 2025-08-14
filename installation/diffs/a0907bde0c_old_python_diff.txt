@@ -1,0 +1,19 @@
+Differences between a0907bde0c and old for python packages:
+
+-> old has unique entries:
+PyMySQL
+aiohappyeyeballs
+aiohttp
+aiosignal
+btrfsutil
+frozenlist
+glfw
+gps
+multidict
+mypy-extensions
+propcache
+pwquality
+pyglm
+sentencepiece
+tstock
+yarl
