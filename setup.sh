@@ -1866,6 +1866,39 @@ copy_game_data() {
     echo -e "\n***Copying jar files to $DOWNLOADS_DIR***"
     copy_dir_to_target "$MEDIA_PATH/my_files/my_docs/jar_files/linux" "$DOWNLOADS_DIR/jar_files"
 
+    # Setup dir lwjgl and joml jars
+    LWJGL_JARS_DIR="$DOWNLOADS_DIR/lwjgl_jars"
+    if [ ! -d "$LWJGL_JARS_DIR" ]; then
+        echo "***Creating directory $LWJGL_JARS_DIR***"
+        mkdir -p "$LWJGL_JARS_DIR"
+
+        # Copy joml jar
+        JOML_JAR="$DOWNLOADS_DIR/jar_files/250630/lwjgl_jars/joml-1.10.8.jar"
+        if [ -f "$JOML_JAR" ]; then
+            echo "***Copying $JOML_JAR to $LWJGL_JARS_DIR***"
+            cp "$JOML_JAR" "$LWJGL_JARS_DIR"
+        else
+            echo "Warning: $JOML_JAR does not exist."
+        fi
+
+        # Array of dirs to copy .jar files from
+        JAR_SOURCE_DIRS=(
+            "$DOWNLOADS_DIR/jar_files/250630/lwjgl-3.3.6-github-release/lwjgl"
+            "$DOWNLOADS_DIR/jar_files/250630/lwjgl-3.3.6-github-release/lwjgl-glfw"
+            "$DOWNLOADS_DIR/jar_files/250630/lwjgl-3.3.6-github-release/lwjgl-opengl"
+        )
+
+        # Copy all .jar files from each specified directory
+        for DIR in "${JAR_SOURCE_DIRS[@]}"; do
+            if [ -d "$DIR" ]; then
+                echo "***Copying .jar files from $DIR to $LWJGL_JARS_DIR***"
+                cp "$DIR"/*.jar "$LWJGL_JARS_DIR"
+            else
+                echo "Warning: Source directory $DIR does not exist."
+            fi
+        done
+    fi
+
     # local config file
     if [ ! -f "$HOME/Documents/local/config.txt" ]; then
         mkdir -p "$HOME/Documents/local"
