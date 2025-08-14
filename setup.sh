@@ -84,7 +84,7 @@ TOML_FILE="$ALACRITTY_CONFIG_DIR/alacritty.toml"
 if [[ -d "$ALACRITTY_CONFIG_DIR" && -f "$YML_FILE" ]]; then
     CURRENT_FONT_SIZE=$(grep -oP 'size:\s*\K[0-9.]+' "$YML_FILE")
 else
-    echo "Alacritty config directory or alacritty.yml not found, skipping font-size sync."
+    echo "[warn] Alacritty config directory or alacritty.yml not found, skipping font-size sync."
     CURRENT_FONT_SIZE=""
 fi
 
@@ -115,28 +115,28 @@ fi
 if [ ! -f $HOME/.bash_profile ]; then
     cp -r .bash_profile $HOME/.bash_profile
 else
-    echo ".bash_profile already exists."
+    echo "[ok] .bash_profile already exists."
 fi
 
 # oh-my-zsh
 if [ ! -d "$HOME/.oh-my-zsh" ]; then
     sh -c "$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
 else
-    echo "oh-my-zsh already installed."
+    echo "[ok] oh-my-zsh already installed."
 fi
 
 # zsh-autosuggestions
 if [ ! -d "${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/plugins/zsh-autosuggestions/.git" ]; then
     git clone https://github.com/zsh-users/zsh-autosuggestions "${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/plugins/zsh-autosuggestions"
 else
-    echo "zsh-autosuggestions already installed."
+    echo "[ok] zsh-autosuggestions already installed."
 fi
 
 # zsh-syntax-highlighting
 if [ ! -d "${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting/.git" ]; then
     git clone https://github.com/zsh-users/zsh-syntax-highlighting.git "${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting"
 else
-    echo "zsh-syntax-highlighting already installed."
+    echo "[ok] zsh-syntax-highlighting already installed."
 fi
 
 original_dir=$(pwd)
@@ -150,7 +150,7 @@ if [ ! -d "$HOME/Downloads/polybar-themes" ]; then
     ./setup.sh
     cd "$original_dir"
 else
-    echo "polybar-themes already cloned."
+    echo "[ok] polybar-themes already cloned."
 fi
 
 # gruvbox-dark-gtk theme
@@ -158,7 +158,7 @@ if [ ! -d "$HOME/.themes/gruvbox-dark-gtk" ]; then
     git clone https://github.com/jmattheis/gruvbox-dark-gtk "$HOME/.themes/gruvbox-dark-gtk"
     echo "Set gruvbox-dark theme through lxappearance (should appear through dmenu)"
 else
-    echo "gruvbox-dark-gtk theme already installed."
+    echo "[ok] gruvbox-dark-gtk theme already installed."
 fi
 
 # fzf
@@ -166,7 +166,7 @@ if [ ! -d "$HOME/.fzf" ]; then
     git clone --depth 1 https://github.com/junegunn/fzf.git "$HOME/.fzf"
     "$HOME/.fzf/install"
 else
-    echo "fzf already installed."
+    echo "[ok] fzf already installed."
 fi
 
 # packer.nvim (old)
@@ -176,7 +176,7 @@ fi
 #    mv $HOME/.config/nvim/install.lua $HOME/.config/nvim/init.lua
 #    echo "Packer installed! Now open vim and do :PackerInstall and then move temp.lua to init.lua in $HOME/.config/nvim"
 #else
-#    echo "packer already installed."
+#    echo "[ok] packer already installed."
 #fi
 
 # wezterm session manager
@@ -184,7 +184,7 @@ if [ ! -d "$HOME/.config/wezterm/wezterm-session-manager" ]; then
     git clone https://github.com/danielcopper/wezterm-session-manager.git $HOME/.config/wezterm/wezterm-session-manager
     echo "wezterm-session-manager installed!"
 else
-    echo "wezterm-session-manager already installed."
+    echo "[ok] wezterm-session-manager already installed."
 fi
 
 # tmux-resurrect plugin
@@ -195,7 +195,7 @@ if [ ! -d "$HOME/.tmux/plugins/tmux-resurrect/.git" ]; then
     git clone --recurse-submodules -j8 https://github.com/tmux-plugins/tmux-resurrect "$HOME/.tmux/plugins/tmux-resurrect"
     echo "tmux-resurrect installed!"
 else
-    echo "tmux-resurrect already installed."
+    echo "[ok] tmux-resurrect already installed."
 fi
 
 # Copy tmux session (resurrect) file if none exist
@@ -211,7 +211,7 @@ if ! find "$TMUX_TARGET_DIR" -type f -name "*.txt" | read; then
     echo "No .txt files found in $TMUX_TARGET_DIR. Copying $TMUX_SOURCE_FILE to $TMUX_TARGET_DIR."
     cp "$TMUX_SOURCE_FILE" "$TMUX_TARGET_DIR"
 else
-    echo "Directory $TMUX_TARGET_DIR contains session files already."
+    echo "[ok] Directory $TMUX_TARGET_DIR contains session files already."
 fi
 
 # yazi plugins
@@ -233,6 +233,8 @@ if [ "$ADD_YAZI_PLUGINS" = true ]; then
             # Run install once after all packs are added
             ya pack -i
             echo "yazi plugins installed!"
+        else
+            echo "[ok] yazi plugins dir already exists."
         fi
     else
         echo "yazi or ya command not found, skipping yazi plugin installation."
@@ -253,7 +255,7 @@ EOF
         #printf "  ya pkg add yazi-rs/plugins:smart-enter\n"
         #printf "  ya pkg install\n"
     else
-        echo "yazi plugins installed already."
+        echo "[ok] yazi plugins installed already."
     fi
 fi
 
@@ -283,7 +285,7 @@ if grep -qEi 'debian|raspbian' /etc/os-release; then
     if ! check_font_exists; then
         install_jetbrains_mono
     else
-        echo "JetBrains Mono font already installed."
+        echo "[ok] JetBrains Mono font already installed."
     fi
 else
     echo "Install jetbrains via sudo pacman -S ttf-jetbrains-mono-nerd"
@@ -323,7 +325,7 @@ clone_repo_if_missing() {
 
     # Case insensitive check
     if find "$parent_dir" -maxdepth 1 -type d -iname "$(basename "$repo_dir")" | grep -iq "$(basename "$repo_dir")$"; then
-        echo "$repo_dir already cloned."
+        echo "[ok] $repo_dir already cloned."
         return 0
     else
         if $justInform; then
@@ -393,7 +395,7 @@ clone_projects() {
 
     # Check if MEDIA_PATH was set
     if [ -z "$MEDIA_PATH" ]; then
-        echo "The hard drive is not mounted. Can't copy re3 dirs."
+        echo "[warn] The hard drive is not mounted. Can't copy re3 dirs."
     else
         TARGET_DIR="$HOME/Code/c++"
         SOURCE_DIR="/media2/2025"
@@ -409,7 +411,7 @@ clone_projects() {
             echo "Copying re3_vice to $TARGET_DIR..."
             cp -r "$SOURCE_DIR/re3_vice" "$TARGET_DIR"
         else
-            echo "Skipping re3_vice copy - already exists or source is missing."
+            echo "[warn] Skipping re3_vice copy - already exists or source is missing."
         fi
     fi
 
@@ -440,7 +442,7 @@ clone_projects() {
             svn co https://svn.code.sf.net/p/supertuxkart/code/stk-assets stk-assets
         fi
     else
-        echo "stk-assets already cloned."
+        echo "[ok] stk-assets already cloned."
     fi
     clone_repo_if_missing "small_games" "https://github.com/ornfelt/small_games" "linux"
     clone_repo_if_missing "AzerothCore-wotlk-with-NPCBots" "https://github.com/rewow/AzerothCore-wotlk-with-NPCBots"
@@ -519,9 +521,9 @@ if $justDoIt; then
     clone_projects
 else
     if $justInform; then
-        echo -e "\nDo you want to check cloned projects? (yes/y)"
+        echo -e "\n[q] Do you want to check cloned projects? (yes/y)"
     else
-        echo -e "\nDo you want to proceed with cloning projects? (yes/y)"
+        echo -e "\n[q] Do you want to proceed with cloning projects? (yes/y)"
     fi
     read answer
     # To lowercase using awk
@@ -581,7 +583,7 @@ install_if_missing() {
 
         cd - || exit # Return to previous directory
     else
-        echo "$binary exists, skipping installation."
+        echo "[ok] $binary exists, skipping installation."
     fi
 }
 
@@ -618,7 +620,7 @@ check_dir() {
         if [[ "$dir_type" == "build*" ]]; then
             # Use find and grep to check for the existence of matching directories
             if find "./${actual_dir_name}" -maxdepth 1 -type d -name "${dir_type}" | grep -q .; then
-                echo "${target_dir} already compiled."
+                echo "[ok] ${target_dir} already compiled."
                 return 1 # Return false
             else
                 if $justInform; then
@@ -637,7 +639,7 @@ check_dir() {
             fi
         else
             if [ -d "$target_dir" ]; then
-                echo "${target_dir} already compiled."
+                echo "[ok] ${target_dir} already compiled."
                 return 1 # Return false
             else
                 if $justInform; then
@@ -685,7 +687,7 @@ check_file() {
     #if [ -f "$full_file_path" ]; then
     # Check case-insensitively if the file exists
     if find "$(dirname "$full_file_path")" -maxdepth 1 -type f -iname "$(basename "$full_file_path")" 2>/dev/null | grep -iq "$(basename "$full_file_path")$" >/dev/null 2>&1; then
-        echo "${dir_name} already compiled."
+        echo "[ok] ${dir_name} already compiled."
         return 1 # Return false
     else
         echo "File ${file_path} in ${dir_name} does NOT exist."
@@ -715,7 +717,7 @@ change_ownership_if_exists() {
             sudo chown -R $USER:$USER "$dir"
             echo "Changed ownership of $dir to $USER"
         else
-            echo "Ownership of $dir is already set to $CURRENT_USER, skipping chown"
+            echo "[ok] Ownership of $dir is already set to $CURRENT_USER, skipping chown"
         fi
     else
         echo "Directory $dir does NOT exist, skipping."
@@ -737,7 +739,7 @@ fix_ownerships() {
                 sudo chown -R "$CURRENT_USER" "$dir"
                 echo "Changed ownership of $dir to $CURRENT_USER"
             else
-                echo "Ownership of $dir is already set to $CURRENT_USER, skipping chown"
+                echo "[ok] Ownership of $dir is already set to $CURRENT_USER, skipping chown"
             fi
         fi
     done
@@ -750,12 +752,14 @@ fix_ownerships() {
         "$HOME/Code/c++/reone"
         "$HOME/Code2/C++/simc"
         "$HOME/Code2/C++/mangos-classic"
+        "$HOME/Code2/C++/mangos-tbc"
         "$HOME/Code2/C++/core"
         "$HOME/Code2/C++/server"
         "$HOME/Code2/Wow/tools/BLPConverter"
         "$HOME/Code2/Wow/tools/StormLib"
         "$HOME/.local/share/openjk"
         "$HOME/cmangos"
+        "$HOME/cmangos-tbc"
         "$HOME/vmangos"
         "$HOME/mangoszero"
         "$HOME/acore"
@@ -963,7 +967,7 @@ compile_projects() {
     print_and_cd_to_dir "$HOME/Code/rust" "Compiling"
 
     if ! command -v rustc &>/dev/null; then
-        echo "rustc is not installed. Skipping rust projects..."
+        echo "[warn] rustc is not installed. Skipping rust projects..."
     else
         # Only compile if rust version is > 1.63
         #rust_version=$(rustc --version | awk '{print $2}') # Also works...
@@ -976,7 +980,7 @@ compile_projects() {
 
         if grep -qEi 'arch' /etc/os-release; then
             if command -v eww &>/dev/null; then
-                echo "eww is already installed"
+                echo "[ok] eww is already installed"
             elif check_dir "eww" "target"; then
                 if [ "$major_version" -gt 1 ] || { [ "$major_version" -eq 1 ] && [ "$minor_version" -gt 63 ]; }; then
                     echo "rustc version is above 1.63"
@@ -991,7 +995,7 @@ compile_projects() {
             fi
 
             if command -v swww &>/dev/null; then
-                echo "swww is already installed"
+                echo "[ok] swww is already installed"
             elif check_dir "swww" "target"; then
                 if [ "$major_version" -gt 1 ] || { [ "$major_version" -eq 1 ] && [ "$minor_version" -gt 63 ]; }; then
                     echo "rustc version is above 1.63"
@@ -1359,7 +1363,7 @@ compile_projects() {
             echo "$RANLIB_LINK not found. Creating symlink..."
             sudo ln -s "$RANLIB_TARGET" "$RANLIB_LINK"
         else
-            echo "$RANLIB_LINK already exists. Skipping symlink creation."
+            echo "[ok] $RANLIB_LINK already exists. Skipping symlink creation."
         fi
 
         # Check if Vulkan header exists
@@ -1408,9 +1412,9 @@ if $justDoIt; then
     compile_projects
 else
     if $justInform; then
-        echo -e "\nDo you want to check compiled projects? (yes/y)"
+        echo -e "\n[q] Do you want to check compiled projects? (yes/y)"
     else
-        echo -e "\nDo you want to proceed with compiling projects? (yes/y)"
+        echo -e "\n[q] Do you want to proceed with compiling projects? (yes/y)"
     fi
     read answer
     # To lowercase using awk
@@ -1474,9 +1478,9 @@ if $justDoIt; then
     install_pip_packages
 else
     if $justInform; then
-        echo -e "\nDo you want to check python packages? (yes/y)"
+        echo -e "\n[q] Do you want to check python packages? (yes/y)"
     else
-        echo -e "\nDo you want to install python packages? (yes/y)"
+        echo -e "\n[q] Do you want to install python packages? (yes/y)"
     fi
     read answer
     # To lowercase using awk
@@ -1505,10 +1509,10 @@ copy_dir_to_target() {
         if [ ! -d "$DEST" ]; then
 
             if [ -d "$ALT_DEST_MNT" ]; then
-                echo "$BASE_NAME already exists in /mnt/new/, skipping copy."
+                echo "[ok] $BASE_NAME already exists in /mnt/new/, skipping copy."
                 return 0
             elif [ -d "$ALT_DEST_MEDIA" ]; then
-                echo "$BASE_NAME already exists in /media/, skipping copy."
+                echo "[ok] $BASE_NAME already exists in /media/, skipping copy."
                 return 0
             fi
 
@@ -1517,7 +1521,7 @@ copy_dir_to_target() {
             cp -r "$SRC" "$DEST"
             echo "Copied $SRC to $DEST"
         else
-            echo "$DEST already exists, skipping copy."
+            echo "[ok] $DEST already exists, skipping copy."
         fi
     else
         echo "$SRC does NOT exist, skipping."
@@ -1535,7 +1539,7 @@ check_space() {
         echo "Disk at $dir has more than $min_space_gb GB available. Space left: $available_space_gb GB"
         return 0
     else
-        echo "Disk at $dir does not have more than $min_space_gb GB available. Space left: $available_space_gb GB"
+        echo "[warn] Disk at $dir does not have more than $min_space_gb GB available. Space left: $available_space_gb GB"
         return 1
     fi
 }
@@ -1569,7 +1573,7 @@ copy_game_data() {
 
     # Check if MEDIA_PATH was set
     if [ -z "$MEDIA_PATH" ]; then
-        echo "The hard drive is not mounted."
+        echo "[warn] The hard drive is not mounted. Skipping copy of game data..."
         return 1
     fi
 
@@ -1585,12 +1589,12 @@ copy_game_data() {
     # Check space 
     if [ "$DOWNLOADS_DIR" = "/mnt/new" ]; then
         if ! check_space "$DOWNLOADS_DIR"; then
-            echo "Not enough space on disk... Skipping."
+            echo "[warn] Not enough space on disk... Skipping."
             return 1
         fi
     else
         if ! check_space "/"; then
-            echo "Not enough space on disk... Skipping."
+            echo "[warn] Not enough space on disk... Skipping."
             return 1
         fi
     fi
@@ -1622,7 +1626,7 @@ copy_game_data() {
     #            cp "$script" "$DEST_DIR/lua_scripts/$script_name"
     #            echo "Copied $script to $DEST_DIR/lua_scripts/$script_name"
     #        else
-    #            echo "$DEST_DIR/lua_scripts/$script_name already exists, skipping copy."
+    #            echo "[ok] $DEST_DIR/lua_scripts/$script_name already exists, skipping copy."
     #        fi
     #    done
     #else
@@ -1639,7 +1643,7 @@ copy_game_data() {
                         cp -r "$item" "$DEST_DIR/lua_scripts/$item_name"
                         echo "Copied directory $item to $DEST_DIR/lua_scripts/$item_name"
                     else
-                        echo "Directory $DEST_DIR/lua_scripts/$item_name already exists, skipping copy."
+                        echo "[ok] Directory $DEST_DIR/lua_scripts/$item_name already exists, skipping copy."
                     fi
                 else
                     # Copy the file
@@ -1647,7 +1651,7 @@ copy_game_data() {
                         cp "$item" "$DEST_DIR/lua_scripts/$item_name"
                         echo "Copied file $item to $DEST_DIR/lua_scripts/$item_name"
                     else
-                        echo "File $DEST_DIR/lua_scripts/$item_name already exists, skipping copy."
+                        echo "[ok] File $DEST_DIR/lua_scripts/$item_name already exists, skipping copy."
                     fi
                 fi
             fi
@@ -1673,7 +1677,7 @@ copy_game_data() {
     SRC_FILE="$MEDIA_PATH/2024/tcore/$FILE_NAME"
     DEST_FILE="$HOME/tcore/bin/$FILE_NAME"
     if [ -f "$DEST_FILE" ]; then
-        echo "File already exists, skipping copy."
+        echo "[ok] File already exists, skipping copy."
     else
         cp "$SRC_FILE" "$DEST_FILE"
         echo "Copied $FILE_NAME to $HOME/tcore/bin"
@@ -1731,7 +1735,7 @@ copy_game_data() {
                 cp "$file" "$DEST_DIR_DIABLO/$file_name"
                 echo "Copied $file to $DEST_DIR_DIABLO/$file_name"
             else
-                echo "$DEST_DIR_DIABLO/$file_name already exists, skipping copy."
+                echo "[ok] $DEST_DIR_DIABLO/$file_name already exists, skipping copy."
             fi
         done
     else
@@ -1745,7 +1749,7 @@ copy_game_data() {
         unzip "$DOWNLOADS_DIR/doom3_base.zip" -d "$DOWNLOADS_DIR/doom3"
         echo "Copied and unzipped doom3_base.zip to $DOWNLOADS_DIR/doom3"
     else
-        echo "$DOWNLOADS_DIR/doom3 already exists, skipping copy and unzip."
+        echo "[ok] $DOWNLOADS_DIR/doom3 already exists, skipping copy and unzip."
     fi
 
     # doom
@@ -1756,7 +1760,7 @@ copy_game_data() {
         unzip "$DOWNLOADS_DIR/DOOM.zip" -d "$DOWNLOADS_DIR/doom"
         echo "Copied and unzipped DOOM.zip to $DOWNLOADS_DIR/doom"
     else
-        echo "$DOWNLOADS_DIR/doom already exists, skipping copy and unzip."
+        echo "[ok] $DOWNLOADS_DIR/doom already exists, skipping copy and unzip."
     fi
 
     echo -e "\n***Copying GTA3 files to $DOWNLOADS_DIR***"
@@ -1772,7 +1776,7 @@ copy_game_data() {
         cp "$DOWNLOADS_DIR/jedi_outcast_gamedata/base"/*.pk3 "$HOME/.local/share/openjk/JediOutcast/base/"
         echo "Copied and unzipped jedi_outcast_gamedata.zip and moved *.pk3 files to $HOME/.local/share/openjk/JediOutcast/base/"
     else
-        echo "assets0.pk3 already exists in $HOME/.local/share/openjk/JediOutcast/base/, skipping copy and unzip."
+        echo "[ok] assets0.pk3 already exists in $HOME/.local/share/openjk/JediOutcast/base/, skipping copy and unzip."
     fi
 
     # ja
@@ -1784,7 +1788,7 @@ copy_game_data() {
         cp "$DOWNLOADS_DIR/JK_JA_GameData/base"/*.pk3 "$HOME/.local/share/openjk/JediAcademy/base"
         echo "Copied and unzipped JK_JA_GameData.zip and moved *.pk3 files to $HOME/.local/share/openjk/JediAcademy/base"
     else
-        echo "assets0.pk3 already exists in $HOME/.local/share/openjk/JediAcademy/base or $HOME/.local/share/openjk/base, skipping copy and unzip."
+        echo "[ok] assets0.pk3 already exists in $HOME/.local/share/openjk/JediAcademy/base or $HOME/.local/share/openjk/base, skipping copy and unzip."
     fi
 
     # my_docs
@@ -1798,7 +1802,7 @@ copy_game_data() {
         unzip "$DOWNLOADS_DIR/Morrowind.zip" -d "$DOWNLOADS_DIR/Morrowind"
         echo "Copied and unzipped Morrowind.zip to $DOWNLOADS_DIR/Morrowind"
     else
-        echo "$DOWNLOADS_DIR/Morrowind or /mnt/new/openmw_gamedata already exists, skipping copy and unzip."
+        echo "[ok] $DOWNLOADS_DIR/Morrowind or /mnt/new/openmw_gamedata already exists, skipping copy and unzip."
     fi
 
     # openjkdf2
@@ -1807,7 +1811,7 @@ copy_game_data() {
         cp -r "$MEDIA_PATH/2024/star_wars_jkdf2/"* "$HOME/.local/share/OpenJKDF2/openjkdf2"
         echo "Copied all files and directories from star_wars_jkdf2 to $HOME/.local/share/OpenJKDF2/openjkdf2"
     else
-        echo "Episode directory already exists in $HOME/.local/share/OpenJKDF2/openjkdf2, skipping copy."
+        echo "[ok] Episode directory already exists in $HOME/.local/share/OpenJKDF2/openjkdf2, skipping copy."
     fi
 
     # kotor
@@ -1817,7 +1821,7 @@ copy_game_data() {
         unzip "$DOWNLOADS_DIR/Star Wars - KotOR.zip" -d "$DOWNLOADS_DIR/kotor"
         echo "Copied and unzipped 'Star Wars - KotOR.zip' to $DOWNLOADS_DIR/kotor"
     else
-        echo "$DOWNLOADS_DIR/kotor already exists, skipping copy and unzip."
+        echo "[ok] $DOWNLOADS_DIR/kotor already exists, skipping copy and unzip."
     fi
 
     # kotor2
@@ -1827,7 +1831,7 @@ copy_game_data() {
         unzip "$DOWNLOADS_DIR/Star Wars - KotOR2.zip" -d "$DOWNLOADS_DIR/kotor2"
         echo "Copied and unzipped 'Star Wars - KotOR2.zip' to $DOWNLOADS_DIR/kotor2"
     else
-        echo "$DOWNLOADS_DIR/kotor2 already exists, skipping copy and unzip."
+        echo "[ok] $DOWNLOADS_DIR/kotor2 already exists, skipping copy and unzip."
     fi
 
     # stk addons
@@ -1839,7 +1843,7 @@ copy_game_data() {
                 cp -r "$dir" "$dest_dir"
                 echo "Copied $(basename "$dir") to $HOME/.local/share/supertuxkart/addons"
             else
-                echo "$(basename "$dir") already exists in $HOME/.local/share/supertuxkart/addons, skipping copy."
+                echo "[ok] $(basename "$dir") already exists in $HOME/.local/share/supertuxkart/addons, skipping copy."
             fi
         fi
     done
@@ -1853,7 +1857,7 @@ copy_game_data() {
                 cp "$file" "$dest_file"
                 echo "Copied $(basename "$file") to $HOME/Code2/C/ioq3/build/release-linux-x86_64/baseq3/"
             else
-                echo "$(basename "$file") already exists in $HOME/Code2/C/ioq3/build/release-linux-x86_64/baseq3/, skipping copy."
+                echo "[ok] $(basename "$file") already exists in $HOME/Code2/C/ioq3/build/release-linux-x86_64/baseq3/, skipping copy."
             fi
         fi
     done
@@ -1915,7 +1919,7 @@ copy_game_data() {
             echo "Source config file at $MEDIA_PATH/my_files/my_docs/local/config_home_pc.txt not found."
         fi
     else
-        echo "Config file already exists at $HOME/Documents/local/config.txt"
+        echo "[ok] Config file already exists at $HOME/Documents/local/config.txt"
     fi
 }
 
@@ -1924,9 +1928,9 @@ if $justDoIt; then
     copy_game_data
 else
     if $justInform; then
-        echo -e "\nDo you want to check game data? (yes/y)"
+        echo -e "\n[q] Do you want to check game data? (yes/y)"
     else
-        echo -e "\nDo you want to copy game data? (yes/y)"
+        echo -e "\n[q] Do you want to copy game data? (yes/y)"
     fi
     read answer
     # To lowercase using awk
@@ -2045,12 +2049,12 @@ fix_other_files() {
                     cp "$file" "$dest_file"
                     printf "Copied %s to %s\n" "$(basename "$file")" "$DEST_DIR"
                 else
-                    printf "%s already exists in %s, skipping copy.\n" "$(basename "$file")" "$DEST_DIR"
+                    printf "[ok] %s already exists in %s, skipping copy.\n" "$(basename "$file")" "$DEST_DIR"
                 fi
             fi
         done
     else
-        echo "Either source directory ($SRC_DIR) or destination directory ($DEST_DIR) does not exist. Skipping copy of japlus lib files..."
+        echo "[warn] Either source directory ($SRC_DIR) or destination directory ($DEST_DIR) does not exist. Skipping copy of japlus lib files..."
     fi
 
     # Copy japp-assets to japlus dir
@@ -2067,11 +2071,11 @@ fix_other_files() {
                 cp -r "$item" "$DEST_DIR"
                 echo "Copied $item to $DEST_DIR"
             else
-                echo "$DEST_DIR/$base_item already exists, skipping"
+                echo "[ok] $DEST_DIR/$base_item already exists, skipping"
             fi
         done
     else
-        echo "Either source directory ($SRC_DIR) or destination directory ($DEST_DIR) does not exist. Skipping copy of japp-assets..."
+        echo "[warn] Either source directory ($SRC_DIR) or destination directory ($DEST_DIR) does not exist. Skipping copy of japp-assets..."
     fi
     
     # Python
@@ -2081,7 +2085,7 @@ fix_other_files() {
             sudo cp /usr/bin/python3 /usr/bin/python
             echo "Copied /usr/bin/python3 to /usr/bin/python"
         else
-            echo "/usr/bin/python already exists, skipping copy."
+            echo "[ok] /usr/bin/python already exists, skipping copy."
         fi
     else
         OS_ID=$(grep "^ID=" /etc/os-release | cut -d'=' -f2)
@@ -2101,7 +2105,7 @@ fix_other_files() {
     if [[ -d "$HOME/vmangos/etc" && -f "$HOME/vmangos/etc/mangosd.conf.dist" && -f "$HOME/vmangos/etc/realmd.conf.dist" ]]; then
         python3 "$CLASSIC_CONF_SCRIPT" vmangos
     else
-        echo "Skipping vmangos conf script: missing one of ~/vmangos/etc/{mangosd.conf.dist,realmd.conf.dist}"
+        echo "[warn] Skipping vmangos conf script: missing one of ~/vmangos/etc/{mangosd.conf.dist,realmd.conf.dist}"
     fi
     # Follow vmangos install notes from setup_notes.txt...
 
@@ -2118,7 +2122,7 @@ fix_other_files() {
     if [[ -d "$HOME/cmangos/run/etc" && -f "$HOME/cmangos/run/etc/mangosd.conf.dist" && -f "$HOME/cmangos/run/etc/realmd.conf.dist" && -f "$HOME/cmangos/run/etc/aiplayerbot.conf.dist" ]]; then
         python3 "$CLASSIC_CONF_SCRIPT" cmangos
     else
-        echo "Skipping cmangos: missing one of ~/cmangos/run/etc/{mangosd.conf.dist,realmd.conf.dist,aiplayerbot.conf.dist}"
+        echo "[warn] Skipping cmangos: missing one of ~/cmangos/run/etc/{mangosd.conf.dist,realmd.conf.dist,aiplayerbot.conf.dist}"
     fi
     # Follow cmangos install notes from setup_notes.txt...
 
@@ -2134,7 +2138,7 @@ fix_other_files() {
             echo -e "\nAll files copied from $src_dir to $dest_dir."
         fi
     else
-        echo -e "\n$src_dir does NOT exist. Can't copy mangoszero sql files from it..."
+        echo -e "\n[warn] $src_dir does NOT exist. Can't copy mangoszero sql files from it..."
     fi
 
     # cmangos-tbc
@@ -2157,7 +2161,7 @@ fix_other_files() {
                 echo -e "\n/usr/lib/x86_64-linux-gnu/liblua52.so does NOT exist. Copying it."
                 sudo cp /usr/lib/x86_64-linux-gnu/liblua5.2.so /usr/lib/x86_64-linux-gnu/liblua52.so
             else
-                echo -e "\n/usr/lib/x86_64-linux-gnu/liblua52.so already exists."
+                echo -e "\n[ok] /usr/lib/x86_64-linux-gnu/liblua52.so already exists."
             fi
         else
             echo -e "\n/usr/lib/x86_64-linux-gnu/liblua5.2.so does NOT exist. Skipping."
@@ -2214,7 +2218,7 @@ fix_other_files() {
                 sudo cp "$source_file" "$target_file"
                 echo "Copied $source_file to $target_file"
             else
-                echo "$target_file already exists. Skipping."
+                echo "[ok] $target_file already exists. Skipping."
             fi
         done
     done
@@ -2243,7 +2247,7 @@ fix_other_files() {
             #printf "You should run: cd $HOME/Code2/Wow/tools/mpq && ./gophercraft_mpq_set export --chain-json docs/wotlk-chain.json --working-directory \"%s/wow/Data\" --export-directory \"%s/Export\"\n" "$dir_to_use" "$export_dir"
             printf "You should run: cd $HOME/Code2/Wow/tools/mpq && ./mopaq export --chain-json docs/wotlk-chain.json --working-directory \"%s/wow/Data\" --export-directory \"%s/Export\"\n" "$dir_to_use" "$export_dir"
         else
-            echo "$HOME/Code2/Wow/tools/mpq/Export already exists. All good!"
+            echo "[ok] $HOME/Code2/Wow/tools/mpq/Export already exists."
         fi
     else
         echo "$HOME/Code2/Wow/tools/mpq does NOT exist. Skipping."
@@ -2268,10 +2272,10 @@ fix_other_files() {
                 PHP_INI_FOUND=true
                 echo "Using fallback php.ini: $PHP_INI_FILE"
             else
-                echo "Neither /etc/php/php.ini nor $FALLBACK exists. Skipping."
+                echo "[warn] Neither /etc/php/php.ini nor $FALLBACK exists. Skipping."
             fi
         else
-            echo "php not found and /etc/php/php.ini missing. Skipping."
+            echo "[warn] php not found and /etc/php/php.ini missing. Skipping."
         fi
     fi
 
@@ -2281,7 +2285,7 @@ fix_other_files() {
             echo "Found ';extension=mysqli' - updating to 'extension=mysqli'"
             sudo sed -i 's/;extension=mysqli/extension=mysqli/g' "$PHP_INI_FILE"
         else
-            echo "'extension=mysqli' already fixed in $PHP_INI_FILE"
+            echo "[ok] 'extension=mysqli' already fixed in $PHP_INI_FILE"
         fi
     fi
 
@@ -2293,7 +2297,7 @@ if $justDoIt; then
     echo "Fixing other files..."
     fix_other_files
 else
-    $justInform && echo -e "\nDo you want to check other files? (yes/y)" || echo -e "\nDo you want to fix other files? (yes/y)"
+    $justInform && echo -e "\n[q] Do you want to check other files? (yes/y)" || echo -e "\n[q] Do you want to fix other files? (yes/y)"
     read answer
     # To lowercase using awk
     answer=$(echo $answer | awk '{print tolower($0)}')
