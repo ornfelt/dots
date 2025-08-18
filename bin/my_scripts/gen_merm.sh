@@ -28,8 +28,16 @@ fi
 outputFile="${InputFile%.*}.png"
 outputFileAlt="${outputFile}-1"
 
-echo "Running command: npx @mermaid-js/mermaid-cli@latest -i \"$InputFile\" -o \"$outputFile\""
-npx @mermaid-js/mermaid-cli@latest -i "$InputFile" -o "$outputFile"
+#useScale="false"
+useScale="true"
+
+if [ "$useScale" = "true" ]; then
+    echo "Running command: npx @mermaid-js/mermaid-cli@latest --scale 2 -i \"$InputFile\" -o \"$outputFile\""
+    npx @mermaid-js/mermaid-cli@latest --scale 2 -i "$InputFile" -o "$outputFile"
+else
+    echo "Running command: npx @mermaid-js/mermaid-cli@latest -i \"$InputFile\" -o \"$outputFile\""
+    npx @mermaid-js/mermaid-cli@latest -i "$InputFile" -o "$outputFile"
+fi
 
 if [ -f "$outputFile" ] || [ -f "$outputFileAlt" ]; then
     echo "Mermaid diagram generated: $outputFile or $outputFileAlt"
