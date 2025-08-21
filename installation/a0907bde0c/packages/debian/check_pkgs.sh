@@ -1,6 +1,8 @@
 #!/bin/bash
 
-PACKAGE_LIST="./deb_pkgs.txt"
+#PACKAGE_LIST="./deb_pkgs.txt"
+PACKAGE_LIST="./package_list.txt"
+#PACKAGE_LIST="./package_list_all.txt"
 
 # Check if the package list file exists
 if [[ ! -f "$PACKAGE_LIST" ]]; then

@@ -49,11 +49,56 @@ myconfig.map('n', '<M-z>', ':noh<CR>')
 myconfig.map('n', 'Y', 'y$') -- Yank till end of line
 
 -- Pasting
---myconfig.map('x', '<leader>p', "\"_dP") -- Replace from void
-myconfig.map('n', '<leader>p', 'viw"_dP') -- Replace from void
+--myconfig.map('n', '<leader>p', 'viw"_dP') -- Replace from void
 myconfig.map('v', '<leader>p', '"_dP') -- Replace from void
 myconfig.map('n', '<leader>d', '"_d') -- Delete to void
 myconfig.map('v', '<leader>d', '"_d') -- Delete to void
+
+local function smart_replace_word_under_cursor()
+  local line = vim.fn.getline('.')
+  local col  = vim.fn.col('.') -- 1-based
+  local L    = #line
+  if L == 0 then return end
+  if col > L then col = L end
+
+  -- Treat [A-Za-z0-9_] as word chars (respects underscore)
+  local function isw(i)
+    if i < 1 or i > L then return false end
+    return line:sub(i, i):match("[%w_]") ~= nil
+  end
+
+  -- If not on a word char, bail
+  if not isw(col) then return end
+
+  -- Find word start/end around the cursor
+  local s = col
+  while s > 1 and isw(s - 1) do s = s - 1 end
+  local e = col
+  while e < L and isw(e + 1) do e = e + 1 end
+
+  -- "Last word" means the word ends at the very end of the line
+  local is_last_word = (e == L)
+
+  local command = is_last_word and 'viw"_dp' or 'viw"_dP'
+
+  -- Debug
+  if myconfig.should_debug_print() then
+    local word = line:sub(s, e)
+    print("Cursor column (1-based): ", vim.fn.col('.'))
+    print("Current line: ", line)
+    print("Word under cursor: ", word)
+    print("Word start col: ", s)
+    print("Word end col: ", e)
+    print("Line length: ", L)
+    print("Text after word: ", line:sub(e + 1), "<")
+    print("Is last word (no chars after)?: ", is_last_word and "yes" or "no")
+    print("Using command: ", command)
+  end
+
+  vim.api.nvim_feedkeys(command, 'n', false)
+end
+
+vim.keymap.set('n', '<leader>p', smart_replace_word_under_cursor, { noremap = true, silent = true })
 
 -- Paste from previous registers
 myconfig.map('n', '<leader>1', '"0p')

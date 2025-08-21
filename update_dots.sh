@@ -5,7 +5,20 @@ arg=$(echo "$1" | tr '[:upper:]' '[:lower:]')
 if [ $# -eq 0 ]; then
 #if [ -z "$arg" ]; then
     echo "No arguments provided. Updating installation docs..."
-    cd $HOME/Documents/installation && ./update.sh && cd - > /dev/null
+    INSTALL_DOCS_DIR="$HOME/Documents/installation"
+    INSTALL_SCRIPT="$INSTALL_DOCS_DIR/update.sh"
+
+    if [ ! -d "$INSTALL_DOCS_DIR" ]; then
+        echo "Directory $INSTALL_DOCS_DIR does not exist... Exiting."
+        exit 1
+    fi
+
+    if [ ! -f "$INSTALL_SCRIPT" ]; then
+        echo "Script $INSTALL_SCRIPT does not exist... Exiting."
+        exit 1
+    fi
+
+    cd "$INSTALL_DOCS_DIR" && ./update.sh && cd - > /dev/null
     rm -rf installation
     cp -r $HOME/Documents/installation installation/
 else

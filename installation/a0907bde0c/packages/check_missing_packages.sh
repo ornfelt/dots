@@ -46,7 +46,7 @@ check_missing_arch() {
 
 # Function to check missing packages for Debian
 check_missing_debian() {
-    for file in pk1.txt pk2.txt pk3.txt; do
+    for file in debian/pk1.txt debian/pk2.txt debian/pk3.txt; do
         while read -r pkg; do
             if ! is_excluded "$pkg"; then
                 if ! dpkg -s "$pkg" &> /dev/null; then

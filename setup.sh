@@ -312,7 +312,7 @@ clone_repo_if_missing() {
     local branch=$3
     local parent_dir="."
 
-    my_repo_dirs=("my_notes" "utils" "my_js" "my_cplusplus" "my_lua" "wc" "my_wow", "my_sql", "my_c")
+    my_repo_dirs=("my_notes" "utils" "my_js" "my_cplusplus" "my_lua" "wc" "my_wow" "my_sql" "my_c")
 
     echo "--------------------------------------------------------"
     if printf '%s\n' "${my_repo_dirs[@]}" | grep -q "^$repo_dir$"; then
