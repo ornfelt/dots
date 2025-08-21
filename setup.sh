@@ -785,6 +785,11 @@ compile_projects() {
     install_if_missing st st
     # Compile clipmenu for debian-based
     if grep -qEi 'debian|raspbian' /etc/os-release; then
+        clipmenu_dir="$HOME/.config/clipmenu"
+        if [ ! -d "$clipmenu_dir" ]; then
+            echo "Directory $clipmenu_dir does not exist. Cloning clipmenu..."
+            git clone https://github.com/cdown/clipmenu "$clipmenu_dir"
+        fi
         install_if_missing clipmenu "clipmenu/src"
     fi
 
@@ -799,7 +804,8 @@ compile_projects() {
     #            sudo apt remove neovim -y
     #        fi
     #        git checkout stable
-    #        make CMAKE_BUILD_TYPE=RelWithDebInfo
+    #        #make CMAKE_BUILD_TYPE=RelWithDebInfo
+    #        make CMAKE_BUILD_TYPE=Release
     #        sudo make install
     #        cd ..
     #    fi
