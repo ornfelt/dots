@@ -16,6 +16,7 @@ chardet==5.1.0
 charset-normalizer==3.0.1
 cliapp==1.20180812.1
 cmdtest==0.32+git
+cogapp==3.5.1
 contourpy==1.0.7
 coverage==6.5.0
 cryptography==38.0.4
@@ -62,8 +63,8 @@ lz4==4.0.2+dfsg
 Mako==1.2.4.dev0
 Markdown==3.4.1
 MarkupSafe==2.1.2
-matplotlib==3.6.3
 matplotlib-inline==0.1.6
+matplotlib==3.6.3
 meson==1.0.1
 more-itertools==8.10.0
 mpmath==0.0.0
