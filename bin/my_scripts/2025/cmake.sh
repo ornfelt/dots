@@ -158,6 +158,19 @@ elif [[ "$lc" == *tbc* && "$lc" == *c++* ]]; then
     run_or_print "$main"
     print_alternatives "${alts[@]}"
 
+elif [[ "$lc" == *neovim* ]]; then
+    test_cmakelists current "neovim (expecting CMakeLists.txt in current directory)"
+
+    # Just print for neovim (best to do manually)
+    echo "Do the following:"
+    echo "git checkout stable"
+    echo "make CMAKE_BUILD_TYPE={Release / RelWithDebInfo}"
+    echo "sudo make install"
+
+    if grep -qiE 'debian|ubuntu' /etc/os-release; then
+        echo "Note: also 'run sudo apt remove neovim -y' first!"
+    fi
+
 else
     test_cmakelists parent
     # Default fallback
