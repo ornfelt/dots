@@ -1001,6 +1001,13 @@ compile_projects() {
 
     print_and_cd_to_dir "$HOME/Code/js" "Compiling"
 
+    # Print npm/node info
+    npm_version=$(npm --version)
+    node_version=$(node --version)
+    echo "npm version: $npm_version"
+    echo "node version: $node_version"
+    sleep 1
+
     # skip for now
     COMPILE_KOTOR_JS=false
     if [ "$COMPILE_KOTOR_JS" = true ]; then
