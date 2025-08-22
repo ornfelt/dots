@@ -4,6 +4,8 @@
 
 printf "\n***** Setting up config files! *****\n\n"
 
+CURRENT_DIR="$PWD"
+
 # Setup required dirs
 mkdir -p $HOME/.config/
 mkdir -p $HOME/.config/wezterm
@@ -199,19 +201,28 @@ else
 fi
 
 # Copy tmux session (resurrect) file if none exist
-TMUX_TARGET_DIR="/home/jonas/.local/share/tmux/resurrect"
-TMUX_SOURCE_FILE="./tmux_session/tmux_resurrect_20250808T225157.txt"
-# Check if the target directory exists
-if [[ ! -d "$TMUX_TARGET_DIR" ]]; then
-    echo "Directory $TMUX_TARGET_DIR does not exist. Creating it."
-    mkdir -p "$TMUX_TARGET_DIR"
-fi
-# Check if there are any .txt files in the directory
-if ! find "$TMUX_TARGET_DIR" -type f -name "*.txt" | read; then
-    echo "No .txt files found in $TMUX_TARGET_DIR. Copying $TMUX_SOURCE_FILE to $TMUX_TARGET_DIR."
-    cp "$TMUX_SOURCE_FILE" "$TMUX_TARGET_DIR"
+TMUX_TARGET_DIR="$HOME/.local/share/tmux/resurrect"
+SESSION_DIR="$CURRENT_DIR/tmux_session"
+TMUX_SOURCE_FILE=$(find "$SESSION_DIR" -maxdepth 1 -type f -name "*.txt" -print -quit)
+if [ -z "$TMUX_SOURCE_FILE" ]; then
+    echo "[warn] No session file found in $SCRIPT_DIR/tmux_session. Skipping copy."
 else
-    echo "[ok] Directory $TMUX_TARGET_DIR contains session files already."
+    # Check if the target directory exists
+    if [[ ! -d "$TMUX_TARGET_DIR" ]]; then
+        echo "Directory $TMUX_TARGET_DIR does not exist. Creating it."
+        mkdir -p "$TMUX_TARGET_DIR"
+    fi
+    # Check if there are any .txt files in the directory
+    if ! find "$TMUX_TARGET_DIR" -type f -name "*.txt" | read; then
+        echo "No .txt files found in $TMUX_TARGET_DIR. Copying $TMUX_SOURCE_FILE to $TMUX_TARGET_DIR."
+        cp "$TMUX_SOURCE_FILE" "$TMUX_TARGET_DIR"
+        # Create or update the 'last' symlink to point to the new session file.
+        TARGET_SESSION_PATH="$TMUX_TARGET_DIR/$(basename "$TMUX_SOURCE_FILE")"
+        ln -sf "$TARGET_SESSION_PATH" "$TMUX_TARGET_DIR/last"
+        echo "Created symlink 'last' -> '$TARGET_SESSION_PATH'"
+    else
+        echo "[ok] Directory $TMUX_TARGET_DIR contains session files already."
+    fi
 fi
 
 # yazi plugins
@@ -363,6 +374,7 @@ clone_projects() {
 
     print_and_cd_to_dir "$HOME/Documents" "Cloning"
     clone_repo_if_missing "my_notes" "https://github.com/archornf/my_notes"
+    clone_repo_if_missing "windows_dots" "https://github.com/ornfelt/windows_dots"
 
     print_and_cd_to_dir "$HOME/Code/c" "Cloning"
     clone_repo_if_missing "neovim" "https://github.com/neovim/neovim"

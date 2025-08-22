@@ -51,17 +51,24 @@ Run setup.sh to setup stuff and clone projects
 ******************************************
 # wezterm
 
+See:
+https://wezterm.org/install/source.html#installing-from-source
+
+1.
 Install latest rust:
 sudo apt remove rustc
 
-curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+2.
+curl https://sh.rustup.rs -sSf | sh -s
 
-###curl https://sh.rustup.rs -sSf | sh -s
-git clone --depth=1 --branch=main --recursive https://github.com/wez/wezterm.git
+3. reopen terminal, then:
+cd $HOME/Downloads
+git clone --depth=1 --branch=main --recursive https://github.com/wezterm/wezterm.git
 cd wezterm
 git submodule update --init --recursive
 ./get-deps
 cargo build --release
+cargo run --release --bin wezterm -- start
 
 Running:
 cargo run --release --bin wezterm -- start
@@ -83,6 +90,42 @@ sudo install -Dm755 ../../assets/open-wezterm-here wezterm wezterm-gui wezterm-m
 sudo install -Dm644 assets/shell-integration/* -t /etc/profile.d
 sudo install -Dm644 assets/shell-completion/zsh /usr/local/share/zsh/site-functions/_wezterm
 sudo install -Dm644 assets/shell-completion/bash /etc/bash_completion.d/wezterm
+
+******************************************
+AzerothCore mysql install
+
+See:
+https://www.azerothcore.org/wiki/debian12-install-guide#requirements
+
+export MYSQL_APT_CONFIG_VERSION=0.8.33-1
+
+Note: visit the MySQL APT repository to verify the latest version:
+https://dev.mysql.com/downloads/repo/apt/
+
+Then do:
+mkdir -p ~/mysqlpackages && cd ~/mysqlpackages
+wget "https://dev.mysql.com/get/mysql-apt-config_${MYSQL_APT_CONFIG_VERSION}_all.deb"
+wget "https://dev.mysql.com/downloads/gpg/?file=mysql-apt-config_${MYSQL_APT_CONFIG_VERSION}_all.deb&p=37" -O mysql-apt-config_${MYSQL_APT_CONFIG_VERSION}_all.deb.asc
+gpg --keyserver keyserver.ubuntu.com --recv-keys A8D3785C
+gpg --verify mysql-apt-config_${MYSQL_APT_CONFIG_VERSION}_all.deb.asc mysql-apt-config_${MYSQL_APT_CONFIG_VERSION}_all.deb
+sudo DEBIAN_FRONTEND="noninteractive" dpkg -i ./mysql-apt-config_${MYSQL_APT_CONFIG_VERSION}_all.deb
+sudo apt update
+sudo DEBIAN_FRONTEND="noninteractive" apt install -y mysql-server libmysqlclient-dev
+rm -v mysql-apt-config_${MYSQL_APT_CONFIG_VERSION}_all* && unset MYSQL_APT_CONFIG_VERSION
+
+******************************************
+yazi install
+
+See:
+https://yazi-rs.github.io/docs/installation/#source
+
+cd $HOME/Downloads
+git clone https://github.com/sxyazi/yazi.git
+cd yazi
+cargo build --release --locked
+
+then:
+sudo mv target/release/yazi target/release/ya /usr/local/bin/
 
 ******************************************
 Fix python config and packages!
@@ -213,16 +256,33 @@ And change scripts to /usr/bin/bash and /usr/bin/python3...
 
 ******************************************
 # wine
-sudo dpkg --add-architecture i386 && sudo apt-get update && sudo apt-get install wine32:i386
 
+See:
+https://wiki.debian.org/Wine#Step_2:_Installation
+
+sudo dpkg --add-architecture i386 && sudo apt-get update && sudo apt-get install wine32:i386
+or:
+Install wine on a 64-bit architecture (amd64 with i386 as foreign 32-bit
+architecture):
+sudo dpkg --add-architecture i386 && sudo apt update
+sudo apt install \
+      wine \
+      wine32 \
+      wine64 \
+      libwine \
+      libwine:i386 \
+      fonts-wine
+
+Main wiki page:
 https://wiki.debian.org/Wine
 
+NOTE: you probably need this:
 Do this if needed:
 rm -rf $HOME/.wine
 wineboot --init
 
 ******************************************
-# rust
+# rust (see wezterm rust install instead)
 
 https://www.rust-lang.org/tools/install
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
@@ -238,14 +298,11 @@ rm packages-microsoft-prod.deb
 
 ->
 
-sudo apt-get update && sudo apt-get install -y dotnet-sdk-8.0
 sudo apt-get update && sudo apt-get install -y dotnet-sdk-9.0
 
 These may not work but you can try them as well:
-sudo apt-get update && sudo apt-get install -y aspnetcore-runtime-8.0
 sudo apt-get update && sudo apt-get install -y aspnetcore-runtime-9.0
 
-sudo apt-get install -y dotnet-runtime-8.0
 sudo apt-get install -y dotnet-runtime-9.0
 
 Old notes:
@@ -258,6 +315,7 @@ rm packages-microsoft-prod.deb
 
 sudo apt-get update && sudo apt-get install -y dotnet-sdk-8.0
 sudo apt-get update && sudo apt-get install -y aspnetcore-runtime-8.0
+sudo apt-get install -y dotnet-runtime-8.0
 
 If the above doesn't work, follow scripted install instead:
 https://learn.microsoft.com/en-us/dotnet/core/install/linux-scripted-manual#scripted-install
