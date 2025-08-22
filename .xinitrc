@@ -40,9 +40,6 @@ setxkbmap -option caps:escape
 xhost si:localuser:root
 #systemctl --user import-environment DISPLAY
 
-xset s off
-xset -dpms
-
 exec clipmenud &
 
 #exec i3
@@ -50,6 +47,10 @@ exec awesome
 #exec dwm &
 sh ~/.dwm/autostart.sh &
 #sh ~/.dwm/autostart.sh >> ~/.dwm/autostart.log 2>&1 &
+
+xset s off
+xset -dpms
+
 if picom --help | grep -q "\-\-animations"; then
     picom --animations
 else

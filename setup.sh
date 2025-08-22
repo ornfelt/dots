@@ -1517,8 +1517,8 @@ check_pip_packages() {
 
 install_pip_packages() {
     printf "\n***** Installing pip packages! *****\n\n"
-    #pip3 install -r $HOME/Documents/installation/old/requirements.txt
-    requirements_path="$HOME/Documents/installation/old/requirements.txt"
+    #pip3 install -r $HOME/Documents/installation/f6295c9d66/requirements.txt
+    requirements_path="$HOME/Documents/installation/f6295c9d66/requirements.txt"
 
     # Read each line in requirements.txt, remove version specifications, and install
     while read -r package || [[ -n $package ]]; do
