@@ -49,11 +49,12 @@ myconfig.map('n', '<M-z>', ':noh<CR>')
 myconfig.map('n', 'Y', 'y$') -- Yank till end of line
 
 -- Pasting
---myconfig.map('n', '<leader>p', 'viw"_dP') -- Replace from void
-myconfig.map('v', '<leader>p', '"_dP') -- Replace from void
-myconfig.map('n', '<leader>d', '"_d') -- Delete to void
-myconfig.map('v', '<leader>d', '"_d') -- Delete to void
+myconfig.map('n', '<leader>P', 'viw"_dP') -- Replace from void
+myconfig.map('v', '<leader>P', '"_dP') -- Replace from void
 
+-- Same void/black-hole replacement as above BUT if the 
+-- word/selection ends exactly at the last character on 
+-- its line -> use p (append).
 local function smart_replace_word_under_cursor()
   local line = vim.fn.getline('.')
   local col  = vim.fn.col('.') -- 1-based
@@ -99,6 +100,56 @@ local function smart_replace_word_under_cursor()
 end
 
 vim.keymap.set('n', '<leader>p', smart_replace_word_under_cursor, { noremap = true, silent = true })
+
+-- Smart visual replace: choose p/P depending on whether the selection ends at EOL
+local function smart_replace_visual_selection()
+  -- start/end marks of the visual selection
+  --local s = vim.fn.getpos("'<") -- {buf, lnum, col, off}
+  --local e = vim.fn.getpos("'>")
+  local s = vim.fn.getpos("v")
+  local e = vim.fn.getpos(".")
+
+  local srow, scol = s[2], s[3]
+  local erow, ecol = e[2], e[3]
+
+  -- normalize order (ensure s <= e)
+  if erow < srow or (erow == srow and ecol < scol) then
+    srow, erow = erow, srow
+    scol, ecol = ecol, scol
+  end
+
+  -- If multi-line (or not charwise), fallback
+  local mode = vim.fn.mode()
+  if mode ~= 'v' or srow ~= erow then
+    return '"_dP'
+  end
+
+  local line = vim.fn.getline(srow)
+  local L = #line
+
+  -- Visual can report col beyond line end; clamp
+  if ecol > L then ecol = L end
+
+  -- "last word/selection" == ends exactly at end-of-line (no trailing chars)
+  local is_last = (ecol == L)
+  local cmd = is_last and '"_dp' or '"_dP'
+
+  -- Debug
+  if myconfig.should_debug_print() then
+    print("VIS sel line: ", line)
+    print("VIS start col, end col: ", scol, ecol)
+    print("VIS line length: ", L)
+    print("VIS ends at EOL? ", is_last and "yes" or "no")
+    print("VIS using: ", cmd)
+  end
+
+  return cmd
+end
+
+vim.keymap.set('v', '<leader>p', smart_replace_visual_selection, { expr = true, noremap = true, silent = true })
+
+myconfig.map('n', '<leader>d', '"_d') -- Delete to void
+myconfig.map('v', '<leader>d', '"_d') -- Delete to void
 
 -- Paste from previous registers
 myconfig.map('n', '<leader>1', '"0p')
