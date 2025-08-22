@@ -458,9 +458,10 @@ clone_projects() {
     fi
     clone_repo_if_missing "small_games" "https://github.com/ornfelt/small_games" "linux"
     clone_repo_if_missing "AzerothCore-wotlk-with-NPCBots" "https://github.com/rewow/AzerothCore-wotlk-with-NPCBots"
-    ACORE_DIR="AzerothCore-wotlk-with-NPCBots/modules"
-    if [ -d "$ACORE_DIR" ]; then
-        cd "$ACORE_DIR"
+    ACORE_DIR="AzerothCore-wotlk-with-NPCBots"
+    MODULES_DIR="$ACORE_DIR/modules"
+    if [ -d "$MODULES_DIR" ]; then
+        cd "$MODULES_DIR"
 
         if [ -f /etc/arch-release ]; then
             echo "Arch Linux detected, checking out 'linux' branch..."
@@ -468,9 +469,38 @@ clone_projects() {
         fi
 
         clone_repo_if_missing "mod-eluna" "https://github.com/azerothcore/mod-eluna"
-        cd ../..
+
+        cd ..
+
+        echo "Fetching latest non-merge commit from AzerothCore..."
+
+        ACORE_COMMIT=$(git log --no-merges --grep='Merge branch' --invert-grep -1 --format="%H")
+        ACORE_DATE=$(git show -s --format=%ci "$ACORE_COMMIT")
+        echo "Latest non-merge AzerothCore commit: $ACORE_COMMIT ($ACORE_DATE)"
+
+        cd "modules/mod-eluna" || exit 1
+
+        echo "Checking latest mod-eluna commit..."
+        ELUNA_LATEST_COMMIT=$(git rev-parse HEAD)
+        ELUNA_LATEST_DATE=$(git show -s --format=%ci "$ELUNA_LATEST_COMMIT")
+        echo "Latest mod-eluna commit: $ELUNA_LATEST_COMMIT ($ELUNA_LATEST_DATE)"
+
+        if [[ "$ELUNA_LATEST_DATE" < "$ACORE_DATE" ]]; then
+            echo "[ok] mod-eluna is already older than AzerothCore. No checkout needed."
+        else
+            echo "Searching for a mod-eluna commit before $ACORE_DATE..."
+            ELUNA_TARGET_COMMIT=$(git log --before="$ACORE_DATE" -1 --format="%H")
+            if [ -n "$ELUNA_TARGET_COMMIT" ]; then
+                echo "Checking out mod-eluna commit $ELUNA_TARGET_COMMIT"
+                git checkout "$ELUNA_TARGET_COMMIT" || { echo "Failed to checkout commit"; exit 1; }
+            else
+                echo "[warn] No earlier mod-eluna commit found before $ACORE_DATE"
+            fi
+        fi
+
+        cd ../../..
     else
-        echo "Directory $DIR does NOT exist."
+        echo "[warn] Directory $MODULES_DIR does NOT exist."
     fi
     clone_repo_if_missing "Trinitycore-3.3.5-with-NPCBots" "https://github.com/rewow/Trinitycore-3.3.5-with-NPCBots" "npcbots_3.3.5"
     clone_repo_if_missing "simc" "https://github.com/ornfelt/simc"
