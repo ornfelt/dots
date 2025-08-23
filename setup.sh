@@ -1006,7 +1006,10 @@ compile_projects() {
     node_version=$(node --version)
     echo "npm version: $npm_version"
     echo "node version: $node_version"
-    sleep 1
+    for i in {3..1}; do
+        echo "Proceeding with compilation in $i..."
+        sleep 1
+    done
 
     # skip for now
     COMPILE_KOTOR_JS=false
@@ -1601,6 +1604,13 @@ check_space() {
 
 copy_game_data() {
     printf "\n***** Copying game data! *****\n\n"
+
+    if [ -d "/mnt/new/other" ] || [ -d "/mnt/new/my_files" ]; then
+        DOWNLOADS_DIR="/mnt/new"
+    else
+        DOWNLOADS_DIR="$HOME/Downloads"
+    fi
+
     fix_ownerships
 
     # Create dirs
@@ -1630,12 +1640,6 @@ copy_game_data() {
     if [ -z "$MEDIA_PATH" ]; then
         echo "[warn] The hard drive is not mounted. Skipping copy of game data..."
         return 1
-    fi
-
-    if [ -d "/mnt/new/other" ] || [ -d "/mnt/new/my_files" ]; then
-        DOWNLOADS_DIR="/mnt/new"
-    else
-        DOWNLOADS_DIR="$HOME/Downloads"
     fi
 
     # Directories to copy from 2024
