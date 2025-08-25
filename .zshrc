@@ -159,7 +159,7 @@ alias .cdp='cd $HOME/Documents/windows_dots; ls'
 alias .dots='cd $HOME/Downloads/dotfiles; ls'
 alias .ioq3='$HOME/Code2/C/ioq3/build/release-linux-x86_64/ioquake3.x86_64 +set sv_pure 0 +set vm_game 0 +set vm_cgame 0 +set vm_ui 0'
 alias .ioq32='$HOME/Code2/C/ioq3/build/release-linux-x86_64_golden/ioquake3.x86_64 +set sv_pure 0 +set vm_game 0 +set vm_cgame 0 +set vm_ui 0'
-alias .stk='$HOME/Code2/C++/stk-code/build/bin/supertuxkart'
+alias .stk='cd $HOME/Code2/C++/stk-code/build/bin && ./supertuxkart'
 alias .openjk='$HOME/.local/share/openjk/JediAcademy/openjk.x86_64'
 alias .openjk_sp='$HOME/.local/share/openjk/JediAcademy/openjk_sp.x86_64'
 alias .openjo_sp='$HOME/.local/share/openjk/JediOutcast/openjo_sp.x86_64'
@@ -189,6 +189,23 @@ alias .cmake="$HOME/.local/bin/my_scripts/2025/cmake.sh"
 alias .health_check="$HOME/Documents/my_notes/scripts/health_check.sh"
 alias .wow_wtf_update="$HOME/.local/bin/my_scripts/2025/wow_wtf_update.sh"
 alias .wow_wtf_fix="$HOME/.local/bin/my_scripts/2025/wow_wtf_fix.sh"
+alias .re3="$HOME/.local/bin/my_scripts/2025/run_re3.sh"
+alias .re3_vice="$HOME/.local/bin/my_scripts/2025/run_re3_vice.sh"
+alias .openjkdf2="$HOME/.local/bin/my_scripts/2025/run_openjkdf2.sh"
+alias .jkg="$HOME/.local/bin/my_scripts/2025/run_jkg.sh"
+alias .jk2mv="$HOME/.local/bin/my_scripts/2025/run_jk2mv.sh"
+alias .unvanq="$HOME/Code/c++/Unvanquished/build && ./daemon"
+alias .birdgame="$HOME/Code2/C++/small_games/BirdGame && ./main"
+alias .fightgame="$HOME/Code2/C++/small_games/CPP_FightingGame/FightingGameProject && ./CPPFightingGame"
+alias .craft="$HOME/Code2/C++/small_games/Craft && ./craft"
+alias .pacman="$HOME/Code2/C++/small_games/pacman/build && ./pacman"
+alias .space_shooter="$HOME/Code2/C++/small_games/space-shooter/build && ./space-shooter"
+alias .devx="$HOME/Code2/C++/devilutionX/build && ./devilutionx"
+alias .crispy="$HOME/.local/bin/my_scripts/2025/run_crispy_doom.sh"
+alias .dhewm3="$HOME/.local/bin/my_scripts/2025/run_dhewm3.sh"
+alias .simc="cd $HOME/Code2/C++/simc/build && ls"
+#alias .opend2="cd $HOME/Code2/Go/OpenDiablo2 && ./OpenDiablo2"
+alias .opend2="cd $HOME/Code2/Go/OpenDiablo2 && $HOME/.local/bin/my_scripts/2025/run_open_d2.sh"
 
 playermap ()
 {
