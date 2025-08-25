@@ -40,7 +40,16 @@ test_cmakelists() {
         return 0
     fi
 
-    echo "CMakeLists.txt not found at: $cmake_path ($context)"
+    echo "CMakeLists.txt not found at: $cmake_path ($context)" >&2
+
+    if [[ "$where" == "parent" ]]; then
+        echo "Maybe try:"
+        echo "-> mkdir build && cd build"
+        echo "Then run the command again!"
+    fi
+
+    #echo "Switching to PRINT-ONLY mode." >&2
+    #echo >&2
     echo "Switching to PRINT-ONLY mode."
     echo
 
@@ -151,9 +160,9 @@ elif [[ "$lc" == *server* ]]; then
 
 elif [[ "$lc" == *tbc* && "$lc" == *c++* ]]; then
     test_cmakelists parent "my_wow tbc c++ (expecting CMakeLists.txt one level up)"
-    main='cmake .. -DUSE_SDL2=ON -DUSE_SOUND=ON -DUSE_NAMIGATOR=ON -DCMAKE_BUILD_TYPE=Debug'
+    main='cmake .. -DUSE_SDL2=ON -DUSE_SOUND=ON -DUSE_NAMIGATOR=OFF -DUSE_STOPWATCH_DT=ON -DCMAKE_BUILD_TYPE=Debug'
     alts=(
-        'cmake .. -DUSE_SDL2=OFF -DUSE_SOUND=ON -DUSE_NAMIGATOR=OFF -DCMAKE_BUILD_TYPE=Release'
+        'cmake .. -DUSE_SDL2=OFF -DUSE_SOUND=ON -DUSE_NAMIGATOR=ON -DUSE_STOPWATCH_DT=OFF -DCMAKE_BUILD_TYPE=Release'
     )
     run_or_print "$main"
     print_alternatives "${alts[@]}"
