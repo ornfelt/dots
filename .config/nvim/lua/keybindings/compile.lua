@@ -13,7 +13,7 @@ local function SqlExecCommand()
   -- Remove '/' at the end if it exists (not necessary really)
   code_root_dir = code_root_dir:gsub("/$", "")
 
-  local executable_net9 = code_root_dir .. '/Code2/Sql/my_sql/SqlExec/SqlExec/bin/Debug/net9.0/SqlExec.exe'
+  local executable_net9 = code_root_dir .. '/Code2/SQL/my_sql/SqlExec/SqlExec/bin/Debug/net9.0/SqlExec.exe'
   local executable_net8 = code_root_dir .. '/Code2/SQL/my_sql/SqlExec/SqlExec/bin/Debug/net8.0/SqlExec.exe'
   local executable_net7 = code_root_dir .. '/Code2/SQL/my_sql/SqlExec/SqlExec/bin/Debug/net7.0/SqlExec.exe'
 
