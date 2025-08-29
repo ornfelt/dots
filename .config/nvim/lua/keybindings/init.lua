@@ -198,6 +198,13 @@ myconfig.map('n', '<leader>/', function()
   end
 end)
 
+-- Search for 2 consecutive empty lines
+--myconfig.map('n', '<leader>(', [[:/^\n^$<CR>]])
+-- Search for 2 consecutive empty lines, but not at EOF
+--myconfig.map('n', '<leader>(', [[:/\v(^\s*$\n){2,}\ze\_.<CR>]])
+-- This should be enough?
+myconfig.map('n', '<leader>(', [[:/\v(^\s*$\n){2,}<CR>]])
+
 myconfig.map("n", "Q", "<nop>") -- Remove Ex Mode
 
 -- Function keys
