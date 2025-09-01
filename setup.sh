@@ -410,7 +410,7 @@ clone_projects() {
         echo "[warn] The hard drive is not mounted. Can't copy re3 dirs."
     else
         TARGET_DIR="$HOME/Code/c++"
-        SOURCE_DIR="/media2/2025"
+        SOURCE_DIR="$MEDIA_PATH/2025"
 
         if [ ! -d "$TARGET_DIR/re3" ] && [ -d "$SOURCE_DIR/re3" ]; then
             echo "Copying re3 to $TARGET_DIR..."
