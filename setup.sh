@@ -329,7 +329,7 @@ clone_repo_if_missing() {
     if printf '%s\n' "${my_repo_dirs[@]}" | grep -q "^$repo_dir$"; then
     #if [[ "${repo_dir,,}" == "my_notes" || "${repo_dir,,}" == "utils" ]]; then
         if [ -z "$GITHUB_TOKEN" ]; then
-            echo "Error: GITHUB_TOKEN environment variable is not set. Skipping $repo_dir..."
+            echo "[warn] GITHUB_TOKEN environment variable is not set. Skipping $repo_dir..."
             return 1
         fi
     fi
@@ -869,7 +869,7 @@ compile_projects() {
             # For Debian based systems using dpkg
             mygui_version=$(dpkg -l | grep mygui | awk '{print $3}')
         else
-            echo "Unsupported Linux distribution."
+            echo "[error] Unsupported Linux distribution."
             exit 1
         fi
 
@@ -1276,7 +1276,7 @@ compile_projects() {
         GO_VERSION=$(go version 2>/dev/null)
 
         if [ -z "$GO_VERSION" ]; then
-            echo "[warn] Go is not installed..."
+            echo "[error] Go is not installed..."
             exit 1
         fi
 
@@ -1412,7 +1412,7 @@ compile_projects() {
 
         # First check if the target exists
         if [ ! -e "$RANLIB_TARGET" ]; then
-            echo "$RANLIB_TARGET does not exist. Please install the proper package."
+            echo "[error] $RANLIB_TARGET does not exist. Please install it."
             exit 1
         fi
 
@@ -2025,12 +2025,12 @@ check_dbs() {
 
     # Get MSQL info from set values
     if [ -z "$MYSQL_ROOT_PWD" ]; then
-        echo "Error: MYSQL_ROOT_PWD environment variable is not set. Exiting..."
+        echo "[error] MYSQL_ROOT_PWD environment variable is not set. Exiting..."
         exit 1
     fi
 
     if ! command -v mysql &> /dev/null; then
-        echo "mysql command not found. Please install MySQL client. Exiting..."
+        echo "[error] mysql command not found. Please install MySQL client. Exiting..."
         exit 1
     fi
 
