@@ -1,0 +1,12 @@
+ace 8.0.3-1
+ace-debug 8.0.3-1
+gruvbox-dark-gtk 1.0.2-1
+imgui 1.91.6-1
+imgui-debug 1.91.6-1
+neofetch 7.1.0-2
+omnisharp-roslyn 1.39.14-1
+omnisharp-roslyn-debug 1.39.14-1
+picom-pijulius-next-git 2863_Next.1301.g8efe4707_2025.08.25-1
+picom-pijulius-next-git-debug 2863_Next.1301.g8efe4707_2025.08.25-1
+yay 12.5.0-1
+yay-debug 12.5.0-1
