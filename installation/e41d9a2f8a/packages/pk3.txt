@@ -1,3 +1,5 @@
+python-markdown-it-py
+python-markupsafe
 python-matplotlib-inline
 python-mdurl
 python-mistune

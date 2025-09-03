@@ -1,3 +1,5 @@
+libffi
+libfontenc
 libgcrypt
 libgdiplus
 libgee
@@ -355,5 +357,3 @@ python-jupyter-client
 python-jupyter-core
 python-jupyter-events
 python-jupyterlab-server
-python-markdown-it-py
-python-markupsafe

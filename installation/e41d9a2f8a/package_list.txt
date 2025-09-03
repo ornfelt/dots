@@ -105,6 +105,8 @@ efibootmgr
 efivar
 enchant
 evolution-data-server
+eww
+eww-debug
 exo
 expat
 fakeroot

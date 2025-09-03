@@ -105,6 +105,8 @@ efibootmgr
 efivar
 enchant
 evolution-data-server
+eww
+eww-debug
 exo
 expat
 fakeroot
@@ -355,5 +357,3 @@ libev
 libevdev
 libevent
 libexif
-libffi
-libfontenc

@@ -63,3 +63,5 @@ bin/my_scripts/x.txt
 installation/packages/log.txt
 installation/packages/debian/log.txt
 
+.config/hypr/component/waybar/config_is_detailed
+
