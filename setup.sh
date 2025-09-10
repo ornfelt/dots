@@ -1969,8 +1969,10 @@ copy_game_data() {
             cp "$MEDIA_PATH/my_files/my_docs/local/config_home_pc.txt" "$HOME/Documents/local/config.txt"
             echo "Copied config file to $HOME/Documents/local/config.txt"
             windows_path="C:/Users/jonas/OneDrive/Documents/Code2/c#/BloogBot/Bot/db.db"
-            unix_path="$HOME/Code2/C#/BloogBot/Bot/db.db"
+            #unix_path="$HOME/Code2/C#/BloogBot/Bot/db.db"
+            unix_path="${HOME}/Code2/C#/BloogBot/Bot/db.db"
             if grep -Fq "$windows_path" "$HOME/Documents/local/config.txt"; then
+                # Use double quotes around the sed delimiters to expand HOME
                 sed -i "s|$windows_path|$unix_path|g" "$HOME/Documents/local/config.txt"
                 echo "Updated database path in config file."
             fi
@@ -1979,6 +1981,50 @@ copy_game_data() {
         fi
     else
         echo "[ok] Config file already exists at $HOME/Documents/local/config.txt"
+    fi
+
+    # Copy config.txt if missing
+    if [ ! -f "$HOME/Documents/local/config.txt" ]; then
+        mkdir -p "$HOME/Documents/local"
+        if [ -f "$MEDIA_PATH/my_files/my_docs/local/config_home_pc.txt" ]; then
+            cp "$MEDIA_PATH/my_files/my_docs/local/config_home_pc.txt" "$HOME/Documents/local/config.txt"
+            echo "Copied config file to $HOME/Documents/local/config.txt"
+        else
+            echo "[warn] Source config file at $MEDIA_PATH/my_files/my_docs/local/config_home_pc.txt not found."
+        fi
+    else
+        echo "[ok] Config file already exists at $HOME/Documents/local/config.txt"
+    fi
+
+    # Adjust BloogBot connection string if needed
+    if [ -f "$HOME/Documents/local/config.txt" ]; then
+        windows_path="C:/Users/jonas/OneDrive/Documents/Code2/c#/BloogBot/Bot/db.db"
+        #unix_path="$HOME/Code2/C#/BloogBot/Bot/db.db"
+        unix_path="${HOME}/Code2/C#/BloogBot/Bot/db.db"
+        if grep -Fq "$windows_path" "$HOME/Documents/local/config.txt"; then
+            # Use double quotes around the sed delimiters to expand HOME
+            sed -i "s|$windows_path|$unix_path|g" "$HOME/Documents/local/config.txt"
+            echo "Updated database path in config file."
+        else
+            echo "[ok] Config file does not have windows path for BloogBot connection string"
+        fi
+    fi
+
+    # Copy BloogBot db if needed
+    if [ -d "$HOME/Code2/C#/BloogBot" ]; then
+        if [ ! -d "$HOME/Code2/C#/BloogBot/Bot" ]; then
+            mkdir -p "$HOME/Code2/C#/BloogBot/Bot"
+            echo "Created directory $HOME/Code2/C#/BloogBot/Bot"
+        fi
+
+        if [ ! -f "$HOME/Code2/C#/BloogBot/Bot/db.db" ]; then
+            cp "$MEDIA_PATH/my_files/my_docs/db_bkp/bloogbot/db.db" "$HOME/Code2/C#/BloogBot/Bot"
+            echo "Copied db.db to $HOME/Code2/C#/BloogBot/Bot"
+        else
+            echo "[ok] File db.db already exists in $HOME/Code2/C#/BloogBot/Bot"
+        fi
+    else
+        echo "[warn] Directory $HOME/Code2/C#/BloogBot does not exist."
     fi
 }
 

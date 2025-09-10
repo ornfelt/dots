@@ -82,7 +82,7 @@ vim.api.nvim_set_keymap('n', '<M-a>', '<cmd>lua fuzzy_project_files()<CR>', { no
 vim.api.nvim_set_keymap('n', '<M-A>', '<cmd>lua fuzzy_files()<CR>', { noremap = true, silent = true, desc = "All Files" })
 
 -- fuzzy search at '/' or 'C:/'
-vim.keymap.set('n', '<M-C-s>', function()
+vim.keymap.set('n', '<M-C-a>', function()
   local use_fzf = myconfig.get_file_picker() == myconfig.FilePicker.FZF
   local use_fzf_lua = myconfig.get_file_picker() == myconfig.FilePicker.FZF_LUA
   local root_dir = (vim.fn.has('unix') == 1) and '/' or 'C:/'
@@ -474,4 +474,189 @@ function _G.list_recent_files()
 end
 
 vim.keymap.set("n", "<M-S>", _G.list_recent_files, { noremap = true, silent = true, desc = "Recent git files" })
+
+-- Currently changed files
+local function git_changed_files(path_filters)
+  local root, is_git = myconfig.get_git_root()
+  if not is_git then
+    vim.notify("Not a git repo here.", vim.log.levels.WARN)
+    return {}, nil
+  end
+
+  path_filters = path_filters or {}
+
+  -- Porcelain v1 is easy to parse per-line. Includes staged/unstaged + untracked
+  local cmd = { "git", "-C", root, "status", "--porcelain=v1", "--untracked-files=all" }
+  if #path_filters > 0 then
+    table.insert(cmd, "--")
+    for _, p in ipairs(path_filters) do table.insert(cmd, p) end
+  end
+
+  local lines = vim.fn.systemlist(cmd)
+  if vim.v.shell_error ~= 0 then
+    vim.notify("git status failed.", vim.log.levels.WARN)
+    return {}, root
+  end
+  if #lines == 0 then
+    vim.notify("No changes in working tree.", vim.log.levels.INFO)
+    return {}, root
+  end
+
+  local function status_human(xy)
+    local x, y = xy:sub(1,1), xy:sub(2,2)
+    if xy == "??" then return "untracked" end
+    if x == "A" or y == "A" then return "added" end
+    if x == "D" or y == "D" then return "deleted" end
+    if x == "R" or y == "R" then return "renamed" end
+    if x == "C" or y == "C" then return "copied" end
+    if x == "U" or y == "U" then return "unmerged" end
+    if x == "M" or y == "M" then return "modified" end
+    return xy
+  end
+
+  local out = {}
+  for _, line in ipairs(lines) do
+    if line ~= "" then
+      -- Format: "XY <path>" or "R<score> <old> -> <new>" etc.
+      local xy = line:sub(1,2)
+      local rest = line:sub(4) -- after 'XY '
+
+      -- Prefer the "to" path for renames/copies
+      local file = rest
+      if rest:find(" -> ", 1, true) then
+        local _, _, to = rest:find("^(.-) %-> (.+)$")
+        if to then file = to end
+      end
+
+      -- normalize whitespace
+      file = (file:gsub("^%s+", ""):gsub("%s+$", ""))
+      local exists = exists_at_root(root, file)
+      local human = status_human(xy)
+
+      table.insert(out, {
+        file = file,
+        status = xy,
+        status_text = human,
+        exists = exists,
+      })
+    end
+  end
+
+  -- Build display lines compatible with your FZF extraction regex
+  for i, it in ipairs(out) do
+    it.index = i
+    local right = string.format("%s (%s)%s", it.status, it.status_text, it.exists and "" or " [deleted]")
+    it.display = string.format("%d: %s   |   %s", i, it.file, right)
+  end
+  return out, root
+end
+
+-- Picker entrypoint for changed files
+function _G.list_changed_files()
+  local items, root = git_changed_files({})
+  if not items or #items == 0 then return end
+
+  local function open_abs(abs, open_cmd)
+    if vim.loop.fs_stat(abs) then
+      vim.cmd(open_cmd .. " " .. vim.fn.fnameescape(abs))
+    else
+      vim.notify("Cannot open '" .. abs .. "': file no longer exists on disk.", vim.log.levels.WARN)
+    end
+  end
+
+  local use_fzf = myconfig.get_file_picker() == myconfig.FilePicker.FZF
+  local use_fzf_lua = myconfig.get_file_picker() == myconfig.FilePicker.FZF_LUA
+
+  if use_fzf then
+    local src = {}
+    for _, it in ipairs(items) do table.insert(src, it.display) end
+
+    vim.fn["fzf#run"]({
+      source = src,
+      options = "--prompt 'Changed> ' --reverse --multi --expect=ctrl-t",
+      sinklist = function(selected)
+        if not selected or #selected == 0 then return end
+        local key = selected[1]
+        for i = 2, #selected do
+          local rel = selected[i]:match("^%d+:%s+(.-)%s+|%s+")
+          if rel and rel ~= "" then
+            local abs = root .. "/" .. rel
+            if key == "ctrl-t" then
+              open_abs(abs, "tabedit")
+            else
+              open_abs(abs, "edit")
+            end
+          end
+        end
+      end,
+    })
+
+  elseif use_fzf_lua then
+    local fzf = require("fzf-lua")
+    local src = {}
+    for _, it in ipairs(items) do table.insert(src, it.display) end
+
+    fzf.fzf_exec(src, {
+      prompt = "Changed> ",
+      actions = {
+        ["default"] = function(sel)
+          if not sel then return end
+          for _, line in ipairs(sel) do
+            local rel = line:match("^%d+:%s+(.-)%s+|%s+")
+            if rel and rel ~= "" then
+              open_abs(root .. "/" .. rel, "edit")
+            end
+          end
+        end,
+        ["ctrl-t"] = function(sel)
+          if not sel then return end
+          for _, line in ipairs(sel) do
+            local rel = line:match("^%d+:%s+(.-)%s+|%s+")
+            if rel and rel ~= "" then
+              open_abs(root .. "/" .. rel, "tabedit")
+            end
+          end
+        end,
+      },
+    })
+
+  else
+    -- Telescope
+    pickers.new({}, {
+      prompt_title = "Changed Git Files",
+      finder = finders.new_table({
+        results = items,
+        entry_maker = function(it)
+          local abs = root .. "/" .. it.file
+          return {
+            value    = it.file,
+            display  = it.display,
+            ordinal  = it.display,
+            path     = abs,
+            filename = abs,
+            exists   = it.exists,
+          }
+        end,
+      }),
+      sorter = conf.generic_sorter({}),
+      attach_mappings = function(prompt_bufnr, map)
+        local function open_with(cmd)
+          local entry = action_state.get_selected_entry()
+          actions.close(prompt_bufnr)
+          if not entry or not entry.path then return end
+          if vim.loop.fs_stat(entry.path) then
+            vim.cmd(cmd .. " " .. vim.fn.fnameescape(entry.path))
+          else
+            vim.notify("Cannot open '" .. entry.path .. "': file no longer exists on disk.", vim.log.levels.WARN)
+          end
+        end
+        map("i", "<CR>", function() open_with("edit") end); map("n", "<CR>", function() open_with("edit") end)
+        map("i", "<C-t>", function() open_with("tabedit") end); map("n", "<C-t>", function() open_with("tabedit") end)
+        return true
+      end,
+    }):find()
+  end
+end
+
+vim.keymap.set("n", "<M-C-s>", _G.list_changed_files, { noremap = true, silent = true, desc = "Changed git files" })
 
