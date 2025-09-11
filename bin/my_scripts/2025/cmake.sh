@@ -180,6 +180,17 @@ elif [[ "$lc" == *neovim* ]]; then
         echo "Note: also 'run sudo apt remove neovim -y' first!"
     fi
 
+elif [[ "$lc" == *ioq3* ]]; then
+    test_cmakelists current "ioq3 (expecting CMakeLists.txt in current directory)"
+
+    main='cmake -S . -B build -DCMAKE_BUILD_TYPE=Release && cmake --build build'
+    run_or_print "$main"
+
+    if [[ -n "$OnlyPrint" ]]; then
+        echo
+        echo 'cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug && cmake --build build'
+    fi
+
 else
     test_cmakelists parent
     # Default fallback
