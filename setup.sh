@@ -254,6 +254,7 @@ else
     if [ ! -d "$PLUGIN_DIR" ]; then
         cat <<EOF
 yazi plugins dir missing. You should run the following:
+  rm $HOME/.config/yazi/package.toml
   ya pkg add lpnh/fg
   ya pkg add dedukun/bookmarks
   ya pkg add yazi-rs/plugins:smart-enter
@@ -261,6 +262,7 @@ yazi plugins dir missing. You should run the following:
 EOF
         # alternative print
         #printf "yazi plugins dir missing. You should run the following commands:\n"
+        #printf "  rm $HOME/.config/yazi/package.toml\n"
         #printf "  ya pkg add lpnh/fg\n"
         #printf "  ya pkg add dedukun/bookmarks\n"
         #printf "  ya pkg add yazi-rs/plugins:smart-enter\n"
