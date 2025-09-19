@@ -173,6 +173,30 @@ myconfig.map('x', 'K', ":move '<-2<CR>gv=gv")
 myconfig.map('n', '<leader>j', ':join<CR>')
 myconfig.map('n', '<leader>J', ':join!<CR>')
 
+vim.keymap.set('n', '<leader><C-j>', function()
+  local line = vim.api.nvim_get_current_line()
+
+  -- Trim trailing whitespace
+  local trimmed = line:gsub("%s+$", "")
+
+  if trimmed == "" then
+    vim.notify("Current line is empty", vim.log.levels.ERROR)
+    return
+  end
+
+  -- Add comma if it doesn't already end with one
+  if not trimmed:match(",$") then
+    trimmed = trimmed .. ","
+  end
+
+  -- Replace line with trimmed + comma
+  local row = vim.api.nvim_win_get_cursor(0)[1]
+  vim.api.nvim_buf_set_lines(0, row - 1, row, false, { trimmed })
+
+  -- join with next line
+  vim.cmd("join")
+end, { desc = "Trim + add comma + join", noremap = true, silent = true })
+
 -- Indentation
 myconfig.map('v', '<leader><', ':le<CR>')
 myconfig.map('n', '<leader><', ':le<CR>')
