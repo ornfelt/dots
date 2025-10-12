@@ -5,7 +5,7 @@ local function exe_exists(p)  return is_str(p) and vim.fn.executable(p)==1 end
 
 local ENV = vim.loop.os_getenv("ROSLYN_LS_DLL")
 
-local function hard_dll_path()
+local function dll_path()
   if vim.fn.has("win32")==1 then
     local user_profile = vim.env.USERPROFILE or "C:/Users/jonas"
     return user_profile .. [[/Downloads/Microsoft.CodeAnalysis.LanguageServer/content/LanguageServer/win-x64/Microsoft.CodeAnalysis.LanguageServer.dll]]
@@ -16,7 +16,7 @@ local function hard_dll_path()
   end
 end
 
-local DLL = (ENV and ENV:match("%.dll$") and ENV) or hard_dll_path()
+local DLL = (ENV and ENV:match("%.dll$") and ENV) or dll_path()
 local DOTNET = "dotnet"
 
 -- Build cmd with verbose logs
@@ -36,14 +36,14 @@ if file_exists(DLL) and exe_exists(DOTNET) then
   }
 end
 
-vim.schedule(function()
-  vim.notify(
-    "roslyn: cannot resolve runnable server.\n" ..
-    "Checked DLL: " .. (DLL or "(nil)") .. "\n" ..
-    "dotnet on PATH: " .. (exe_exists(DOTNET) and "yes" or "no"),
-    vim.log.levels.WARN
-  )
-end)
+--vim.schedule(function()
+--  vim.notify(
+--    "roslyn: cannot resolve runnable server.\n" ..
+--    "Checked DLL: " .. (DLL or "(nil)") .. "\n" ..
+--    "dotnet on PATH: " .. (exe_exists(DOTNET) and "yes" or "no"),
+--    vim.log.levels.WARN
+--  )
+--end)
 
 return {}
 
