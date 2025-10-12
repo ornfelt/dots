@@ -46,3 +46,99 @@ end
 
 vim.api.nvim_set_keymap('n', '<leader>=', ':lua format_file()<CR>', { noremap = true, silent = true })
 
+-- Commands to convert current word to another casing convention. 
+-- If the word is UseTestingMode (Pascal),
+-- :ToSnake makes it use_testing_mode,
+-- :ToKebab -> use-testing-mode,
+-- :ToCamel -> useTestingMod
+
+local function split_into_parts(word)
+  local parts = {}
+
+  -- Split PascalCase, camelCase, snake_case, kebab-case
+  for part in word:gmatch("[A-Z]?[a-z]+") do
+    table.insert(parts, part:lower())
+  end
+  if #parts == 0 then
+    for part in vim.split(word, "[_-]", { trimempty = true }) do
+      table.insert(parts, part:lower())
+    end
+  end
+  return parts
+end
+
+local function get_word_under_cursor()
+  --return vim.fn.expand("<cword>")
+  -- Important to fix kebab case -> other case
+  return vim.fn.expand("<cWORD>")
+end
+
+local function replace_word_under_cursor(new_word)
+  local _ = get_word_under_cursor()
+  --vim.cmd("normal! ciw" .. new_word)
+  -- Important to fix kebab case -> other case
+  vim.cmd("normal! ciW" .. new_word)
+end
+
+local function to_snake_case(word)
+  local parts = split_into_parts(word)
+  return table.concat(parts, "_")
+end
+
+local function to_kebab_case(word)
+  local parts = split_into_parts(word)
+  return table.concat(parts, "-")
+end
+
+local function to_camel_case(word)
+  local parts = split_into_parts(word)
+  if #parts == 0 then return word end
+  local first = parts[1]
+  for i = 2, #parts do
+    parts[i] = parts[i]:gsub("^%l", string.upper)
+  end
+  return table.concat(parts, "")
+end
+
+local function to_pascal_case(word)
+  local parts = split_into_parts(word)
+  for i = 1, #parts do
+    parts[i] = parts[i]:gsub("^%l", string.upper)
+  end
+  return table.concat(parts, "")
+end
+
+-- Core conversion command
+local function convert_case(style)
+  local word = get_word_under_cursor()
+  if not word or word == "" then
+    vim.notify("No word under cursor", vim.log.levels.WARN)
+    return
+  end
+
+  local converted
+  if style == "snake" then
+    converted = to_snake_case(word)
+  elseif style == "kebab" then
+    converted = to_kebab_case(word)
+  elseif style == "camel" then
+    converted = to_camel_case(word)
+  elseif style == "pascal" then
+    converted = to_pascal_case(word)
+  else
+    vim.notify("Unknown style: " .. style, vim.log.levels.ERROR)
+    return
+  end
+
+  if converted and converted ~= word then
+    replace_word_under_cursor(converted)
+  else
+    vim.notify("Could not convert: already in target case?", vim.log.levels.INFO)
+  end
+end
+
+vim.api.nvim_create_user_command("ToSnake", function() convert_case("snake") end, {})
+vim.api.nvim_create_user_command("ToKebab", function() convert_case("kebab") end, {})
+vim.api.nvim_create_user_command("ToCamel", function() convert_case("camel") end, {})
+vim.api.nvim_create_user_command("ToPascal", function() convert_case("pascal") end, {})
+

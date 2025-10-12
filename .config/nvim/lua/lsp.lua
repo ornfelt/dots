@@ -1,395 +1,290 @@
-local lspconfig = require'lspconfig'
-
-local function go_to_definition_twice()
-  vim.lsp.buf.definition()
-  vim.defer_fn(function() vim.lsp.buf.definition() end, 100)
-end
-
-local on_attach = function(client, bufnr)
-  -- Create a buffer-local keymap function
-  local function buf_set_keymap(...) vim.api.nvim_buf_set_keymap(bufnr, ...) end
-  buf_set_keymap('n', '<M-r>', '<cmd>lua vim.lsp.buf.references()<CR>', { noremap = true, silent = true })
-  buf_set_keymap('n', '<M-d>', '<cmd>lua vim.lsp.buf.definition()<CR>', { noremap = true, silent = true })
-  buf_set_keymap('n', '<M-s-D>', '<cmd>lua vim.lsp.buf.implementation()<CR>', { noremap = true, silent = true })
-  --buf_set_keymap('n', '<M-s-d>', '', { noremap = true, silent = true, callback = go_to_definition_twice })
-  buf_set_keymap('n', '<leader>la', '<cmd>lua vim.lsp.buf.code_action()<CR>', { noremap = true, silent = true })
-  buf_set_keymap('n', '<leader>lr', '<cmd>lua vim.lsp.buf.rename()<CR>', { noremap = true, silent = true })
-  buf_set_keymap('n', '<leader>lh', '<cmd>lua vim.lsp.buf.signature_help()<CR>', { noremap = true, silent = true })
-  buf_set_keymap('n', '<leader>lo', '<cmd>lua vim.lsp.buf.hover()<CR>', { noremap = true, silent = true })
-  buf_set_keymap('n', '<leader>ld', '<cmd>lua vim.lsp.buf.type_definition()<CR>', { noremap = true, silent = true })
-  buf_set_keymap('n', '<leader>lc', '<cmd>lua vim.lsp.buf.declaration()<CR>', { noremap = true, silent = true })
-  buf_set_keymap('n', '<leader>ls', '<cmd>lua vim.lsp.buf.document_symbol()<CR>', { noremap = true, silent = true })
-end
-
-vim.keymap.set('n', '<M-r>', '<cmd>lua vim.lsp.buf.references()<CR>', { noremap = true, silent = true })
-vim.keymap.set('n', '<M-d>', '<cmd>lua vim.lsp.buf.definition()<CR>', { noremap = true, silent = true })
-vim.keymap.set('n', '<M-s-D>', '<cmd>lua vim.lsp.buf.implementation()<CR>', { noremap = true, silent = true })
-vim.keymap.set('n', '<leader>la', '<cmd>lua vim.lsp.buf.code_action()<CR>', { noremap = true, silent = true })
-vim.keymap.set('n', '<leader>lr', '<cmd>lua vim.lsp.buf.rename()<CR>', { noremap = true, silent = true })
-vim.keymap.set('n', '<leader>lh', '<cmd>lua vim.lsp.buf.signature_help()<CR>', { noremap = true, silent = true })
-vim.keymap.set('n', '<leader>lo', '<cmd>lua vim.lsp.buf.hover()<CR>', { noremap = true, silent = true })
-vim.keymap.set('n', '<leader>ld', '<cmd>lua vim.lsp.buf.type_definition()<CR>', { noremap = true, silent = true })
-vim.keymap.set('n', '<leader>lc', '<cmd>lua vim.lsp.buf.declaration()<CR>', { noremap = true, silent = true })
-vim.keymap.set('n', '<leader>ls', '<cmd>lua vim.lsp.buf.document_symbol()<CR>', { noremap = true, silent = true })
-
--- Python language server
---require'lspconfig'.pyright.setup {
---    on_attach = on_attach,
---}
-
--- C/C++ language server
---require'lspconfig'.clangd.setup {
---    on_attach = on_attach,
---    -- Clangd-specific settings
---    -- cmd = { "clangd", "--background-index" },
---    -- Configure flags, headers, or other clangd-specific options...
---}
-
--- Java language server
---require'lspconfig'.jdtls.setup {
---    on_attach = on_attach,
---    -- Note: jdtls might require more complex configuration especially for workspace handling
---    -- and Java project management compared to other simpler LSP setups.
---    -- root_dir = function() return vim.fn.getcwd() end,
---}
-
--- Setup language server if its binary is available
-local function setup_lsp_if_available(server_name, config, binary_name)
-  binary_name = binary_name or server_name
-
-  if vim.fn.executable(binary_name) == 1 then
-    require'lspconfig'[server_name].setup(config)
-    --else
-    --    print(binary_name .. " is not installed or not found in PATH")
-  end
-end
-
-local lsp_attach_config = {
-  on_attach = on_attach,
-}
-
-local lua_ls_config = {
-  on_attach = on_attach,
-  root_dir = function(fname)
-    local util = require("lspconfig.util")
-
-    local git = util.find_git_ancestor(fname)
-    if git then
-      return git
-    end
-
-    --local root_pattern = require("lspconfig.util").root_pattern(
-    --  ".luarc.json",
-    --  ".luarc.jsonc",
-    --  ".luacheckrc",
-    --  ".stylua.toml",
-    --  "stylua.toml",
-    --  "selene.toml",
-    --  "selene.yml",
-    --  ".git"
-    --)
-    ----return root_pattern(fname) or vim.fn.getcwd()
-    --return root_pattern(fname) or util.path.dirname(fname)
-
-    -- Debug:
-    --:lua print(vim.inspect(require("lspconfig").lua_ls.document_config.default_config.root_dir(vim.fn.expand("%:p"))))
-
-    -- fallback to just the file's directory
-    -- return vim.fn.fnamemodify(fname, ":p:h")
-    -- This should be the same:
-    return util.path.dirname(fname)
-  end,
-  single_file_support = true,
-  settings = {
-    Lua = {
-      diagnostics = {
-        globals = { 'vim', 'use' }
-      },
-      workspace = {
-        -- Make the server aware of Neovim runtime files and plugins
-        library = { vim.env.VIMRUNTIME },
-        checkThirdParty = false,
-        ignoreDir = {
-          "build",
-          "node_modules",
-          "third_party",
-          ".git",
-          "AppData",
-          "Application Data",
-          "scoop",
-          ".vim"
-        },
-      },
-    },
-  }
-}
-
-setup_lsp_if_available('pyright', lsp_attach_config)
-setup_lsp_if_available('clangd', lsp_attach_config)
-setup_lsp_if_available('gopls', lsp_attach_config)
-setup_lsp_if_available('ts_ls', lsp_attach_config, 'tsserver')
-setup_lsp_if_available('fsautocomplete', lsp_attach_config)
-setup_lsp_if_available('jdtls', lsp_attach_config)
--- lua_ls isn't the executable, lua-language-server is
-setup_lsp_if_available('lua_ls', lua_ls_config, 'lua-language-server')
--- rust_analyzer isn't the executable, rust-analyzer is
-setup_lsp_if_available('rust_analyzer', lsp_attach_config, 'rust-analyzer')
--- bashls isn't the executable, bash-language-server is
-setup_lsp_if_available('bashls', lsp_attach_config, 'bash-language-server')
-
-if vim.fn.has('win32') == 1 then
-  if vim.fn.executable('wsl') == 1 then
-    lspconfig.phpactor.setup{
-      --cmd = { "ssh", "user@remotehost", "phpactor", "language-server" },
-      --cmd = { "wsl", "-d", "arch", "alias C:='/mnt/c'", "phpactor", "language-server" },
-      cmd = { "wsl", "-d", "arch", "phpactor", "language-server" },
-      on_attach = on_attach
-    }
-  end
-else
-  setup_lsp_if_available('phpactor', lsp_attach_config)
-end
-
-if vim.fn.executable("sqls") == 1 then
-  lspconfig.sqls.setup{
-    on_attach = function(client, bufnr)
-      require('sqls').on_attach(client, bufnr)
-      on_attach(client, bufnr)
-    end
-  }
-end
-
-if vim.fn.executable("yaml-language-server") == 1 then
-  lspconfig.yamlls.setup {
-    settings = {
-      yaml = {
-        schemas = {
-          ["https://raw.githubusercontent.com/instrumenta/kubernetes-json-schema/master/v1.18.0-standalone-strict/all.json"] = "/*.k8s.yaml",
-          -- other schemas...
-        },
-      },
-    }
-  }
-end
-
---local omnisharp_path = os.getenv('OMNISHARP_PATH')
---if omnisharp_path then
---  local cmd
+----local autocomplete = require("autocomplete")
 --
---  if vim.fn.has('unix') == 1 then
---    cmd = { "dotnet", omnisharp_path .. "/OmniSharp.dll" }
---  else
---    cmd = { omnisharp_path .. "/OmniSharp.exe", "--languageserver", "--hostPID", tostring(vim.fn.getpid()) }
---  end
+--vim.api.nvim_create_autocmd('LspAttach', {
+--  desc = 'LSP actions',
+--  callback = function(event)
 --
---  require'lspconfig'.omnisharp.setup {
---    on_attach = on_attach,
---    cmd = cmd,
---    settings = {
---      FormattingOptions = {
---        -- Enables support for reading code style, naming convention and analyzer
---        -- settings from .editorconfig.
---        EnableEditorConfigSupport = true,
---        -- Specifies whether 'using' directives should be grouped and sorted during
---        -- document formatting.
---        OrganizeImports = nil,
---      },
---      MsBuild = {
---        -- If true, MSBuild project system will only load projects for files that
---        -- were opened in the editor. This setting is useful for big C# codebases
---        -- and allows for faster initialization of code navigation features only
---        -- for projects that are relevant to code that is being edited. With this
---        -- setting enabled OmniSharp may load fewer projects and may thus display
---        -- incomplete reference lists for symbols.
---        LoadProjectsOnDemand = nil,
---      },
---      RoslynExtensionsOptions = {
---        -- Enables support for roslyn analyzers, code fixes and rulesets.
---        EnableAnalyzersSupport = nil,
---        -- Enables support for showing unimported types and unimported extension
---        -- methods in completion lists. When committed, the appropriate using
---        -- directive will be added at the top of the current file. This option can
---        -- have a negative impact on initial completion responsiveness,
---        -- particularly for the first few completion sessions after opening a
---        -- solution.
---        EnableImportCompletion = nil,
---        -- Only run analyzers against open files when 'enableRoslynAnalyzers' is
---        -- true
---        AnalyzeOpenDocumentsOnly = nil,
---      },
---      Sdk = {
---        -- Specifies whether to include preview versions of the .NET SDK when
---        -- determining which version to use for project loading.
---        IncludePrereleases = true,
---      },
+--    --autocomplete.setup(event)
+--
+--    local opts = { buffer = event.buf, noremap = true, silent = true }
+--
+--    vim.keymap.set('n', '<M-r>', '<cmd>lua vim.lsp.buf.references()<CR>', opts)
+--    vim.keymap.set('n', '<M-d>', '<cmd>lua vim.lsp.buf.definition()<CR>', opts)
+--    vim.keymap.set('n', '<M-s-D>', '<cmd>lua vim.lsp.buf.implementation()<CR>', opts)
+--    --vim.keymap.set('n', '<M-s-d>', '', { noremap = true, silent = true, callback = go_to_definition_twice })
+--    vim.keymap.set('n', '<leader>la', '<cmd>lua vim.lsp.buf.code_action()<CR>', opts)
+--    vim.keymap.set('n', '<leader>lr', '<cmd>lua vim.lsp.buf.rename()<CR>', opts)
+--    vim.keymap.set('n', '<leader>lh', '<cmd>lua vim.lsp.buf.signature_help()<CR>', opts)
+--    vim.keymap.set('n', '<leader>lo', '<cmd>lua vim.lsp.buf.hover()<CR>', opts)
+--    vim.keymap.set('n', '<leader>ld', '<cmd>lua vim.lsp.buf.type_definition()<CR>', opts)
+--    vim.keymap.set('n', '<leader>lc', '<cmd>lua vim.lsp.buf.declaration()<CR>', opts)
+--
+--    --vim.keymap.set({ 'n', 'x' }, '<F3>', '<cmd>lua vim.lsp.buf.format({async = true})<cr>', opts)
+--    --vim.keymap.set('n', '<F4>', '<cmd>lua vim.lsp.buf.code_action()<cr>', opts)
+--  end,
+--})
+--
+---- blink.cmp
+--local capabilities = {
+--  textDocument = {
+--    foldingRange = {
+--      dynamicRegistration = false,
+--      lineFoldingOnly = true,
 --    },
---  }
+--  },
+--}
+--
+--capabilities = require('blink.cmp').get_lsp_capabilities(capabilities)
+--
+--vim.lsp.config('*', {
+--  capabilities = capabilities,
+--  root_markers = { '.git' },
+--})
+--
+---- Enable servers
+----vim.lsp.enable({'clangd', 'gopls', 'rust-analyzer'})
+--
+---- Automatically enable LSP for all lsp files found in my runtimepath
+--local configs = {}
+--
+--for _, v in ipairs(vim.api.nvim_get_runtime_file('lsp/*', true)) do
+--  local name = vim.fn.fnamemodify(v, ':t:r')
+--  configs[name] = true
 --end
--- Use roslyn instead of omnisharp:
--- {conf_dir}/nvim/lua/plugins/roslyn.lua
+--
+--vim.lsp.enable(vim.tbl_keys(configs))
+--
+---- Completion (see autocomplete instead)
+----vim.api.nvim_create_autocmd('LspAttach', {
+----  callback = function(ev)
+----    local client = vim.lsp.get_client_by_id(ev.data.client_id)
+----    if client:supports_method('textDocument/completion') then
+----      vim.lsp.completion.enable(true, client.id, ev.buf, { autotrigger = true })
+----    end
+----  end,
+----})
+--
+---- toggle LSP for the current buffer
+----vim.keymap.set('n', '<F10>', function()
+----  -- clients active for the current buffer
+----  local clients = vim.lsp.get_clients({ bufnr = vim.api.nvim_get_current_buf() })
+----
+----  if vim.tbl_isempty(clients) then
+----    vim.cmd("LspStart")
+----  else
+----    vim.cmd("LspStop")
+----  end
+----end)
 
-if vim.fn.has('win32') == 1 then
-  local binary_name = 'powershell.exe'
-  local user_profile = vim.loop.os_getenv("USERPROFILE")
-  local bundle_path = user_profile .. '/Downloads/PowerShellEditorServices'
 
-  local ps_attach_config = {
-    on_attach = on_attach,
-    bundle_path = bundle_path,
-    shell = binary_name,
-  }
+-- NEW
 
-  if vim.fn.executable(binary_name) == 1 and vim.fn.isdirectory(bundle_path) == 1 then
-    lspconfig.powershell_es.setup(ps_attach_config)
-  end
+-- Keymaps on LSP attach (replaces on_attach)
+vim.api.nvim_create_autocmd('LspAttach', {
+  desc = 'LSP actions',
+  callback = function(event)
+    local buf = event.buf
+    local opts = { buffer = buf, noremap = true, silent = true }
+
+    local function go_to_definition_twice()
+      vim.lsp.buf.definition()
+      vim.defer_fn(function() vim.lsp.buf.definition() end, 100)
+    end
+
+    vim.keymap.set('n', '<M-r>', vim.lsp.buf.references, opts)
+    vim.keymap.set('n', '<M-d>', vim.lsp.buf.definition, opts)
+    vim.keymap.set('n', '<M-s-D>', vim.lsp.buf.implementation, opts)
+    -- vim.keymap.set('n', '<M-s-d>', go_to_definition_twice, opts)
+    vim.keymap.set('n', '<leader>la', vim.lsp.buf.code_action, opts)
+    vim.keymap.set('n', '<leader>lr', vim.lsp.buf.rename, opts)
+    vim.keymap.set('n', '<leader>lh', vim.lsp.buf.signature_help, opts)
+    vim.keymap.set('n', '<leader>lo', vim.lsp.buf.hover, opts)
+    vim.keymap.set('n', '<leader>ld', vim.lsp.buf.type_definition, opts)
+    vim.keymap.set('n', '<leader>lc', vim.lsp.buf.declaration, opts)
+  end,
+})
+
+-- Hover-on-CursorHold toggle (keeps your previous behavior)
+local enabled_filetypes = {
+  bash=true, c=true, cpp=true, css=true, go=true, graphql=true, html=true,
+  java=true, javascript=true, jsdoc=true, json=true, lua=true,
+  markdown=true, markdown_inline=true, php=true, python=true, query=true,
+  regex=true, rust=true, scss=true, sql=true, tsx=true, typescript=true,
+  vim=true, vimdoc=true, vue=true, yaml=true,
+}
+
+local hover_enabled = false
+function _G.toggle_hover()
+  hover_enabled = not hover_enabled
+  print(hover_enabled and "Hover enabled" or "Hover disabled")
 end
 
--- Setup nvim-cmp.
-local cmp = require'cmp'
+vim.api.nvim_set_keymap("n", "<leader>lot", "<cmd>lua toggle_hover()<CR>", { noremap=true, silent=true })
+vim.api.nvim_create_autocmd("CursorHold", {
+  pattern = "*",
+  desc = "Show LSP hover on CursorHold for specific filetypes",
+  callback = function()
+    if hover_enabled and enabled_filetypes[vim.bo.filetype] then
+      vim.lsp.buf.hover()
+    end
+  end,
+})
+
+-- Capabilities (blink.cmp)
+--local capabilities = {
+--  textDocument = {
+--    foldingRange = { dynamicRegistration = false, lineFoldingOnly = true },
+--  },
+--}
+--capabilities = require('blink.cmp').get_lsp_capabilities(capabilities)
+
+-- nvim-cmp:
+vim.o.completeopt = "menu,menuone,noselect"
+
+local cmp = require('cmp')
 
 cmp.setup({
-  --snippet = {
-  --  -- REQUIRED - you must specify a snippet engine
-  --  expand = function(args)
-  --    vim.fn["vsnip#anonymous"](args.body) -- For `vsnip` users.
-  --    -- require('luasnip').lsp_expand(args.body) -- For `luasnip` users.
-  --    -- require('snippy').expand_snippet(args.body) -- For `snippy` users.
-  --    -- vim.fn["UltiSnips#Anon"](args.body) -- For `ultisnips` users.
-  --  end,
-  --},
+  -- If you actually use snippets (recommended), keep this enabled:
+  snippet = {
+    expand = function(args)
+      -- Preferred snippet engine:
+      --vim.fn["vsnip#anonymous"](args.body) -- For `vsnip` users.
+      -- require('luasnip').lsp_expand(args.body) -- For `luasnip` users.
+      -- require'snippy'.expand_snippet(args.body) -- For `snippy` users.
+      -- vim.fn["UltiSnips#Anon"](args.body) -- For `ultisnips` users.
+      vim.snippet.expand(args.body) -- For native neovim snippets (Neovim v0.10+)
+    end,
+  },
   window = {
     -- completion = cmp.config.window.bordered(),
     -- documentation = cmp.config.window.bordered(),
   },
   mapping = cmp.mapping.preset.insert({
-    ['<C-b>'] = cmp.mapping.scroll_docs(-4),
-    ['<C-f>'] = cmp.mapping.scroll_docs(4),
+    ['<C-b>']     = cmp.mapping.scroll_docs(-4),
+    ['<C-f>']     = cmp.mapping.scroll_docs(4),
     ['<C-Space>'] = cmp.mapping.complete(),
-    ['<C-e>'] = cmp.mapping.abort(),
-    ['<CR>'] = cmp.mapping.confirm({ select = true }), -- Accept currently selected item. Set `select` to `false` to only confirm explicitly selected items.
-    -- Use Tab and Shift-Tab to browse through the suggestions.
-    ["<Tab>"] = cmp.mapping(function(fallback)
-      if cmp.visible() then
-        cmp.select_next_item()
-        -- elseif vim.fn["vsnip#available"](1) == 1 then
-        -- feedkey("<Plug>(vsnip-expand-or-jump)", "")
-        -- elseif has_words_before() then
-        -- cmp.complete()
-      else
-        fallback()
-      end
-    end, { "i", "s" }),
-    ["<S-Tab>"] = cmp.mapping(function(fallback)
-      if cmp.visible() then
-        cmp.select_prev_item()
-        -- elseif vim.fn["vsnip#jumpable"](-1) == 1 then
-        -- feedkey("<Plug>(vsnip-jump-prev)", "")
-      else
-        fallback()
-      end
-    end, { "i", "s" }),
+    ['<C-e>']     = cmp.mapping.abort(),
+    ['<CR>']      = cmp.mapping.confirm({ select = true }),
+    ['<Tab>'] = cmp.mapping(function(fallback)
+      if cmp.visible() then cmp.select_next_item() else fallback() end
+    end, { 'i', 's' }),
+    ['<S-Tab>'] = cmp.mapping(function(fallback)
+      if cmp.visible() then cmp.select_prev_item() else fallback() end
+    end, { 'i', 's' }),
   }),
   sources = cmp.config.sources({
     { name = 'nvim_lsp' },
-    { name = 'vsnip' }, -- For vsnip users.
-    -- { name = 'luasnip' }, -- For luasnip users.
-    -- { name = 'ultisnips' }, -- For ultisnips users.
-    -- { name = 'snippy' }, -- For snippy users.
+    { name = 'vsnip' }, -- switch to 'luasnip' / 'ultisnips' / 'snippy' if you prefer
   }, {
-      { name = 'buffer' },
-    })
+    { name = 'buffer' },
+  }),
 })
 
--- Set configuration for specific filetype.
+-- Optional: filetype-specific sources
 cmp.setup.filetype('gitcommit', {
-  sources = cmp.config.sources({
-    { name = 'cmp_git' },
-  }, {
-      { name = 'buffer' },
-    })
+  sources = cmp.config.sources({ { name = 'cmp_git' } }, { { name = 'buffer' } })
 })
 
--- Use buffer source for `/` (if you enabled `native_menu`, this won't work anymore).
+-- Optional: commandline completion
 cmp.setup.cmdline('/', {
   mapping = cmp.mapping.preset.cmdline(),
-  sources = {
-    { name = 'buffer' }
-  }
+  sources = { { name = 'buffer' } }
 })
-
--- Use cmdline & path source for ':' (if you enabled `native_menu`, this won't work anymore).
 cmp.setup.cmdline(':', {
   mapping = cmp.mapping.preset.cmdline(),
   sources = cmp.config.sources({
     -- { name = 'path' }
-  }, {
-      { name = 'cmdline' }
-    })
+  }, { { name = 'cmdline' } })
 })
 
--- Setup lspconfig (line below deprecated)
--- local capabilities = require('cmp_nvim_lsp').update_capabilities(vim.lsp.protocol.make_client_capabilities())
-local capabilities = require('cmp_nvim_lsp').default_capabilities(vim.lsp.protocol.make_client_capabilities())
+-- === Capabilities from nvim-cmp (replaces Blink) ===
+local capabilities = require('cmp_nvim_lsp')
+  .default_capabilities(vim.lsp.protocol.make_client_capabilities())
 
--- Replace <YOUR_LSP_SERVER> with each lsp server you've enabled.
--- require('lspconfig')['<YOUR_LSP_SERVER>'].setup {
--- capabilities = capabilities
--- }
+-- Global defaults for all servers (you can add more defaults here)
+vim.lsp.config('*', {
+  capabilities = capabilities,
+  root_markers = { '.git' },
+  -- single_file_support = true, -- enable if you want single files attached by default
+})
 
+-- Auto-register EVERY config file under runtimepath/lsp/*.lua
+--local found = {}
+--for _, path in ipairs(vim.api.nvim_get_runtime_file('lsp/*', true)) do
+--  local name = vim.fn.fnamemodify(path, ':t:r')
+--  found[name] = true
+--end
 --
--- LSP hover keybind/autocmd
---
---vim.o.updatetime = 1000
-local enabled_filetypes = {
-    bash = true,
-    c = true,
-    cpp = true,
-    css = true,
-    go = true,
-    graphql = true,
-    html = true,
-    java = true,
-    javascript = true,
-    jsdoc = true,
-    json = true,
-    lua = true,
-    markdown = true,
-    markdown_inline = true,
-    php = true,
-    python = true,
-    query = true,
-    regex = true,
-    rust = true,
-    scss = true,
-    sql = true,
-    tsx = true,
-    typescript = true,
-    vim = true,
-    vimdoc = true,
-    vue = true,
-    yaml = true,
-}
+--local to_enable = {}
+--for name in pairs(found) do
+--  local cfg = vim.lsp.config(name) or {}
+--  local cmd = cfg.cmd
+--  local ok = true
+--  if type(cmd) == 'table' and cmd[1] and cmd[1] ~= '' then
+--    ok = (vim.fn.executable(cmd[1]) == 1)
+--  end
+--  if ok then table.insert(to_enable, name) end
+--end
 
-local hover_enabled = false
-function toggle_hover()
-    hover_enabled = not hover_enabled
-    if hover_enabled then
-        print("Hover enabled")
-    else
-        print("Hover disabled")
-    end
+-- Discover lsp/* files, check executables, register + enable
+
+-- Logging setup
+local log_lines = {}
+local function log(fmt, ...)
+  local line = string.format(fmt, ...)
+  table.insert(log_lines, line)
+  -- also echo in :messages for quick feedback:
+  --vim.schedule(function() vim.notify(line, vim.log.levels.INFO) end)
 end
 
-vim.api.nvim_create_autocmd("CursorHold", {
-    pattern = "*", -- Apply to all files initially
-    callback = function()
-        if hover_enabled and enabled_filetypes[vim.bo.filetype] then
-            vim.lsp.buf.hover()
-        end
-    end,
-    desc = "Show LSP hover information on CursorHold for specific filetypes",
-})
+-- log target
+local logfile = (vim.fn.has('win32') == 1) and [[C:\local\lsp_servers.txt]] or (vim.fn.expand('~/lsp_servers.txt'))
 
--- leader-lo to enable manually. Press again or <C-w><C-w> to go into hover-window
-vim.api.nvim_set_keymap( "n", "<leader>lot", "<cmd>lua toggle_hover()<CR>", { noremap = true, silent = true })
+if vim.fn.has('win32') == 1 then
+  vim.fn.mkdir(vim.fn.fnamemodify(logfile, ':h'), 'p')
+end
+
+-- Choose what to scan
+local user_glob = vim.fn.stdpath('config') .. '/lsp/*.lua'
+-- Debug path
+--print(user_glob)
+
+local paths = vim.split(vim.fn.glob(user_glob, true), '\n', { plain = true })
+
+local enabled = {}
+
+for _, path in ipairs(paths) do
+  if path ~= '' then
+    local name = vim.fn.fnamemodify(path, ':t:r')
+
+    local ok, cfg = pcall(dofile, path)
+    if not ok or type(cfg) ~= 'table' then
+      log("INVALID %-24s  (config file didn't return a table) [%s]", name, path)
+    else
+      local cmd = cfg.cmd
+      local ok_exec = true
+      if type(cmd) == 'table' and cmd[1] and cmd[1] ~= '' then
+        ok_exec = (vim.fn.executable(cmd[1]) == 1)
+      end
+      if ok_exec then
+        vim.lsp.config(name, cfg)      -- register
+        table.insert(enabled, name)    -- mark for enable
+        log("READY  %-24s  (will enable)                [%s]", name, path)
+      else
+        log("MISSING %-24s  (binary '%s' not found)      [%s]", name, tostring(cmd and cmd[1] or ""), path)
+      end
+    end
+
+  end
+end
+
+if #enabled > 0 then
+  vim.lsp.enable(enabled)
+  log("ENABLED: %s", table.concat(enabled, ", "))
+else
+  log("ENABLED: (none)")
+end
+
+vim.fn.writefile(log_lines, logfile)
+log("Wrote LSP registration log to: %s", logfile)
 

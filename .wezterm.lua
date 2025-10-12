@@ -646,8 +646,8 @@ config.keys = {
         [[(?:[-._~#+/a-zA-Z0-9$])*/(?:[-._~#+/a-zA-Z0-9$]*)]],
         -- Windows-style paths (including #, $, + and spaces)
         [[[a-zA-Z]:[/\\]+(?:[-._#$:+~a-zA-Z0-9/\\ ]+)]],
-        [[\\\\seusers\.ia\.corp\.svea\.com[/\\](?:[-._#$:+~a-zA-Z0-9/\\ ]+)]],
-        [[\\\\seusers\.ia\.corp\.svea\.com[/\\]+(?:[-._#$:+~a-zA-Z0-9/\\ ]+)]],
+        [[\\\\seusers\.*\.com[/\\](?:[-._#$:+~a-zA-Z0-9/\\ ]+)]],
+        [[\\\\seusers\.*\.com[/\\]+(?:[-._#$:+~a-zA-Z0-9/\\ ]+)]],
         [[\$env:[a-zA-Z_][a-zA-Z0-9_]*[\\/]+(?:[-._~#+/a-zA-Z0-9$]*)]],
       },
     },

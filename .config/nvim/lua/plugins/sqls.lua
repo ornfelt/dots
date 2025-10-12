@@ -1,4 +1,4 @@
 return {
   "nanotee/sqls.nvim",
-  lazy = true,
+  lazy = false,
 }

@@ -370,6 +370,28 @@ local function select_branch(callback)
   end
 end
 
+local function copy_file_manually(source, destination)
+  local source_file = io.open(source, "rb")
+  if not source_file then
+    print("Failed to open source file: " .. source)
+    return false
+  end
+
+  local content = source_file:read("*all")
+  source_file:close()
+
+  local dest_file = io.open(destination, "wb")
+  if not dest_file then
+    print("Failed to open destination file: " .. destination)
+    return false
+  end
+
+  dest_file:write(content)
+  dest_file:close()
+
+  return true
+end
+
 function continue_diff_process(current_file, relative_path, branch_name, use_debug_print)
   local target_dir = vim.loop.os_uname().sysname == "Windows_NT"
       and "C:/local/testing_files"
@@ -380,10 +402,19 @@ function continue_diff_process(current_file, relative_path, branch_name, use_deb
   local target_file2 = target_dir .. "/test2.txt"
 
   local copy_command = string.format("cp %s %s", vim.fn.shellescape(current_file), vim.fn.shellescape(target_file1))
+  if use_debug_print then
+    print("copy_command: " .. copy_command)
+  end
+
   vim.fn.system(copy_command)
   if vim.v.shell_error ~= 0 then
     print("Failed to copy the current file to: " .. target_file1)
-    return
+    print("Trying to copy file manually...")
+    if not copy_file_manually(current_file, target_file1) then
+      print("Manual copy also failed!")
+      return
+    end
+    print("Manual copy successful!")
   end
 
   local checkout_command = string.format("git show %s:%s > %s", branch_name, relative_path, target_file2)

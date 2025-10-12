@@ -692,3 +692,90 @@ vim.api.nvim_create_autocmd("FileType", {
   end,
 })
 
+local function read_sqls_connections()
+  local uv = vim.loop
+  local is_windows = vim.fn.has("win32") == 1
+  local home = uv.os_homedir() or vim.env.HOME or ""
+  local cfg_path = is_windows
+      and "C:/local/sqls_config.txt"
+      or (home .. "/Documents/local/sqls_config.txt")
+
+  local fd = io.open(cfg_path, "r")
+  if not fd then return {} end
+
+  local connections = {}
+  for line in fd:lines() do
+    local trimmed = line:match("^%s*(.-)%s*$")
+    if trimmed ~= "" and not trimmed:match("^#") then
+      local driver, dsn = trimmed:match("^(%w+)%s*:%s*(.+)$")
+      if driver and dsn then
+        table.insert(connections, {
+          driver = driver:lower(),
+          dataSourceName = dsn,
+        })
+      end
+    end
+  end
+  fd:close()
+  return connections
+end
+
+function switch_sqls_connection()
+  local use_debug_print = myconfig.should_debug_print()
+
+  local engine, env = extract_engine_env_from_buffer()
+  if not engine or not env then
+    --vim.notify("[sqls] No --engine or --env found in buffer", vim.log.levels.WARN)
+    return
+  end
+
+  if use_debug_print then
+    print("engine: " .. engine)
+    print("env: " .. env)
+  end
+
+  local connections = read_sqls_connections()
+  if #connections == 0 then
+    --vim.notify("[sqls] No connections loaded from sqls config file", vim.log.levels.ERROR)
+    return
+  end
+
+  engine = engine:lower()
+  env = env:lower()
+
+  local matched_index = nil
+  for i, conn in ipairs(connections) do
+    if conn.driver:lower():find(engine, 1, true)
+        and conn.dataSourceName:lower():find(env, 1, true) then
+      matched_index = i
+      break
+    end
+  end
+
+  if not matched_index then
+    vim.notify(string.format("[sqls] No connection matches engine='%s', env='%s'", engine, env), vim.log.levels.WARN)
+    return
+  end
+
+  vim.cmd("SqlsSwitchConnection " .. matched_index)
+  vim.notify(string.format("[sqls] Switched to index %d: %s", matched_index, connections[matched_index].dataSourceName))
+end
+
+vim.api.nvim_create_autocmd("FileType", {
+  pattern = "sql",
+  callback = function()
+    local bufnr = vim.api.nvim_get_current_buf()
+    vim.api.nvim_buf_set_keymap(bufnr, "i", "switch<Tab>", "<cmd>lua switch_sqls_connection()<CR>", { noremap = true, silent = true })
+  end,
+})
+-- Run automagically at BufEnter
+vim.api.nvim_create_autocmd("BufEnter", {
+  pattern = "*.sql",
+  callback = function()
+    -- Delay slightly to ensure LSP is attached and buffer is ready
+    vim.defer_fn(function()
+      switch_sqls_connection()
+    end, 100)
+  end,
+})
+
