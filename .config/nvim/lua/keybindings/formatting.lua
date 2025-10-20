@@ -52,18 +52,88 @@ vim.api.nvim_set_keymap('n', '<leader>=', ':lua format_file()<CR>', { noremap = 
 -- :ToKebab -> use-testing-mode,
 -- :ToCamel -> useTestingMod
 
+--local function split_into_parts(word)
+--  local parts = {}
+--
+--  -- Split PascalCase, camelCase, snake_case, kebab-case
+--  for part in word:gmatch("[A-Z]?[a-z]+") do
+--    table.insert(parts, part:lower())
+--  end
+--  if #parts == 0 then
+--    for part in vim.split(word, "[_-]", { trimempty = true }) do
+--      table.insert(parts, part:lower())
+--    end
+--  end
+--  return parts
+--end
+
 local function split_into_parts(word)
   local parts = {}
 
-  -- Split PascalCase, camelCase, snake_case, kebab-case
-  for part in word:gmatch("[A-Z]?[a-z]+") do
-    table.insert(parts, part:lower())
-  end
-  if #parts == 0 then
-    for part in vim.split(word, "[_-]", { trimempty = true }) do
-      table.insert(parts, part:lower())
+  -- First try splitting camelCase/PascalCase with better acronym handling
+  -- This pattern handles:
+  -- - [A-Z]+(?=[A-Z][a-z]) : Multiple caps before a PascalCase word (HTTP in HTTPServer)
+  -- - [A-Z]+(?=[^A-Za-z]|$) : Multiple caps at end or before delimiter (BB in DrawBB)
+  -- - [A-Z][a-z]+ : Standard PascalCase word (Draw, Server)
+  -- - [A-Z] : Single capital letter
+
+  local i = 1
+  while i <= #word do
+    local char = word:sub(i, i)
+
+    if char:match("[A-Z]") then
+      -- Look ahead for consecutive capitals
+      local j = i
+      while j <= #word and word:sub(j, j):match("[A-Z]") do
+        j = j + 1
+      end
+
+      if j > i + 1 then
+        -- Multiple capitals found
+        if j <= #word and word:sub(j, j):match("[a-z]") then
+          -- Followed by lowercase (e.g., "HTTPS" in "HTTPServer")
+          -- Keep all but the last capital together
+          table.insert(parts, word:sub(i, j - 2):lower())
+          i = j - 1
+        else
+          -- All capitals to end or delimiter (e.g., "BB", "BSA")
+          table.insert(parts, word:sub(i, j - 1):lower())
+          i = j
+        end
+      else
+        -- Single capital, grab until next capital or delimiter
+        local k = i + 1
+        while k <= #word and word:sub(k, k):match("[a-z]") do
+          k = k + 1
+        end
+        table.insert(parts, word:sub(i, k - 1):lower())
+        i = k
+      end
+    elseif char:match("[a-z]") then
+      -- Lowercase sequence (shouldn't happen in PascalCase but handle it)
+      local j = i
+      while j <= #word and word:sub(j, j):match("[a-z]") do
+        j = j + 1
+      end
+      table.insert(parts, word:sub(i, j - 1):lower())
+      i = j
+    elseif char:match("[_-]") then
+      -- Skip delimiters
+      i = i + 1
+    else
+      i = i + 1
     end
   end
+
+  -- Fallback to delimiter-based splitting if no parts found
+  if #parts == 0 then
+    for part in vim.split(word, "[_-]", { trimempty = true }) do
+      if part ~= "" then
+        table.insert(parts, part:lower())
+      end
+    end
+  end
+
   return parts
 end
 

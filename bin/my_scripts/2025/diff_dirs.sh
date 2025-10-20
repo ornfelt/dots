@@ -16,8 +16,8 @@ set -euo pipefail
 #dir1="/media2/2025/mpq"
 #dir2="/media/2025/mpq"
 
-dir1="/media2/my_files"
-dir2="/media/my_files"
+#dir1="/media2/my_files"
+#dir2="/media/my_files"
 
 #dir1="/media2/2024"
 #dir2="/media/2024"
@@ -25,8 +25,8 @@ dir2="/media/my_files"
 #dir1="/media2/2025"
 #dir2="/media/2025"
 
-#dir1="/media2"
-#dir2="/media"
+dir1="/media2"
+dir2="/media"
 
 # Log file
 target_log="diff_check.log"
