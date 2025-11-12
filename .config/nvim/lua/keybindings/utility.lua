@@ -116,3 +116,121 @@ end
 vim.api.nvim_set_keymap("n", "<leader>cc", ":lua count_characters()<CR>", { noremap = true, silent = true })
 vim.api.nvim_set_keymap("v", "<leader>cc", "<cmd>lua count_characters()<CR>", { noremap = true, silent = true })
 
+-- Command for showing useful file info
+-- Usage:
+-- :FileInfo C:\local\testing_files\test1.txt
+-- :FileInfo (uses current buffer)
+-- :FileInfo % (uses current buffer explicitly)
+-- :FileInfo $my_notes_path/wow.txt
+
+local uv = vim.uv or vim.loop
+
+local function human_lines(bytes)
+  local KB = 1024
+  local MB = KB * 1024
+  local GB = MB * 1024
+  local TB = GB * 1024
+  local function f(n) return string.format("%.2f", n) end
+  return {
+    ("TB:    %s"):format(f(bytes / TB)),
+    ("GB:    %s"):format(f(bytes / GB)),
+    ("MB:    %s"):format(f(bytes / MB)),
+    ("KB:    %s"):format(f(bytes / KB)),
+    ("Bytes: %d"):format(bytes),
+  }
+end
+
+local bit = bit or bit32
+local band = bit.band
+
+local function perms_octal(mode)
+  -- lower 9 bits are rwx for user/group/other
+  --local p = mode % 512 -- 0o777 == 511 in decimal modulus base
+  local p = band(mode, 0x1FF)
+  return string.format("%03o", p)
+end
+
+local function perms_rwx(mode)
+  --local p = mode % 512
+  local p = band(mode, 0x1FF)
+  local bits = {
+    0x100, 0x80, 0x40,  -- u: r w x
+    0x20,  0x10, 0x8,   -- g: r w x
+    0x4,   0x2,  0x1,   -- o: r w x
+  }
+  local letters = { "r","w","x","r","w","x","r","w","x" }
+  local out = {}
+  for i, b in ipairs(bits) do
+    -- Note: bitwise operator not availble in some lua versions
+    --out[i] = (p & b) ~= 0 and letters[i] or "-"
+    out[i] = (band(p, b) ~= 0) and letters[i] or "-"
+  end
+  return table.concat(out)
+end
+
+local function file_type_char(stat_type)
+  -- stat.type is usually "file","directory","link",...
+  if stat_type == "directory" then return "d" end
+  if stat_type == "link"      then return "l" end
+  return "-" -- default to regular file
+end
+
+local function show_lines(lines)
+  -- Could display in a scratch float or similar here...
+  vim.notify(table.concat(lines, "\n"), vim.log.levels.INFO, { title = "FileInfo" })
+end
+
+local function collect_info(path)
+  local stat = uv.fs_stat(path)
+  if not stat then
+    show_lines({ "FileInfo: cannot stat file:", path })
+    return
+  end
+
+  local lines = {}
+  table.insert(lines, ("File: %s"):format(path))
+
+  -- sizes
+  local sizes = human_lines(stat.size or 0)
+  vim.list_extend(lines, sizes)
+
+  -- linux
+  local is_linux = (uv.os_uname().sysname or ""):lower():find("linux", 1, true) ~= nil
+  if is_linux and stat.mode then
+    local oct = perms_octal(stat.mode)
+    local rwx = perms_rwx(stat.mode)
+    table.insert(lines, "")
+    table.insert(lines, ("Type: %s"):format(file_type_char(stat.type)))
+    table.insert(lines, ("Perms: %s (%s)"):format(rwx, oct))
+    if stat.uid ~= nil and stat.gid ~= nil then
+      table.insert(lines, ("UID/GID: %s/%s"):format(stat.uid, stat.gid))
+    end
+  end
+
+  -- Timestamps
+  if stat.mtime and stat.mtime.sec then
+    local mtime = os.date("%Y-%m-%d %H:%M:%S", stat.mtime.sec)
+    table.insert(lines, ("Modified: %s"):format(mtime))
+  end
+
+  show_lines(lines)
+end
+
+local function fileinfo_cmd(opts)
+  local path = opts.args
+  if path == nil or path == "" then
+    path = vim.api.nvim_buf_get_name(0)
+  end
+  if path == nil or path == "" then
+    show_lines({ "FileInfo: current buffer has no file name." })
+    return
+  end
+  collect_info(path)
+end
+
+vim.api.nvim_create_user_command(
+  "FileInfo",
+  fileinfo_cmd,
+  { nargs = "?", complete = "file" }
+)
+

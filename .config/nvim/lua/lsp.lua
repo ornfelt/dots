@@ -1,3 +1,5 @@
+local myconfig = require('myconfig')
+
 ----local autocomplete = require("autocomplete")
 --
 --vim.api.nvim_create_autocmd('LspAttach', {
@@ -78,6 +80,13 @@
 
 
 -- NEW
+
+-- for testing custom lsp
+if not myconfig.should_use_custom_lsp_for_sql() then
+  vim.filetype.add({
+    extension = { csql = "csql" },
+  })
+end
 
 -- Keymaps on LSP attach (replaces on_attach)
 vim.api.nvim_create_autocmd('LspAttach', {
@@ -250,11 +259,16 @@ local user_glob = vim.fn.stdpath('config') .. '/lsp/*.lua'
 --print(user_glob)
 
 local paths = vim.split(vim.fn.glob(user_glob, true), '\n', { plain = true })
-
 local enabled = {}
+local use_custom_sql = myconfig.should_use_custom_lsp_for_sql()
 
 for _, path in ipairs(paths) do
   if path ~= '' then
+    if use_custom_sql and path:lower():match("sqls%.lua") then
+      log("SKIPPED %-24s  (UseCustomLspForSql is enabled)   [%s]", "sqls", path)
+      goto continue
+    end
+
     local name = vim.fn.fnamemodify(path, ':t:r')
 
     local ok, cfg = pcall(dofile, path)
@@ -275,6 +289,7 @@ for _, path in ipairs(paths) do
       end
     end
 
+    ::continue::
   end
 end
 

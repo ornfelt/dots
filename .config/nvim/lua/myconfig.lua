@@ -144,6 +144,19 @@ function M.use_file_picker_for_commands()
   return use_file_picker:lower() == "true"
 end
 
+-- Cache for UseCustomLspForSql (nil means not yet read)
+local _use_custom_lsp_for_sql_cache = nil
+
+function M.should_use_custom_lsp_for_sql()
+  if _use_custom_lsp_for_sql_cache ~= nil then
+    return _use_custom_lsp_for_sql_cache
+  end
+
+  local use_custom = read_config("UseCustomLspForSql", "false")
+  _use_custom_lsp_for_sql_cache = (use_custom:lower() == "true")
+  return _use_custom_lsp_for_sql_cache
+end
+
 function M.get_py_command()
   return read_config("PythonExecCommand", "gpt")
 end
@@ -238,9 +251,14 @@ function ToggleUseFilePickerForCommands()
   ToggleBooleanSetting("UseFilePickerForCommands")
 end
 
+function ToggleUseCustomLspForSql()
+  ToggleBooleanSetting("UseCustomLspForSql")
+end
+
 vim.api.nvim_create_user_command('TogglePrioritizeBuildScript', TogglePrioritizeBuildScript, {})
 vim.api.nvim_create_user_command('ToggleDebugPrint', ToggleDebugPrint, {})
 vim.api.nvim_create_user_command('ToggleUseFilePickerForCommands', ToggleUseFilePickerForCommands, {})
+vim.api.nvim_create_user_command('ToggleUseCustomLspForSql', ToggleUseCustomLspForSql, {})
 
 -- Dynamic filepicker selection
 local FilePicker = {

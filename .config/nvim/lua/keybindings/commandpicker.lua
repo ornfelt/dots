@@ -19,6 +19,7 @@ local commands = {
   { label = "Config - TogglePrioritizeBuildScript", cmd = "TogglePrioritizeBuildScript" },
   { label = "Config - ToggleDebugPrint", cmd = "ToggleDebugPrint" },
   { label = "Config - ToggleUseFilePickerForCommands", cmd = "ToggleUseFilePickerForCommands" },
+  { label = "Config - ToggleUseCustomLspForSql", cmd = "ToggleUseCustomLspForSql" },
   { label = "Config - PrintConfig", cmd = "PrintConfig" },
   { label = "Llama", cmd = "Llm" },
   { label = "SkeletonCopy", cmd = "SkeletonCopy" },
@@ -28,6 +29,7 @@ local commands = {
   { label = "ToKebab", cmd = "ToKebab" },
   { label = "ToCamel", cmd = "ToCamel" },
   { label = "ToPascal", cmd = "ToPascal" },
+  { label = "FileInfo", cmd = "FileInfo" },
   -- SQL
   { label = "SqlsExecuteQuery", cmd = "SqlsExecuteQuery" },
   { label = "SqlsShowSchemas", cmd = "SqlsShowSchemas" },

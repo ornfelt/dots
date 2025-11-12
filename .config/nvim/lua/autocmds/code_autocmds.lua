@@ -99,7 +99,7 @@ create_mappings("java", {
 })
 
 -- Js/Ts
-create_mappings("js,ts,jsx,tsx,javascript,typescript", {
+create_mappings("js,ts,jsx,tsx,javascript,typescript,typescriptreact", {
   ["sout<Tab>"] = 'console.log("");<Esc>?""<Enter>li',
   ["souti<Tab>"] = 'console.log(`x: ${x}`);<Esc>Fxciw',
   ["souts<Tab>"] = 'console.log(`x: ${x}`);<Esc>Fxciw',

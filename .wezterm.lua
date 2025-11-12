@@ -679,20 +679,31 @@ config.keys = {
   {
     key = "Tab",
     mods = "CTRL",
-    action = wezterm.action.Multiple({
-      act.ActivateTabRelative(1),
-      wezterm.action.SendKey({ key = "Tab", mods = "CTRL" }),
-    }),
+    --action = wezterm.action.Multiple({
+    --  act.ActivateTabRelative(1),
+    --  wezterm.action.SendKey({ key = "Tab", mods = "CTRL" }),
+    --}),
+    action = wezterm.action_callback(function(window, pane)
+      if is_tmux(pane) then
+        --wezterm.action.SendKey({ key = "Tab", mods = "CTRL" })
+        local success, stdout, stderr = wezterm.run_child_process({"tmux", "next-window"})
+        if not success then
+          wezterm.log_error("Failed to switch tmux window: " .. (stderr or "unknown error"))
+        end
+      else
+        window:perform_action(act.ActivateTabRelative(1), pane)
+      end
+    end),
   },
 
-  {
-    key = "Tab",
-    mods = "CTRL|SHIFT",
-    action = wezterm.action.Multiple({
-      act.ActivateTabRelative(-1),
-      wezterm.action.SendKey({ key = "Tab", mods = "CTRL|SHIFT" }),
-    }),
-  },
+  --{
+  --  key = "Tab",
+  --  mods = "CTRL|SHIFT",
+  --  action = wezterm.action.Multiple({
+  --    act.ActivateTabRelative(-1),
+  --    --wezterm.action.SendKey({ key = "Tab", mods = "CTRL|SHIFT" }),
+  --  }),
+  --},
   -- Fix for debian...
   {
     key = "Tab",
