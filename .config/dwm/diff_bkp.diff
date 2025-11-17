@@ -65,7 +65,7 @@ index 482b545..95d4fd0 100644
  
  
 diff --git a/config.h b/config.h
-index 342750a..303596c 100644
+index 342750a..98fb30c 100644
 --- a/config.h
 +++ b/config.h
 @@ -28,15 +28,16 @@ static int smartgaps            = 0;        /* 1 means no outer gap when there i
@@ -104,7 +104,15 @@ index 342750a..303596c 100644
  /* const char *spcmd2[] = {"st", "-n", "spcalc", "-f", "monospace:size=16", "-g", "50x20", "-e", "bc", "-lq", NULL }; */
  static Sp scratchpads[] = {
      /* name          cmd  */
-@@ -127,8 +130,13 @@ static const Layout layouts[] = {
+@@ -90,6 +93,7 @@ static const Rule rules[] = {
+ static float mfact     = 0.55; /* factor of master area size [0.05..0.95] */
+ static int nmaster     = 1;    /* number of clients in master area */
+ static int resizehints = 0;    /* 1 means respect size hints in tiled resizals */
++static const int refreshrate = 120;  /* refresh rate (per second) for client move/resize */
+ 
+ #define FORCE_VSPLIT 1  /* nrowgrid layout: force two clients to always split vertically */
+ #include "vanitygaps.c"
+@@ -127,8 +131,13 @@ static const Layout layouts[] = {
  /* helper for spawning shell commands in the pre dwm-5.0 fashion */
  #define SHCMD(cmd) { .v = (const char*[]){ "/bin/sh", "-c", cmd, NULL } }
  
@@ -118,7 +126,7 @@ index 342750a..303596c 100644
  
  /*
   * Xresources preferences to load at startup
-@@ -157,7 +165,6 @@ ResourcePref resources[] = {
+@@ -157,7 +166,6 @@ ResourcePref resources[] = {
  };
  
  #include <X11/XF86keysym.h>
@@ -126,7 +134,7 @@ index 342750a..303596c 100644
  
  static const Key keys[] = {
      /*  modifier                    key                 function            argument */
-@@ -203,12 +210,12 @@ static const Key keys[] = {
+@@ -203,12 +211,12 @@ static const Key keys[] = {
          { MODKEY,                   XK_minus,           incrgaps,           {.i = -3 } },
          { MODKEY|ShiftMask,         XK_plus,            incrgaps,           {.i = +1 } },
          { MODKEY|ShiftMask,         XK_minus,           incrgaps,           {.i = -1 } },
@@ -142,7 +150,7 @@ index 342750a..303596c 100644
          { MODKEY|ControlMask|ShiftMask,     XK_p,       togglebar,          {0} },
          { MODKEY,                   XK_h,               focusmon,           { .i = -1 } },
          { MODKEY|ShiftMask,         XK_h,               tagmonview,         { .i = -1 } },
-@@ -328,17 +335,19 @@ static const Key keys[] = {
+@@ -328,17 +336,19 @@ static const Key keys[] = {
          /* { 0, XF86XK_TouchpadOn,                         spawn,              SHCMD("synclient TouchpadOff=0") }, */
  };
  
@@ -169,9 +177,16 @@ index 342750a..303596c 100644
      { ClkStatusText,        ShiftMask,      Button3,        spawn,          SHCMD(TERMINAL " -e nvim ~/.config/dwmblocks/config.h") },
      { ClkClientWin,         MODKEY,         Button1,        movemouse,      {0} },
 diff --git a/config.mk b/config.mk
-index 1fc4bf1..a933c0b 100644
+index 1fc4bf1..93f9739 100644
 --- a/config.mk
 +++ b/config.mk
+@@ -1,5 +1,5 @@
+ # dwm version
+-VERSION = 6.5
++VERSION = 6.6
+ 
+ # Customize below to fit your system
+ 
 @@ -19,10 +19,12 @@ FREETYPELIBS = -lfontconfig -lXft
  FREETYPEINC = /usr/include/freetype2
  # OpenBSD (uncomment)
@@ -187,7 +202,7 @@ index 1fc4bf1..a933c0b 100644
  # flags
  CPPFLAGS = -D_DEFAULT_SOURCE -D_BSD_SOURCE -D_XOPEN_SOURCE=700L -DVERSION=\"${VERSION}\" ${XINERAMAFLAGS}
 diff --git a/drw.c b/drw.c
-index d43d8c2..11387e5 100644
+index d43d8c2..fc0f6f9 100644
 --- a/drw.c
 +++ b/drw.c
 @@ -13,7 +13,6 @@
@@ -290,7 +305,7 @@ index d43d8c2..11387e5 100644
  }
  
  /* This function is an implementation detail. Library users should use
-@@ -92,91 +91,91 @@ drw_free(Drw *drw)
+@@ -92,136 +91,159 @@ drw_free(Drw *drw)
  static Fnt *
  xfont_create(Drw *drw, const char *fontname, FcPattern *fontpattern)
  {
@@ -446,7 +461,10 @@ index d43d8c2..11387e5 100644
  
      dest->pixel |= 0xff << 24;
  }
-@@ -186,42 +185,42 @@ drw_clr_create(Drw *drw, Clr *dest, const char *clrname)
+ 
+-/* Wrapper to create color schemes. The caller has to call free(3) on the
+- * returned color scheme when done using it. */
++/* Create color schemes. */
  Clr *
  drw_scm_create(Drw *drw, char *clrnames[], size_t clrcount)
  {
@@ -459,7 +477,7 @@ index d43d8c2..11387e5 100644
 -    if (!drw || !clrnames || clrcount < 2 || !(ret = ecalloc(clrcount, sizeof(XftColor))))
 -        return NULL;
 +	/* need at least two colors for a scheme */
-+	if (!drw || !clrnames || clrcount < 2 || !(ret = ecalloc(clrcount, sizeof(XftColor))))
++    if (!drw || !clrnames || clrcount < 2 || !(ret = ecalloc(clrcount, sizeof(Clr))))
 +		return NULL;
  
 -    for (i = 0; i < clrcount; i++)
@@ -468,6 +486,30 @@ index d43d8c2..11387e5 100644
 +	for (i = 0; i < clrcount; i++)
 +		drw_clr_create(drw, &ret[i], clrnames[i]);
 +	return ret;
++}
++
++void
++drw_clr_free(Drw *drw, Clr *c)
++{
++	if (!drw || !c)
++		return;
++
++	/* c is typedef XftColor Clr */
++	XftColorFree(drw->dpy, DefaultVisual(drw->dpy, drw->screen),
++	             DefaultColormap(drw->dpy, drw->screen), c);
++}
++
++void
++drw_scm_free(Drw *drw, Clr *scm, size_t clrcount)
++{
++	size_t i;
++
++	if (!drw || !scm)
++		return;
++
++	for (i = 0; i < clrcount; i++)
++		drw_clr_free(drw, &scm[i]);
++    free(scm);
  }
  
  void
@@ -508,7 +550,7 @@ index d43d8c2..11387e5 100644
  }
  
  int
-@@ -229,52 +228,51 @@ drw_text(Drw *drw, int x, int y, unsigned int w, unsigned int h, unsigned int lp
+@@ -229,52 +251,51 @@ drw_text(Drw *drw, int x, int y, unsigned int w, unsigned int h, unsigned int lp
  {
  	int ty, ellipsis_x = 0;
  	unsigned int tmpw, ew, ellipsis_w = 0, ellipsis_len, hash, h0, h1;
@@ -594,7 +636,7 @@ index d43d8c2..11387e5 100644
  					drw_font_getexts(curfont, text, utf8charlen, &tmpw, NULL);
  					if (ew + ellipsis_width <= w) {
  						/* keep track where the ellipsis still fits */
-@@ -293,31 +291,31 @@ drw_text(Drw *drw, int x, int y, unsigned int w, unsigned int h, unsigned int lp
+@@ -293,31 +314,31 @@ drw_text(Drw *drw, int x, int y, unsigned int w, unsigned int h, unsigned int lp
  						else
  							utf8strlen = ellipsis_len;
  					} else if (curfont == usedfont) {
@@ -643,7 +685,7 @@ index d43d8c2..11387e5 100644
  		if (utf8err && (!render || invalid_width < w)) {
  			if (render)
  				drw_text(drw, x, y, w, h, 0, invalid, invert);
-@@ -327,15 +325,15 @@ drw_text(Drw *drw, int x, int y, unsigned int w, unsigned int h, unsigned int lp
+@@ -327,15 +348,15 @@ drw_text(Drw *drw, int x, int y, unsigned int w, unsigned int h, unsigned int lp
  		if (render && overflow)
  			drw_text(drw, ellipsis_x, y, ellipsis_w, h, 0, "...", invert);
  
@@ -668,7 +710,7 @@ index d43d8c2..11387e5 100644
  
  			hash = (unsigned int)utf8codepoint;
  			hash = ((hash >> 16) ^ hash) * 0x21F0AAAD;
-@@ -346,63 +344,62 @@ drw_text(Drw *drw, int x, int y, unsigned int w, unsigned int h, unsigned int lp
+@@ -346,63 +367,62 @@ drw_text(Drw *drw, int x, int y, unsigned int w, unsigned int h, unsigned int lp
  			if (nomatches[h0] == utf8codepoint || nomatches[h1] == utf8codepoint)
  				goto no_match;
  
@@ -776,7 +818,7 @@ index d43d8c2..11387e5 100644
  }
  
  unsigned int
-@@ -417,37 +414,37 @@ drw_fontset_getwidth_clamp(Drw *drw, const char *text, unsigned int n)
+@@ -417,37 +437,37 @@ drw_fontset_getwidth_clamp(Drw *drw, const char *text, unsigned int n)
  void
  drw_font_getexts(Fnt *font, const char *text, unsigned int len, unsigned int *w, unsigned int *h)
  {
@@ -832,7 +874,7 @@ index d43d8c2..11387e5 100644
 +	free(cursor);
  }
 diff --git a/drw.h b/drw.h
-index ea76849..bdbf950 100644
+index ea76849..fbfec02 100644
 --- a/drw.h
 +++ b/drw.h
 @@ -1,29 +1,29 @@
@@ -879,6 +921,16 @@ index ea76849..bdbf950 100644
  } Drw;
  
  /* Drawable abstraction */
+@@ -40,7 +40,9 @@ void drw_font_getexts(Fnt *font, const char *text, unsigned int len, unsigned in
+ 
+ /* Colorscheme abstraction */
+ void drw_clr_create(Drw *drw, Clr *dest, const char *clrname);
++void drw_clr_free(Drw *drw, Clr *c);
+ Clr *drw_scm_create(Drw *drw, char *clrnames[], size_t clrcount);
++void drw_scm_free(Drw *drw, Clr *scm, size_t clrcount);
+ 
+ /* Cursor abstraction */
+ Cur *drw_cur_create(Drw *drw, int shape);
 diff --git a/dwm.1 b/dwm.1
 index 7feba78..d04bec6 100644
 --- a/dwm.1
@@ -1152,7 +1204,7 @@ index 7feba78..d04bec6 100644
  .BR dmenu (1),
  .BR st (1)
 diff --git a/dwm.c b/dwm.c
-index 9086e16..0d7be52 100644
+index 9086e16..c1962e8 100644
 --- a/dwm.c
 +++ b/dwm.c
 @@ -29,6 +29,7 @@
@@ -2056,8 +2108,8 @@ index 9086e16..0d7be52 100644
 +		cleanupmon(mons);
 +	for (i = 0; i < CurLast; i++)
 +		drw_cur_free(drw, cursor[i]);
-+	for (i = 0; i < LENGTH(colors) + 1; i++)
-+		free(scheme[i]);
++	for (i = 0; i < LENGTH(colors); i++)
++		drw_scm_free(drw, scheme[i], 3);
 +	free(scheme);
 +	XDestroyWindow(dpy, wmcheckwin);
 +	drw_free(drw);
@@ -3293,7 +3345,7 @@ index 9086e16..0d7be52 100644
 +			handler[ev.type](&ev);
 +			break;
 +		case MotionNotify:
-+			if ((ev.xmotion.time - lasttime) <= (1000 / 60))
++            if ((ev.xmotion.time - lasttime) <= (1000 / refreshrate))
 +				continue;
 +			lasttime = ev.xmotion.time;
 +
@@ -3620,7 +3672,7 @@ index 9086e16..0d7be52 100644
 +			handler[ev.type](&ev);
 +			break;
 +		case MotionNotify:
-+			if ((ev.xmotion.time - lasttime) <= (1000 / 60))
++            if ((ev.xmotion.time - lasttime) <= (1000 / refreshrate))
 +				continue;
 +			lasttime = ev.xmotion.time;
 +

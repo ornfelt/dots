@@ -723,6 +723,7 @@ end
 function switch_sqls_connection()
   local use_debug_print = myconfig.should_debug_print()
   if myconfig.should_use_custom_lsp_for_sql() then
+    -- TODO: call sql mini switch connection with index based on read connection strings...
     if use_debug_print then
       print("[sqls] Skipping connection switch - UseCustomLspForSql is enabled")
     end
@@ -789,4 +790,70 @@ vim.api.nvim_create_autocmd("BufEnter", {
     end, 100)
   end,
 })
+
+-- Custom sql lsp functions and commands
+local function sqlmini_switch(idx)
+  local client = vim.lsp.get_clients({ name = "sqlmini" })[1]
+  if not client then
+    vim.notify("SqlMiniLsp not attached", vim.log.levels.WARN)
+    return
+  end
+
+  client.request('workspace/executeCommand', {
+    command = 'sqlmini.switch',
+    arguments = { { index = tonumber(idx) } }, -- 1=mssql, 2=mysql, 3=sqlite
+  }, function(err, _)
+      if err then
+        vim.notify("sqlmini.switch failed: " .. (err.message or tostring(err)), vim.log.levels.ERROR)
+      else
+        vim.notify("SqlMiniLsp: switched to preset " .. idx, vim.log.levels.INFO)
+      end
+    end)
+end
+
+vim.api.nvim_create_user_command('SqlMiniSwitch', function(opts)
+  sqlmini_switch(opts.args)
+end, { nargs = 1, complete = function()
+    return { "1", "2", "3" }
+  end })
+
+local function sqlmini_dump()
+  local client = vim.lsp.get_clients({ name = "sqlmini" })[1]
+  if not client then
+    vim.notify("SqlMiniLsp not attached", vim.log.levels.WARN)
+    return
+  end
+
+  client.request('workspace/executeCommand', {
+    command = 'sqlmini.dump',
+    arguments = {},  -- none needed
+  }, function(err, result)
+      if err then
+        vim.notify("sqlmini.dump failed: " .. (err.message or tostring(err)), vim.log.levels.ERROR)
+        return
+      end
+      if type(result) ~= "string" or result == "" then
+        vim.notify("sqlmini.dump: empty result", vim.log.levels.WARN)
+        return
+      end
+
+      -- open a scratch markdown buffer
+      vim.cmd("belowright new")
+      local buf = vim.api.nvim_get_current_buf()
+      vim.bo[buf].buftype = "nofile"
+      vim.bo[buf].bufhidden = "wipe"
+      vim.bo[buf].swapfile = false
+      vim.bo[buf].filetype = "markdown"
+      vim.api.nvim_buf_set_name(buf, "SqlMiniSchema.md")
+
+      local lines = {}
+      for s in result:gmatch("([^\r\n]*)\r?\n?") do
+        table.insert(lines, s)
+      end
+      vim.api.nvim_buf_set_lines(buf, 0, -1, false, lines)
+      vim.api.nvim_buf_set_option(buf, "modifiable", false)
+    end)
+end
+
+vim.api.nvim_create_user_command("SqlMiniDump", sqlmini_dump, { nargs = 0 })
 

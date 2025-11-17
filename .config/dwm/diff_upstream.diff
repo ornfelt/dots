@@ -59,7 +59,7 @@ index 0000000..d42c9e0
 +a.out
 +dwm
 diff --git a/config.def.h b/config.def.h
-index 9efa774..0c94360 100644
+index 81c3fc0..13c77a9 100644
 --- a/config.def.h
 +++ b/config.def.h
 @@ -1,21 +1,44 @@
@@ -122,7 +122,7 @@ index 9efa774..0c94360 100644
  };
  
  /* tagging */
-@@ -26,22 +49,39 @@ static const Rule rules[] = {
+@@ -26,23 +49,40 @@ static const Rule rules[] = {
  	 *	WM_CLASS(STRING) = instance, class
  	 *	WM_NAME(STRING) = title
  	 */
@@ -144,6 +144,7 @@ index 9efa774..0c94360 100644
 +static int nmaster     = 1;    /* number of clients in master area */
 +static int resizehints = 1;    /* 1 means respect size hints in tiled resizals */
  static const int lockfullscreen = 1; /* 1 will force focus on the fullscreen window */
+ static const int refreshrate = 120;  /* refresh rate (per second) for client move/resize */
  
 +#define FORCE_VSPLIT 1  /* nrowgrid layout: force two clients to always split vertically */
 +#include "vanitygaps.c"
@@ -169,7 +170,7 @@ index 9efa774..0c94360 100644
  };
  
  /* key definitions */
-@@ -51,27 +91,81 @@ static const Layout layouts[] = {
+@@ -52,27 +92,81 @@ static const Layout layouts[] = {
  	{ MODKEY|ControlMask,           KEY,      toggleview,     {.ui = 1 << TAG} }, \
  	{ MODKEY|ShiftMask,             KEY,      tag,            {.ui = 1 << TAG} }, \
  	{ MODKEY|ControlMask|ShiftMask, KEY,      toggletag,      {.ui = 1 << TAG} },
@@ -254,7 +255,7 @@ index 9efa774..0c94360 100644
  	{ MODKEY,                       XK_Tab,    view,           {0} },
  	{ MODKEY|ShiftMask,             XK_c,      killclient,     {0} },
  	{ MODKEY,                       XK_t,      setlayout,      {.v = &layouts[0]} },
-@@ -79,12 +173,16 @@ static const Key keys[] = {
+@@ -80,12 +174,16 @@ static const Key keys[] = {
  	{ MODKEY,                       XK_m,      setlayout,      {.v = &layouts[2]} },
  	{ MODKEY,                       XK_space,  setlayout,      {0} },
  	{ MODKEY|ShiftMask,             XK_space,  togglefloating, {0} },
@@ -271,7 +272,7 @@ index 9efa774..0c94360 100644
  	TAGKEYS(                        XK_1,                      0)
  	TAGKEYS(                        XK_2,                      1)
  	TAGKEYS(                        XK_3,                      2)
-@@ -94,7 +192,8 @@ static const Key keys[] = {
+@@ -95,7 +193,8 @@ static const Key keys[] = {
  	TAGKEYS(                        XK_7,                      6)
  	TAGKEYS(                        XK_8,                      7)
  	TAGKEYS(                        XK_9,                      8)
@@ -281,7 +282,7 @@ index 9efa774..0c94360 100644
  };
  
  /* button definitions */
-@@ -103,11 +202,12 @@ static const Button buttons[] = {
+@@ -104,11 +203,12 @@ static const Button buttons[] = {
  	/* click                event mask      button          function        argument */
  	{ ClkLtSymbol,          0,              Button1,        setlayout,      {0} },
  	{ ClkLtSymbol,          0,              Button3,        setlayout,      {.v = &layouts[2]} },
@@ -299,10 +300,10 @@ index 9efa774..0c94360 100644
  	{ ClkTagBar,            MODKEY,         Button1,        tag,            {0} },
 diff --git a/config.h b/config.h
 new file mode 100644
-index 0000000..303596c
+index 0000000..98fb30c
 --- /dev/null
 +++ b/config.h
-@@ -0,0 +1,365 @@
+@@ -0,0 +1,366 @@
 +/* See LICENSE file for copyright and license details. */
 +
 +/* Constants */
@@ -398,6 +399,7 @@ index 0000000..303596c
 +static float mfact     = 0.55; /* factor of master area size [0.05..0.95] */
 +static int nmaster     = 1;    /* number of clients in master area */
 +static int resizehints = 0;    /* 1 means respect size hints in tiled resizals */
++static const int refreshrate = 120;  /* refresh rate (per second) for client move/resize */
 +
 +#define FORCE_VSPLIT 1  /* nrowgrid layout: force two clients to always split vertically */
 +#include "vanitygaps.c"
@@ -669,7 +671,7 @@ index 0000000..303596c
 +    { ClkRootWin,           0,              Button2,        togglebar,      {0} },
 +};
 diff --git a/config.mk b/config.mk
-index 8efca9a..a933c0b 100644
+index b469a2b..93f9739 100644
 --- a/config.mk
 +++ b/config.mk
 @@ -20,10 +20,11 @@ FREETYPEINC = /usr/include/freetype2
@@ -686,10 +688,10 @@ index 8efca9a..a933c0b 100644
  # flags
  CPPFLAGS = -D_DEFAULT_SOURCE -D_BSD_SOURCE -D_XOPEN_SOURCE=700L -DVERSION=\"${VERSION}\" ${XINERAMAFLAGS}
 diff --git a/drw.c b/drw.c
-index c41e6af..11387e5 100644
+index 9fdd1a4..fc0f6f9 100644
 --- a/drw.c
 +++ b/drw.c
-@@ -176,12 +176,14 @@ drw_clr_create(Drw *drw, Clr *dest, const char *clrname)
+@@ -176,17 +176,19 @@ drw_clr_create(Drw *drw, Clr *dest, const char *clrname)
  	                       DefaultColormap(drw->dpy, drw->screen),
  	                       clrname, dest))
  		die("error, cannot allocate color '%s'", clrname);
@@ -697,27 +699,42 @@ index c41e6af..11387e5 100644
 +    dest->pixel |= 0xff << 24;
  }
  
- /* Wrapper to create color schemes. The caller has to call free(3) on the
-  * returned color scheme when done using it. */
+ /* Create color schemes. */
  Clr *
 -drw_scm_create(Drw *drw, const char *clrnames[], size_t clrcount)
 +drw_scm_create(Drw *drw, char *clrnames[], size_t clrcount)
  {
  	size_t i;
  	Clr *ret;
+ 
+ 	/* need at least two colors for a scheme */
+-	if (!drw || !clrnames || clrcount < 2 || !(ret = ecalloc(clrcount, sizeof(Clr))))
++    if (!drw || !clrnames || clrcount < 2 || !(ret = ecalloc(clrcount, sizeof(Clr))))
+ 		return NULL;
+ 
+ 	for (i = 0; i < clrcount; i++)
+@@ -215,7 +217,7 @@ drw_scm_free(Drw *drw, Clr *scm, size_t clrcount)
+ 
+ 	for (i = 0; i < clrcount; i++)
+ 		drw_clr_free(drw, &scm[i]);
+-	free(scm);
++    free(scm);
+ }
+ 
+ void
 diff --git a/drw.h b/drw.h
-index 6471431..bdbf950 100644
+index bda06f9..fbfec02 100644
 --- a/drw.h
 +++ b/drw.h
-@@ -40,7 +40,7 @@ void drw_font_getexts(Fnt *font, const char *text, unsigned int len, unsigned in
- 
+@@ -41,7 +41,7 @@ void drw_font_getexts(Fnt *font, const char *text, unsigned int len, unsigned in
  /* Colorscheme abstraction */
  void drw_clr_create(Drw *drw, Clr *dest, const char *clrname);
+ void drw_clr_free(Drw *drw, Clr *c);
 -Clr *drw_scm_create(Drw *drw, const char *clrnames[], size_t clrcount);
 +Clr *drw_scm_create(Drw *drw, char *clrnames[], size_t clrcount);
+ void drw_scm_free(Drw *drw, Clr *scm, size_t clrcount);
  
  /* Cursor abstraction */
- Cur *drw_cur_create(Drw *drw, int shape);
 diff --git a/dwm.1 b/dwm.1
 index ddc8321..d04bec6 100644
 --- a/dwm.1
@@ -770,7 +787,7 @@ index ddc8321..d04bec6 100644
  dwm is customized by creating a custom config.h and (re)compiling the source
  code. This keeps it fast, secure and simple.
 diff --git a/dwm.c b/dwm.c
-index 1443802..0d7be52 100644
+index 4f345ee..c1962e8 100644
 --- a/dwm.c
 +++ b/dwm.c
 @@ -29,6 +29,7 @@
@@ -1174,15 +1191,6 @@ index 1443802..0d7be52 100644
  		XAllowEvents(dpy, ReplayPointer, CurrentTime);
  		click = ClkClientWin;
  	}
-@@ -485,7 +650,7 @@ cleanup(void)
- 		cleanupmon(mons);
- 	for (i = 0; i < CurLast; i++)
- 		drw_cur_free(drw, cursor[i]);
--	for (i = 0; i < LENGTH(colors); i++)
-+	for (i = 0; i < LENGTH(colors) + 1; i++)
- 		free(scheme[i]);
- 	free(scheme);
- 	XDestroyWindow(dpy, wmcheckwin);
 @@ -524,6 +689,10 @@ clientmessage(XEvent *e)
  		|| cme->data.l[2] == netatom[NetWMFullscreen])
  			setfullscreen(c, (cme->data.l[0] == 1 /* _NET_WM_STATE_ADD    */
@@ -1600,6 +1608,15 @@ index 1443802..0d7be52 100644
  void
  movemouse(const Arg *arg)
  {
+@@ -1171,7 +1476,7 @@ movemouse(const Arg *arg)
+ 			handler[ev.type](&ev);
+ 			break;
+ 		case MotionNotify:
+-			if ((ev.xmotion.time - lasttime) <= (1000 / refreshrate))
++            if ((ev.xmotion.time - lasttime) <= (1000 / refreshrate))
+ 				continue;
+ 			lasttime = ev.xmotion.time;
+ 
 @@ -1244,16 +1549,36 @@ propertynotify(XEvent *e)
  			drawbars();
  			break;
@@ -1655,6 +1672,15 @@ index 1443802..0d7be52 100644
  	XConfigureWindow(dpy, c->win, CWX|CWY|CWWidth|CWHeight|CWBorderWidth, &wc);
  	configure(c);
  	XSync(dpy, False);
+@@ -1325,7 +1657,7 @@ resizemouse(const Arg *arg)
+ 			handler[ev.type](&ev);
+ 			break;
+ 		case MotionNotify:
+-			if ((ev.xmotion.time - lasttime) <= (1000 / refreshrate))
++            if ((ev.xmotion.time - lasttime) <= (1000 / refreshrate))
+ 				continue;
+ 			lasttime = ev.xmotion.time;
+ 
 @@ -1389,6 +1721,89 @@ run(void)
  			handler[ev.type](&ev); /* call handler */
  }

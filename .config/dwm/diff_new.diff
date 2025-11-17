@@ -17,7 +17,7 @@ index 482b545..95d4fd0 100644
  
  
 diff --git a/config.h b/config.h
-index 3d14213..303596c 100644
+index 3d14213..98fb30c 100644
 --- a/config.h
 +++ b/config.h
 @@ -28,16 +28,16 @@ static int smartgaps            = 0;        /* 1 means no outer gap when there i
@@ -54,7 +54,15 @@ index 3d14213..303596c 100644
  /* const char *spcmd2[] = {"st", "-n", "spcalc", "-f", "monospace:size=16", "-g", "50x20", "-e", "bc", "-lq", NULL }; */
  static Sp scratchpads[] = {
      /* name          cmd  */
-@@ -163,7 +165,6 @@ ResourcePref resources[] = {
+@@ -91,6 +93,7 @@ static const Rule rules[] = {
+ static float mfact     = 0.55; /* factor of master area size [0.05..0.95] */
+ static int nmaster     = 1;    /* number of clients in master area */
+ static int resizehints = 0;    /* 1 means respect size hints in tiled resizals */
++static const int refreshrate = 120;  /* refresh rate (per second) for client move/resize */
+ 
+ #define FORCE_VSPLIT 1  /* nrowgrid layout: force two clients to always split vertically */
+ #include "vanitygaps.c"
+@@ -163,7 +166,6 @@ ResourcePref resources[] = {
  };
  
  #include <X11/XF86keysym.h>
@@ -62,7 +70,7 @@ index 3d14213..303596c 100644
  
  static const Key keys[] = {
      /*  modifier                    key                 function            argument */
-@@ -209,12 +210,12 @@ static const Key keys[] = {
+@@ -209,12 +211,12 @@ static const Key keys[] = {
          { MODKEY,                   XK_minus,           incrgaps,           {.i = -3 } },
          { MODKEY|ShiftMask,         XK_plus,            incrgaps,           {.i = +1 } },
          { MODKEY|ShiftMask,         XK_minus,           incrgaps,           {.i = -1 } },
@@ -78,11 +86,22 @@ index 3d14213..303596c 100644
          { MODKEY|ControlMask|ShiftMask,     XK_p,       togglebar,          {0} },
          { MODKEY,                   XK_h,               focusmon,           { .i = -1 } },
          { MODKEY|ShiftMask,         XK_h,               tagmonview,         { .i = -1 } },
+diff --git a/config.mk b/config.mk
+index a933c0b..93f9739 100644
+--- a/config.mk
++++ b/config.mk
+@@ -1,5 +1,5 @@
+ # dwm version
+-VERSION = 6.5
++VERSION = 6.6
+ 
+ # Customize below to fit your system
+ 
 diff --git a/drw.c b/drw.c
-index 6be5dee..11387e5 100644
+index 6be5dee..fc0f6f9 100644
 --- a/drw.c
 +++ b/drw.c
-@@ -176,6 +176,8 @@ drw_clr_create(Drw *drw, Clr *dest, const char *clrname)
+@@ -176,10 +176,11 @@ drw_clr_create(Drw *drw, Clr *dest, const char *clrname)
  	                       DefaultColormap(drw->dpy, drw->screen),
  	                       clrname, dest))
  		die("error, cannot allocate color '%s'", clrname);
@@ -90,9 +109,68 @@ index 6be5dee..11387e5 100644
 +    dest->pixel |= 0xff << 24;
  }
  
- /* Wrapper to create color schemes. The caller has to call free(3) on the
+-/* Wrapper to create color schemes. The caller has to call free(3) on the
+- * returned color scheme when done using it. */
++/* Create color schemes. */
+ Clr *
+ drw_scm_create(Drw *drw, char *clrnames[], size_t clrcount)
+ {
+@@ -187,7 +188,7 @@ drw_scm_create(Drw *drw, char *clrnames[], size_t clrcount)
+ 	Clr *ret;
+ 
+ 	/* need at least two colors for a scheme */
+-	if (!drw || !clrnames || clrcount < 2 || !(ret = ecalloc(clrcount, sizeof(XftColor))))
++    if (!drw || !clrnames || clrcount < 2 || !(ret = ecalloc(clrcount, sizeof(Clr))))
+ 		return NULL;
+ 
+ 	for (i = 0; i < clrcount; i++)
+@@ -195,6 +196,30 @@ drw_scm_create(Drw *drw, char *clrnames[], size_t clrcount)
+ 	return ret;
+ }
+ 
++void
++drw_clr_free(Drw *drw, Clr *c)
++{
++	if (!drw || !c)
++		return;
++
++	/* c is typedef XftColor Clr */
++	XftColorFree(drw->dpy, DefaultVisual(drw->dpy, drw->screen),
++	             DefaultColormap(drw->dpy, drw->screen), c);
++}
++
++void
++drw_scm_free(Drw *drw, Clr *scm, size_t clrcount)
++{
++	size_t i;
++
++	if (!drw || !scm)
++		return;
++
++	for (i = 0; i < clrcount; i++)
++		drw_clr_free(drw, &scm[i]);
++    free(scm);
++}
++
+ void
+ drw_setfontset(Drw *drw, Fnt *set)
+ {
+diff --git a/drw.h b/drw.h
+index bdbf950..fbfec02 100644
+--- a/drw.h
++++ b/drw.h
+@@ -40,7 +40,9 @@ void drw_font_getexts(Fnt *font, const char *text, unsigned int len, unsigned in
+ 
+ /* Colorscheme abstraction */
+ void drw_clr_create(Drw *drw, Clr *dest, const char *clrname);
++void drw_clr_free(Drw *drw, Clr *c);
+ Clr *drw_scm_create(Drw *drw, char *clrnames[], size_t clrcount);
++void drw_scm_free(Drw *drw, Clr *scm, size_t clrcount);
+ 
+ /* Cursor abstraction */
+ Cur *drw_cur_create(Drw *drw, int shape);
 diff --git a/dwm.c b/dwm.c
-index 1ce4a38..0d7be52 100644
+index 1ce4a38..c1962e8 100644
 --- a/dwm.c
 +++ b/dwm.c
 @@ -62,8 +62,8 @@
@@ -203,6 +281,17 @@ index 1ce4a38..0d7be52 100644
  		XAllowEvents(dpy, ReplayPointer, CurrentTime);
  		click = ClkClientWin;
  	}
+@@ -638,8 +650,8 @@ cleanup(void)
+ 		cleanupmon(mons);
+ 	for (i = 0; i < CurLast; i++)
+ 		drw_cur_free(drw, cursor[i]);
+-	for (i = 0; i < LENGTH(colors) + 1; i++)
+-		free(scheme[i]);
++	for (i = 0; i < LENGTH(colors); i++)
++		drw_scm_free(drw, scheme[i], 3);
+ 	free(scheme);
+ 	XDestroyWindow(dpy, wmcheckwin);
+ 	drw_free(drw);
 @@ -792,7 +804,10 @@ createmon(void)
  	Monitor *m;
  
@@ -498,6 +587,15 @@ index 1ce4a38..0d7be52 100644
  void
  focusstack(const Arg *arg)
  {
+@@ -1671,7 +1476,7 @@ movemouse(const Arg *arg)
+ 			handler[ev.type](&ev);
+ 			break;
+ 		case MotionNotify:
+-			if ((ev.xmotion.time - lasttime) <= (1000 / 60))
++            if ((ev.xmotion.time - lasttime) <= (1000 / refreshrate))
+ 				continue;
+ 			lasttime = ev.xmotion.time;
+ 
 @@ -1814,8 +1619,8 @@ resizeclient(Client *c, int x, int y, int w, int h)
  	if (((nexttiled(c->mon->clients) == c && !nexttiled(c->next))
  	    || &monocle == c->mon->lt[c->mon->sellt]->arrange)
@@ -509,6 +607,15 @@ index 1ce4a38..0d7be52 100644
  		wc.border_width = 0;
  	}
  	XConfigureWindow(dpy, c->win, CWX|CWY|CWWidth|CWHeight|CWBorderWidth, &wc);
+@@ -1852,7 +1657,7 @@ resizemouse(const Arg *arg)
+ 			handler[ev.type](&ev);
+ 			break;
+ 		case MotionNotify:
+-			if ((ev.xmotion.time - lasttime) <= (1000 / 60))
++            if ((ev.xmotion.time - lasttime) <= (1000 / refreshrate))
+ 				continue;
+ 			lasttime = ev.xmotion.time;
+ 
 @@ -2166,6 +1971,188 @@ setlayout(const Arg *arg)
  		drawbar(selmon);
  }
