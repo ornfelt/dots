@@ -208,6 +208,26 @@ alias .wotlk_sim="cd $HOME/Code2/Go/wotlk-sim && ./wowsimwotlk"
 #alias .opend2="cd $HOME/Code2/Go/OpenDiablo2 && ./OpenDiablo2"
 alias .opend2="cd $HOME/Code2/Go/OpenDiablo2 && $HOME/.local/bin/my_scripts/2025/run_open_d2.sh"
 
+mw_cd() {
+  local output target
+  # Capture *all* output while still printing it
+  # tee /dev/tty duplicates stdout: one copy goes to terminal and the other
+  # into output
+  output="$("$HOME/Code2/Wow/tools/my_wow/cd_and_print.sh" "$@" | tee /dev/tty)"
+  #target="$(printf '%s\n' "$output" | head -n 1)"
+  # strip prefix used in print
+  target="$(printf '%s\n' "$output" | head -n 1 | sed 's/^cd into:[[:space:]]*//')"
+  # If script printed nothing or failed -> bail
+  [[ -z "$target" ]] && return 1
+  # Actually cd in *this* shell
+  cd "$target" || return
+  #printf '\e[34m%s\e[0m\n' "pwd -> $(pwd)"
+  printf "pwd -> %s\n" "$(pwd)"
+}
+alias .mw="mw_cd"
+alias .mwr="cd $HOME/Code2/Wow/tools/my_wow && $HOME/Code2/Wow/tools/my_wow/c++/tbc/run_with_args.sh 1"
+alias .mww="cd $HOME/Code2/Wow/tools/my_wow && echo TODO..."
+
 playermap ()
 {
     if [ -n "$1" ]; then
