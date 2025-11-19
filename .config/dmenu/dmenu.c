@@ -109,9 +109,9 @@ cleanup(void)
 {
 	size_t i;
 
-	XUngrabKey(dpy, AnyKey, AnyModifier, root);
-	for (i = 0; i < SchemeLast; i++)
-		free(scheme[i]);
+    XUngrabKeyboard(dpy, CurrentTime);
+    for (i = 0; i < SchemeLast; i++)
+		drw_scm_free(drw, scheme[i], 2);
 	for (i = 0; items && items[i].text; ++i)
 		free(items[i].text);
 	free(items);

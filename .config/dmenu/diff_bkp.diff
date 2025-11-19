@@ -137,13 +137,13 @@ index 68669ac..181f342 100644
 +/* Size of the window border */
 +static unsigned int border_width = 0;
 diff --git a/config.mk b/config.mk
-index 566348b..137f7c8 100644
+index 566348b..dcc5bb3 100644
 --- a/config.mk
 +++ b/config.mk
 @@ -1,5 +1,5 @@
  # dmenu version
 -VERSION = 5.2
-+VERSION = 5.3
++VERSION = 5.4
  
  # paths
  PREFIX = /usr/local
@@ -162,7 +162,7 @@ index 323f93c..c036baa 100644
  dmenu grabs the keyboard before reading stdin if not reading from a tty. This
  is faster, but will lock up X until stdin reaches end\-of\-file.
 diff --git a/dmenu.c b/dmenu.c
-index 1bbc3ac..8e381ec 100644
+index 1bbc3ac..a3a2a5a 100644
 --- a/dmenu.c
 +++ b/dmenu.c
 @@ -21,16 +21,15 @@
@@ -267,9 +267,11 @@ index 1bbc3ac..8e381ec 100644
  cleanup(void)
  {
 -    size_t i;
--
++	size_t i;
+ 
 -    XUngrabKey(dpy, AnyKey, AnyModifier, root);
--    for (i = 0; i < SchemeLast; i++)
++    XUngrabKeyboard(dpy, CurrentTime);
+     for (i = 0; i < SchemeLast; i++)
 -        free(scheme[i]);
 -    for (i = 0; items && items[i].text; ++i)
 -        free(items[i].text);
@@ -277,11 +279,7 @@ index 1bbc3ac..8e381ec 100644
 -    drw_free(drw);
 -    XSync(dpy, False);
 -    XCloseDisplay(dpy);
-+	size_t i;
-+
-+	XUngrabKey(dpy, AnyKey, AnyModifier, root);
-+	for (i = 0; i < SchemeLast; i++)
-+		free(scheme[i]);
++		drw_scm_free(drw, scheme[i], 2);
 +	for (i = 0; items && items[i].text; ++i)
 +		free(items[i].text);
 +	free(items);
@@ -1645,7 +1643,7 @@ index 1bbc3ac..8e381ec 100644
 +	return 1; /* unreachable */
  }
 diff --git a/drw.c b/drw.c
-index 65e9134..c41e6af 100644
+index 65e9134..473aaa0 100644
 --- a/drw.c
 +++ b/drw.c
 @@ -9,94 +9,80 @@
@@ -1661,7 +1659,9 @@ index 65e9134..c41e6af 100644
 -
 -static long
 -utf8decodebyte(const char c, size_t *i)
--{
++static int
++utf8decode(const char *s_in, long *u, int *err)
+ {
 -    for (*i = 0; *i < (UTF_SIZ + 1); ++(*i))
 -        if (((unsigned char)c & utfmask[*i]) == utfbyte[*i])
 -            return (unsigned char)c & ~utfmask[*i];
@@ -1680,9 +1680,7 @@ index 65e9134..c41e6af 100644
 -
 -static size_t
 -utf8decode(const char *c, long *u, size_t clen)
-+static int
-+utf8decode(const char *s_in, long *u, int *err)
- {
+-{
 -    size_t i, j, len, type;
 -    long udecoded;
 -
@@ -1800,7 +1798,7 @@ index 65e9134..c41e6af 100644
  }
  
  /* This function is an implementation detail. Library users should use
-@@ -105,91 +91,91 @@ drw_free(Drw *drw)
+@@ -105,134 +91,157 @@ drw_free(Drw *drw)
  static Fnt *
  xfont_create(Drw *drw, const char *fontname, FcPattern *fontpattern)
  {
@@ -1955,8 +1953,9 @@ index 65e9134..c41e6af 100644
 +		die("error, cannot allocate color '%s'", clrname);
  }
  
- /* Wrapper to create color schemes. The caller has to call free(3) on the
-@@ -197,42 +183,42 @@ drw_clr_create(Drw *drw, Clr *dest, const char *clrname)
+-/* Wrapper to create color schemes. The caller has to call free(3) on the
+- * returned color scheme when done using it. */
++/* Create color schemes. */
  Clr *
  drw_scm_create(Drw *drw, const char *clrnames[], size_t clrcount)
  {
@@ -1964,20 +1963,44 @@ index 65e9134..c41e6af 100644
 -    Clr *ret;
 +	size_t i;
 +	Clr *ret;
++
++	/* need at least two colors for a scheme */
++    if (!drw || !clrnames || clrcount < 2 || !(ret = ecalloc(clrcount, sizeof(Clr))))
++		return NULL;
++
++	for (i = 0; i < clrcount; i++)
++		drw_clr_create(drw, &ret[i], clrnames[i]);
++	return ret;
++}
++
++void
++drw_clr_free(Drw *drw, Clr *c)
++{
++	if (!drw || !c)
++		return;
++
++	/* c is typedef XftColor Clr */
++	XftColorFree(drw->dpy, DefaultVisual(drw->dpy, drw->screen),
++	             DefaultColormap(drw->dpy, drw->screen), c);
++}
++
++void
++drw_scm_free(Drw *drw, Clr *scm, size_t clrcount)
++{
++	size_t i;
  
 -    /* need at least two colors for a scheme */
 -    if (!drw || !clrnames || clrcount < 2 || !(ret = ecalloc(clrcount, sizeof(XftColor))))
 -        return NULL;
-+	/* need at least two colors for a scheme */
-+	if (!drw || !clrnames || clrcount < 2 || !(ret = ecalloc(clrcount, sizeof(XftColor))))
-+		return NULL;
++	if (!drw || !scm)
++		return;
  
 -    for (i = 0; i < clrcount; i++)
 -        drw_clr_create(drw, &ret[i], clrnames[i]);
 -    return ret;
 +	for (i = 0; i < clrcount; i++)
-+		drw_clr_create(drw, &ret[i], clrnames[i]);
-+	return ret;
++		drw_clr_free(drw, &scm[i]);
++    free(scm);
  }
  
  void
@@ -2018,7 +2041,7 @@ index 65e9134..c41e6af 100644
  }
  
  int
-@@ -240,101 +226,112 @@ drw_text(Drw *drw, int x, int y, unsigned int w, unsigned int h, unsigned int lp
+@@ -240,101 +249,112 @@ drw_text(Drw *drw, int x, int y, unsigned int w, unsigned int h, unsigned int lp
  {
  	int ty, ellipsis_x = 0;
  	unsigned int tmpw, ew, ellipsis_w = 0, ellipsis_len, hash, h0, h1;
@@ -2226,7 +2249,7 @@ index 65e9134..c41e6af 100644
  
  			hash = (unsigned int)utf8codepoint;
  			hash = ((hash >> 16) ^ hash) * 0x21F0AAAD;
-@@ -345,107 +342,107 @@ drw_text(Drw *drw, int x, int y, unsigned int w, unsigned int h, unsigned int lp
+@@ -345,107 +365,107 @@ drw_text(Drw *drw, int x, int y, unsigned int w, unsigned int h, unsigned int lp
  			if (nomatches[h0] == utf8codepoint || nomatches[h1] == utf8codepoint)
  				goto no_match;
  
@@ -2400,7 +2423,7 @@ index 65e9134..c41e6af 100644
 +	free(cursor);
  }
 diff --git a/drw.h b/drw.h
-index 337ce66..fd7631b 100644
+index 337ce66..2ed77be 100644
 --- a/drw.h
 +++ b/drw.h
 @@ -1,29 +1,29 @@
@@ -2447,6 +2470,16 @@ index 337ce66..fd7631b 100644
  } Drw;
  
  /* Drawable abstraction */
+@@ -40,7 +40,9 @@ void drw_font_getexts(Fnt *font, const char *text, unsigned int len, unsigned in
+ 
+ /* Colorscheme abstraction */
+ void drw_clr_create(Drw *drw, Clr *dest, const char *clrname);
++void drw_clr_free(Drw *drw, Clr *c);
+ Clr *drw_scm_create(Drw *drw, const char *clrnames[], size_t clrcount);
++void drw_scm_free(Drw *drw, Clr *scm, size_t clrcount);
+ 
+ /* Cursor abstraction */
+ Cur *drw_cur_create(Drw *drw, int shape);
 diff --git a/stest.c b/stest.c
 index 916c93b..e27d3a5 100644
 --- a/stest.c

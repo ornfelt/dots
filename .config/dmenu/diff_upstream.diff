@@ -155,7 +155,7 @@ index 323f93c..c036baa 100644
  dmenu grabs the keyboard before reading stdin if not reading from a tty. This
  is faster, but will lock up X until stdin reaches end\-of\-file.
 diff --git a/dmenu.c b/dmenu.c
-index 804da64..8e381ec 100644
+index 9577b37..a3a2a5a 100644
 --- a/dmenu.c
 +++ b/dmenu.c
 @@ -25,8 +25,7 @@
@@ -168,7 +168,7 @@ index 804da64..8e381ec 100644
  struct item {
  	char *text;
  	struct item *left, *right;
-@@ -95,6 +94,16 @@ calcoffsets(void)
+@@ -95,13 +94,23 @@ calcoffsets(void)
  			break;
  }
  
@@ -185,6 +185,15 @@ index 804da64..8e381ec 100644
  static void
  cleanup(void)
  {
+ 	size_t i;
+ 
+-	XUngrabKeyboard(dpy, CurrentTime);
+-	for (i = 0; i < SchemeLast; i++)
++    XUngrabKeyboard(dpy, CurrentTime);
++    for (i = 0; i < SchemeLast; i++)
+ 		drw_scm_free(drw, scheme[i], 2);
+ 	for (i = 0; items && items[i].text; ++i)
+ 		free(items[i].text);
 @@ -129,6 +138,43 @@ cistrstr(const char *h, const char *n)
  	return NULL;
  }
@@ -320,6 +329,28 @@ index 804da64..8e381ec 100644
  		else
  			usage();
  
+diff --git a/drw.c b/drw.c
+index 9fdd1a4..473aaa0 100644
+--- a/drw.c
++++ b/drw.c
+@@ -186,7 +186,7 @@ drw_scm_create(Drw *drw, const char *clrnames[], size_t clrcount)
+ 	Clr *ret;
+ 
+ 	/* need at least two colors for a scheme */
+-	if (!drw || !clrnames || clrcount < 2 || !(ret = ecalloc(clrcount, sizeof(Clr))))
++    if (!drw || !clrnames || clrcount < 2 || !(ret = ecalloc(clrcount, sizeof(Clr))))
+ 		return NULL;
+ 
+ 	for (i = 0; i < clrcount; i++)
+@@ -215,7 +215,7 @@ drw_scm_free(Drw *drw, Clr *scm, size_t clrcount)
+ 
+ 	for (i = 0; i < clrcount; i++)
+ 		drw_clr_free(drw, &scm[i]);
+-	free(scm);
++    free(scm);
+ }
+ 
+ void
 diff --git a/patches/get.sh b/patches/get.sh
 new file mode 100755
 index 0000000..0915b19

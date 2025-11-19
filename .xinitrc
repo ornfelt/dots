@@ -43,8 +43,13 @@ xhost si:localuser:root
 exec clipmenud &
 
 #exec i3
-exec awesome
-#exec dwm &
+#exec awesome
+exec dwm &
+# To start with logging:
+# startx > $HOME/startx.log 2>&1
+# or:
+# startx >> ~/.startx_dwm.log 2>&1 &
+
 sh ~/.dwm/autostart.sh &
 #sh ~/.dwm/autostart.sh >> ~/.dwm/autostart.log 2>&1 &
 
