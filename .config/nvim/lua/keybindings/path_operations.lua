@@ -213,8 +213,8 @@ function copy_current_file_path(replace_env_vars)
   path = path:gsub("c:", "C:")
 
   if replace_env_vars then
-    path = replace_env(path, my_notes_path, "{my_notes_path}")
     path = replace_env(path, ps_profile_path, "{ps_profile_path}")
+    path = replace_env(path, my_notes_path, "{my_notes_path}")
 
     if code_root_dir then
       local code_env = code_root_dir

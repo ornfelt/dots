@@ -1011,26 +1011,76 @@ end)
 --  })
 --end)
 
+--wezterm.on("update-right-status", function(window, pane)
+--  local cwd_uri = tostring(pane:get_current_working_dir())
+--
+--  local cwd = cwd_uri:gsub("file://ornf", "")
+--  cwd = cwd:gsub("file://", "")
+--  cwd = cwd:gsub("^/([A-Za-z]:)", "%1")
+--
+--  local git_branch = nil
+--  local is_windows = wezterm.target_triple:find("windows") ~= nil
+--
+--  if cwd then
+--    local git_cmd
+--    if is_windows then
+--      git_cmd = string.format(
+--        'cd "%s"; git rev-parse --abbrev-ref HEAD 2>$null',
+--        cwd:gsub("\\", "/")
+--      )
+--    else
+--      git_cmd = string.format(
+--        "cd '%s' && git rev-parse --abbrev-ref HEAD 2>/dev/null",
+--        cwd
+--      )
+--    end
+--
+--    local success, stdout, stderr = wezterm.run_child_process({
+--      is_windows and "powershell" or "bash",
+--      is_windows and "-Command" or "-c",
+--      git_cmd,
+--    })
+--
+--    if success and stdout and stdout:match("%S") then
+--      git_branch = stdout:gsub("%s+$", "") -- Trim trailing whitespace
+--    end
+--  end
+--
+--  local right_status = git_branch or wezterm.hostname()
+--
+--  window:set_right_status(wezterm.format({
+--    { Text = right_status },
+--  }))
+--end)
+
 wezterm.on("update-right-status", function(window, pane)
   local cwd_uri = tostring(pane:get_current_working_dir())
+  if not cwd_uri then
+    window:set_right_status("")
+    return
+  end
 
+  -- Normalize cwd from file:// URI
   local cwd = cwd_uri:gsub("file://ornf", "")
   cwd = cwd:gsub("file://", "")
-  cwd = cwd:gsub("^/([A-Za-z]:)", "%1")
+  cwd = cwd:gsub("^/([A-Za-z]:)", "%1") -- handle /C: on Windows
 
-  local git_branch = nil
   local is_windows = wezterm.target_triple:find("windows") ~= nil
 
-  if cwd then
+  local git_branch = nil
+  local branch_color = "green"
+
+  if cwd and #cwd > 0 then
     local git_cmd
+
     if is_windows then
       git_cmd = string.format(
-        'cd "%s"; git rev-parse --abbrev-ref HEAD 2>$null',
+        'cd "%s"; git status --porcelain -b 2>$null',
         cwd:gsub("\\", "/")
       )
     else
       git_cmd = string.format(
-        "cd '%s' && git rev-parse --abbrev-ref HEAD 2>/dev/null",
+        "cd '%s' && git status --porcelain -b 2>/dev/null",
         cwd
       )
     end
@@ -1042,15 +1092,54 @@ wezterm.on("update-right-status", function(window, pane)
     })
 
     if success and stdout and stdout:match("%S") then
-      git_branch = stdout:gsub("%s+$", "") -- Trim trailing whitespace
+      local first_line, rest = stdout:match("([^\n]*)\n?(.*)")
+      first_line = first_line or ""
+      rest = rest or ""
+
+      local branch = first_line:gsub("^## ", "")
+      branch = branch:gsub("%.%.%..*$", "") -- strip remote "...origin/main"
+      branch = branch:gsub(" .*$", "") -- strip " [ahead 1]" etc
+      git_branch = branch ~= "" and branch or nil
+
+      local has_changes = rest:match("%S") ~= nil
+
+      -- Base color: in sync
+      --branch_color = "green"
+      --branch_color = "#689d6a"
+      --branch_color = "#8ec07c"
+      branch_color = "#98971a"
+
+      -- Remote state overrides base color
+      if first_line:find("diverged") then
+        --branch_color = "magenta"
+        branch_color = "#b16286"
+      elseif first_line:find("behind") then
+        --branch_color = "red"
+        branch_color = "#cc241d"
+      elseif first_line:find("ahead") then
+        --branch_color = "cyan"
+      --branch_color = "#83a598"
+        branch_color = "#458588"
+      end
+
+      if has_changes then
+        --branch_color = "yellow"
+        branch_color = "#fabd2f"
+      end
     end
   end
 
-  local right_status = git_branch or wezterm.hostname()
+  local segments = {}
 
-  window:set_right_status(wezterm.format({
-    { Text = right_status },
-  }))
+  if git_branch then
+    table.insert(segments, { Foreground = { Color = branch_color } })
+    table.insert(segments, { Text = git_branch })
+  else
+    -- Not a git repo: show hostname in default color
+    table.insert(segments, { Text = wezterm.hostname() })
+  end
+
+  window:set_right_status(wezterm.format(segments))
 end)
 
 -- Return config to wezterm

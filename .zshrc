@@ -154,8 +154,8 @@ else
 
     # new prompt
     fpath=($HOME/.config/zsh $fpath)
-    #source $HOME/.config/zsh/prompt
-    source $HOME/.config/zsh/prompt_alt
+    source $HOME/.config/zsh/prompt
+    #source $HOME/.config/zsh/prompt_alt
 
     alias d='dirs -v'
     for index ({1..9}) alias "$index"="cd +${index}"; unset index
@@ -475,6 +475,7 @@ alias f='fuzzyfind'
 
 bindkey '^ ' autosuggest-accept
 LS_COLORS+=':ow=01;33'
+LS_COLORS+=':ow=01;34'
 
 $HOME/.local/bin/my_scripts/hello.sh
 
