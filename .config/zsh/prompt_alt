@@ -1,0 +1,76 @@
+# Simplified prompt
+# Based on Purification theme but without emoji/font dependencies
+
+# Configuration
+SHOW_TIME=true  # Set to false to hide time
+
+# Get git branch and status color
+prompt_git_info() {
+    local branch status_color
+    
+    # Get current branch
+    branch=$(git symbolic-ref --short HEAD 2>/dev/null)
+    
+    if [[ -z "$branch" ]]; then
+        return
+    fi
+    
+    # Check git status and set color accordingly
+    local git_status=$(git status --porcelain -b 2>/dev/null)
+    local first_line=$(echo "$git_status" | head -n1)
+    local has_changes=false
+    
+    # Check if there are any changes (lines after the first)
+    if [[ $(echo "$git_status" | wc -l) -gt 1 ]]; then
+        has_changes=true
+    fi
+    
+    # Default color
+    status_color="%F{green}"
+    
+    # Remote state: override with other color
+    if [[ $first_line == *"diverged"* ]]; then
+        status_color="%F{magenta}"
+    elif [[ $first_line == *"behind"* ]]; then
+        status_color="%F{red}"
+    elif [[ $first_line == *"ahead"* ]]; then
+        status_color="%F{cyan}"
+    fi
+    
+    # If has changes, override with yellow
+    if [[ $has_changes == true ]]; then
+        status_color="%F{11}"
+    fi
+    
+    echo " ${status_color}(${branch})%f"
+}
+
+# Format directory to show only last component with trailing slash
+prompt_dir() {
+    local dir="${PWD##*/}"
+    if [[ "$PWD" == "$HOME" ]]; then
+        echo "~"
+    elif [[ -z "$dir" ]]; then
+        echo "/"
+    else
+        echo "${dir}/"
+    fi
+}
+
+# Setup prompt
+prompt_setup() {
+    setopt prompt_subst
+    
+    # Main prompt: username:directory/ (branch) $
+    PROMPT='%F{15}%n%f:%F{12}$(prompt_dir)%f$(prompt_git_info) %F{15}$%f '
+    
+    # Right prompt: time (if enabled)
+    if [[ "$SHOW_TIME" == true ]]; then
+        RPROMPT='%F{15}[%*]%f'
+    else
+        RPROMPT=''
+    fi
+}
+
+prompt_setup
+

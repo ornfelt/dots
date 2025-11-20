@@ -35,6 +35,7 @@ cp -r .config/ranger/ $HOME/.config/
 cp -r .config/rofi/ $HOME/.config/
 cp -r .config/st/ $HOME/.config/
 cp -r .config/zathura/ $HOME/.config/
+cp -r .config/zsh/ $HOME/.config/
 cp .config/mimeapps.list $HOME/.config/
 cp .config/gtk-3.0/bookmarks $HOME/.config/gtk-3.0/
 
@@ -120,25 +121,48 @@ else
     echo "[ok] .bash_profile already exists."
 fi
 
+USE_OH_MY_ZSH=false
+
 # oh-my-zsh
-if [ ! -d "$HOME/.oh-my-zsh" ]; then
-    sh -c "$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
-else
-    echo "[ok] oh-my-zsh already installed."
-fi
+if $USE_OH_MY_ZSH; then
+    if [ ! -d "$HOME/.oh-my-zsh" ]; then
+        sh -c "$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+    else
+        echo "[ok] oh-my-zsh already installed."
+    fi
 
-# zsh-autosuggestions
-if [ ! -d "${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/plugins/zsh-autosuggestions/.git" ]; then
-    git clone https://github.com/zsh-users/zsh-autosuggestions "${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/plugins/zsh-autosuggestions"
-else
-    echo "[ok] zsh-autosuggestions already installed."
-fi
+    # zsh-autosuggestions
+    if [ ! -d "${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/plugins/zsh-autosuggestions/.git" ]; then
+        git clone https://github.com/zsh-users/zsh-autosuggestions "${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/plugins/zsh-autosuggestions"
+    else
+        echo "[ok] zsh-autosuggestions already installed."
+    fi
 
-# zsh-syntax-highlighting
-if [ ! -d "${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting/.git" ]; then
-    git clone https://github.com/zsh-users/zsh-syntax-highlighting.git "${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting"
+    # zsh-syntax-highlighting
+    if [ ! -d "${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting/.git" ]; then
+        git clone https://github.com/zsh-users/zsh-syntax-highlighting.git "${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting"
+    else
+        echo "[ok] zsh-syntax-highlighting already installed."
+    fi
 else
-    echo "[ok] zsh-syntax-highlighting already installed."
+    if [ ! -d "$HOME/.zsh/zsh-autosuggestions/.git" ]; then
+        git clone https://github.com/zsh-users/zsh-autosuggestions "$HOME/.zsh/zsh-autosuggestions"
+    else
+        echo "[ok] zsh-autosuggestions already installed."
+    fi
+
+    # zsh-syntax-highlighting for non-oh-my-zsh users
+    if [ ! -d "$HOME/.zsh/zsh-syntax-highlighting/.git" ]; then
+        git clone https://github.com/zsh-users/zsh-syntax-highlighting "$HOME/.zsh/zsh-syntax-highlighting"
+    else
+        echo "[ok] zsh-syntax-highlighting already installed."
+    fi
+
+    if [ ! -d "$HOME/.zsh/zsh-completions/.git" ]; then
+        git clone https://github.com/zsh-users/zsh-completions "$HOME/.zsh/zsh-completions"
+    else
+        echo "[ok] zsh-completions already installed."
+    fi
 fi
 
 original_dir=$(pwd)

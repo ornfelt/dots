@@ -19,11 +19,23 @@ export VISUAL=nvim;
 export EDITOR=nvim;
 #zsh
 
+export PROMPT_COMMAND="pwd > /tmp/whereami"
 export PATH=$PATH:/usr/local/go/bin
+export PATH=$PATH:/usr/local/bin
 export GOPATH=$HOME/go
 export PATH=$PATH:$GOPATH/bin
+export PATH="${PATH}:${HOME}/.local/bin/"
+export PATH="${PATH}:${HOME}/.local/bin/my_scripts"
+#export PATH="${PATH}:${HOME}/.local/lib/"
+export PATH="${PATH}:/sbin"
+export PATH="${PATH}:${HOME}/Code/f#/FsAutoComplete/src/FsAutoComplete/bin/Release/net6.0"
+export PATH="${PATH}:$HOME/Downloads/lsp/jdtls/bin"
+export PATH="${PATH}:$HOME/Downloads/lsp/lua/bin"
+export OMNISHARP_PATH="/usr/lib/omnisharp-roslyn/"
 export my_notes_path="$HOME/Documents/my_notes"
 export code_root_dir="$HOME"
+#export PATH="${PATH}:$HOME/.fzf/bin"
+
 export CMAKE_POLICY_VERSION_MINIMUM=3.5
 
 #if command -v syndaemon &> /dev/null; then

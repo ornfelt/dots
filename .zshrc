@@ -1,8 +1,14 @@
 #If you come from bash you might have to change your $PATH.
 # export PATH=$HOME/bin:/usr/local/bin:$PATH
 
-# Path to your oh-my-zsh installation.
-export ZSH="$HOME/.oh-my-zsh"
+# https://thevaluable.dev/zsh-install-configure-mouseless/
+USE_OH_MY_ZSH=false
+
+if $USE_OH_MY_ZSH; then
+    # Path to oh-my-zsh installation
+    export ZSH="$HOME/.oh-my-zsh"
+fi
+
 export VISUAL=nvim
 export EDITOR=nvim
 export TESSDATA_PREFIX=/usr/local/share/tessdata
@@ -11,7 +17,9 @@ export TESSDATA_PREFIX=/usr/local/share/tessdata
 # load a random theme each time oh-my-zsh is loaded, in which case,
 # to know which specific one was loaded, run: echo $RANDOM_THEME
 # See https://github.com/ohmyzsh/ohmyzsh/wiki/Themes
-ZSH_THEME="clean"
+if $USE_OH_MY_ZSH; then
+    ZSH_THEME="clean"
+fi
 
 # Set list of themes to pick from when loading at random
 # Setting this variable when ZSH_THEME=random will cause zsh to load
@@ -84,12 +92,116 @@ plugins=(
 	zsh-autosuggestions
 	)
 
-source $ZSH/oh-my-zsh.sh
+if $USE_OH_MY_ZSH; then
+    source $ZSH/oh-my-zsh.sh
+else
+    # setup zsh without dependencies
+    setopt AUTO_CD                  # Go to dir path without using cd.
+    setopt AUTO_PUSHD               # Push the old directory onto the stack on cd.
+    setopt PUSHD_IGNORE_DUPS        # Do not store duplicates in the stack.
+    setopt PUSHD_SILENT             # Do not print the directory stack after pushd or popd.
+    setopt CORRECT                  # Spelling correction
+    setopt CDABLE_VARS              # Change directory to a path stored in a variable.
+    setopt EXTENDED_GLOB            # Use extended globbing syntax.
+
+    # History settings
+    HISTFILE=$HOME/.zsh_history
+    # How many commands to keep in memory and on disk
+    HISTSIZE=100000
+    SAVEHIST=100000
+
+    setopt APPEND_HISTORY          # append to the history file, don't overwrite
+    setopt SHARE_HISTORY           # share history across all sessions
+    setopt INC_APPEND_HISTORY      # write each command to $HISTFILE as it's run
+    #setopt INC_APPEND_HISTORY_TIME # store timestamps
+    setopt EXTENDED_HISTORY         # Write the history file in the ':start:elapsed;command' format.
+    setopt HIST_EXPIRE_DUPS_FIRST   # Expire a duplicate event first when trimming history.
+    setopt HIST_IGNORE_DUPS         # Do not record an event that was just recorded again.
+    setopt HIST_IGNORE_ALL_DUPS     # Delete an old recorded event if a new event is a duplicate.
+    #setopt HIST_REDUCE_BLANKS       # trim extra spaces
+    setopt HIST_FIND_NO_DUPS        # Do not display a previously found event.
+    setopt HIST_IGNORE_SPACE        # Do not record an event starting with a space.
+    setopt HIST_SAVE_NO_DUPS        # Do not write a duplicate event to the history file.
+    setopt HIST_VERIFY              # Do not execute immediately upon history expansion.
+
+    if [ -f ~/.zsh/zsh-autosuggestions/zsh-autosuggestions.zsh ]; then
+        source ~/.zsh/zsh-autosuggestions/zsh-autosuggestions.zsh
+    fi
+
+    ZSH_AUTOSUGGEST_STRATEGY=(history completion)
+
+    if [ -f ~/.zsh/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh ]; then
+        source ~/.zsh/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+    fi
+
+    #autoload -Uz vcs_info
+    #precmd() { vcs_info }
+    #
+    ## Setup vcs_info to display branch info
+    #zstyle ':vcs_info:*' enable git
+    #zstyle ':vcs_info:git:*' branchformat '(%b)'
+    #
+    #setopt PROMPT_SUBST
+    # custom prompt
+    # display with time
+    #PROMPT='%F{green}%*%f %F{blue}%~%f %F{red}${vcs_info_msg_0_}%f$ '
+    # display without time
+    #PROMPT='%F{cyan}%~%f %F{red}${vcs_info_msg_0_}%f$ '
+    # use color 12 and display current dir name instead of entire path
+    #PROMPT='%F{12}%1~%f $ '
+    # display name, cwd, and git branch if any
+    #PROMPT='%F{12}%n:%1~%f ${vcs_info_msg_0_} $ '
+
+    # new prompt
+    fpath=($HOME/.config/zsh $fpath)
+    #source $HOME/.config/zsh/prompt
+    source $HOME/.config/zsh/prompt_alt
+
+    alias d='dirs -v'
+    for index ({1..9}) alias "$index"="cd +${index}"; unset index
+
+    source $HOME/.config/zsh/completion.zsh
+
+    # Enable predictive typing suggestions
+    autoload -U compinit
+    compinit
+
+    # Vi mode
+    bindkey -v
+    export KEYTIMEOUT=1
+
+    # Add Vi text-objects for brackets and quotes
+    autoload -Uz select-bracketed select-quoted
+    zle -N select-quoted
+    zle -N select-bracketed
+    for km in viopp visual; do
+        bindkey -M $km -- '-' vi-up-line-or-history
+        for c in {a,i}${(s..)^:-\'\"\`\|,./:;=+@}; do
+            bindkey -M $km $c select-quoted
+        done
+        for c in {a,i}${(s..)^:-'()[]{}<>bB'}; do
+            bindkey -M $km $c select-bracketed
+        done
+    done
+
+    # Increment a number
+    autoload -Uz incarg
+    zle -N incarg
+    bindkey -M vicmd '^a' incarg
+
+    if [ $(command -v "fzf") ]; then
+        source $HOME/.config/zsh/scripts_fzf.zsh
+    fi
+
+    # edit current command line with vim (vim-mode, then CTRL-v)
+    autoload -Uz edit-command-line
+    zle -N edit-command-line
+    bindkey -M vicmd '^v' edit-command-line
+fi
 
 # User configuration
 
 # export MANPATH="/usr/local/man:$MANPATH"
-
 
 # Preferred editor for local and remote sessions
 # if [[ -n $SSH_CONNECTION ]]; then
@@ -360,12 +472,17 @@ export LC_ALL=en_US.UTF-8
 export CMAKE_POLICY_VERSION_MINIMUM=3.5
 
 alias f='fuzzyfind'
+
 bindkey '^ ' autosuggest-accept
 LS_COLORS+=':ow=01;33'
+
 $HOME/.local/bin/my_scripts/hello.sh
 
 source $HOME/.bash_profile
+
 #if [ -f "$HOME/.cargo/env" ]; then
 #    source "$HOME/.cargo/env"
 #fi
+
+[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 

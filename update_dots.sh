@@ -47,6 +47,7 @@ rm -rf .config/picom
 rm -rf .config/pip
 rm -rf .config/polybar
 rm -rf .config/ranger
+rm -rf .config/zsh
 
 if [[ -d "$HOME/.config/yazi/plugins" ]]; then
     rm -rf .config/yazi
@@ -88,6 +89,7 @@ cp -r $HOME/.config/picom .config/picom/
 cp -r $HOME/.config/pip .config/pip/
 cp -r $HOME/.config/polybar .config/polybar/
 cp -r $HOME/.config/ranger .config/ranger/
+cp -r $HOME/.config/zsh .config/zsh/
 
 if [[ -d "$HOME/.config/yazi/plugins" ]]; then
     cp -r $HOME/.config/yazi .config/yazi/

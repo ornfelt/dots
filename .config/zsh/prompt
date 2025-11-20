@@ -1,0 +1,74 @@
+# Toggle this to show/hide time in the right prompt
+#SHOW_TIME_RIGHT=false
+SHOW_TIME_RIGHT=true
+
+# Newline before each prompt (not used)
+#prompt_newline_precmd() {
+#  print -P ''
+#}
+
+# Print " (branch)" in a color depending on git status
+prompt_git_branch_segment() {
+  local index first_line branch branch_color has_changes=false
+
+  # Not in a git repo -> nothing
+  if ! command git rev-parse --is-inside-work-tree &>/dev/null; then
+    return
+  fi
+
+  index=$(command git status --porcelain -b 2>/dev/null) || return
+
+  # First line like: "## master...origin/master [ahead 1]"
+  first_line=${index%%$'\n'*}
+  branch=${first_line#\#\# }   # strip leading "## "
+  branch=${branch%%...*}       # strip remote part
+  branch=${branch%% *}         # strip " [ahead 1]" etc
+
+  # Any changes? (lines after the first)
+  if echo "$index" | tail -n +2 | grep -q .; then
+    has_changes=true
+  fi
+
+  branch_color='green'
+
+  # Remote state: override with other color
+  if [[ $first_line == *"diverged"* ]]; then
+    branch_color='magenta'
+  elif [[ $first_line == *"behind"* ]]; then
+    branch_color='red'
+  elif [[ $first_line == *"ahead"* ]]; then
+    branch_color='cyan'
+  fi
+
+  if [[ $has_changes == true ]]; then
+    #branch_color='yellow'
+    branch_color='11'
+  fi
+
+  print -n " %F{$branch_color}($branch)%f"
+}
+
+# main setup
+prompt_setup() {
+    autoload -Uz add-zsh-hook
+    #add-zsh-hook precmd prompt_newline_precmd
+    # note: if a precmd stays even if removed from config, do this:
+    #run this to list precmds:
+    #typeset -p precmd_functions 
+    #remove specific one:
+    #add-zsh-hook -d precmd  prompt_newline_precmd 2>/dev/null
+
+  setopt prompt_subst
+
+  PROMPT='%n:%F{12}%1~/%f$(prompt_git_branch_segment) %F{15}$%f '
+
+  # Optional right prompt with time
+  if [[ $SHOW_TIME_RIGHT == true ]]; then
+    RPROMPT='%F{15}[%*]%f'
+  else
+    RPROMPT=''
+  fi
+}
+
+prompt_setup
+
