@@ -2,10 +2,16 @@
 
 TARGET_DIR="$HOME/Downloads/dots"
 
-# Remove all files and subdirectories except for ".git" in the target directory
+# bail check
+if [ ! -d "$TARGET_DIR" ]; then
+  echo "Target directory does not exist: $TARGET_DIR"
+  exit 1
+fi
+
+# Remove all files and subdirs except for ".git" in the target dir
 find "$TARGET_DIR" -mindepth 1 -maxdepth 1 ! -name ".git" -exec rm -rf {} +
 
-# Copy all files and subdirectories except for ".git" from the current directory to the target directory
+# Copy all files and subdirs except for ".git" from current dir to target dir
 find . -mindepth 1 -maxdepth 1 ! -name ".git" -exec cp -r {} "$TARGET_DIR" \;
 
 cd "$TARGET_DIR" || { echo "Failed to change directory to $TARGET_DIR"; exit 1; }
