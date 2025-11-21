@@ -1,17 +1,3 @@
-lib32-libxi
-lib32-libxinerama
-lib32-libxkbcommon
-lib32-libxml2
-lib32-libxrandr
-lib32-libxrender
-lib32-libxshmfence
-lib32-libxss
-lib32-libxxf86vm
-lib32-llvm-libs
-lib32-lm_sensors
-lib32-mesa
-lib32-ncurses
-lib32-nspr
 lib32-nss
 lib32-openssl
 lib32-opus
@@ -52,7 +38,6 @@ libblockdev-loop
 libblockdev-mdraid
 libblockdev-nvme
 libblockdev-part
-libblockdev-smart
 libblockdev-swap
 libbluray
 libbpf
@@ -128,7 +113,6 @@ libice
 libidn
 libidn2
 libiec61883
-libieee1284
 libimagequant
 libimobiledevice
 libimobiledevice-glue
@@ -139,7 +123,6 @@ libisl
 libjpeg-turbo
 libjuice
 libjxl
-libksane
 libksba
 libldap
 libliftoff
@@ -345,7 +328,6 @@ mariadb-libs
 mbedtls
 md4c
 mdadm
-media-player-info
 mesa
 meson
 minizip
@@ -367,7 +349,6 @@ nautilus
 ncurses
 neofetch
 neovim
-net-snmp
 netctl
 netstandard-targeting-pack
 nettle
@@ -441,10 +422,15 @@ playerctl
 plocate
 pngquant
 polkit
-polkit-qt6
 polybar
 poppler
 poppler-data
 poppler-glib
 popt
 portaudio
+potrace
+powertop
+pps-tools
+premake
+procps-ng
+protobuf

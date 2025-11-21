@@ -102,9 +102,7 @@ local function setup(self, opts)
 end
 
 local function entry(_, job)
-	-- TODO: remove fallback after next stable release
-	local _permit = ui.hide and ui.hide() or ya.hide()
-
+	local _permit = ya.hide()
 	local fzf_version, err = Command("fzf"):arg("--version"):output()
 	if err then
 		return fail("`fzf` was not found")
@@ -143,7 +141,7 @@ local function entry(_, job)
 		local colon_pos = string.find(target, ":")
 		local file_url = colon_pos and string.sub(target, 1, colon_pos - 1) or target
 
-		ya.emit("reveal", { file_url })
+		ya.manager_emit("reveal", { file_url })
 	end
 end
 

@@ -1,9 +1,3 @@
-potrace
-powertop
-pps-tools
-premake
-procps-ng
-protobuf
 prrte
 psmisc
 pugixml
@@ -124,7 +118,6 @@ python-wheel
 python-xmltodict
 python-yaml
 python-zipp
-qca-qt6
 qrcodegencpp-cmake
 qrencode
 qt5-base
@@ -137,10 +130,7 @@ qt5-webengine
 qt6-5compat
 qt6-base
 qt6-declarative
-qt6-multimedia
-qt6-multimedia-ffmpeg
 qt6-shadertools
-qt6-speech
 qt6-svg
 qt6-translations
 qt6-wayland
@@ -161,7 +151,6 @@ rubberband
 run-parts
 rxvt-unicode
 rxvt-unicode-terminfo
-sane
 sbc
 scons
 scrot
@@ -189,8 +178,6 @@ slurp
 smbclient
 snappy
 sndio
-solid
-sonnet
 sound-theme-freedesktop
 source-highlight
 spdlog

@@ -1,17 +1,5 @@
-[[plugin.deps]]
-use = "lpnh/fg"
-rev = "a60466e"
-hash = "ae6f2fb9ea03527e3a367a9faf2690ac"
-
-[[plugin.deps]]
-use = "dedukun/bookmarks"
-rev = "9ef1254"
-hash = "92fbb5483657fa7976cdf4e0104e18e0"
-
-[[plugin.deps]]
-use = "yazi-rs/plugins:smart-enter"
-rev = "2301ff8"
-hash = "56fdabc96fc1f4d53c96eb884b02a5be"
+[plugin]
+deps = [{ use = "lpnh/fg", rev = "a7e1a82" }, { use = "dedukun/bookmarks", rev = "35da107" }, { use = "yazi-rs/plugins:smart-enter", rev = "600614a" }]
 
 [flavor]
 deps = []
