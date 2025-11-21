@@ -234,3 +234,56 @@ vim.api.nvim_create_user_command(
   { nargs = "?", complete = "file" }
 )
 
+local function copy_history(opts)
+    local count = tonumber(opts.fargs[1]) or 50
+    local type = opts.fargs[2]
+
+    local lines = {}
+
+    if type then
+        -- Map some aliases
+        if type == "cmd" then
+            type = ":"
+        elseif type == "search" then
+            type = "/"
+        end
+
+        -- Get from specific history type
+        for i = 1, count do
+            local item = vim.fn.histget(type, -i)
+            if item ~= "" then
+                table.insert(lines, item)
+            end
+        end
+    else
+        -- No type specified, get from all history types
+        local types = {":", "/", "@"}  -- command, search, input
+        for _, hist_type in ipairs(types) do
+            for i = 1, count do
+                local item = vim.fn.histget(hist_type, -i)
+                if item ~= "" then
+                    table.insert(lines, item)
+                end
+            end
+        end
+    end
+
+    if #lines == 0 then
+        print("No history items found")
+        return
+    end
+
+    -- Copy to clipboard registers
+    local text = table.concat(lines, "\n")
+    vim.fn.setreg('+', text) -- clipboard register
+    --vim.fn.setreg('*', text) -- primary register (x11 only)
+
+    print(string.format("Copied %d history items to clipboard", #lines))
+end
+
+vim.api.nvim_create_user_command("CopyHist", copy_history, {
+    --nargs = "+",
+    nargs = "*", -- allows zero or more arguments
+    desc = "Copy last N history items to clipboard"
+})
+

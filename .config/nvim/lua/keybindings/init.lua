@@ -31,7 +31,10 @@ require("keybindings.vimgrep")
 -- Mimic shell movements
 myconfig.map('i', '<C-E>', '<ESC>A')
 myconfig.map('i', '<C-A>', '<ESC>I')
+-- Note: This conflicts with the literal/quoted insert mode but 
+-- it's accessible via ctrl-q so it shouldn't matter!
 myconfig.map('i', '<C-v>', '<Esc>"+p')
+
 -- myconfig.map('i', '<C-a>', '<Esc>gg"yG') -- Copy everything from file into clipboard
 -- myconfig.map('i', '<C-BS>', '<C-W>a') -- Copy everything from file into clipboard
 -- myconfig.map('i', '<S-Tab>', '<BS>')

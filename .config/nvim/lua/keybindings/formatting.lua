@@ -17,6 +17,39 @@ end
 
 vim.api.nvim_set_keymap('n', '<leader>wq', ':lua ReplaceQuotes()<CR>', { noremap = true, silent = true })
 
+-- replace unicode typographic chars with ASCII equivalents
+vim.keymap.set('n', '<leader>wa', function()
+    local pos = vim.api.nvim_win_get_cursor(0)
+
+    local cmds = {
+        [[%s,→,->,ge]], -- unicode rightward arrow -> ascii arrow
+        [[%s,←,<-,ge]], -- unicode left arrow -> ascii arrow
+        [[%s,“,",ge]], -- left double quotation mark -> straight quote 
+        [[%s,”,",ge]], -- right double quotation mark -> straight quote 
+        [[%s,’,',ge]], -- right single quotation mark/apostrophe -> straight apostrophe
+        [[%s,‘,',ge]], -- left single quotation mark/apostrophe -> straight apostrophe
+        [[%s,…,...,ge]], -- ellipsis char -> three dots
+        [[%s,—,-,ge]], -- em dash -> hyphen
+    }
+
+    local total_replaced = 0
+    for _, cmd in ipairs(cmds) do
+        local ok, result = pcall(vim.cmd, cmd)
+        if ok then
+            total_replaced = total_replaced + 1
+        end
+    end
+
+    -- Restore cursor position
+    vim.api.nvim_win_set_cursor(0, pos)
+
+    if total_replaced > 0 then
+        print(string.format("Normalized %d character type(s)", total_replaced))
+    else
+        print("No typographic characters found")
+    end
+end, { desc = 'Replace Unicode typography with ASCII' })
+
 -- Format file
 function format_file()
   local filetype = vim.bo.filetype

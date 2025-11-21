@@ -240,6 +240,23 @@ end
 vim.api.nvim_set_keymap('n', '<leader>-', ':lua copy_current_file_path(true)<CR>', { noremap = true, silent = true })
 vim.api.nvim_set_keymap('v', '<leader>-', ':lua copy_current_file_path(false)<CR>', { noremap = true, silent = true })
 
+-- keybind for vscode-like copying of active file path
+-- Note: Alternative path formats:
+--vim.fn.expand('%:~') -- Relative to home: ~/test/file.txt
+--vim.fn.expand('%:.') -- Relative to cwd: test/file.txt
+--vim.fn.expand('%:t') -- Just filename: file.txt
+vim.keymap.set('n', '<M-C>', function()
+    local path = vim.fn.expand('%:p') -- full path
+    if path == '' then
+        print('Buffer has no file path')
+        return
+    end
+
+    vim.fn.setreg('+', path) -- clipboard register
+    --vim.fn.setreg('*', path) -- primary register (x11 only)
+    print('Copied: ' .. path)
+end, { desc = 'Copy current file path to clipboard' })
+
 -- lua print(vim.fn.expand("<cWORD>"))
 function open_file_with_env()
   -- local cword = vim.fn.expand("<cfile>")

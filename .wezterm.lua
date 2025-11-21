@@ -568,6 +568,7 @@ config.keys = {
   { key = 'j', mods = 'ALT', action = wezterm.action.DisableDefaultAssignment, },
   { key = 'k', mods = 'ALT', action = wezterm.action.DisableDefaultAssignment, },
   { key = 'N', mods = 'CTRL|SHIFT', action = wezterm.action.DisableDefaultAssignment },
+  { key = 'C', mods = 'ALT|SHIFT', action = wezterm.action.DisableDefaultAssignment, },
 
   -- Tabs
   { key = "1", mods = "LEADER", action = wezterm.action{ActivateTab=0}, },
