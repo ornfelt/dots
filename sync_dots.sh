@@ -15,6 +15,7 @@ find "$TARGET_DIR" -mindepth 1 -maxdepth 1 ! -name ".git" -exec rm -rf {} +
 find . -mindepth 1 -maxdepth 1 ! -name ".git" -exec cp -r {} "$TARGET_DIR" \;
 
 cd "$TARGET_DIR" || { echo "Failed to change directory to $TARGET_DIR"; exit 1; }
+sleep 0.5
 git status
 $SHELL
 
