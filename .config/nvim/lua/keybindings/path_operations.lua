@@ -245,7 +245,9 @@ vim.api.nvim_set_keymap('v', '<leader>-', ':lua copy_current_file_path(false)<CR
 --vim.fn.expand('%:~') -- Relative to home: ~/test/file.txt
 --vim.fn.expand('%:.') -- Relative to cwd: test/file.txt
 --vim.fn.expand('%:t') -- Just filename: file.txt
-vim.keymap.set('n', '<M-C>', function()
+-- alt-shift-c conflicts with wezterm copy...
+--vim.keymap.set('n', '<M-C>', function()
+vim.keymap.set('n', '<M-c-c>', function()
     local path = vim.fn.expand('%:p') -- full path
     if path == '' then
         print('Buffer has no file path')

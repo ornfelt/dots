@@ -19,35 +19,143 @@ vim.api.nvim_set_keymap('n', '<leader>wq', ':lua ReplaceQuotes()<CR>', { noremap
 
 -- replace unicode typographic chars with ASCII equivalents
 vim.keymap.set('n', '<leader>wa', function()
-    local pos = vim.api.nvim_win_get_cursor(0)
+  local pos = vim.api.nvim_win_get_cursor(0)
 
-    local cmds = {
-        [[%s,→,->,ge]], -- unicode rightward arrow -> ascii arrow
-        [[%s,←,<-,ge]], -- unicode left arrow -> ascii arrow
-        [[%s,“,",ge]], -- left double quotation mark -> straight quote 
-        [[%s,”,",ge]], -- right double quotation mark -> straight quote 
-        [[%s,’,',ge]], -- right single quotation mark/apostrophe -> straight apostrophe
-        [[%s,‘,',ge]], -- left single quotation mark/apostrophe -> straight apostrophe
-        [[%s,…,...,ge]], -- ellipsis char -> three dots
-        [[%s,—,-,ge]], -- em dash -> hyphen
-    }
+  local cmds = {
+    [[%s,→,->,ge]], -- unicode rightward arrow -> ascii arrow
+    [[%s,←,<-,ge]], -- unicode left arrow -> ascii arrow
+    [[%s,“,",ge]], -- unicode left double quotation mark -> ascii straight quote 
+    [[%s,”,",ge]], -- unicode right double quotation mark -> ascii straight quote 
+    [[%s,’,',ge]], -- unicode right single quotation mark/apostrophe -> ascii straight apostrophe
+    [[%s,‘,',ge]], -- unicode left single quotation mark/apostrophe -> ascii straight apostrophe
+    [[%s,…,...,ge]], -- unicode ellipsis char -> ascii three dots
+    [[%s,–,-,ge]], -- unicode en dash -> ascii hyphen
+    [[%s,—,-,ge]], -- unicode em dash -> ascii hyphen
+    [[%s,≈,~,ge]], -- unicode approximately equal -> ascii tilde
+    [[%s,·,*,ge]], -- unicode middle dot/interpunct -> ascii asterix
+  }
 
-    local total_replaced = 0
+  local show_stats = true
+  local show_detailed_stats = myconfig.should_debug_print()
+
+  local per_char_counts = {}
+  local total_chars = 0
+
+  -- Count how many character types *will* be replaced
+  if show_stats then
+    local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
+
     for _, cmd in ipairs(cmds) do
-        local ok, result = pcall(vim.cmd, cmd)
-        if ok then
-            total_replaced = total_replaced + 1
+      -- Extract the character to search for
+      -- Format is: %s,<from>,<to>,ge
+      local from = cmd:match("%%s,(.-),")
+      if from then
+        local count = 0
+
+        -- Count occurrences in the whole buffer
+        for _, line in ipairs(lines) do
+          -- plain = true so Lua does not treat Unicode as patterns
+          local _, n = line:gsub(from, from)
+          count = count + n
         end
+
+        if count > 0 then
+          total_chars = total_chars + 1
+          per_char_counts[from] = count
+        end
+      end
     end
+  end
 
-    -- Restore cursor position
-    vim.api.nvim_win_set_cursor(0, pos)
+  -- do the actual replacements
+  for _, cmd in ipairs(cmds) do
+    vim.cmd(cmd)
+  end
 
-    if total_replaced > 0 then
-        print(string.format("Normalized %d character type(s)", total_replaced))
+  -- Restore cursor position
+  vim.api.nvim_win_set_cursor(0, pos)
+
+  if show_stats then
+    if total_chars > 0 then
+      print(string.format("Total characters expected to be replaced: %d", total_chars))
+
+      if show_detailed_stats then
+        print(string.format("Total characters expected to be replaced (tbl_count): %d", vim.tbl_count(per_char_counts)))
+        for ch, cnt in pairs(per_char_counts) do
+          print(string.format("  '%s' -> %d occurrence(s)", ch, cnt))
+        end
+      end
     else
-        print("No typographic characters found")
+      print("No typographic characters found")
     end
+  end
+end, { desc = 'Replace Unicode typography with ASCII' })
+
+-- Replace some math-related unicode chars to ascii equivalents
+vim.keymap.set('n', '<leader>wm', function()
+  local pos = vim.api.nvim_win_get_cursor(0)
+
+  local cmds = {
+    [[%s,²,^2,ge]],
+    [[%s,³,^3,ge]],
+    [[%s,ⁿ,^n,ge]],
+    [[%s,√,sqrt,ge]],
+  }
+
+  local show_stats = true
+  local show_detailed_stats = myconfig.should_debug_print()
+
+  local per_char_counts = {}
+  local total_chars = 0
+
+  -- Count how many character types *will* be replaced
+  if show_stats then
+    local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
+
+    for _, cmd in ipairs(cmds) do
+      -- Extract the character to search for
+      -- Format is: %s,<from>,<to>,ge
+      local from = cmd:match("%%s,(.-),")
+      if from then
+        local count = 0
+
+        -- Count occurrences in the whole buffer
+        for _, line in ipairs(lines) do
+          -- plain = true so Lua does not treat Unicode as patterns
+          local _, n = line:gsub(from, from)
+          count = count + n
+        end
+
+        if count > 0 then
+          total_chars = total_chars + 1
+          per_char_counts[from] = count
+        end
+      end
+    end
+  end
+
+  -- do the actual replacements
+  for _, cmd in ipairs(cmds) do
+    vim.cmd(cmd)
+  end
+
+  -- Restore cursor position
+  vim.api.nvim_win_set_cursor(0, pos)
+
+  if show_stats then
+    if total_chars > 0 then
+      print(string.format("Total characters expected to be replaced: %d", total_chars))
+
+      if show_detailed_stats then
+        print(string.format("Total characters expected to be replaced (tbl_count): %d", vim.tbl_count(per_char_counts)))
+        for ch, cnt in pairs(per_char_counts) do
+          print(string.format("  '%s' -> %d occurrence(s)", ch, cnt))
+        end
+      end
+    else
+      print("No typographic characters found")
+    end
+  end
 end, { desc = 'Replace Unicode typography with ASCII' })
 
 -- Format file
