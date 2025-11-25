@@ -319,6 +319,7 @@ alias .simc="cd $HOME/Code2/C++/simc/build && ls"
 alias .wotlk_sim="cd $HOME/Code2/Go/wotlk-sim && ./wowsimwotlk"
 #alias .opend2="cd $HOME/Code2/Go/OpenDiablo2 && ./OpenDiablo2"
 alias .opend2="cd $HOME/Code2/Go/OpenDiablo2 && $HOME/.local/bin/my_scripts/2025/run_open_d2.sh"
+alias .help="$HOME/.local/bin/my_scripts/help.sh"
 
 mw_cd() {
   local output target
