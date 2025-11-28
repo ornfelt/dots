@@ -56,6 +56,16 @@ function PythonExecCommand()
   --local script_path = code_root_dir .. "Code2/Python/my_py/scripts/gemini/gemini.py"
   --local script_path = code_root_dir .. "Code2/Python/my_py/scripts/mistral/mistral.py"
   local command = myconfig.get_py_command()
+
+  -- Read first line of current buffer and see if model is specified,
+  -- in that case use another script!
+  local first_line_tbl = vim.api.nvim_buf_get_lines(0, 0, 1, false)
+  local first_line = first_line_tbl[1] or ""
+  local normalized_first_line = first_line:gsub("%s+", ""):lower()
+  if normalized_first_line:find("--model:") ~= nil then
+    command = "gpt_model_based"
+  end
+
   local script_path = code_root_dir .. "/Code2/Python/my_py/scripts/" .. command .. ".py"
 
   local use_debug_print = myconfig.should_debug_print()
