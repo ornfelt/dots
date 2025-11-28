@@ -150,3 +150,126 @@ else
   vim.api.nvim_set_keymap('v', '<M-->', '<Cmd>:Llm<CR>', {noremap = true, silent = true})
 end
 
+local my_notes_path = myconfig.my_notes_path
+
+vim.api.nvim_create_user_command('PrintAiModels', function()
+  local script_path = my_notes_path .. "/scripts/gpt/gpt/print_all_models.py"
+
+  local file_exists = vim.fn.filereadable(script_path) == 1
+  if not file_exists then
+    print("Error: The script file '" .. script_path .. "' does not exist.")
+    return
+  end
+
+  local output = vim.fn.systemlist("python " .. script_path)
+  for i, line in ipairs(output) do
+    output[i] = line:gsub('\r', '')
+  end
+  vim.api.nvim_put(output, 'l', true, true)
+end, {})
+
+local function normalize_provider(provider)
+  local cleaned_provider = provider:lower():gsub("[-_]", "")
+  -- Map some values
+  if cleaned_provider:find("gpt") then
+    return "openai"
+  elseif cleaned_provider == "claude" then
+    return "anthropic"
+  elseif cleaned_provider:find("google") or cleaned_provider == "gemini" then
+    return "googleai"
+  else
+    return cleaned_provider
+  end
+end
+
+-- Fetch models via request
+vim.api.nvim_create_user_command('PrintAiModelsByRequest', function(opts)
+  local should_debug_print = myconfig.should_debug_print()
+  local api_key, url, curl_cmd
+
+  local provider = opts.args:lower() == "" and "openai" or opts.args:lower()
+  provider = normalize_provider(provider)
+
+  if should_debug_print then
+    print("provider arg: " .. provider)
+  end
+
+  if provider == "openai" then
+    api_key = os.getenv("OPENAI_API_KEY")
+
+    if not api_key then
+      print("Error: OPENAI_API_KEY is not set.")
+      return
+    end
+
+    url = "https://api.openai.com/v1/models"
+    curl_cmd = 'curl -s -H "Authorization: Bearer ' .. api_key .. '" ' .. url
+  elseif provider == "anthropic" then
+    api_key = os.getenv("ANTHROPIC_API_KEY")
+
+    if not api_key then
+      print("Error: ANTHROPIC_API_KEY is not set.")
+      return
+    end
+
+    url = "https://api.anthropic.com/v1/models"
+    curl_cmd = 'curl -s -H "x-api-key: ' .. api_key .. '" -H "anthropic-version: 2023-06-01" ' .. url
+  elseif provider == "googleai" then
+    api_key = os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
+
+    if not api_key then
+      print("Error: GEMINI_API_KEY or GOOGLE_API_KEY is not set.")
+      return
+    end
+
+    url = "https://generativelanguage.googleapis.com/v1beta/models"
+    curl_cmd = 'curl -s -H "x-goog-api-key: ' .. api_key .. '" ' .. url
+  else
+    print("Error: Unknown provider. Use 'openai', 'anthropic', or 'googleai'.")
+    return
+  end
+
+  if should_debug_print then
+    print("curl command: " .. curl_cmd)
+  end
+
+  local result = vim.fn.systemlist(curl_cmd)
+
+  if vim.v.shell_error ~= 0 then
+    print("Error fetching models: " .. table.concat(result, "\n"))
+    return
+  end
+
+  if should_debug_print then
+    print("Raw response:\n" .. table.concat(result, "\n"))
+  end
+
+  local models = {}
+  local success, data = pcall(vim.fn.json_decode, table.concat(result, "\n"))
+
+  if success then
+    if provider == "openai" then
+      for _, model in ipairs(data.data) do
+        table.insert(models, model.id)
+      end
+    elseif provider == "anthropic" then
+      for _, model in ipairs(data.data) do
+        table.insert(models, model.id)
+      end
+    elseif provider == "googleai" then
+      for _, model in ipairs(data.models) do
+        table.insert(models, model.name)
+      end
+    end
+
+    vim.api.nvim_put({table.concat(models, ", ")}, 'l', true, true)
+  else
+    print("Error parsing JSON response.")
+  end
+end, {
+  nargs = "?",
+  complete = function(ArgLead, CmdLine, CursorPos)
+    return { 'openai', 'anthropic', 'googleai' }
+  end
+})
+

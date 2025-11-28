@@ -31,6 +31,8 @@ local commands = {
   { label = "ToPascal", cmd = "ToPascal" },
   { label = "FileInfo", cmd = "FileInfo" },
   { label = "CopyHist x type", cmd = "CopyHist" },
+  { label = "PrintAiModels", cmd = "PrintAiModels" },
+  { label = "PrintAiModelsByRequest openai/anthropic/googleai", cmd = "PrintAiModelsByRequest" },
   -- Custom SQL LSP
   { label = "SqlMiniDump", cmd = "SqlMiniDump" },
   { label = "SqlMiniSwitch idx", cmd = "SqlMiniSwitch 2" },
@@ -212,6 +214,7 @@ local selections_to_print = {
   ["SkeletonCopy"] = true,
   ["SkeletonCopy!"] = true,
   ["PrintConfig"] = true,
+  ["FileInfo"] = true,
 }
 
 local myconfig = require("myconfig")
