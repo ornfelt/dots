@@ -200,6 +200,12 @@ show_usage() {
   printf "%b# Display history with graph and decorate:%b\n" "$DARKGRAY" "$RESET"
   printf "%bgit log --graph --decorate%b\n" "$BLUE" "$RESET"
 
+  printf "%b# Generate diff showing changes from latest commit:%b\n" "$DARKGRAY" "$RESET"
+  printf "%bgit show HEAD > latest_changes.diff%b\n" "$BLUE" "$RESET"
+
+  printf "%b# Generate diff showing changes from second latest commit (use HEAD^^ for third etc.):%b\n" "$DARKGRAY" "$RESET"
+  printf "%bgit show HEAD^ > latest_changes.diff%b\n" "$BLUE" "$RESET"
+
   printf "%b# Generate diff for specified commit id, filtering on specific file type:%b\n" "$DARKGRAY" "$RESET"
   printf "%bgit show c7aa908 -- '*.go' > go_fixes.diff%b\n" "$BLUE" "$RESET"
 
@@ -207,7 +213,7 @@ show_usage() {
   printf "%bgit diff cbceb5a..HEAD -- '**/*.java' '*.cs' > new_java_cs_changes.diff%b\n" "$BLUE" "$RESET"
 
   printf "%b# Apply patch:%b\n" "$DARKGRAY" "$RESET"
-  printf "%bcd \"\$code_root_dir/Code2/C#/dotnet-integration\"; git apply \"\$my_notes_path/notes/svea/diffs/testshop_dev.diff\" --verbose%b\n" "$BLUE" "$RESET"
+  printf "%bcd \"\$code_root_dir/Code2/C#/dotnet-integration\" && git apply \$my_notes_path/notes/svea/diffs/testshop_dev.diff --verbose%b\n" "$BLUE" "$RESET"
 
   printf "\n"
   printf "Other useful commands:\n\n"
@@ -221,6 +227,14 @@ show_usage() {
 show_c_help() {
   printf "\n"
   printf "%bC / gcc quick examples:%b\n" "$YELLOW" "$RESET"
+
+  printf "\n"
+  printf "%bVersion / help:%b\n" "$YELLOW" "$RESET"
+  write_code_line "gcc --version"
+  write_code_line "gcc --help"
+
+  printf "\n"
+  printf "%bCompile & run:%b\n" "$YELLOW" "$RESET"
   write_code_line "gcc -Wall -Wextra -pedantic -std=c17 -o main main.c  # Compile C program"
   write_code_line "./main  # Run binary"
   printf "\n"
@@ -232,6 +246,11 @@ show_csharp_help() {
   printf "%bC# / .NET quick examples:%b\n" "$YELLOW" "$RESET"
 
   printf "\n"
+  printf "%bVersion / help:%b\n" "$YELLOW" "$RESET"
+  write_code_line "dotnet --version"
+  write_code_line "dotnet -h"
+
+  printf "\n"
   printf "%bCreate new projects:%b\n" "$YELLOW" "$RESET"
   write_code_line "dotnet new console -o MyConsoleApp      # Console app"
   write_code_line "dotnet new classlib -o MyLibrary        # Class library"
@@ -240,8 +259,6 @@ show_csharp_help() {
 
   printf "\n"
   printf "%bUseful dotnet commands:%b\n" "$YELLOW" "$RESET"
-  write_code_line "dotnet -h"
-  write_code_line "dotnet --version"
   write_code_line "dotnet --list-runtimes"
   write_code_line "dotnet --list-sdks"
   write_code_line "dotnet build"
@@ -253,6 +270,14 @@ show_csharp_help() {
 show_cpp_help() {
   printf "\n"
   printf "%bC++ / g++ quick examples:%b\n" "$YELLOW" "$RESET"
+
+  printf "\n"
+  printf "%bVersion / help:%b\n" "$YELLOW" "$RESET"
+  write_code_line "g++ --version"
+  write_code_line "g++ --help"
+
+  printf "\n"
+  printf "%bCompile & run:%b\n" "$YELLOW" "$RESET"
   write_code_line "g++ -O2 -Wall -Wextra -std=c++20 -o main main.cpp  # Compile optimized"
   write_code_line "./main  # Run binary"
   printf "\n"
@@ -262,6 +287,15 @@ show_cpp_help() {
 show_rust_help() {
   printf "\n"
   printf "%bRust / cargo quick examples:%b\n" "$YELLOW" "$RESET"
+
+  printf "\n"
+  printf "%bVersion / help:%b\n" "$YELLOW" "$RESET"
+  write_code_line "rustc --version"
+  write_code_line "cargo --version"
+  write_code_line "cargo -h"
+
+  printf "\n"
+  printf "%bBasic usage:%b\n" "$YELLOW" "$RESET"
   write_code_line "cargo new TestProject               # Create new project"
   write_code_line "cd TestProject"
   write_code_line "cargo build                         # Build debug"
@@ -292,6 +326,15 @@ show_rust_help() {
 show_java_help() {
   printf "\n"
   printf "%bJava quick examples:%b\n" "$YELLOW" "$RESET"
+
+  printf "\n"
+  printf "%bVersion / help:%b\n" "$YELLOW" "$RESET"
+  write_code_line "java -version"
+  write_code_line "javac -version"
+  write_code_line "java -h"
+
+  printf "\n"
+  printf "%bCompile & run:%b\n" "$YELLOW" "$RESET"
   write_code_line "javac Main.java                     # Compile"
   write_code_line "java Main                           # Run"
   printf "\n"
@@ -302,6 +345,14 @@ show_java_help() {
 show_python_help() {
   printf "\n"
   printf "%bPython quick examples:%b\n" "$YELLOW" "$RESET"
+
+  printf "\n"
+  printf "%bVersion / help:%b\n" "$YELLOW" "$RESET"
+  write_code_line "python --version"
+  write_code_line "python -h"
+
+  printf "\n"
+  printf "%bBasic usage:%b\n" "$YELLOW" "$RESET"
   write_code_line "python main.py                      # Run script"
   write_code_line "python -m venv .venv                # Create virtual environment"
   write_code_line "source .venv/bin/activate           # Activate venv (Linux/macOS)"
@@ -314,6 +365,15 @@ show_python_help() {
 show_go_help() {
   printf "\n"
   printf "%bGo quick examples:%b\n" "$YELLOW" "$RESET"
+
+  printf "\n"
+  printf "%bVersion / help:%b\n" "$YELLOW" "$RESET"
+  write_code_line "go version"
+  write_code_line "go help"
+  write_code_line "go help <command>                   # e.g. go help build"
+
+  printf "\n"
+  printf "%bBasic usage:%b\n" "$YELLOW" "$RESET"
   write_code_line "go mod init example.com/myapp       # Initialize module"
   write_code_line "go run main.go                      # Run directly"
   write_code_line "go build ./...                      # Build all packages"
@@ -330,9 +390,15 @@ show_js_help() {
   printf "%bJavaScript (Node) quick examples:%b\n" "$YELLOW" "$RESET"
 
   printf "\n"
+  printf "%bVersion / help:%b\n" "$YELLOW" "$RESET"
+  write_code_line "node --version"
+  write_code_line "node --help"
+  write_code_line "npm -v"
+  write_code_line "npm help"
+
+  printf "\n"
   printf "%bDo this:%b\n" "$YELLOW" "$RESET"
   write_code_line "node main.js"
-
   printf "\n"
   printf "%bOr:%b\n" "$YELLOW" "$RESET"
   write_code_line "npm init -y"
@@ -344,8 +410,15 @@ show_js_help() {
 
 show_ts_help() {
   printf "\n"
-  printf "%bTypeScript quick setup:%b\n" "$YELLOW" "$RESET"
+  printf "%bTypeScript quick examples:%b\n" "$YELLOW" "$RESET"
 
+  printf "\n"
+  printf "%bVersion / help:%b\n" "$YELLOW" "$RESET"
+  write_code_line "tsc -v"
+  write_code_line "npx tsc --help"
+
+  printf "\n"
+  printf "%bDo this:%b\n" "$YELLOW" "$RESET"
   write_code_line "npm init -y                         # init npm"
   write_code_line "npm install --save-dev typescript ts-node @types/node  # install dev dependencies"
   write_code_line "npx tsc --init                      # Create tsconfig.json"
