@@ -166,23 +166,39 @@ else
     autoload -U compinit
     compinit
 
-    # Vi mode
-    bindkey -v
-    export KEYTIMEOUT=1
+    USE_VIM_PLUGIN=false
+    #USE_VIM_PLUGIN=true
 
-    # Add Vi text-objects for brackets and quotes
-    autoload -Uz select-bracketed select-quoted
-    zle -N select-quoted
-    zle -N select-bracketed
-    for km in viopp visual; do
-        bindkey -M $km -- '-' vi-up-line-or-history
-        for c in {a,i}${(s..)^:-\'\"\`\|,./:;=+@}; do
-            bindkey -M $km $c select-quoted
+    if $USE_VIM_PLUGIN; then
+        # https://github.com/jeffreytse/zsh-vi-mode
+        source $HOME/.zsh/zsh-vi-mode/zsh-vi-mode.plugin.zsh
+        ZVM_SYSTEM_CLIPBOARD_ENABLED=true
+        ZVM_CLIPBOARD_COPY_CMD='xclip -selection clipboard'
+        ZVM_CLIPBOARD_PASTE_CMD='xclip -selection clipboard -o'
+    else
+        # Vi mode
+        bindkey -v
+        export KEYTIMEOUT=1
+
+        # Add Vi text-objects for brackets and quotes
+        autoload -Uz select-bracketed select-quoted
+        zle -N select-quoted
+        zle -N select-bracketed
+        for km in viopp visual; do
+            bindkey -M $km -- '-' vi-up-line-or-history
+            for c in {a,i}${(s..)^:-\'\"\`\|,./:;=+@}; do
+                bindkey -M $km $c select-quoted
+            done
+            for c in {a,i}${(s..)^:-'()[]{}<>bB'}; do
+                bindkey -M $km $c select-bracketed
+            done
         done
-        for c in {a,i}${(s..)^:-'()[]{}<>bB'}; do
-            bindkey -M $km $c select-bracketed
-        done
-    done
+
+        # edit current command line with vim (vim-mode, then CTRL-v)
+        autoload -Uz edit-command-line
+        zle -N edit-command-line
+        bindkey -M vicmd '^v' edit-command-line
+    fi
 
     # Increment a number
     autoload -Uz incarg
@@ -192,11 +208,6 @@ else
     if [ $(command -v "fzf") ]; then
         source $HOME/.config/zsh/scripts_fzf.zsh
     fi
-
-    # edit current command line with vim (vim-mode, then CTRL-v)
-    autoload -Uz edit-command-line
-    zle -N edit-command-line
-    bindkey -M vicmd '^v' edit-command-line
 fi
 
 # User configuration
