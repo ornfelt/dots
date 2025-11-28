@@ -163,6 +163,12 @@ else
     else
         echo "[ok] zsh-completions already installed."
     fi
+
+    if [ ! -d "$HOME/.zsh/zsh-vi-mode/.git" ]; then
+        git clone https://github.com/jeffreytse/zsh-vi-mode "$HOME/.zsh/zsh-vi-mode"
+    else
+        echo "[ok] zsh-vi-mode already installed."
+    fi
 fi
 
 original_dir=$(pwd)

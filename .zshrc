@@ -166,8 +166,8 @@ else
     autoload -U compinit
     compinit
 
-    USE_VIM_PLUGIN=false
-    #USE_VIM_PLUGIN=true
+    #USE_VIM_PLUGIN=false
+    USE_VIM_PLUGIN=true
 
     if $USE_VIM_PLUGIN; then
         # https://github.com/jeffreytse/zsh-vi-mode
