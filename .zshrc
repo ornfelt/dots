@@ -166,15 +166,15 @@ else
     autoload -U compinit
     compinit
 
-    #USE_VIM_PLUGIN=false
-    USE_VIM_PLUGIN=true
+    USE_VIM_PLUGIN=false
+    #USE_VIM_PLUGIN=true
 
     if $USE_VIM_PLUGIN; then
         # https://github.com/jeffreytse/zsh-vi-mode
-        source $HOME/.zsh/zsh-vi-mode/zsh-vi-mode.plugin.zsh
         ZVM_SYSTEM_CLIPBOARD_ENABLED=true
         ZVM_CLIPBOARD_COPY_CMD='xclip -selection clipboard'
         ZVM_CLIPBOARD_PASTE_CMD='xclip -selection clipboard -o'
+        source $HOME/.zsh/zsh-vi-mode/zsh-vi-mode.plugin.zsh
     else
         # Vi mode
         bindkey -v
@@ -199,6 +199,10 @@ else
         zle -N edit-command-line
         bindkey -M vicmd '^v' edit-command-line
     fi
+
+    export ZSH_SYSTEM_CLIPBOARD_METHOD=xsc
+    #export ZSH_SYSTEM_CLIPBOARD_METHOD=xsp
+    source $HOME/.zsh/zsh-system-clipboard/zsh-system-clipboard.zsh
 
     # Increment a number
     autoload -Uz incarg
