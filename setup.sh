@@ -131,14 +131,12 @@ if $USE_OH_MY_ZSH; then
         echo "[ok] oh-my-zsh already installed."
     fi
 
-    # zsh-autosuggestions
     if [ ! -d "${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/plugins/zsh-autosuggestions/.git" ]; then
         git clone https://github.com/zsh-users/zsh-autosuggestions "${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/plugins/zsh-autosuggestions"
     else
         echo "[ok] zsh-autosuggestions already installed."
     fi
 
-    # zsh-syntax-highlighting
     if [ ! -d "${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting/.git" ]; then
         git clone https://github.com/zsh-users/zsh-syntax-highlighting.git "${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting"
     else
@@ -151,7 +149,6 @@ else
         echo "[ok] zsh-autosuggestions already installed."
     fi
 
-    # zsh-syntax-highlighting for non-oh-my-zsh users
     if [ ! -d "$HOME/.zsh/zsh-syntax-highlighting/.git" ]; then
         git clone https://github.com/zsh-users/zsh-syntax-highlighting "$HOME/.zsh/zsh-syntax-highlighting"
     else
@@ -162,6 +159,18 @@ else
         git clone https://github.com/zsh-users/zsh-completions "$HOME/.zsh/zsh-completions"
     else
         echo "[ok] zsh-completions already installed."
+    fi
+
+    if [ ! -d "$HOME/.zsh/zsh-system-clipboard/.git" ]; then
+        git clone https://github.com/kutsan/zsh-system-clipboard "$HOME/.zsh/zsh-system-clipboard"
+    else
+        echo "[ok] zsh-system-clipboard already installed."
+    fi
+
+    if [ ! -d "$HOME/.zsh/zsh-vi-mode/.git" ]; then
+        git clone https://github.com/jeffreytse/zsh-vi-mode "$HOME/.zsh/zsh-vi-mode"
+    else
+        echo "[ok] zsh-vi-mode already installed."
     fi
 fi
 
