@@ -34,6 +34,45 @@ local function SqlExecCommand()
       file_exists(executable_net8) and executable_net8 or
       executable_net7
 
+  -- Override with other sql_exec lang
+  local sql_exec_lang = myconfig.get_sql_exec_lang()
+  sql_exec_lang = sql_exec_lang and sql_exec_lang:lower() or ""
+
+  --if sql_exec_lang == "go" then
+  --  local go_exec = code_root_dir .. '/Code2/SQL/my_sql/sql_exec/go/sql_exec.exe'
+  --  if vim.fn.has('win32') == 0 then
+  --    go_exec = go_exec:gsub("%.exe$", "")
+  --  end
+  --  if file_exists(go_exec) then
+  --    executable = go_exec
+  --  end
+  --elseif sql_exec_lang == "cpp" then
+  --  local cpp_exec = code_root_dir .. '/Code2/SQL/my_sql/sql_exec/cpp/build/SqlExec.exe'
+  --  if vim.fn.has('win32') == 0 then
+  --    cpp_exec = cpp_exec:gsub("%.exe$", "")
+  --  end
+  --  if file_exists(cpp_exec) then
+  --    executable = cpp_exec
+  --  end
+  --end
+  -- cleaner:
+  local exec_map = {
+    go  = '/Code2/SQL/my_sql/sql_exec/go/sql_exec.exe',
+    cpp = '/Code2/SQL/my_sql/sql_exec/cpp/build/SqlExec.exe',
+  }
+
+  local rel_path = exec_map[sql_exec_lang]
+  if rel_path then
+    local candidate = code_root_dir .. rel_path
+    if vim.fn.has('win32') == 0 then
+      candidate = candidate:gsub('%.exe$', '')
+    end
+
+    if file_exists(candidate) then
+      executable = candidate
+    end
+  end
+
   local current_file = vim.fn.expand('%:p') -- Full path of current file
   local mode = vim.fn.mode()
   local args = { '"' .. current_file .. '"' }

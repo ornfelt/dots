@@ -207,6 +207,10 @@ end
 
 vim.api.nvim_create_user_command('CyclePythonExecCommand', CyclePythonExecCommand, {})
 
+function M.get_sql_exec_lang()
+  return read_config("SqlExecLang", "cs")
+end
+
 function ToggleBooleanSetting(settingKey)
   local lines = {}
   local current_value = "false"
