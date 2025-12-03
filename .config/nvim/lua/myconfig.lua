@@ -211,6 +211,64 @@ function M.get_sql_exec_lang()
   return read_config("SqlExecLang", "cs")
 end
 
+function CycleSqlExecLang()
+  local possible_langs = { "cs", "cpp", "go", "python", "rust", "typescript" }
+  local current_lang = read_config("SqlExecLang", "cs")
+
+  local alias_map = {
+    golang = "go",
+    ["c++"] = "cpp",
+    py = "python",
+    rs = "rust",
+    ts = "typescript",
+  }
+
+  if alias_map[current_lang] then
+    current_lang = alias_map[current_lang]
+  end
+
+  -- Find current index in the cycle list
+  local current_index = nil
+  for i, lang in ipairs(possible_langs) do
+    if lang == current_lang then
+      current_index = i
+      break
+    end
+  end
+
+  -- If not found, treat as "before first" so we start at the first
+  local next_index = (current_index or 0) % #possible_langs + 1
+  local new_lang = possible_langs[next_index]
+
+  -- Rewrite config file with the new SqlExecLang value
+  local lines = {}
+  local lang_updated = false
+
+  for line in io.lines(config_file_path) do
+    if line:match("^SqlExecLang:") then
+      table.insert(lines, "SqlExecLang: " .. new_lang)
+      lang_updated = true
+    else
+      table.insert(lines, line)
+    end
+  end
+
+  -- If there's no existing SqlExecLang, append it
+  if not lang_updated then
+    table.insert(lines, "SqlExecLang: " .. new_lang)
+  end
+
+  local file = io.open(config_file_path, "w")
+  for _, line in ipairs(lines) do
+    file:write(line .. "\n")
+  end
+  file:close()
+
+  print("New SqlExecLang: " .. new_lang)
+end
+
+vim.api.nvim_create_user_command('CycleSqlExecLang', CycleSqlExecLang, {})
+
 function ToggleBooleanSetting(settingKey)
   local lines = {}
   local current_value = "false"

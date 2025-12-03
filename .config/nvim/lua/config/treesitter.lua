@@ -183,15 +183,16 @@ function select_function_node(inner)
   -- climb until we hit a function-like node
   while node do
     if vim.tbl_contains({
-      "function",                     -- generic
-      "function_definition",          -- python
-      "function_declaration",         -- c, cpp, js, ts
-      "method_declaration",           -- java
-      "function_expression",          -- js, ts
-      "generator_function_declaration",-- js, ts generators
-      "method_definition",            -- js, ts, java
-      "arrow_function",               -- js, ts
-      "class_method",                 -- ruby, python
+      "function",                       -- generic
+      "function_definition",            -- python
+      "function_declaration",           -- c, cpp, js, ts
+      "method_declaration",             -- java, rust
+      "function_expression",            -- js, ts
+      "generator_function_declaration", -- js, ts
+      "method_definition",              -- js, ts, java
+      "function_item",                  -- rust
+      "arrow_function",                 -- js, ts
+      "class_method",                   -- ruby, python
     }, node:type()) then
       break
     end
