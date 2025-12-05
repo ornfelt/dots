@@ -212,7 +212,7 @@ function M.get_sql_exec_lang()
 end
 
 function CycleSqlExecLang()
-  local possible_langs = { "cs", "cpp", "go", "python", "rust", "typescript" }
+  local possible_langs = { "cs", "cpp", "go", "java", "python", "rust", "typescript" }
   local current_lang = read_config("SqlExecLang", "cs")
 
   local alias_map = {

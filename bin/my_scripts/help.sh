@@ -221,6 +221,7 @@ show_usage() {
   printf "%b  keepawake%b\n" "$GREEN" "$RESET"
   printf "%b  vim \"\$code_root_dir/Code2/Wow/tools/my_wow/wow.conf\"%b\n" "$GREEN" "$RESET"
   printf "%b  cd \"\$my_notes_path\"; ./check_dirs.sh%b\n" "$GREEN" "$RESET"
+  printf "%b  pwd | xclip -selection clipboard%b\n" "$GREEN" "$RESET"
 }
 
 # Language-specific helpers

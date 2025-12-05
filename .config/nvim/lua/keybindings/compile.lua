@@ -71,7 +71,7 @@ local function SqlExecCommand()
     go = '/Code2/SQL/my_sql/sql_exec/go/sql_exec.exe',
     java = '/Code2/SQL/my_sql/sql_exec/java/build.ps1',
     python = '/Code2/SQL/my_sql/sql_exec/py/main.py',
-    rust = '/Code2/SQL/my_sql/sql_exec/rust/sql_exec/target/debug/sql_exec.exe',
+    rust = '/Code2/SQL/my_sql/sql_exec/rust/sql_exec/target/release/sql_exec.exe',
     typescript = '/Code2/SQL/my_sql/sql_exec/ts/dist/Main.js',
   }
 
@@ -101,10 +101,17 @@ local function SqlExecCommand()
     if file_exists(candidate) then
       executable = candidate
       override_used = true
-    -- specific fallback for cpp -> check debug dir
+    -- specific fallback for cpp/rust: check debug dir
     elseif sql_exec_lang == "cpp" then
       local debug_candidate = candidate:gsub('/Release/', '/Debug/')
       dprint("[SqlExec] Release not found, trying cpp Debug executable: " .. debug_candidate)
+      if file_exists(debug_candidate) then
+        executable = debug_candidate
+        override_used = true
+      end
+    elseif sql_exec_lang == "rust" then
+      local debug_candidate = candidate:gsub('/release/', '/debug/')
+      dprint("[SqlExec] Release not found, trying rust Debug executable: " .. debug_candidate)
       if file_exists(debug_candidate) then
         executable = debug_candidate
         override_used = true
