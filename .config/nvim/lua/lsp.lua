@@ -78,8 +78,7 @@ local myconfig = require('myconfig')
 ----  end
 ----end)
 
-
--- NEW
+-- NEW (above is deprecated)
 
 -- for testing custom lsp
 if not myconfig.should_use_custom_lsp_for_sql() then

@@ -222,6 +222,43 @@ show_usage() {
   printf "%b  vim \"\$code_root_dir/Code2/Wow/tools/my_wow/wow.conf\"%b\n" "$GREEN" "$RESET"
   printf "%b  cd \"\$my_notes_path\"; ./check_dirs.sh%b\n" "$GREEN" "$RESET"
   printf "%b  pwd | xclip -selection clipboard%b\n" "$GREEN" "$RESET"
+
+  printf "\n"
+  printf "%bBash file/directory operations:%b\n" "$YELLOW" "$RESET"
+
+  printf "\n"
+  printf "%bList only directories:%b\n" "$YELLOW" "$RESET"
+  write_code_line "ls -d */                   # simple way"
+  write_code_line "ls -l | grep \"^d\"          # using ls -l and grep"
+  write_code_line "find . -maxdepth 1 -type d # using find"
+
+  printf "\n"
+  printf "%bList only files:%b\n" "$YELLOW" "$RESET"
+  write_code_line "ls -p | grep -v /          # exclude dirs (those ending in /)"
+  write_code_line "find . -maxdepth 1 -type f # using find"
+
+  printf "\n"
+  printf "%bFilter by keyword:%b\n" "$YELLOW" "$RESET"
+  write_code_line "ls | grep keyword           # case-sensitive (default)"
+  write_code_line "ls -la | grep keyword       # include hidden files and more info"
+  write_code_line "ls | grep -i keyword        # case-insensitive"
+
+  printf "\n"
+  printf "%bView file content:%b\n" "$YELLOW" "$RESET"
+  write_code_line "head file.txt               # first 10 lines (default)"
+  write_code_line "head -n 20 file.txt         # first N lines"
+  write_code_line "tail file.txt               # last 10 lines (default)"
+  write_code_line "tail -n 10 file.txt         # last N lines (explicit)"
+
+  printf "\n"
+  printf "%bCount items (current dir only):%b\n" "$YELLOW" "$RESET"
+  write_code_line "find . -maxdepth 1 -type f | wc -l  # count files"
+  write_code_line "find . -maxdepth 1 -type d | wc -l  # count directories"
+  write_code_line "ls -1 | wc -l                       # count all items"
+  printf "%bCount items (recursive):%b\n" "$YELLOW" "$RESET"
+  write_code_line "find . -type f | wc -l              # count all files recursively"
+  write_code_line "find . -type d | wc -l              # count all directories recursively"
+  write_code_line "find . | wc -l                      # count everything recursively"
 }
 
 # Language-specific helpers
@@ -266,6 +303,7 @@ show_csharp_help() {
   write_code_line "dotnet run --framework net9.0"
   write_code_line "dotnet run -f net7.0"
   write_code_line "dotnet run &> test.txt           # Run and capture output to test.txt"
+  write_code_line "dotnet test                      # Run tests (from solution dir)"
 }
 
 show_cpp_help() {
