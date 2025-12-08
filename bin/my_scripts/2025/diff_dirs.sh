@@ -4,8 +4,8 @@ set -euo pipefail
 
 # Hard-coded dirs to compare
 
-dir1="/media2/my_files/my_docs"
-dir2="/media/my_files/my_docs"
+#dir1="/media2/my_files/my_docs"
+#dir2="/media/my_files/my_docs"
 
 #dir1="/home/jonas/Downloads/yt/test/dir1"
 #dir2="/home/jonas/Downloads/yt/test/dir2"
@@ -25,8 +25,8 @@ dir2="/media/my_files/my_docs"
 #dir1="/media2/2025"
 #dir2="/media/2025"
 
-#dir1="/media2"
-#dir2="/media"
+dir1="/media2"
+dir2="/media"
 
 # Log file
 target_log="diff_check.log"
@@ -39,6 +39,7 @@ IGNORE_PREFIXES=(
   "\$RECYCLE.BIN/"
   "2024/wow/"
   ".Trash-1000/"
+  "System Volume Information/"
 )
 
 # Paths that cause "contains" skip

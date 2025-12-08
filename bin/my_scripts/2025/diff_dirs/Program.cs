@@ -44,6 +44,7 @@ class Program
         "$RECYCLE.BIN/",
         "2024/wow/",
         ".Trash-1000/",
+        "System Volume Information/",
     };
 
     // Paths that cause "contains" skip
