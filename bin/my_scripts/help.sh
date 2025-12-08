@@ -300,6 +300,8 @@ show_csharp_help() {
   write_code_line "dotnet --list-runtimes"
   write_code_line "dotnet --list-sdks"
   write_code_line "dotnet build"
+  write_code_line "dotnet build -c Release"
+  write_code_line "dotnet run -c Release"
   write_code_line "dotnet run --framework net9.0"
   write_code_line "dotnet run -f net7.0"
   write_code_line "dotnet run &> test.txt           # Run and capture output to test.txt"
