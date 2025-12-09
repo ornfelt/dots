@@ -490,8 +490,13 @@ export CMAKE_POLICY_VERSION_MINIMUM=3.5
 alias f='fuzzyfind'
 
 bindkey '^ ' autosuggest-accept
-LS_COLORS+=':ow=01;33'
-LS_COLORS+=':ow=01;34'
+
+#LS_COLORS+=':ow=01;33'
+#LS_COLORS+=':ow=01;34'
+# Reset LS_COLORS to default
+eval "$(dircolors -b)"
+# Strip background colors from LS_COLORS (anything ;4x or ;10x)
+export LS_COLORS="$(printf '%s' "$LS_COLORS" | sed -E 's/;4[0-9]//g; s/;10[0-7]//g')"
 
 $HOME/.local/bin/my_scripts/hello.sh
 
