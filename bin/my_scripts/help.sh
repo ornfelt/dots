@@ -178,6 +178,7 @@ show_usage() {
   write_command_with_description ".cmake"          "helper script for cmake"
   write_command_with_description ".git_push"       "helper script for git push"
   write_command_with_description ".git_pull"       "helper script for git pull"
+  write_command_with_description ".git_ignore"     "helper script for git ignore"
   write_command_with_description ".health_check"   "health check script"
   write_command_with_description ".gen_plant"      "generate PlantUML image"
   write_command_with_description ".gen_merm"       "generate Mermaid image"
