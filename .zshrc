@@ -261,6 +261,7 @@ alias lua='lua5.4'
 alias python='python3'
 alias xup='xrdb $HOME/.Xresources'
 # alias grep='grep -rin --color'
+alias grep='grep --color=auto'
 alias vd='python -m visidata'
 alias lf='$HOME/.local/bin/lfub'
 alias .scripts='cd $HOME/.local/bin/my_scripts; ls'
@@ -312,6 +313,7 @@ alias .wc='cd $HOME/Code2/Wow/tools/wc && echo -e "./wow -h\n./wow -p \$wow_tbc_
 alias .llama="$HOME/.local/bin/my_scripts/llama.sh"
 alias .git_push="$HOME/.local/bin/my_scripts/git_push.sh"
 alias .git_pull="$HOME/.local/bin/my_scripts/git_pull.sh"
+alias .git_ignore="$HOME/.local/bin/my_scripts/git_ignore.sh"
 alias .cmake="$HOME/.local/bin/my_scripts/2025/cmake.sh"
 alias .health_check="$HOME/Documents/my_notes/scripts/health_check.sh"
 alias .wow_wtf_update="$HOME/.local/bin/my_scripts/2025/wow_wtf_update.sh"
@@ -490,6 +492,10 @@ export CMAKE_POLICY_VERSION_MINIMUM=3.5
 alias f='fuzzyfind'
 
 bindkey '^ ' autosuggest-accept
+
+bindkey '^H' backward-kill-word 
+# or add this to ~/.inputrc
+#"\C-h": backward-kill-word
 
 #LS_COLORS+=':ow=01;33'
 #LS_COLORS+=':ow=01;34'
