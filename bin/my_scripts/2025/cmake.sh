@@ -191,6 +191,11 @@ elif [[ "$lc" == *ioq3* ]]; then
         echo 'cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug && cmake --build build'
     fi
 
+elif [[ "$lc" == *torchless* ]]; then
+    test_cmakelists parent "torchless (expecting CMakeLists.txt one level up)"
+    main='cmake .. -DCMAKE_BUILD_TYPE=Release && cmake --build .'
+    run_or_print "$main"
+
 else
     test_cmakelists parent
     # Default fallback
