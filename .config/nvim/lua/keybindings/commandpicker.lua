@@ -34,6 +34,7 @@ local commands = {
   { label = "CopyHist x type", cmd = "CopyHist" },
   { label = "PrintAiModels", cmd = "PrintAiModels" },
   { label = "PrintAiModelsByRequest openai/anthropic/googleai", cmd = "PrintAiModelsByRequest" },
+  { label = "LocalIP", cmd = "LocalIP" },
   -- Custom SQL LSP
   { label = "SqlMiniDump", cmd = "SqlMiniDump" },
   { label = "SqlMiniSwitch idx", cmd = "SqlMiniSwitch 2" },
@@ -219,6 +220,7 @@ local selections_to_print = {
   ["SkeletonCopy!"] = true,
   ["PrintConfig"] = true,
   ["FileInfo"] = true,
+  ["LocalIP"] = true,
 }
 
 local myconfig = require("myconfig")

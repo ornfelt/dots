@@ -81,9 +81,99 @@ if myconfig.is_plugin_installed('gp') then
   -- etc.
 end
 
+local function is_ipv4(s)
+  return s and s:match("^%d+%.%d+%.%d+%.%d+$") ~= nil
+end
+
+local function trim(s) return (s:gsub("^%s+", ""):gsub("%s+$", "")) end
+
+local function get_ipv4_ps()
+  local script = [[
+$hostEntry = [System.Net.Dns]::GetHostEntry([System.Net.Dns]::GetHostName());
+foreach ($addr in $hostEntry.AddressList) {
+  if ($addr.AddressFamily -eq [System.Net.Sockets.AddressFamily]::InterNetwork) {
+    $ipStr = $addr.IPAddressToString
+    if ($ipStr -ne '127.0.0.1' -and $ipStr -notlike '169.254.*') {
+      Write-Output $ipStr
+      break
+    }
+  }
+}
+]]
+
+  local out = vim.fn.system({ "powershell", "-NoProfile", "-NonInteractive", "-Command", script })
+  out = trim(out or "")
+  return out
+end
+
+local function get_local_ipv4(debug)
+  local function dbg_log(msg)
+    if debug then
+      print(msg)
+      -- alternative:
+      --vim.notify(msg, vim.log.levels.INFO)
+    end
+  end
+
+  -- Windows: .NET DNS HostEntry approach
+  if vim.fn.has("win32") == 1 or vim.fn.has("win64") == 1 then
+    local out = get_ipv4_ps()
+      -- debug
+    --print("out (ps): " .. out)
+    --print("shell_error (ps): " .. tostring(vim.v.shell_error))
+    if is_ipv4(out) then
+      dbg_log(("get_local_ipv4: %s (branch: windows/.NET DNS HostEntry)"):format(out))
+      return out
+    end
+  end
+
+  -- Linux
+  if vim.fn.has("linux") == 1 then
+    do
+      local out = vim.fn.system([[sh -lc "ip addr show | grep -v 'inet6' | grep -v 'inet 127' | grep 'inet' | head -n 1 | awk '{print $2}' | cut -d/ -f1"]]) or ""
+      out = out:gsub("inet", "")
+      out = trim(out)
+      -- debug
+      --print("out (ip addr): " .. out)
+      if is_ipv4(out) then
+        dbg_log(("get_local_ipv4: %s (branch: linux/ip addr)"):format(out))
+        return out
+      end
+    end
+
+    do
+      local out = trim(vim.fn.system([[sh -lc "ip route get 1.1.1.1 2>/dev/null | sed -n 's/.* src \\([0-9.]\\+\\).*/\\1/p' | head -n1"]]) or "")
+      if is_ipv4(out) then
+        dbg_log(("get_local_ipv4: %s (branch: linux/ip route get src)"):format(out))
+        return out
+      end
+    end
+  end
+
+  -- Universal fallback: UDP route trick via python
+  do
+    local cmd = [[python -c "import socket; s=socket.socket(socket.AF_INET, socket.SOCK_DGRAM); s.connect(('8.8.8.8',80)); print(s.getsockname()[0]); s.close()"]]
+    local out = trim(vim.fn.system(cmd) or "")
+    if is_ipv4(out) then
+      dbg_log(("get_local_ipv4: %s (branch: python/udp route trick)"):format(out))
+      return out
+    end
+  end
+
+  dbg_log("get_local_ipv4: 127.0.0.1 (branch: default)")
+  return "127.0.0.1"
+end
+
 -- Basic llama.cpp example request (no streaming)
 local function llm()
-  local url = "http://127.0.0.1:8080/completion"
+  --local url = "http://127.0.0.1:8080/completion"
+  local should_debug_print = myconfig.should_debug_print()
+  local ip = get_local_ipv4()
+  if should_debug_print then
+    print("local ip: " .. ip)
+  end
+  local url = ("http://%s:8080/completion"):format(ip)
+
   local buffer_content = table.concat(vim.api.nvim_buf_get_lines(0, 0, -1, false), "\n")
 
   local json_payload = {
@@ -118,6 +208,14 @@ local function llm()
 end
 
 vim.api.nvim_create_user_command('Llm', llm, {})
+
+-- Debug commad for trying to get local ip
+vim.api.nvim_create_user_command("LocalIP", function()
+  local ip = get_local_ipv4(true)
+  --vim.notify("Local IPv4: " .. ip, vim.log.levels.INFO)
+  -- alternative:
+  print("Local IPv4: " .. ip)
+end, {})
 
 if myconfig.is_plugin_installed('model') then
   local llamacpp = require('model.providers.llamacpp')

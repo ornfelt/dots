@@ -107,6 +107,10 @@ function load_session()
           local function on_select()
             local selected = action_state.get_selected_entry()
             actions.close(prompt_bufnr)
+            if not selected or not selected.value then
+              vim.notify("No session selected", vim.log.levels.INFO)
+              return
+            end
             local session_name = label_to_session_name[selected.value]
             source_session_by_name(session_name, sessions)
           end
