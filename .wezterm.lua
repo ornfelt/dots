@@ -116,7 +116,10 @@ end
 config.tab_bar_at_bottom = true
 config.show_new_tab_button_in_tab_bar = false
 config.switch_to_last_active_tab_when_closing_tab = true
-config.tab_max_width = 15
+
+local TAB_MAX_WIDTH = 25
+config.tab_max_width = TAB_MAX_WIDTH
+
 config.colors = {
   tab_bar = {
     active_tab = {
@@ -988,14 +991,26 @@ wezterm.on("format-tab-title", function(tab)
   local new_title = tostring(tab.active_pane.current_working_dir):gsub("^file:///", "")
   -- Normalize slashes
   new_title = new_title:gsub("\\", "/")
-  new_title = new_title:gsub("//+", "/")
+  new_title = new_title:gsub("//+", "/") .. " "
 
   --local max_title_len = 20 -- If use_fancy_tab_bar
-  local max_title_len = 15
+  local max_title_len = TAB_MAX_WIDTH
+  local min_title_len = 12
+
   if #new_title > max_title_len then
     --new_title = ".." .. new_title:sub(-(max_title_len-3)) -- If use_fancy_tab_bar
-    new_title = ".." .. new_title:sub(-(max_title_len-3)) .. " "
+    new_title = ".." .. new_title:sub(-(max_title_len-3))
   end
+
+  -- Pad and center if too short
+  local len = #new_title
+  if len < min_title_len then
+    local pad_total = min_title_len - len
+    local pad_left  = math.floor(pad_total / 2)
+    local pad_right = pad_total - pad_left
+    new_title = string.rep(" ", pad_left) .. new_title .. string.rep(" ", pad_right)
+  end
+
   return {
     { Text = new_title }
   }

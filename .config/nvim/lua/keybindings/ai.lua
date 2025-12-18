@@ -167,6 +167,7 @@ end
 -- Basic llama.cpp example request (no streaming)
 local function llm()
   --local url = "http://127.0.0.1:8080/completion"
+  --local url = "http://localhost:8080/completion"
   local should_debug_print = myconfig.should_debug_print()
   local ip = get_local_ipv4()
   if should_debug_print then
@@ -219,11 +220,17 @@ end, {})
 
 if myconfig.is_plugin_installed('model') then
   local llamacpp = require('model.providers.llamacpp')
+  --local url = "http://localhost:8080"
+  local ip = get_local_ipv4()
+  local url = ("http://%s:8080"):format(ip)
 
   require('model').setup({
     prompts = {
       zephyr = {
         provider = llamacpp,
+        options = {
+          url = url,
+        },
         builder = function(input, context)
           return {
             prompt =
