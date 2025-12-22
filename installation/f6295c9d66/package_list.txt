@@ -411,6 +411,7 @@ lib32-keyutils
 lib32-krb5
 lib32-libasyncns
 lib32-libcap
+lib32-libdisplay-info
 lib32-libdrm
 lib32-libelf
 lib32-libffi
@@ -474,7 +475,7 @@ lib32-sqlite
 lib32-systemd
 lib32-util-linux
 lib32-vulkan-icd-loader
-lib32-vulkan-mesa-device-select
+lib32-vulkan-mesa-implicit-layers
 lib32-vulkan-radeon
 lib32-wayland
 lib32-xcb-util-keysyms
@@ -596,6 +597,7 @@ libliftoff
 liblqr
 libluv
 libmad
+libmakepkg-dropins
 libmalcontent
 libmanette
 libmd
@@ -1072,6 +1074,7 @@ sdl2_mixer
 sdl2_net
 sdl2_ttf
 sdl3
+sdl3_ttf
 seatd
 sed
 semver
@@ -1206,7 +1209,7 @@ vmaf
 volume_key
 vorbis-tools
 vulkan-icd-loader
-vulkan-mesa-device-select
+vulkan-mesa-implicit-layers
 vulkan-radeon
 wavpack
 waybar

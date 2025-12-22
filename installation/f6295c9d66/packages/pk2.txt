@@ -24,7 +24,7 @@ lib32-sqlite
 lib32-systemd
 lib32-util-linux
 lib32-vulkan-icd-loader
-lib32-vulkan-mesa-device-select
+lib32-vulkan-mesa-implicit-layers
 lib32-vulkan-radeon
 lib32-wayland
 lib32-xcb-util-keysyms
@@ -146,6 +146,7 @@ libliftoff
 liblqr
 libluv
 libmad
+libmakepkg-dropins
 libmalcontent
 libmanette
 libmd

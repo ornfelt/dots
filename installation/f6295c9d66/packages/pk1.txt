@@ -411,6 +411,7 @@ lib32-keyutils
 lib32-krb5
 lib32-libasyncns
 lib32-libcap
+lib32-libdisplay-info
 lib32-libdrm
 lib32-libelf
 lib32-libffi

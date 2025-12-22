@@ -172,6 +172,7 @@ sdl2_mixer
 sdl2_net
 sdl2_ttf
 sdl3
+sdl3_ttf
 seatd
 sed
 semver
@@ -306,7 +307,7 @@ vmaf
 volume_key
 vorbis-tools
 vulkan-icd-loader
-vulkan-mesa-device-select
+vulkan-mesa-implicit-layers
 vulkan-radeon
 wavpack
 waybar

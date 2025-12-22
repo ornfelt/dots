@@ -377,7 +377,10 @@ vim.api.nvim_create_user_command("SkeletonCopy", function(opts)
       (constructor_declaration)   @func
     ]],
     python    = [[ (function_definition) @func ]],
-    go        = [[ (function_declaration) @func ]],
+    go = [[
+      (method_declaration)        @func
+      (function_declaration)   @func
+    ]],
     rust      = [[ (function_item) @func ]],
     lua       = [[ 
       (function_declaration) @func 
