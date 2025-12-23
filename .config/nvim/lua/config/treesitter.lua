@@ -2,119 +2,227 @@ local check_file_size = function(_, bufnr)
   return vim.api.nvim_buf_line_count(bufnr) > 100000
 end
 
-require("nvim-treesitter.configs").setup({
-  -- A list of parser names, or "all"
-  ensure_installed = {
-    'bash',
-    'c',
-    'c_sharp',
-    'cpp',
-    'css',
-    'go',
-    'graphql',
-    'html',
-    'java',
-    'javascript',
-    'jsdoc',
-    'json',
-    'lua',
-    'markdown',
-    'markdown_inline',
-    'php',
-    'python',
-    'query',
-    'regex',
-    'rust',
-    'scss',
-    'sql',
-    'tsx',
-    'typescript',
-    'vim',
-    'vimdoc',
-    'vue',
-    'yaml',
-  },
+local USE_TS_MAIN = false
+--local USE_TS_MAIN = true
 
-  -- Install parsers synchronously (only applied to `ensure_installed`)
-  sync_install = false,
+-- master branch config
+if not USE_TS_MAIN then
+  require("nvim-treesitter.configs").setup({
+    -- A list of parser names, or "all"
+    ensure_installed = {
+      'bash',
+      'c',
+      'c_sharp',
+      'cpp',
+      'css',
+      'go',
+      'graphql',
+      'html',
+      'java',
+      'javascript',
+      'jsdoc',
+      'json',
+      'lua',
+      'markdown',
+      'markdown_inline',
+      'php',
+      'python',
+      'query',
+      'regex',
+      'rust',
+      'scss',
+      'sql',
+      'tsx',
+      'typescript',
+      'vim',
+      'vimdoc',
+      'vue',
+      'yaml',
+    },
 
-  -- Automatically install missing parsers when entering buffer
-  -- Recommendation: set to false if you don't have `tree-sitter` CLI installed locally
-  auto_install = false,
+    -- Install parsers synchronously (only applied to `ensure_installed`)
+    sync_install = false,
 
-  indent = {
-    enable = true
-  },
+    -- Automatically install missing parsers when entering buffer
+    -- Recommendation: set to false if you don't have `tree-sitter` CLI installed locally
+    auto_install = false,
 
-  highlight = {
-    -- `false` will disable the whole extension
-    enable = true,
-    disable = check_file_size,
+    indent = {
+      enable = true
+    },
 
-    -- Setting this to true will run `:h syntax` and tree-sitter at the same time.
-    -- Set this to `true` if you depend on "syntax" being enabled (like for indentation).
-    -- Using this option may slow down your editor, and you may see some duplicate highlights.
-    -- Instead of true it can also be a list of languages
-    additional_vim_regex_highlighting = { "markdown" },
-  },
-  incremental_selection = {
-    enable = true, -- Enable incremental selection
-  },
-  textobjects = {
-    select = {
+    highlight = {
+      -- `false` will disable the whole extension
       enable = true,
+      disable = check_file_size,
 
-      -- Automatically jump forward to textobj, similar to targets.vim
+      -- Setting this to true will run `:h syntax` and tree-sitter at the same time.
+      -- Set this to `true` if you depend on "syntax" being enabled (like for indentation).
+      -- Using this option may slow down your editor, and you may see some duplicate highlights.
+      -- Instead of true it can also be a list of languages
+      additional_vim_regex_highlighting = { "markdown" },
+    },
+    incremental_selection = {
+      enable = true, -- Enable incremental selection
+    },
+    textobjects = {
+      select = {
+        enable = true,
+
+        -- Automatically jump forward to textobj, similar to targets.vim
+        lookahead = true,
+
+        keymaps = {
+          -- You can use the capture groups defined in textobjects.scm
+          ["af"] = "@function.outer",
+          ["if"] = "@function.inner",
+          ["ac"] = "@class.outer",
+          -- You can optionally set descriptions to the mappings (used in the desc parameter of
+          -- nvim_buf_set_keymap) which plugins like which-key display
+          ["ic"] = { query = "@class.inner", desc = "Select inner part of a class region" },
+          -- You can also use captures from other query groups like `locals.scm`
+          ["as"] = { query = "@local.scope", query_group = "locals", desc = "Select language scope" },
+        },
+        -- You can choose the select mode (default is charwise 'v')
+        --
+        -- Can also be a function which gets passed a table with the keys
+        -- * query_string: eg '@function.inner'
+        -- * method: eg 'v' or 'o'
+        -- and should return the mode ('v', 'V', or '<c-v>') or a table
+        -- mapping query_strings to modes.
+        selection_modes = {
+          ['@parameter.outer'] = 'v', -- charwise
+          ['@function.outer'] = 'V', -- linewise
+          ['@class.outer'] = '<c-v>', -- blockwise
+        },
+        -- If you set this to `true` (default is `false`) then any textobject is
+        -- extended to include preceding or succeeding whitespace. Succeeding
+        -- whitespace has priority in order to act similarly to eg the built-in
+        -- `ap`.
+        --
+        -- Can also be a function which gets passed a table with the keys
+        -- * query_string: eg '@function.inner'
+        -- * selection_mode: eg 'v'
+        -- and should return true or false
+        include_surrounding_whitespace = true,
+      },
+    },
+  })
+
+  -- Register a new testing parser (templ)
+  --local treesitter_parser_config = require("nvim-treesitter.parsers").get_parser_configs()
+  --treesitter_parser_config.templ = {
+  --  install_info = {
+  --    url = "https://github.com/vrischmann/tree-sitter-templ.git",
+  --    files = {"src/parser.c", "src/scanner.c"},
+  --    branch = "master",
+  --  },
+  --}
+  --vim.treesitter.language.register("templ", "templ")
+
+else
+  -- main branch config
+  local parsers = {
+    "bash",
+    "c",
+    "c_sharp",
+    "cpp",
+    "css",
+    "go",
+    "graphql",
+    "html",
+    "java",
+    "javascript",
+    "jsdoc",
+    "json",
+    "lua",
+    "markdown",
+    "markdown_inline",
+    "php",
+    "python",
+    "query",
+    "regex",
+    "rust",
+    "scss",
+    "sql",
+    "tsx",
+    "typescript",
+    "vim",
+    "vimdoc",
+    "vue",
+    "yaml",
+  }
+
+  require("nvim-treesitter").setup({
+    install_dir = vim.fn.stdpath("data") .. "/site",
+  })
+
+  -- main-branch replacement for ensure_installed/auto_install.
+  -- It will no-op for already-installed parsers.
+  require("nvim-treesitter").install(parsers)
+
+  vim.api.nvim_create_autocmd("FileType", {
+    callback = function(args)
+      local bufnr = args.buf
+
+      -- Skip TS entirely for big buffers
+      if check_file_size(nil, bufnr) then
+        return
+      end
+
+      -- Start highlighting (Neovim built-in)
+      pcall(vim.treesitter.start, bufnr)
+
+      -- Folding (Neovim built-in TS folding)
+      --vim.wo.foldmethod = "expr"
+      --vim.wo.foldexpr = "v:lua.vim.treesitter.foldexpr()"
+
+      -- Indentation
+      vim.bo[bufnr].indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
+
+      if vim.bo[bufnr].filetype == "markdown" then
+        vim.bo[bufnr].syntax = "markdown"
+      end
+    end,
+  })
+
+  require("nvim-treesitter-textobjects").setup({
+    select = {
       lookahead = true,
-
-      keymaps = {
-        -- You can use the capture groups defined in textobjects.scm
-        ["af"] = "@function.outer",
-        ["if"] = "@function.inner",
-        ["ac"] = "@class.outer",
-        -- You can optionally set descriptions to the mappings (used in the desc parameter of
-        -- nvim_buf_set_keymap) which plugins like which-key display
-        ["ic"] = { query = "@class.inner", desc = "Select inner part of a class region" },
-        -- You can also use captures from other query groups like `locals.scm`
-        ["as"] = { query = "@local.scope", query_group = "locals", desc = "Select language scope" },
-      },
-      -- You can choose the select mode (default is charwise 'v')
-      --
-      -- Can also be a function which gets passed a table with the keys
-      -- * query_string: eg '@function.inner'
-      -- * method: eg 'v' or 'o'
-      -- and should return the mode ('v', 'V', or '<c-v>') or a table
-      -- mapping query_strings to modes.
       selection_modes = {
-        ['@parameter.outer'] = 'v', -- charwise
-        ['@function.outer'] = 'V', -- linewise
-        ['@class.outer'] = '<c-v>', -- blockwise
+        ["@parameter.outer"] = "v",
+        ["@function.outer"] = "V",
+        ["@class.outer"] = "<c-v>",
       },
-      -- If you set this to `true` (default is `false`) then any textobject is
-      -- extended to include preceding or succeeding whitespace. Succeeding
-      -- whitespace has priority in order to act similarly to eg the built-in
-      -- `ap`.
-      --
-      -- Can also be a function which gets passed a table with the keys
-      -- * query_string: eg '@function.inner'
-      -- * selection_mode: eg 'v'
-      -- and should return true or false
       include_surrounding_whitespace = true,
     },
-  },
-})
+  })
 
---local treesitter_parser_config = require("nvim-treesitter.parsers").get_parser_configs()
---treesitter_parser_config.templ = {
---  install_info = {
---    url = "https://github.com/vrischmann/tree-sitter-templ.git",
---    files = {"src/parser.c", "src/scanner.c"},
---    branch = "master",
---  },
---}
+  vim.keymap.set({ "x", "o" }, "af", function()
+    require("nvim-treesitter-textobjects.select").select_textobject("@function.outer", "textobjects")
+  end)
+
+  vim.keymap.set({ "x", "o" }, "if", function()
+    require("nvim-treesitter-textobjects.select").select_textobject("@function.inner", "textobjects")
+  end)
+
+  vim.keymap.set({ "x", "o" }, "ac", function()
+    require("nvim-treesitter-textobjects.select").select_textobject("@class.outer", "textobjects")
+  end)
+
+  vim.keymap.set({ "x", "o" }, "ic", function()
+    require("nvim-treesitter-textobjects.select").select_textobject("@class.inner", "textobjects")
+  end)
+
+  vim.keymap.set({ "x", "o" }, "as", function()
+    require("nvim-treesitter-textobjects.select").select_textobject("@local.scope", "locals")
+  end)
+end
+
 --
---vim.treesitter.language.register("templ", "templ")
+-- Custom functions
 --
+
 --Test treesitter textobjects
 function select_function_node_col_based(inner)
   local bufnr = vim.api.nvim_get_current_buf()
@@ -373,36 +481,36 @@ vim.api.nvim_create_user_command("SkeletonCopy", function(opts)
     cpp       = [[ (function_definition) @func ]],
     h         = [[ (function_definition) @func ]],
     c_sharp   = [[
-      (method_declaration)        @func
-      (constructor_declaration)   @func
+      (method_declaration)      @func
+      (constructor_declaration) @func
     ]],
     python    = [[ (function_definition) @func ]],
     go = [[
-      (method_declaration)        @func
-      (function_declaration)   @func
+      (method_declaration)   @func
+      (function_declaration) @func
     ]],
     rust      = [[ (function_item) @func ]],
     lua       = [[ 
       (function_declaration) @func 
     ]],
     java = [[
-      (method_declaration)        @func
-      (constructor_declaration)   @func
+      (method_declaration)      @func
+      (constructor_declaration) @func
     ]],
     javascript = [[
       (function_declaration) @func
-      (method_definition)   @func
-      (arrow_function)      @func
+      (method_definition)    @func
+      (arrow_function)       @func
     ]],
     typescript = [[
       (function_declaration) @func
-      (method_definition)   @func
-      (arrow_function)      @func
+      (method_definition)    @func
+      (arrow_function)       @func
     ]],
     tsx       = [[
       (function_declaration) @func
-      (method_definition)   @func
-      (arrow_function)      @func
+      (method_definition)    @func
+      (arrow_function)       @func
     ]],
   }
   local qstr = queries[ts_lang]
@@ -420,9 +528,9 @@ vim.api.nvim_create_user_command("SkeletonCopy", function(opts)
     vim.notify("Could not create TS parser for “" .. ts_lang .. "”", vim.log.levels.ERROR)
     return
   end
-  local tree  = parser:parse()[1]
-  local root  = tree:root()
-  local tsq   = vim.treesitter.query or vim.treesitter
+  local tree = parser:parse()[1]
+  local root = tree:root()
+  local tsq = vim.treesitter.query or vim.treesitter
   local parse = tsq.parse_query or tsq.parse
   if not parse then
     vim.notify("Treesitter query parser not available", vim.log.levels.ERROR)
