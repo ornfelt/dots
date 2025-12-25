@@ -55,6 +55,7 @@ sh ~/.dwm/autostart.sh &
 
 xset s off
 xset -dpms
+xset -b
 
 if picom --help | grep -q "\-\-animations"; then
     picom --animations
