@@ -262,7 +262,7 @@ screen.connect_signal("arrange", function (s)
     local firefox_clients = {}
 
     for _, c in ipairs(clients) do
-      if c.class == "firefox" then
+      if c.class == "firefox" or c.class == "firefox-esr" then
         table.insert(firefox_clients, c)
       end
     end
@@ -1022,7 +1022,7 @@ root.keys(globalkeys)
 -- Rules to apply to new clients (through the "manage" signal).
 awful.rules.rules = {
     {
-        rule = { class = "firefox" },
+        rule = { class = "firefox", "firefox-esr" },
         properties = {
             --maximized = false, -- Ensure Firefox is not always maximized
             floating = false,  -- Ensure it respects tiled layouts
