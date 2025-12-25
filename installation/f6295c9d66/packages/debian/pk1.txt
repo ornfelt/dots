@@ -81,6 +81,7 @@ gdb
 gettext-base
 gettext
 git
+glslc
 gnupg
 gnuplot
 golang

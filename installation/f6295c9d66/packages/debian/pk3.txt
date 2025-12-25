@@ -1,3 +1,5 @@
+manpages
+mawk
 media-types
 mesa-common-dev
 mesa-utils

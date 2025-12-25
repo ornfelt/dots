@@ -81,6 +81,7 @@ gdb
 gettext-base
 gettext
 git
+glslc
 gnupg
 gnuplot
 golang
@@ -138,6 +139,7 @@ libcglm-dev
 libcom-err2
 libcpprest-dev
 libcrypt1
+libcurl4-openssl-dev
 libdb5.3t64
 libdebconfclient0
 libedit2
@@ -147,6 +149,8 @@ libfdisk1
 libfontconfig1-dev
 libfreetype-dev
 libgcc-s1
+libglfw3-dev
+libglm-dev
 libgmp10
 libgssapi-krb5-2
 libharfbuzz-bin
