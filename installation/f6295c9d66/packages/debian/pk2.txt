@@ -1,3 +1,5 @@
+libblkid1
+libboost-all-dev
 libbpf1
 libbsd0
 libbullet-dev
@@ -39,13 +41,8 @@ libkrb5support0
 liblastlog2-2
 liblocale-gettext-perl
 liblockfile-bin
-liblua5.1-0-dev
-liblua5.2-0
 liblua5.2-dev
-liblua5.3-0
 liblua5.3-dev
-liblua5.4-0
-liblua5.4-dev
 libluajit-5.1-dev
 liblz4-1
 liblzma5
@@ -118,10 +115,11 @@ logrotate
 logsave
 lsb-release
 lsof
-lua5.2
-lua5.3
 lua5.4
 luajit
 luarocks
 lxappearance
 m4
+maim
+make
+man-db

@@ -898,14 +898,11 @@ liblsan0
 liblsof0
 libltdl-dev
 libltdl7
-liblua5.1-0
-liblua5.1-0-dev
 liblua5.2-0
 liblua5.2-dev
 liblua5.3-0
 liblua5.3-dev
 liblua5.4-0
-liblua5.4-dev
 libluajit-5.1-2
 libluajit-5.1-common
 libluajit-5.1-dev
@@ -1560,8 +1557,6 @@ lua-luv
 lua-sec
 lua-socket
 lua5.1
-lua5.2
-lua5.3
 lua5.4
 luajit
 luarocks
