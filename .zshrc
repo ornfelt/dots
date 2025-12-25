@@ -494,6 +494,8 @@ alias f='fuzzyfind'
 bindkey '^ ' autosuggest-accept
 
 bindkey '^H' backward-kill-word 
+#bindkey '^H' backward-delete-char
+bindkey '^?' backward-delete-char
 # or add this to ~/.inputrc
 #"\C-h": backward-kill-word
 
