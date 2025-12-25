@@ -123,3 +123,5 @@ libapt-pkg7.0
 libattr1
 libaudit-common
 libaudit1
+libblkid1
+libboost-all-dev

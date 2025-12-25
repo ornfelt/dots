@@ -1,3 +1,6 @@
+maim
+make
+man-db
 manpages
 mawk
 media-types

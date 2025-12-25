@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-language="$1"
+arg="$1"
 
 # Colors (ANSI escape codes)
 RESET='\033[0m'
@@ -12,8 +12,9 @@ MAGENTA='\033[35m'
 CYAN='\033[36m'
 DARKGRAY='\033[90m'
 
-# Language alias map
-declare -A LANGUAGE_MAP=(
+# Unified argument alias map (languages + tools)
+declare -A ARG_MAP=(
+  # Languages
   [c]="c"
   [cs]="csharp"
   ["c#"]="csharp"
@@ -31,6 +32,19 @@ declare -A LANGUAGE_MAP=(
   [python]="python"
   [rust]="rust"
   [rs]="rust"
+
+  # Tools
+  [git]="git"
+  [grep]="grep"
+  [gitgrep]="gitgrep"
+  [ggrep]="gitgrep"
+  [ripgrep]="ripgrep"
+  [rgrep]="ripgrep"
+  [sh]="other"
+  [x]="other"
+  [other]="other"
+  [scripts]="scripts"
+  [script]="scripts"
 )
 
 # Helper: command + description
@@ -69,9 +83,10 @@ write_code_line() {
 
 # Usage / main help
 show_usage() {
-  printf "Available code language arguments (case-insensitive):\n"
+  printf "Available arguments (case-insensitive):\n"
 
-  local langs=(
+  local args=(
+    # Languages
     "c"
     "cs / c# / csharp"
     "cpp / c++"
@@ -81,16 +96,39 @@ show_usage() {
     "ts / typescript"
     "py / python"
     "rust / rs"
+    # Other groups
+    "git"
+    "grep"
+    "gitgrep / ggrep"
+    "ripgrep / rgrep"
+    "sh / x / other"
+    "scripts / script"
   )
 
-  for lang in "${langs[@]}"; do
-    printf "  %b%s%b\n" "$MAGENTA" "$lang" "$RESET"
+  for a in "${args[@]}"; do
+    printf "  %b%s%b\n" "$MAGENTA" "$a" "$RESET"
   done
+}
+
+show_git_help() {
+  printf "%bgit commands:%b\n\n" "$YELLOW" "$RESET"
+
+  write_code_line 'git push https://$GITHUB_TOKEN@github.com/ornfelt/small_games'
+  write_code_line 'git clone --recurse-submodules -j8 https://$GITHUB_TOKEN@github.com/ornfelt/my_wow_docs'
 
   printf "\n"
-  printf "Some useful dot commands:\n"
+  write_code_line "git log --graph --decorate                    # Display history with graph and decorate"
+  write_code_line "git show HEAD > latest_changes.diff           # Generate diff showing changes from latest commit"
+  write_code_line "git show HEAD^ > latest_changes.diff          # Generate diff showing changes from second latest commit"
+  write_code_line "git show c7aa908 -- '*.go' > go_fixes.diff    # Generate diff for a commit, filter on file type"
+  write_code_line "git diff cbceb5a..HEAD -- '**/*.java' '*.cs' > new_java_cs_changes.diff  # Diff range, filter types"
+  write_code_line 'cd "$code_root_dir/Code2/C#/dotnet-integration" && git apply $my_notes_path/notes/svea/diffs/testshop_dev.diff --verbose  # Apply patch'
+}
 
-  printf "%b  Navigation / cd helpers:%b\n" "$DARKGRAY" "$RESET"
+show_scripts_help() {
+  printf "%bdot commands / scripts:%b\n\n" "$YELLOW" "$RESET"
+
+  printf "%bNavigation / cd helpers:%b\n" "$DARKGRAY" "$RESET"
   write_command_with_description ".cdh"        "cd into home dir"
   write_command_with_description ".cdc"        "cd into code_root_dir"
   write_command_with_description ".cdn"        "cd into my_notes_path"
@@ -123,7 +161,7 @@ show_usage() {
   write_command_with_description ".mangoszero" "cd into mangoszero dir"
 
   printf "\n"
-  printf "%b  Run / launcher helpers:%b\n" "$DARKGRAY" "$RESET"
+  printf "%bRun / launcher helpers:%b\n" "$DARKGRAY" "$RESET"
   write_command_with_description ".ioq3(2)" "run ioq3 or ioq32"
   write_command_with_description ".openmw"  "run openmw"
   write_command_with_description ".stk"     "run SuperTuxKart (stk)"
@@ -158,7 +196,7 @@ show_usage() {
   write_command_with_description ".mwr"     "my_wow: run_with_args.sh with args"
 
   printf "\n"
-  printf "%b  Listing helpers:%b\n" "$DARKGRAY" "$RESET"
+  printf "%bListing helpers:%b\n" "$DARKGRAY" "$RESET"
   write_command_with_description ".list_colors"         "print colors"
   write_command_with_description ".list_std_colors"     "print standard colors"
   write_command_with_description ".list_files"          "list largest files recursively (CLI)"
@@ -168,13 +206,13 @@ show_usage() {
   write_command_with_description ".list_mapped_drives"  "list mapped drives"
 
   printf "\n"
-  printf "%b  Network helpers:%b\n" "$DARKGRAY" "$RESET"
+  printf "%bNetwork helpers:%b\n" "$DARKGRAY" "$RESET"
   write_command_with_description ".show_wifi"            "print stored Wi-Fi settings"
   write_command_with_description ".network_devices"      "list network devices"
   write_command_with_description ".network_devices_ping" "ping common network devices"
 
   printf "\n"
-  printf "%b  Build / tools / maintenance:%b\n" "$DARKGRAY" "$RESET"
+  printf "%bBuild / tools / maintenance:%b\n" "$DARKGRAY" "$RESET"
   write_command_with_description ".cmake"          "helper script for cmake"
   write_command_with_description ".git_push"       "helper script for git push"
   write_command_with_description ".git_pull"       "helper script for git pull"
@@ -194,35 +232,14 @@ show_usage() {
   write_command_with_description ".clean_shada"    "clean neovim shada data"
   write_command_with_description ".wow_wtf_update" "copy WoW WTF files into wow_addons repo"
   write_command_with_description ".wow_wtf_fix"    "copy WoW WTF files from wow_addons repo to local WoW dir"
+}
 
-  printf "\n"
-  printf "Useful git commands:\n\n"
-
-  printf "%b# Display history with graph and decorate:%b\n" "$DARKGRAY" "$RESET"
-  printf "%bgit log --graph --decorate%b\n" "$BLUE" "$RESET"
-
-  printf "%b# Generate diff showing changes from latest commit:%b\n" "$DARKGRAY" "$RESET"
-  printf "%bgit show HEAD > latest_changes.diff%b\n" "$BLUE" "$RESET"
-
-  printf "%b# Generate diff showing changes from second latest commit (use HEAD^^ for third etc.):%b\n" "$DARKGRAY" "$RESET"
-  printf "%bgit show HEAD^ > latest_changes.diff%b\n" "$BLUE" "$RESET"
-
-  printf "%b# Generate diff for specified commit id, filtering on specific file type:%b\n" "$DARKGRAY" "$RESET"
-  printf "%bgit show c7aa908 -- '*.go' > go_fixes.diff%b\n" "$BLUE" "$RESET"
-
-  printf "%b# Generate diff between specific commit and now, filtering on specific file types:%b\n" "$DARKGRAY" "$RESET"
-  printf "%bgit diff cbceb5a..HEAD -- '**/*.java' '*.cs' > new_java_cs_changes.diff%b\n" "$BLUE" "$RESET"
-
-  printf "%b# Apply patch:%b\n" "$DARKGRAY" "$RESET"
-  printf "%bcd \"\$code_root_dir/Code2/C#/dotnet-integration\" && git apply \$my_notes_path/notes/svea/diffs/testshop_dev.diff --verbose%b\n" "$BLUE" "$RESET"
-
-  printf "\n"
-  printf "Other useful commands:\n\n"
-
-  printf "%b  keepawake%b\n" "$GREEN" "$RESET"
-  printf "%b  vim \"\$code_root_dir/Code2/Wow/tools/my_wow/wow.conf\"%b\n" "$GREEN" "$RESET"
-  printf "%b  cd \"\$my_notes_path\"; ./check_dirs.sh%b\n" "$GREEN" "$RESET"
-  printf "%b  pwd | xclip -selection clipboard%b\n" "$GREEN" "$RESET"
+show_other_help() {
+  printf "%bOther useful commands:%b\n\n" "$YELLOW" "$RESET"
+  write_code_line "keepawake"
+  write_code_line 'vim "$code_root_dir/Code2/Wow/tools/my_wow/wow.conf"'
+  write_code_line 'cd "$my_notes_path" && ./check_dirs.sh'
+  write_code_line "pwd | xclip -selection clipboard"
 
   printf "\n"
   printf "%bBash file/directory operations:%b\n" "$YELLOW" "$RESET"
@@ -262,7 +279,164 @@ show_usage() {
   write_code_line "find . | wc -l                      # count everything recursively"
 }
 
-# Language-specific helpers
+show_grep_help() {
+  printf "## grep\n\n"
+
+  printf "Basic Recursive Search\n"
+  write_code_line 'grep -r "your_search_text" .'
+  printf "\n"
+
+  printf "Non-Recursive Search\n"
+  write_code_line 'grep "your_search_text" *'
+  printf "\n"
+
+  printf "Search Only in Files with Specific Extensions\n"
+  write_code_line 'grep -r --include="*.txt" "your_search_text" .'
+  printf "Use --include to include only .txt files.\n\n"
+
+  printf "Multiple extensions:\n"
+  write_code_line 'grep -r --include="*.txt" --include="*.md" "your_search_text" .'
+  printf "\n"
+
+  printf "Exclude Specific File Extensions\n"
+  write_code_line 'grep -r --exclude="*.log" "your_search_text" .'
+  printf "\n"
+
+  printf "Exclude multiple:\n"
+  write_code_line 'grep -r --exclude="*.log" --exclude="*.tmp" "your_search_text" .'
+  printf "\n"
+
+  printf "Combine Include and Exclude\n"
+  printf "Only .cs files but exclude .Designer.cs ones:\n"
+  write_code_line 'grep -r --include="*.cs" --exclude="*.Designer.cs" "your_search_text" .'
+  printf "\n"
+
+  printf "Search in a Specific Directory\n"
+  write_code_line 'grep -r "your_search_text" path/to/directory'
+  printf "\n"
+
+  printf "Show Only File Names with Matches\n"
+  write_code_line 'grep -rl "your_search_text" .'
+  printf "\n"
+
+  printf "Show Line Numbers\n"
+  write_code_line 'grep -rn "your_search_text" .'
+  printf "\n"
+
+  printf "Case-Insensitive Search\n"
+  write_code_line 'grep -ri "your_search_text" .'
+  printf "\n"
+
+  printf "Literal Search (no regex)\n"
+  write_code_line 'grep -rF "literal_text" .'
+}
+
+show_gitgrep_help() {
+  printf "## git grep\n\n"
+
+  printf "Basic Recursive Search\n"
+  write_code_line 'git grep "your_search_text"'
+  printf "\n"
+
+  printf "Non-Recursive Search\n"
+  write_code_line 'git grep "your_search_text" -- "./*"'
+  printf "\n"
+
+  printf "Search Only in Files with Specific Extensions\n"
+  write_code_line 'git grep "your_search_text" -- "*.txt"'
+  printf "\n"
+
+  printf "Multiple extensions:\n"
+  write_code_line 'git grep "your_search_text" -- "*.txt" "*.md"'
+  printf "\n"
+
+  printf "Exclude Specific File Extensions\n"
+  write_code_line 'git grep "your_search_text" -- ":!*.log"'
+  printf "\n"
+
+  printf "Exclude multiple:\n"
+  write_code_line 'git grep "your_search_text" -- ":!*.log" ":!*.tmp"'
+  printf "\n"
+
+  printf "Combine Include and Exclude\n"
+  printf "Only .cs files but exclude .Designer.cs ones:\n"
+  write_code_line 'git grep "your_search_text" -- "*.cs" ":!*.Designer.cs"'
+  printf "\n"
+
+  printf "Search in a Specific Directory\n"
+  write_code_line 'git grep "your_search_text" -- path/to/directory'
+  printf "\n"
+
+  printf "Show Only File Names with Matches\n"
+  write_code_line 'git grep -l "your_search_text"'
+  printf "\n"
+
+  printf "Show Line Numbers\n"
+  write_code_line 'git grep -n "your_search_text"'
+  printf "\n"
+
+  printf "Case-Insensitive Search\n"
+  write_code_line 'git grep -i "your_search_text"'
+  printf "\n"
+
+  printf "Literal Search (no regex)\n"
+  write_code_line 'git grep -F "literal_text"'
+}
+
+show_ripgrep_help() {
+  printf "## ripgrep\n\n"
+
+  printf "Basic Recursive Search\n"
+  write_code_line 'rg "your_search_text"'
+  printf "\n"
+
+  printf "Non-Recursive Search\n"
+  write_code_line 'rg --max-depth 1 "your_search_text"'
+  printf "\n"
+
+  printf "Search Only in Files with Specific Extensions\n"
+  write_code_line 'rg "your_search_text" -g "*.txt"'
+  printf "Use -g (glob) to include only .txt files.\n\n"
+
+  printf "Multiple extensions:\n"
+  write_code_line 'rg "your_search_text" -g "*.txt" -g "*.md"'
+  printf "You can add multiple -g filters.\n\n"
+
+  printf "Exclude Specific File Extensions\n"
+  write_code_line 'rg "your_search_text" -g "!*.log"'
+  printf "The ! negates the glob, so it excludes .log files.\n\n"
+
+  printf "Exclude multiple:\n"
+  write_code_line 'rg "your_search_text" -g "!*.log" -g "!*.tmp"'
+  printf "\n"
+
+  printf "Combine Include and Exclude\n"
+  printf "Only .cs files but exclude .Designer.cs ones:\n"
+  write_code_line 'rg "your_search_text" -g "*.cs" -g "!*.Designer.cs"'
+  printf "\n"
+
+  printf "Search in a Specific Directory\n"
+  write_code_line 'rg "your_search_text" path/to/directory'
+  printf "\n"
+
+  printf "Show Only File Names with Matches\n"
+  write_code_line 'rg -l "your_search_text"'
+  printf "\n"
+
+  printf "Show Line Numbers\n"
+  write_code_line 'rg -n "your_search_text"'
+  printf "\n"
+
+  printf "Case-Insensitive Search\n"
+  write_code_line 'rg -i "your_search_text"'
+  printf "\n"
+
+  printf "Literal Search (no regex)\n"
+  write_code_line 'rg -F "literal_text"'
+}
+
+# language helps
+
 show_c_help() {
   printf "\n"
   printf "%bC / gcc quick examples:%b\n" "$YELLOW" "$RESET"
@@ -474,25 +648,23 @@ show_ts_help() {
 
 # Main
 
-if [[ -z "$language" ]]; then
+# No arg -> print ONLY available args
+if [[ -z "$arg" ]]; then
   show_usage
   exit 0
 fi
 
-key="${language,,}"  # to lower-case (bash 4+)
-if [[ -z "${LANGUAGE_MAP[$key]+x}" ]]; then
-  printf "%bUnknown code language argument: '%s'%b\n" "$RED" "$language" "$RESET"
-  printf "\n"
+key="${arg,,}"  # to lower-case (bash 4+)
+if [[ -z "${ARG_MAP[$key]+x}" ]]; then
+  # Unknown arg -> print ONLY available args (no extra text)
   show_usage
-  exit 1
+  exit 0
 fi
 
-normalized_language="${LANGUAGE_MAP[$key]}"
+mode="${ARG_MAP[$key]}"
 
-printf "Selected code language: "
-printf "%b%s%b\n" "$MAGENTA" "$normalized_language" "$RESET"
-
-case "$normalized_language" in
+case "$mode" in
+  # Languages
   c)           show_c_help ;;
   csharp)      show_csharp_help ;;
   cpp)         show_cpp_help ;;
@@ -502,6 +674,13 @@ case "$normalized_language" in
   go)          show_go_help ;;
   javascript)  show_js_help ;;
   typescript)  show_ts_help ;;
-  *)           ;;  # shouldn't happen
+
+  # Other modes
+  git)         show_git_help ;;
+  grep)        show_grep_help ;;
+  gitgrep)     show_gitgrep_help ;;
+  ripgrep)     show_ripgrep_help ;;
+  scripts)     show_scripts_help ;;
+  other)       show_other_help ;;
 esac
 
