@@ -1034,6 +1034,35 @@ compile_projects() {
     if check_dir "llama.cpp" "build"; then
         cmake .. -DCMAKE_BUILD_TYPE=Release
         make -j$(nproc)
+        cd "$HOME/Code/ml"
+    fi
+
+    # make
+    #if check_file "llama2.c" "run"; then
+    #    make run
+    #    #make runfast
+    #    cd "$HOME/Code/ml"
+    #fi
+    # cmake
+    if check_dir "llama2.c" "build"; then
+        #cmake ../ -DCMAKE_BUILD_TYPE=Debug
+        cmake ../ -DCMAKE_BUILD_TYPE=Release
+        make -j$(nproc)
+        cd "$HOME/Code/ml"
+    fi
+
+    # make
+    #if check_file "llama3.2.c" "run"; then
+    #    make run
+    #    #make runfast
+    #    cd "$HOME/Code/ml"
+    #fi
+    # cmake
+    if check_dir "llama3.2.c" "build"; then
+        #cmake ../ -DCMAKE_BUILD_TYPE=Debug
+        cmake ../ -DCMAKE_BUILD_TYPE=Release
+        make -j$(nproc)
+        cd "$HOME/Code/ml"
     fi
 
     print_and_cd_to_dir "$HOME/Code/js" "Compiling"
@@ -1111,7 +1140,16 @@ compile_projects() {
 
     if check_dir "ioq3"; then
         cd ..
-        make
+        if [[ -f Makefile || -f makefile || -f GNUmakefile ]]; then
+            make
+            #make -j"$(nproc)"
+        elif [[ -f CMakeLists.txt ]]; then
+            cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+            cmake --build build -j"$(nproc)"
+        else
+            echo "[warn] No Makefile or CMakeLists.txt found in $(pwd)" >&2
+        fi
+
         cd "$HOME/Code2/C"
     fi
 
