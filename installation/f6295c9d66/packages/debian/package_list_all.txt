@@ -186,6 +186,8 @@ gfortran-14-x86-64-linux-gnu
 gfortran-x86-64-linux-gnu
 ghostscript
 gir1.2-atk-1.0
+gir1.2-atspi-2.0
+gir1.2-cloudproviders-0.3.0
 gir1.2-freedesktop
 gir1.2-freedesktop-dev
 gir1.2-gdkpixbuf-2.0
@@ -223,6 +225,7 @@ golang-1.24-src
 golang-doc
 golang-go
 golang-src
+googletest
 gopls
 gpg
 gpg-agent
@@ -343,12 +346,15 @@ libasync-interrupt-perl
 libasyncns0
 libatasmart4
 libatk-bridge2.0-0t64
+libatk-bridge2.0-dev
 libatk-wrapper-java
 libatk-wrapper-java-jni
 libatk1.0-0t64
+libatk1.0-dev
 libatomic1
 libatopology2t64
 libatspi2.0-0t64
+libatspi2.0-dev
 libattr1
 libaudit-common
 libaudit1
@@ -371,6 +377,8 @@ libavutil59
 libb2-1
 libbabeltrace1
 libbdplus0
+libbenchmark-dev
+libbenchmark1.9.1
 libbinutils
 libblas3
 libblkid-dev
@@ -511,7 +519,9 @@ libc6-i386
 libcaca0
 libcaf-openmpi-3t64
 libcairo-gobject2
+libcairo-script-interpreter2
 libcairo2
+libcairo2-dev
 libcanberra0
 libcap-dev
 libcap-ng0
@@ -538,6 +548,7 @@ libclang-cpp19
 libclang-rt-19-dev
 libclang1-19
 libclone-perl
+libcloudproviders-dev
 libcloudproviders0
 libcoarrays-dev
 libcoarrays-openmpi-dev
@@ -564,6 +575,7 @@ libcurl4-openssl-dev
 libcurl4t64
 libdaemon0
 libdata-dump-perl
+libdatrie-dev
 libdatrie1
 libdav1d7
 libdb5.3t64
@@ -607,11 +619,13 @@ libefivar1t64
 libegl-dev
 libegl-mesa0
 libegl1
+libegl1-mesa-dev
 libelf1t64
 libencode-locale-perl
 libenet-dev
 libenet-doc
 libenet7
+libepoxy-dev
 libepoxy0
 liberror-perl
 libev-perl
@@ -649,6 +663,7 @@ libflac-dev
 libflac14
 libflite1
 libfluidsynth3
+libfmt-dev
 libfmt10
 libfont-afm-perl
 libfontconfig-dev
@@ -660,6 +675,7 @@ libfreeimage3
 libfreetype-dev
 libfreetype6
 libfreexl1
+libfribidi-dev
 libfribidi0
 libfs-dev
 libfs6
@@ -681,6 +697,7 @@ libgdbm-compat4t64
 libgdbm6t64
 libgdcm3.0t64
 libgdk-pixbuf-2.0-0
+libgdk-pixbuf-2.0-dev
 libgdk-pixbuf2.0-bin
 libgdk-pixbuf2.0-common
 libgeos-c1t64
@@ -701,6 +718,7 @@ libgles-dev
 libgles1
 libgles2
 libgles2-mesa-dev
+libglew-dev
 libglew2.2
 libglfw3
 libglfw3-dev
@@ -721,6 +739,7 @@ libglx-dev
 libglx-mesa0
 libglx0
 libgme0
+libgmock-dev
 libgmp-dev
 libgmp10
 libgmpxx4ldbl
@@ -750,9 +769,11 @@ libgssapi-krb5-2
 libgssrpc4t64
 libgstreamer-plugins-base1.0-0
 libgstreamer1.0-0
+libgtest-dev
 libgtk-3-0t64
 libgtk-3-bin
 libgtk-3-common
+libgtk-3-dev
 libgtk-layer-shell0
 libguard-perl
 libgudev-1.0-0
@@ -1072,6 +1093,7 @@ libpam-systemd
 libpam-wtmpdb
 libpam0g
 libpango-1.0-0
+libpango1.0-dev
 libpangocairo-1.0-0
 libpangoft2-1.0-0
 libpangoxft-1.0-0
@@ -1243,6 +1265,10 @@ libsdl2-image-2.0-0
 libsdl2-image-dev
 libsdl2-mixer-2.0-0
 libsdl2-mixer-dev
+libsdl2-net-2.0-0
+libsdl2-net-dev
+libsdl2-ttf-2.0-0
+libsdl2-ttf-dev
 libseccomp2
 libsecret-1-0
 libsecret-common
@@ -1255,6 +1281,7 @@ libsensors5
 libsepol-dev
 libsepol2
 libserd-0-0
+libserf-1-1
 libsframe1
 libshaderc1
 libsharpyuv-dev
@@ -1275,6 +1302,7 @@ libsndfile1-dev
 libsndio-dev
 libsndio7.0
 libsocket++1
+libsodium-dev
 libsodium23
 libsord-0-0
 libsoup-3.0-0
@@ -1304,6 +1332,7 @@ libstartup-notification0
 libstb0t64
 libstdc++-14-dev
 libstdc++6
+libsvn1
 libsvtav1enc2
 libswresample-dev
 libswresample5
@@ -1334,6 +1363,7 @@ libtext-charwidth-perl
 libtext-iconv-perl
 libtext-wrapi18n-perl
 libthai-data
+libthai-dev
 libthai0
 libtheora0
 libtheoradec1
@@ -1466,11 +1496,13 @@ libxcb-present0
 libxcb-randr0
 libxcb-render-util0
 libxcb-render0
+libxcb-render0-dev
 libxcb-res0
 libxcb-res0-dev
 libxcb-screensaver0
 libxcb-shape0
 libxcb-shm0
+libxcb-shm0-dev
 libxcb-sync1
 libxcb-util1
 libxcb-xfixes0
@@ -2075,6 +2107,7 @@ pamix
 pamixer
 pandoc
 pandoc-data
+pango1.0-tools
 parted
 passwd
 patch
@@ -2314,6 +2347,7 @@ shim-unsigned
 sound-theme-freedesktop
 sqv
 ssl-cert
+subversion
 suckless-tools
 sudo
 sysstat
@@ -2390,6 +2424,7 @@ vlc-plugin-visualization
 w3m
 w3m-img
 wamerican
+wayland-protocols
 webpack
 wezterm
 wget

@@ -1,3 +1,6 @@
+lua5.3
+lua5.4
+luajit
 luarocks
 lxappearance
 m4
@@ -75,6 +78,7 @@ sed
 sensible-utils
 shim-signed
 sqv
+subversion
 suckless-tools
 sudo
 systemd-sysv
