@@ -1983,18 +1983,33 @@ copy_game_data() {
     done
 
     # ioq3
-    echo -e "\n***Copying ioq3 files to $HOME/Code2/C/ioq3/build/release-linux-x86_64/baseq3/***"
-    for file in "$MEDIA_PATH/2024/baseq3/"*.pk3; do
-        if [ -f "$file" ]; then
-            dest_file="$HOME/Code2/C/ioq3/build/release-linux-x86_64/baseq3/$(basename "$file")"
+    IOQ3_BUILD_DIR="$HOME/Code2/C/ioq3/build"
+    IOQ3_RELEASE_DIR="$IOQ3_BUILD_DIR/Release"
+    # fallback to old release dir if needed
+    if [ ! -d "$IOQ3_RELEASE_DIR" ]; then
+        IOQ3_RELEASE_DIR="$IOQ3_BUILD_DIR/release-linux-x86_64"
+    fi
+    # if still missing: print and skip this step
+    if [ ! -d "$IOQ3_RELEASE_DIR" ]; then
+        echo "[skip] ioq3 release dir not found: $IOQ3_BUILD_DIR/Release or $IOQ3_BUILD_DIR/release-linux-x86_64"
+    else
+        IOQ3_BASEQ3_DIR="$IOQ3_RELEASE_DIR/baseq3"
+
+        echo -e "\n*** Copying ioq3 files to $IOQ3_BASEQ3_DIR/ ***"
+        mkdir -p "$IOQ3_BASEQ3_DIR"
+
+        for file in "$MEDIA_PATH/2024/baseq3/"*.pk3; do
+            [ -f "$file" ] || continue
+
+            dest_file="$IOQ3_BASEQ3_DIR/$(basename "$file")"
             if [ ! -f "$dest_file" ]; then
-                cp "$file" "$dest_file"
-                echo "Copied $(basename "$file") to $HOME/Code2/C/ioq3/build/release-linux-x86_64/baseq3/"
+                cp -- "$file" "$dest_file"
+                echo "Copied $(basename "$file") to $IOQ3_BASEQ3_DIR/"
             else
-                echo "[ok] $(basename "$file") already exists in $HOME/Code2/C/ioq3/build/release-linux-x86_64/baseq3/, skipping copy."
+                echo "[ok] $(basename "$file") already exists in $IOQ3_BASEQ3_DIR/, skipping copy."
             fi
-        fi
-    done
+        done
+    fi
 
     # Diablo 2
     echo -e "\n***Copying d2 files to $DOWNLOADS_DIR***"
