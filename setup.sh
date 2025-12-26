@@ -1295,9 +1295,11 @@ compile_projects() {
     # Or, better:
     # yay -S ace
     if check_dir "core"; then
-        # Fix CXX version for arch
+        # Fix CXX version
         VMANGOS_CMAKE_FILE="$HOME/Code2/C++/core/CMakeLists.txt"
-        if [ -f /etc/os-release ] && grep -qi '^ID=arch' /etc/os-release; then
+        CHANGE_VMANGOS_CXX_VERSION=false
+        if [ "$CHANGE_VMANGOS_CXX_VERSION" = true ]; then
+        #if [ -f /etc/os-release ] && grep -qi '^ID=arch' /etc/os-release; then
             # Note the space after CMAKE_CXX_STANDARD (needed to not match CMAKE_CXX_STANDARD_REQUIRED etc.)
             occurrence_count=$(grep -c 'CMAKE_CXX_STANDARD ' "$VMANGOS_CMAKE_FILE")
             echo "Found CMAKE_CXX_STANDARD occurrences: $occurrence_count"
@@ -1306,6 +1308,9 @@ compile_projects() {
                 sed -i 's/CMAKE_CXX_STANDARD 14/CMAKE_CXX_STANDARD 17/' "$VMANGOS_CMAKE_FILE"
             fi
         fi
+
+        #export ACE_ROOT=/usr/include/ace
+        #export TBB_ROOT_DIR=/usr/include/tbb
 
         cmake .. -DDEBUG=0 -DSUPPORTED_CLIENT_BUILD=5875 -DUSE_EXTRACTORS=1 -DCMAKE_INSTALL_PREFIX=$HOME/vmangos
         make -j$(nproc)
