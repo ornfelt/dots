@@ -1,3 +1,8 @@
+lxappearance
+m4
+maim
+make
+man-db
 manpages
 mawk
 media-types
@@ -49,6 +54,11 @@ python3-reportbug
 python3-yaml
 python3
 qt5-qmake
+qt6-base-dev
+qt6-l10n-tools
+qt6-svg-dev
+qt6-tools-dev-tools
+qt6-tools-dev
 qtbase5-dev-tools
 qtbase5-dev
 qtwebengine5-dev
@@ -57,6 +67,7 @@ readline-common
 reportbug
 ripgrep
 rofi
+rustup
 sed
 sensible-utils
 shim-signed

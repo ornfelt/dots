@@ -196,6 +196,23 @@ elif [[ "$lc" == *torchless* ]]; then
     main='cmake .. -DCMAKE_BUILD_TYPE=Release && cmake --build .'
     run_or_print "$main"
 
+elif [[ "$lc" == *ollama* ]]; then
+    test_cmakelists current "ollama (expecting CMakeLists.txt in current directory)"
+
+    main='cmake -B build && cmake --build build -j $(nproc)'
+    run_or_print "$main"
+
+elif [[ "$lc" == *llama.cpp* ]]; then
+    test_cmakelists current "llama.cpp (expecting CMakeLists.txt in current directory)"
+
+    main='cmake -B build && cmake --build build --config Release -j $(nproc)'
+    run_or_print "$main"
+
+    if [[ -n "$OnlyPrint" ]]; then
+        echo
+        echo 'cmake -B build && cmake --build build --config Debug'
+    fi
+
 else
     test_cmakelists parent
     # Default fallback

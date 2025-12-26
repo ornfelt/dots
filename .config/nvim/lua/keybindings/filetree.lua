@@ -39,6 +39,11 @@ end
 -- vim.cmd((vim.bo.filetype == 'oil') and 'bd' or 'Oil')
 -- end, { nargs = 0 })
 
+local function has_listed_alt_buffer()
+  local alt = vim.fn.bufnr("#")             -- alternate buffer number
+  return alt > 0 and vim.fn.buflisted(alt) == 1
+end
+
 function toggle_filetree()
   local filepath = vim.fn.expand('%:p') == '' and '~/' or vim.fn.expand('%:p:h')
 
@@ -53,6 +58,8 @@ function toggle_filetree()
     end
   end
 
+  filepath = vim.fn.fnameescape(filepath)
+
   if myconfig.should_debug_print() then
     print(filepath)
   end
@@ -60,7 +67,17 @@ function toggle_filetree()
   if has_oil then
     -- vim.cmd('leftabove vsplit | vertical resize 40 | Oil ' .. filepath)
     -- vim.cmd('Oil ' .. filepath)
-    vim.cmd((vim.bo.filetype == 'oil') and 'b#' or 'Oil ' .. filepath)
+    --vim.cmd((vim.bo.filetype == 'oil') and 'b#' or 'Oil ' .. filepath)
+    -- Fix error when empty buffer
+    if vim.bo.filetype == "oil" then
+      if has_listed_alt_buffer() then
+        vim.cmd("buffer #")  -- same as :b#
+      else
+        vim.cmd("enew")      -- no alternate buffer; create a normal empty one
+      end
+    else
+      vim.cmd("Oil " .. filepath)
+    end
   elseif has_mini_files then
     require('mini.files').open(filepath)
   else
