@@ -385,6 +385,7 @@ libblockdev-swap3
 libblockdev-utils3
 libblockdev3
 libblosc1
+libbluetooth-dev
 libbluetooth3
 libbluray2
 libboost-all-dev
@@ -608,6 +609,9 @@ libegl-mesa0
 libegl1
 libelf1t64
 libencode-locale-perl
+libenet-dev
+libenet-doc
+libenet7
 libepoxy0
 liberror-perl
 libev-perl
@@ -937,6 +941,7 @@ libmariadb3
 libmatroska7
 libmaxminddb0
 libmbedcrypto16
+libmbedtls-dev
 libmbedtls21
 libmbedx509-7
 libmbim-glib4
@@ -945,6 +950,7 @@ libmbim-utils
 libmd0
 libmd4c0
 libmecab2
+libminizip-dev
 libminizip1t64
 libmm-glib0
 libmng1
@@ -1265,6 +1271,7 @@ libsmartcols1
 libsmbclient0
 libsnappy1v5
 libsndfile1
+libsndfile1-dev
 libsndio-dev
 libsndio7.0
 libsocket++1
@@ -1634,6 +1641,7 @@ mesa-va-drivers
 mesa-vdpau-drivers
 mesa-vulkan-drivers
 meson
+minizip
 modemmanager
 mokutil
 mount
@@ -2087,6 +2095,7 @@ php8.4-opcache
 php8.4-readline
 picom
 pinentry-curses
+pkg-config
 pkgconf
 pkgconf-bin
 pocketsphinx-en-us

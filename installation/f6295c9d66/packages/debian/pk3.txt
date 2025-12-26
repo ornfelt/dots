@@ -1,3 +1,4 @@
+luarocks
 lxappearance
 m4
 maim
@@ -9,6 +10,7 @@ media-types
 mesa-common-dev
 mesa-utils
 meson
+minizip
 mount
 mysql-apt-config
 mysql-server
@@ -43,6 +45,7 @@ perl
 php-mysql
 php
 picom
+pkg-config
 procps
 protobuf-compiler
 pulseaudio

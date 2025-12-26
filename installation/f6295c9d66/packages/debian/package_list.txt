@@ -127,6 +127,7 @@ libavcodec-dev
 libavformat-dev
 libavutil-dev
 libblkid1
+libbluetooth-dev
 libboost-all-dev
 libboost-filesystem-dev
 libboost-iostreams-dev
@@ -151,6 +152,7 @@ libdb5.3t64
 libdebconfclient0
 libedit2
 libelf1t64
+libenet-dev
 libext2fs2t64
 libfdisk1
 libfontconfig1-dev
@@ -165,6 +167,7 @@ libharfbuzz-dev
 libhogweed6t64
 libidn2-0
 libjansson4
+libjpeg-dev
 libk5crypto3
 libkeyutils1
 libkmod2
@@ -184,7 +187,9 @@ libluajit-5.1-dev
 liblz4-1
 liblz4-dev
 liblzma5
+libmbedtls-dev
 libmd0
+libminizip-dev
 libmnl0
 libmount1
 libmygui-dev
@@ -196,6 +201,7 @@ libnewt0.52
 libnftables1
 libnftnl11
 libnss-systemd
+libogg-dev
 libopenal-dev
 libopenscenegraph-dev
 libpam-modules-bin
@@ -204,6 +210,7 @@ libpam-runtime
 libpam-systemd
 libpam0g
 libpcre2-8-0
+libpng-dev
 libpopt0
 libproc2-0
 libreadline-dev
@@ -221,6 +228,7 @@ libsemanage2
 libsepol2
 libslang2
 libsmartcols1
+libsndfile1-dev
 libsqlite3-0
 libsqlite3-dev
 libss2
@@ -242,6 +250,7 @@ libudev1
 libunistring5
 libunshield-dev
 libuuid1
+libvorbis-dev
 libwine
 libx11-dev
 libx11-xcb-dev
@@ -279,6 +288,7 @@ media-types
 mesa-common-dev
 mesa-utils
 meson
+minizip
 mount
 mysql-apt-config
 mysql-server
@@ -313,6 +323,7 @@ perl
 php-mysql
 php
 picom
+pkg-config
 procps
 protobuf-compiler
 pulseaudio

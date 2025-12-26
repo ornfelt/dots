@@ -127,9 +127,13 @@ libavcodec-dev
 libavformat-dev
 libavutil-dev
 libblkid1
+libbluetooth-dev
 libboost-all-dev
 libboost-filesystem-dev
 libboost-iostreams-dev
 libboost-program-options-dev
 libbpf1
 libbsd0
+libbullet-dev
+libbz2-1.0
+libbz2-dev
