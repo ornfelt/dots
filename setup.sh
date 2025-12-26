@@ -467,6 +467,8 @@ clone_projects() {
     print_and_cd_to_dir "$HOME/Code/ml" "Cloning"
     clone_repo_if_missing "llama.cpp" "https://github.com/ggml-org/llama.cpp"
     clone_repo_if_missing "ollama" "https://github.com/ollama/ollama"
+    clone_repo_if_missing "llama2.c" "https://github.com/ornfelt/llama2.c"
+    clone_repo_if_missing "llama3.2.c" "https://github.com/ornfelt/llama3.2.c"
 
     print_and_cd_to_dir "$HOME/Code/js" "Cloning"
     clone_repo_if_missing "KotOR.js" "https://github.com/KobaltBlu/KotOR.js"
