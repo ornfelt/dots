@@ -209,6 +209,10 @@ else
     zle -N incarg
     bindkey -M vicmd '^a' incarg
 
+    # Safer pasting (handles multi-line paste better)
+    #autoload -Uz bracketed-paste-magic
+    #zle -N bracketed-paste bracketed-paste-magic
+
     if [ $(command -v "fzf") ]; then
         source $HOME/.config/zsh/scripts_fzf.zsh
     fi
