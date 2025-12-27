@@ -27,6 +27,7 @@ build-essential
 busybox
 bzip2
 ca-certificates
+checkinstall
 chromium
 clang
 clangd
@@ -107,6 +108,7 @@ initramfs-tools
 installation-report
 iproute2
 iputils-ping
+iwd
 jq
 jupyter-notebook
 keyboard-configuration
@@ -120,6 +122,7 @@ libace-dev
 libacl1
 libapparmor1
 libapt-pkg7.0
+libasound2-dev
 libattr1
 libaudit-common
 libaudit1
@@ -160,14 +163,17 @@ libfmt-dev
 libfontconfig1-dev
 libfreetype-dev
 libgcc-s1
+libgl1-mesa-dev
 libglew-dev
 libglfw3-dev
+libglib2.0-dev
 libglm-dev
 libgmock-dev
 libgmp10
 libgssapi-krb5-2
 libgtest-dev
 libgtk-3-dev
+libgtk2.0-dev
 libharfbuzz-bin
 libharfbuzz-dev
 libhogweed6t64
@@ -206,6 +212,7 @@ libnettle8t64
 libnewt0.52
 libnftables1
 libnftnl11
+libnotify-dev
 libnss-systemd
 libogg-dev
 libopenal-dev
@@ -250,6 +257,7 @@ libswresample-dev
 libswscale-dev
 libsystemd-shared
 libsystemd0
+libtbb-dev
 libtext-charwidth-perl
 libtext-iconv-perl
 libtext-wrapi18n-perl
@@ -266,8 +274,11 @@ libwine
 libx11-dev
 libx11-xcb-dev
 libxcb-res0-dev
+libxcursor-dev
 libxft-dev
+libxi-dev
 libxinerama-dev
+libxrandr-dev
 libxtables12
 libxxhash0
 libyaml-cpp-dev
@@ -357,9 +368,11 @@ qtwebengine5-dev
 ranger
 readline-common
 reportbug
+rfkill
 ripgrep
 rofi
 rustup
+scons
 sed
 sensible-utils
 shim-signed

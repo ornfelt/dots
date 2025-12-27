@@ -27,6 +27,7 @@ build-essential
 busybox
 bzip2
 ca-certificates
+checkinstall
 chromium
 clang
 clangd
@@ -107,6 +108,7 @@ initramfs-tools
 installation-report
 iproute2
 iputils-ping
+iwd
 jq
 jupyter-notebook
 keyboard-configuration
@@ -120,6 +122,7 @@ libace-dev
 libacl1
 libapparmor1
 libapt-pkg7.0
+libasound2-dev
 libattr1
 libaudit-common
 libaudit1
@@ -141,3 +144,4 @@ libbz2-dev
 libc-bin
 libc6
 libcap-ng0
+libcap2-bin

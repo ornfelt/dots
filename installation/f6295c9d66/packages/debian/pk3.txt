@@ -1,3 +1,6 @@
+lsb-release
+lsof
+lua5.2
 lua5.3
 lua5.4
 luajit
@@ -71,9 +74,11 @@ qtwebengine5-dev
 ranger
 readline-common
 reportbug
+rfkill
 ripgrep
 rofi
 rustup
+scons
 sed
 sensible-utils
 shim-signed
