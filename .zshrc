@@ -210,8 +210,9 @@ else
     bindkey -M vicmd '^a' incarg
 
     # Safer pasting (handles multi-line paste better)
-    #autoload -Uz bracketed-paste-magic
-    #zle -N bracketed-paste bracketed-paste-magic
+    autoload -Uz bracketed-paste-magic url-quote-magic
+    zle -N bracketed-paste bracketed-paste-magic
+    zle -N self-insert url-quote-magic
 
     if [ $(command -v "fzf") ]; then
         source $HOME/.config/zsh/scripts_fzf.zsh
