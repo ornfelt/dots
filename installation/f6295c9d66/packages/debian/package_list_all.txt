@@ -143,6 +143,7 @@ exfatprogs
 exo-utils
 fakeroot
 fastfetch
+fd-find
 fdisk
 feh
 ffmpeg
@@ -1233,6 +1234,7 @@ libogdi4.1
 libogg-dev
 libogg0
 libogg0
+libogre-1.12-dev
 libogre1.12.10t64
 libonig5
 libopenal-data
@@ -2452,6 +2454,7 @@ po-debconf
 pocketsphinx-en-us
 polkitd
 poppler-data
+poppler-utils
 powertop
 ppp
 procps

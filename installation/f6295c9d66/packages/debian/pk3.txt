@@ -52,6 +52,7 @@ php-mysql
 php
 picom
 pkg-config
+poppler-utils
 procps
 protobuf-compiler
 pulseaudio

@@ -69,6 +69,7 @@ libnftnl11
 libnotify-dev
 libnss-systemd
 libogg-dev
+libogre-1.12-dev
 libopenal-dev
 libopenscenegraph-dev
 libpam-modules-bin

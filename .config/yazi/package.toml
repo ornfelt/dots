@@ -10,7 +10,7 @@ hash = "92fbb5483657fa7976cdf4e0104e18e0"
 
 [[plugin.deps]]
 use = "yazi-rs/plugins:smart-enter"
-rev = "2301ff8"
+rev = "7ca66b4"
 hash = "56fdabc96fc1f4d53c96eb884b02a5be"
 
 [flavor]

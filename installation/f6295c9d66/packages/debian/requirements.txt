@@ -134,6 +134,7 @@ rpds-py==0.21.0
 scipy==1.15.3
 SCons==4.8.1
 Send2Trash==1.8.3
+sentencepiece==0.2.1
 setuptools==78.1.1
 soupsieve==2.7
 stack-data==0.6.3

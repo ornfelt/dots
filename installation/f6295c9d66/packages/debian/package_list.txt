@@ -61,6 +61,7 @@ e2fsprogs
 emscripten
 fakeroot
 fastfetch
+fd-find
 fdisk
 feh
 ffmpeg
@@ -218,6 +219,7 @@ libnftnl11
 libnotify-dev
 libnss-systemd
 libogg-dev
+libogre-1.12-dev
 libopenal-dev
 libopenscenegraph-dev
 libpam-modules-bin
@@ -350,6 +352,7 @@ php-mysql
 php
 picom
 pkg-config
+poppler-utils
 procps
 protobuf-compiler
 pulseaudio

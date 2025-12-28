@@ -61,6 +61,7 @@ e2fsprogs
 emscripten
 fakeroot
 fastfetch
+fd-find
 fdisk
 feh
 ffmpeg
