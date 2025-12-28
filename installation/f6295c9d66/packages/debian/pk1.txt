@@ -9,6 +9,7 @@ apt-listchanges
 apt-transport-https
 apt-utils
 apt
+aspnetcore-runtime-10.0
 autoconf
 automake
 autopkgtest
@@ -51,6 +52,8 @@ dhcpcd-base
 diffutils
 dmidecode
 doc-debian
+dotnet-runtime-10.0
+dotnet-sdk-10.0
 doxygen
 dpkg
 dunst
@@ -144,4 +147,3 @@ libbz2-dev
 libc-bin
 libc6
 libcap-ng0
-libcap2-bin

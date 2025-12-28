@@ -1,4 +1,3 @@
-lsb-release
 lsof
 lua5.2
 lua5.3
@@ -42,6 +41,7 @@ openssl-provider-legacy
 openssl
 os-prober
 p7zip-full
+packages-microsoft-prod
 pamix
 pamixer
 passwd
@@ -115,6 +115,7 @@ wamerican
 wezterm
 wget
 whiptail
+wine32
 wine64
 wine
 wireless-tools

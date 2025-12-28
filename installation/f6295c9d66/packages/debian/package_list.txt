@@ -9,6 +9,7 @@ apt-listchanges
 apt-transport-https
 apt-utils
 apt
+aspnetcore-runtime-10.0
 autoconf
 automake
 autopkgtest
@@ -51,6 +52,8 @@ dhcpcd-base
 diffutils
 dmidecode
 doc-debian
+dotnet-runtime-10.0
+dotnet-sdk-10.0
 doxygen
 dpkg
 dunst
@@ -336,6 +339,7 @@ openssl-provider-legacy
 openssl
 os-prober
 p7zip-full
+packages-microsoft-prod
 pamix
 pamixer
 passwd
@@ -409,6 +413,7 @@ wamerican
 wezterm
 wget
 whiptail
+wine32
 wine64
 wine
 wireless-tools

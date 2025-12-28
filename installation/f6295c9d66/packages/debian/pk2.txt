@@ -1,3 +1,4 @@
+libcap2-bin
 libcap2
 libcglm-dev
 libcollada-dom-dev
@@ -145,3 +146,4 @@ login.defs
 login
 logrotate
 logsave
+lsb-release

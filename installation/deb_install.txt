@@ -258,23 +258,19 @@ And change scripts to /usr/bin/bash and /usr/bin/python3...
 # wine
 
 See:
-https://wiki.debian.org/Wine#Step_2:_Installation
-
-sudo dpkg --add-architecture i386 && sudo apt-get update && sudo apt-get install wine32:i386
-or:
-Install wine on a 64-bit architecture (amd64 with i386 as foreign 32-bit
-architecture):
-sudo dpkg --add-architecture i386 && sudo apt update
-sudo apt install \
-      wine \
-      wine32 \
-      wine64 \
-      libwine \
-      libwine:i386 \
-      fonts-wine
-
-Main wiki page:
 https://wiki.debian.org/Wine
+
+You can identify your architecture with the following command:
+dpkg --print-architecture
+
+E.g. for amd64 (which most users have) you may need i386. Enable it with the
+following command:
+sudo dpkg --add-architecture i386 && sudo apt update
+
+sudo apt install wine wine64 libwine fonts-wine
+
+Also do this:
+sudo apt install wine32
 
 NOTE: you probably need this:
 Do this if needed:
@@ -292,18 +288,17 @@ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 
 https://learn.microsoft.com/en-us/dotnet/core/install/linux-debian
 
-wget https://packages.microsoft.com/config/debian/12/packages-microsoft-prod.deb -O packages-microsoft-prod.deb
+wget https://packages.microsoft.com/config/debian/13/packages-microsoft-prod.deb -O packages-microsoft-prod.deb
 sudo dpkg -i packages-microsoft-prod.deb
 rm packages-microsoft-prod.deb
 
 ->
+sudo apt-get update && sudo apt-get install -y dotnet-sdk-10.0
+sudo apt-get install -y aspnetcore-runtime-10.0 dotnet-runtime-10.0
 
-sudo apt-get update && sudo apt-get install -y dotnet-sdk-9.0
-
-These may not work but you can try them as well:
-sudo apt-get update && sudo apt-get install -y aspnetcore-runtime-9.0
-
-sudo apt-get install -y dotnet-runtime-9.0
+if needed:
+sudo apt-get install -y aspnetcore-runtime-9.0
+sudo apt-get install -y dotnet-sdk-9.0 dotnet-runtime-9.0
 
 Old notes:
 
