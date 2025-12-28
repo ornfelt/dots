@@ -2445,7 +2445,8 @@ fix_other_files() {
 
         if [ ! -d "$HOME/Code2/Wow/tools/mpq/Export" ]; then
             #printf "You should run: cd $HOME/Code2/Wow/tools/mpq && ./gophercraft_mpq_set export --chain-json docs/wotlk-chain.json --working-directory \"%s/wow/Data\" --export-directory \"%s/Export\"\n" "$dir_to_use" "$export_dir"
-            printf "You should run: cd $HOME/Code2/Wow/tools/mpq && ./mopaq export --chain-json docs/wotlk-chain.json --working-directory \"%s/wow/Data\" --export-directory \"%s/Export\"\n" "$dir_to_use" "$export_dir"
+            #printf "You should run: cd $HOME/Code2/Wow/tools/mpq && ./mopaq export --chain-json docs/wotlk-chain.json --working-directory \"%s/wow/Data\" --export-directory \"%s/Export\"\n" "$dir_to_use" "$export_dir"
+            printf "You should run: cd $HOME/Code2/Wow/tools/mpq && ./mopaq export docs/wotlk-chain.json -d \"%s/wow/Data\" -o \"%s/Export\"\n" "$dir_to_use" "$export_dir"
         else
             echo "[ok] $HOME/Code2/Wow/tools/mpq/Export already exists."
         fi
