@@ -89,19 +89,29 @@ end
 -- Customized config (for fun)
 local config_file_path = my_notes_path .. "scripts/files/nvim_config.txt"
 
+local function file_exists(path)
+  local f = io.open(path, "r")
+  if f then f:close(); return true end
+  return false
+end
+
 local function print_config_contents()
-    local file = io.open(config_file_path, "r")
-    if not file then
-        vim.notify("Config file not found: " .. config_file_path, vim.log.levels.ERROR)
-        return
-    end
+  if not file_exists(config_file_path) then
+    --print("Config file not found: " .. config_file_path)
+    return
+  end
+  local file = io.open(config_file_path, "r")
+  if not file then
+    vim.notify("Config file not found: " .. config_file_path, vim.log.levels.ERROR)
+    return
+  end
 
-    vim.notify("Contents of " .. config_file_path, vim.log.levels.INFO)
-    for line in file:lines() do
-        print(line)
-    end
+  vim.notify("Contents of " .. config_file_path, vim.log.levels.INFO)
+  for line in file:lines() do
+    print(line)
+  end
 
-    file:close()
+  file:close()
 end
 
 vim.api.nvim_create_user_command("PrintConfig", print_config_contents, {})
@@ -109,6 +119,11 @@ vim.api.nvim_create_user_command("PrintConfig", print_config_contents, {})
 local function read_config(key, default_value)
   local value = default_value
   local key_lower = key:lower()
+
+  if not file_exists(config_file_path) then
+    --print("Config file not found: " .. config_file_path .. " (using default for " .. key .. ")")
+    return default_value
+  end
 
   for line in io.lines(config_file_path) do
     local line_lower = line:lower()
@@ -162,6 +177,11 @@ function M.get_py_command()
 end
 
 function CyclePythonExecCommand()
+  if not file_exists(config_file_path) then
+    --print("Config file not found: " .. config_file_path)
+    return
+  end
+
   local possible_commands = { "read_file", "gpt", "claude/claude", "gemini/gemini", "mistral/mistral" }
   local current_command = read_config("PythonExecCommand", "gpt")
 
@@ -212,6 +232,11 @@ function M.get_sql_exec_lang()
 end
 
 function CycleSqlExecLang()
+  if not file_exists(config_file_path) then
+    --print("Config file not found: " .. config_file_path)
+    return
+  end
+
   local possible_langs = { "cs", "cpp", "go", "java", "python", "rust", "typescript" }
   local current_lang = read_config("SqlExecLang", "cs")
 
@@ -270,6 +295,11 @@ end
 vim.api.nvim_create_user_command('CycleSqlExecLang', CycleSqlExecLang, {})
 
 function ToggleBooleanSetting(settingKey)
+  if not file_exists(config_file_path) then
+    --print("Config file not found: " .. config_file_path)
+    return
+  end
+
   local lines = {}
   local current_value = "false"
   local updated = false
@@ -336,6 +366,11 @@ function M.get_file_picker()
 end
 
 local function CycleFilePicker()
+  if not file_exists(config_file_path) then
+    --print("Config file not found: " .. config_file_path)
+    return
+  end
+
   local possible_file_pickers = {
     FilePicker.FZF,
     FilePicker.FZF_LUA,
