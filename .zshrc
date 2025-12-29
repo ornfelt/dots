@@ -485,7 +485,7 @@ else
     export wow_tbc_dir="$HOME/Downloads/wow_tbc"
     export wow_cata_dir="$HOME/Downloads/cata"
     export wow_mpq_dir="$HOME/Documents/local/mpq/Export"
-    export wow_classic_mpq_dir="$HOME/Documents/local/mpq_classic"
+    export wow_classic_mpq_dir="$HOME/Documents/local/mpq_classic/Work"
     export wow_tbc_mpq_dir="$HOME/Documents/local/mpq_tbc"
     export wow_cata_mpq_dir="$HOME/Documents/local/mpq_cata"
 fi

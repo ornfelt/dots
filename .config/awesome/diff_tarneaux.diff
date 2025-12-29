@@ -6966,10 +6966,10 @@ index 0000000..99f8700
 +return factory
 diff --git a/lain/widget/weather.lua b/lain/widget/weather.lua
 new file mode 100644
-index 0000000..c683d42
+index 0000000..0822a12
 --- /dev/null
 +++ b/lain/widget/weather.lua
-@@ -0,0 +1,146 @@
+@@ -0,0 +1,205 @@
 +--[[
 +
 +     Licensed under GNU General Public License v2
@@ -6984,6 +6984,7 @@ index 0000000..c683d42
 +local wibox    = require("wibox")
 +local math     = math
 +local os       = os
++local io       = io
 +local string   = string
 +local type     = type
 +local tonumber = tonumber
@@ -7077,6 +7078,28 @@ index 0000000..c683d42
 +        end)
 +    end
 +
++    local cache_path = args.cache_path or (os.getenv("XDG_CACHE_HOME") or (os.getenv("HOME") .. "/.cache")) .. "/awesome-weather-" .. tostring(city_id) .. ".json"
++
++    local function cache_write(tbl)
++        local ok, encoded = pcall(json.encode, tbl, { indent = false })
++        if not ok or not encoded then return end
++        local f = io.open(cache_path, "w")
++        if not f then return end
++        f:write(encoded)
++        f:close()
++    end
++
++    local function cache_read()
++        local f = io.open(cache_path, "r")
++        if not f then return nil end
++        local s = f:read("*a")
++        f:close()
++        if not s or s == "" then return nil end
++        local obj, _, err = json.decode(s, 1, nil)
++        if err or type(obj) ~= "table" then return nil end
++        return obj
++    end
++
 +    function weather.update()
 +        local cmd = string.format(current_call, city_id, units, lang, APPID)
 +        helpers.async(cmd, function(f)
@@ -7097,10 +7120,46 @@ index 0000000..c683d42
 +
 +                weather.icon_path = icons_path .. icon .. ".png"
 +                widget = weather.widget
++
++                -- Let user settings() compute markup etc as before
 +                settings()
++
++                -- Try to capture a "current temperature" and markup to cache.
++                -- temp: OpenWeatherMap main.temp (already in your payload)
++                local temp = nil
++                if weather_now["main"] and weather_now["main"]["temp"] then
++                    temp = tonumber(weather_now["main"]["temp"])
++                end
++
++                cache_write({
++                    ts = os.time(),
++                    temp = temp,
++                    icon_path = weather.icon_path,
++                    -- If your settings() sets markup, try to persist it too:
++                    markup = widget.get_markup and widget:get_markup() or nil
++                })
 +            else
-+                weather.icon_path = icons_path .. "na.png"
-+                weather.widget:set_markup(weather_na_markup)
++                -- Fallback: load last known good value
++                local cached = cache_read()
++                if cached then
++                    if cached.icon_path then
++                        weather.icon_path = cached.icon_path
++                    else
++                        weather.icon_path = icons_path .. "na.png"
++                    end
++
++                    if cached.markup and weather.widget.set_markup then
++                        weather.widget:set_markup(cached.markup)
++                    elseif cached.temp then
++                        -- If we don't have cached markup, at least show temp
++                        weather.widget:set_markup(string.format(" %d ", math.floor(cached.temp)))
++                    else
++                        weather.widget:set_markup(weather_na_markup)
++                    end
++                else
++                    weather.icon_path = icons_path .. "na.png"
++                    weather.widget:set_markup(weather_na_markup)
++                end
 +            end
 +
 +            weather.icon:set_image(weather.icon_path)
@@ -10043,7 +10102,7 @@ index 0000000..6052156
 diff --git a/rc.lua b/rc.lua
 old mode 100755
 new mode 100644
-index 898b85e..1c6a001
+index 898b85e..647ba45
 --- a/rc.lua
 +++ b/rc.lua
 @@ -1,52 +1,1317 @@
@@ -10314,7 +10373,7 @@ index 898b85e..1c6a001
 +    local firefox_clients = {}
 +
 +    for _, c in ipairs(clients) do
-+      if c.class == "firefox" then
++      if c.class == "firefox" or c.class == "firefox-esr" then
 +        table.insert(firefox_clients, c)
 +      end
 +    end
@@ -11074,7 +11133,7 @@ index 898b85e..1c6a001
 +-- Rules to apply to new clients (through the "manage" signal).
 +awful.rules.rules = {
 +    {
-+        rule = { class = "firefox" },
++        rule = { class = "firefox", "firefox-esr" },
 +        properties = {
 +            --maximized = false, -- Ensure Firefox is not always maximized
 +            floating = false,  -- Ensure it respects tiled layouts
@@ -12829,7 +12888,7 @@ index 0000000..a96b9b1
 Binary files /dev/null and b/themes/multicolor/icons/titlebar/sticky_normal_inactive.png differ
 diff --git a/themes/multicolor/theme.lua b/themes/multicolor/theme.lua
 new file mode 100644
-index 0000000..480af78
+index 0000000..ccfa4d3
 --- /dev/null
 +++ b/themes/multicolor/theme.lua
 @@ -0,0 +1,807 @@
@@ -13121,7 +13180,7 @@ index 0000000..480af78
 +    awful.spawn.easy_async_with_shell(script_path, function(stdout, stderr)
 +        if stderr and #stderr > 0 then
 +            weather_widget:set_markup(markup.fontfg(theme.font, default_color, "Error"))
-+            weathericon:set_markup(markup.fontfg(theme.font, default_color, "   "))
++            weathericon:set_markup(markup.fontfg(theme.font, default_color, "  "))
 +            return
 +        end
 +
@@ -13138,10 +13197,10 @@ index 0000000..480af78
 +                color = default_color
 +            end
 +            weather_widget:set_markup(markup.fontfg(theme.font, color, output))
-+            weathericon:set_markup(markup.fontfg(theme.font, color, "   "))
++            weathericon:set_markup(markup.fontfg(theme.font, color, "  "))
 +        else
 +            weather_widget:set_markup(markup.fontfg(theme.font, default_color, output))
-+            weathericon:set_markup(markup.fontfg(theme.font, default_color, "   "))
++            weathericon:set_markup(markup.fontfg(theme.font, default_color, "  "))
 +        end
 +
 +        local log_message = "Weather output updated: " .. output

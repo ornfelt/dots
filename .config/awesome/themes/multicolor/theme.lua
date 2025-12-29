@@ -286,7 +286,7 @@ local function update_weather_widget()
     awful.spawn.easy_async_with_shell(script_path, function(stdout, stderr)
         if stderr and #stderr > 0 then
             weather_widget:set_markup(markup.fontfg(theme.font, default_color, "Error"))
-            weathericon:set_markup(markup.fontfg(theme.font, default_color, "   "))
+            weathericon:set_markup(markup.fontfg(theme.font, default_color, "  "))
             return
         end
 
@@ -303,10 +303,10 @@ local function update_weather_widget()
                 color = default_color
             end
             weather_widget:set_markup(markup.fontfg(theme.font, color, output))
-            weathericon:set_markup(markup.fontfg(theme.font, color, "   "))
+            weathericon:set_markup(markup.fontfg(theme.font, color, "  "))
         else
             weather_widget:set_markup(markup.fontfg(theme.font, default_color, output))
-            weathericon:set_markup(markup.fontfg(theme.font, default_color, "   "))
+            weathericon:set_markup(markup.fontfg(theme.font, default_color, "  "))
         end
 
         local log_message = "Weather output updated: " .. output

@@ -12,6 +12,7 @@ local naughty  = require("naughty")
 local wibox    = require("wibox")
 local math     = math
 local os       = os
+local io       = io
 local string   = string
 local type     = type
 local tonumber = tonumber
@@ -105,6 +106,28 @@ local function factory(args)
         end)
     end
 
+    local cache_path = args.cache_path or (os.getenv("XDG_CACHE_HOME") or (os.getenv("HOME") .. "/.cache")) .. "/awesome-weather-" .. tostring(city_id) .. ".json"
+
+    local function cache_write(tbl)
+        local ok, encoded = pcall(json.encode, tbl, { indent = false })
+        if not ok or not encoded then return end
+        local f = io.open(cache_path, "w")
+        if not f then return end
+        f:write(encoded)
+        f:close()
+    end
+
+    local function cache_read()
+        local f = io.open(cache_path, "r")
+        if not f then return nil end
+        local s = f:read("*a")
+        f:close()
+        if not s or s == "" then return nil end
+        local obj, _, err = json.decode(s, 1, nil)
+        if err or type(obj) ~= "table" then return nil end
+        return obj
+    end
+
     function weather.update()
         local cmd = string.format(current_call, city_id, units, lang, APPID)
         helpers.async(cmd, function(f)
@@ -125,10 +148,46 @@ local function factory(args)
 
                 weather.icon_path = icons_path .. icon .. ".png"
                 widget = weather.widget
+
+                -- Let user settings() compute markup etc as before
                 settings()
+
+                -- Try to capture a "current temperature" and markup to cache.
+                -- temp: OpenWeatherMap main.temp (already in your payload)
+                local temp = nil
+                if weather_now["main"] and weather_now["main"]["temp"] then
+                    temp = tonumber(weather_now["main"]["temp"])
+                end
+
+                cache_write({
+                    ts = os.time(),
+                    temp = temp,
+                    icon_path = weather.icon_path,
+                    -- If your settings() sets markup, try to persist it too:
+                    markup = widget.get_markup and widget:get_markup() or nil
+                })
             else
-                weather.icon_path = icons_path .. "na.png"
-                weather.widget:set_markup(weather_na_markup)
+                -- Fallback: load last known good value
+                local cached = cache_read()
+                if cached then
+                    if cached.icon_path then
+                        weather.icon_path = cached.icon_path
+                    else
+                        weather.icon_path = icons_path .. "na.png"
+                    end
+
+                    if cached.markup and weather.widget.set_markup then
+                        weather.widget:set_markup(cached.markup)
+                    elseif cached.temp then
+                        -- If we don't have cached markup, at least show temp
+                        weather.widget:set_markup(string.format(" %d ", math.floor(cached.temp)))
+                    else
+                        weather.widget:set_markup(weather_na_markup)
+                    end
+                else
+                    weather.icon_path = icons_path .. "na.png"
+                    weather.widget:set_markup(weather_na_markup)
+                end
             end
 
             weather.icon:set_image(weather.icon_path)

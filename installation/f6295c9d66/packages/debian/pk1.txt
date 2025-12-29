@@ -149,3 +149,4 @@ libbz2-1.0
 libbz2-dev
 libc-bin
 libc6
+libcap-ng0

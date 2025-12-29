@@ -80,6 +80,7 @@ reportbug
 rfkill
 ripgrep
 rofi
+rsync
 rustup
 scons
 sed

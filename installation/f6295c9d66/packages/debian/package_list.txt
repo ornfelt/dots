@@ -278,6 +278,7 @@ libunistring5
 libunshield-dev
 libuuid1
 libvorbis-dev
+libwayland-dev
 libwine
 libx11-dev
 libx11-xcb-dev
@@ -286,6 +287,7 @@ libxcursor-dev
 libxft-dev
 libxi-dev
 libxinerama-dev
+libxkbcommon-dev
 libxrandr-dev
 libxtables12
 libxxhash0
@@ -382,6 +384,7 @@ reportbug
 rfkill
 ripgrep
 rofi
+rsync
 rustup
 scons
 sed

@@ -2663,6 +2663,7 @@ ripgrep
 rlwrap
 rofi
 rpcsvc-proto
+rsync
 rtkit
 runit-helper
 rustup

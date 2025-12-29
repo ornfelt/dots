@@ -1799,6 +1799,32 @@ copy_game_data() {
         echo "[warn] $LUA_SRC does NOT exist, skipping."
     fi
 
+    # acore_old -> local Documents dir (for navigation dll)
+    ACORE_OLD_SRC="$MEDIA_PATH/2024/acore_old"
+    ACORE_OLD_DEST="$HOME/Documents/local/acore/bin"
+
+    echo -e "\n***Copying acore_old files to $ACORE_OLD_DEST***"
+    if [ -d "$ACORE_OLD_SRC" ]; then
+        mkdir -p "$ACORE_OLD_DEST"
+
+        # Copy all directories from source into destination (only if missing)
+        for item in "$ACORE_OLD_SRC"/*; do
+            [ -e "$item" ] || continue
+            name="$(basename "$item")"
+
+            if [ -d "$item" ]; then
+                if [ ! -d "$ACORE_OLD_DEST/$name" ]; then
+                    cp -r -- "$item" "$ACORE_OLD_DEST/$name"
+                    echo "Copied dir $name -> $ACORE_OLD_DEST/"
+                else
+                    echo "[ok] Dir already exists: $ACORE_OLD_DEST/$name (skipping)"
+                fi
+            fi
+        done
+    else
+        echo "[warn] $ACORE_OLD_SRC does NOT exist, skipping."
+    fi
+
     # TrinityCore
     DEST_DIR="$HOME/tcore/bin"
     echo -e "\n***Copying tcore files to $DEST_DIR***"
