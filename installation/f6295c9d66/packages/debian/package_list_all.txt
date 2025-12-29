@@ -21,7 +21,9 @@ apt-listchanges
 apt-transport-https
 apt-utils
 aspnetcore-runtime-10.0
+aspnetcore-runtime-9.0
 aspnetcore-targeting-pack-10.0
+aspnetcore-targeting-pack-9.0
 assistant-qt6
 at-spi2-common
 at-spi2-core
@@ -120,12 +122,18 @@ dnsmasq-base
 doc-debian
 dosfstools
 dotnet-apphost-pack-10.0
+dotnet-apphost-pack-9.0
 dotnet-host
 dotnet-hostfxr-10.0
+dotnet-hostfxr-9.0
 dotnet-runtime-10.0
+dotnet-runtime-9.0
 dotnet-runtime-deps-10.0
+dotnet-runtime-deps-9.0
 dotnet-sdk-10.0
+dotnet-sdk-9.0
 dotnet-targeting-pack-10.0
+dotnet-targeting-pack-9.0
 doxygen
 dpkg
 dpkg-dev
@@ -2016,6 +2024,7 @@ net-tools
 netbase
 netcat-traditional
 netpbm
+netstandard-targeting-pack-2.1
 nettle-dev
 network-manager
 network-manager-l10n

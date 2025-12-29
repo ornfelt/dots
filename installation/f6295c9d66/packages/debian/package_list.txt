@@ -53,7 +53,9 @@ diffutils
 dmidecode
 doc-debian
 dotnet-runtime-10.0
+dotnet-runtime-9.0
 dotnet-sdk-10.0
+dotnet-sdk-9.0
 doxygen
 dpkg
 dunst
@@ -163,6 +165,7 @@ libelf1t64
 libenet-dev
 libext2fs2t64
 libfdisk1
+libffi-dev
 libfmt-dev
 libfontconfig1-dev
 libfreetype-dev
@@ -361,6 +364,7 @@ python3-mako
 python3-pip
 python3-pyaudio
 python3-reportbug
+python3-setuptools
 python3-yaml
 python3
 qt5-qmake

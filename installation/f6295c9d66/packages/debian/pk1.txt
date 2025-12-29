@@ -53,7 +53,9 @@ diffutils
 dmidecode
 doc-debian
 dotnet-runtime-10.0
+dotnet-runtime-9.0
 dotnet-sdk-10.0
+dotnet-sdk-9.0
 doxygen
 dpkg
 dunst
@@ -147,4 +149,3 @@ libbz2-1.0
 libbz2-dev
 libc-bin
 libc6
-libcap-ng0

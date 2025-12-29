@@ -1,3 +1,4 @@
+lsb-release
 lsof
 lua5.2
 lua5.3
@@ -61,6 +62,7 @@ python3-mako
 python3-pip
 python3-pyaudio
 python3-reportbug
+python3-setuptools
 python3-yaml
 python3
 qt5-qmake

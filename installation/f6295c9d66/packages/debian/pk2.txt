@@ -1,3 +1,4 @@
+libcap-ng0
 libcap2-bin
 libcap2
 libcglm-dev
@@ -13,6 +14,7 @@ libelf1t64
 libenet-dev
 libext2fs2t64
 libfdisk1
+libffi-dev
 libfmt-dev
 libfontconfig1-dev
 libfreetype-dev
@@ -147,4 +149,3 @@ login.defs
 login
 logrotate
 logsave
-lsb-release
