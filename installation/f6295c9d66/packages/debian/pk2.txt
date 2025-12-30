@@ -1,6 +1,3 @@
-libcap2-bin
-libcap2
-libcglm-dev
 libcollada-dom-dev
 libcom-err2
 libcpprest-dev
@@ -18,6 +15,7 @@ libfmt-dev
 libfontconfig1-dev
 libfreetype-dev
 libgcc-s1
+libgdk-pixbuf-2.0-dev
 libgl1-mesa-dev
 libglew-dev
 libglfw3-dev
@@ -33,6 +31,7 @@ libharfbuzz-bin
 libharfbuzz-dev
 libhogweed6t64
 libidn2-0
+libinput-dev
 libjansson4
 libjpeg-dev
 libk5crypto3
@@ -78,6 +77,7 @@ libpam-modules
 libpam-runtime
 libpam-systemd
 libpam0g
+libpango1.0-dev
 libpcre2-8-0
 libpcre2-dev
 libpng-dev
@@ -128,9 +128,14 @@ libuuid1
 libvorbis-dev
 libwayland-dev
 libwine
+libwlroots-0.18-dev
 libx11-dev
 libx11-xcb-dev
+libxcb-ewmh-dev
+libxcb-icccm4-dev
 libxcb-res0-dev
+libxcb-util0-dev
+libxcb1-dev
 libxcursor-dev
 libxft-dev
 libxi-dev
@@ -149,4 +154,3 @@ locales
 login.defs
 login
 logrotate
-logsave

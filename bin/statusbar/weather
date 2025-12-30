@@ -11,8 +11,20 @@ case $BLOCK_BUTTON in
 esac
 
 WIFI_NAME=$(iwgetid -r | tr '[:upper:]' '[:lower:]')
-
 CITY="Stockholm" # Default
+
+CACHE="$HOME/.local/share/weatherreport"
+
+# If we have no network, show cached value (if any) and exit.
+# (Uses the "default route" check; simple and fast)
+if ! ip route get 1.1.1.1 >/dev/null 2>&1; then
+    if [[ -s "$CACHE" ]]; then
+        cat "$CACHE"
+    else
+        echo "N/A"
+    fi
+    exit 0
+fi
 
 # Determine the city based on WiFi SSID (not really accurate but hey...)
 # Not needed with the gustavsberg -> stockholm replacement below...
@@ -42,26 +54,28 @@ validate_weather() {
 
 if validate_weather "$WEATHER_REPORT"; then
     #echo "$WEATHER_REPORT"
-    #echo "$WEATHER_REPORT" > "$HOME/.local/share/weatherreport"
-    echo "$WEATHER_REPORT" | tee "$HOME/.local/share/weatherreport"
-    #echo "$CITY $WEATHER_REPORT" | tee "$HOME/.local/share/weatherreport"
+    #echo "$WEATHER_REPORT" > "$CACHE"
+    echo "$WEATHER_REPORT" | tee "$CACHE"
+    #echo "$CITY $WEATHER_REPORT" | tee "$CACHE"
 else
     #echo "USING FALLBACK"
     #FALLBACK_OUTPUT=$(python ~/.local/bin/statusbar/weather_py.py)
-    #echo "$FALLBACK_OUTPUT" > "$HOME/.local/share/weatherreport"
+    #echo "$FALLBACK_OUTPUT" > "$CACHE"
     #echo "$FALLBACK_OUTPUT"
-    #python ~/.local/bin/statusbar/weather_py.py "$CITY" | tee "$HOME/.local/share/weatherreport"
+    #python ~/.local/bin/statusbar/weather_py.py "$CITY" | tee "$CACHE"
     FALLBACK_OUTPUT=$(python ~/.local/bin/statusbar/weather_py.py "$CITY")
     if validate_weather "$FALLBACK_OUTPUT"; then
-        echo "$FALLBACK_OUTPUT" | tee "$HOME/.local/share/weatherreport"
-        #echo "$CITY $FALLBACK_OUTPUT" | tee "$HOME/.local/share/weatherreport"
+        echo "$FALLBACK_OUTPUT" | tee "$CACHE"
+        #echo "$CITY $FALLBACK_OUTPUT" | tee "$CACHE"
     else
-        cat "$HOME/.local/share/weatherreport"
+        cat "$CACHE"
     fi
 fi
 
+#
 # old code (kept for reference)
-
+#
+# CACHE="$HOME/.local/share/weatherreport"
 # STR=$(curl -sf "wttr.in/Uppsala?format=1" | sed -r 's/^.{4}//')
 # #STR=$(curl -sf "wttr.in/Uppsala" | grep -Eo -m 1 '(\+|\-)[0-9]+' | head -1)
 # SUB='location'
@@ -69,13 +83,14 @@ fi
 # 	#echo " -1"
 # 	sudo cat ~/.local/share/weatherreport
 # else
-# 	#curl -sf "wttr.in/Uppsala" | grep -Eo -m 1 '(\+|\-|[0-9])[0-9]+' | head -1 | tee "$HOME/.local/share/weatherreport"
+# 	#curl -sf "wttr.in/Uppsala" | grep -Eo -m 1 '(\+|\-|[0-9])[0-9]+' | head -1 | tee "$CACHE"
 # 
-# 	curl -sf "wttr.in/Uppsala?format=1" | sed -r 's/^.{3}//;s/^ *//g;s/C//g' | tee "$HOME/.local/share/weatherreport"
-# 	# curl -sf "wttr.in/Uppsala?format=1" | sed -r 's/^.{4}//;s/^ *//g;s/C//g' | tee "$HOME/.local/share/weatherreport"
-# 	#echo "+20°" | tee "$HOME/.local/share/weatherreport"
+# 	curl -sf "wttr.in/Uppsala?format=1" | sed -r 's/^.{3}//;s/^ *//g;s/C//g' | tee "$CACHE"
+# 	# curl -sf "wttr.in/Uppsala?format=1" | sed -r 's/^.{4}//;s/^ *//g;s/C//g' | tee "$CACHE"
+# 	#echo "+20°" | tee "$CACHE"
 # 
 # 	if [ -z "$STR" ]; then
-# 		python ~/.local/bin/statusbar/weather_py.py | tee "$HOME/.local/share/weatherreport"
+# 		python ~/.local/bin/statusbar/weather_py.py | tee "$CACHE"
 # 	fi
 # fi
+

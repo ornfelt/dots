@@ -1,5 +1,7 @@
+logsave
 lsb-release
 lsof
+lua-lgi
 lua5.2
 lua5.3
 lua5.4
@@ -116,6 +118,7 @@ vim-common
 vim-tiny
 visidata
 wamerican
+wayland-protocols
 wezterm
 wget
 whiptail
@@ -139,6 +142,7 @@ xserver-xorg-input-libinput
 xserver-xorg-input-synaptics
 xserver-xorg-video-all
 xserver-xorg-video-vesa
+xwayland
 xz-utils
 yad
 yq

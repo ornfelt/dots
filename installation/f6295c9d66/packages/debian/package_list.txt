@@ -149,6 +149,7 @@ libbz2-1.0
 libbz2-dev
 libc-bin
 libc6
+libcairo2-dev
 libcap-ng0
 libcap2-bin
 libcap2
@@ -170,6 +171,7 @@ libfmt-dev
 libfontconfig1-dev
 libfreetype-dev
 libgcc-s1
+libgdk-pixbuf-2.0-dev
 libgl1-mesa-dev
 libglew-dev
 libglfw3-dev
@@ -185,6 +187,7 @@ libharfbuzz-bin
 libharfbuzz-dev
 libhogweed6t64
 libidn2-0
+libinput-dev
 libjansson4
 libjpeg-dev
 libk5crypto3
@@ -230,6 +233,7 @@ libpam-modules
 libpam-runtime
 libpam-systemd
 libpam0g
+libpango1.0-dev
 libpcre2-8-0
 libpcre2-dev
 libpng-dev
@@ -280,9 +284,14 @@ libuuid1
 libvorbis-dev
 libwayland-dev
 libwine
+libwlroots-0.18-dev
 libx11-dev
 libx11-xcb-dev
+libxcb-ewmh-dev
+libxcb-icccm4-dev
 libxcb-res0-dev
+libxcb-util0-dev
+libxcb1-dev
 libxcursor-dev
 libxft-dev
 libxi-dev
@@ -304,6 +313,7 @@ logrotate
 logsave
 lsb-release
 lsof
+lua-lgi
 lua5.2
 lua5.3
 lua5.4
@@ -420,6 +430,7 @@ vim-common
 vim-tiny
 visidata
 wamerican
+wayland-protocols
 wezterm
 wget
 whiptail
@@ -443,6 +454,7 @@ xserver-xorg-input-libinput
 xserver-xorg-input-synaptics
 xserver-xorg-video-all
 xserver-xorg-video-vesa
+xwayland
 xz-utils
 yad
 yq

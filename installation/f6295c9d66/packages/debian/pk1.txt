@@ -149,4 +149,8 @@ libbz2-1.0
 libbz2-dev
 libc-bin
 libc6
+libcairo2-dev
 libcap-ng0
+libcap2-bin
+libcap2
+libcglm-dev
