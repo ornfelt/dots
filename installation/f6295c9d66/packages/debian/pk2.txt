@@ -1,4 +1,3 @@
-libcollada-dom-dev
 libcom-err2
 libcpprest-dev
 libcrypt1
@@ -154,3 +153,5 @@ locales
 login.defs
 login
 logrotate
+logsave
+lsb-release

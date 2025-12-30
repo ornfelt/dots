@@ -332,6 +332,7 @@ mesa-utils
 meson
 minizip
 mount
+mpv
 mysql-apt-config
 mysql-server
 nano

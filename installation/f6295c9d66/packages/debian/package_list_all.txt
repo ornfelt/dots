@@ -1529,6 +1529,7 @@ libshout3
 libshout3
 libsidplay2
 libsigsegv2
+libsixel1
 libslang2
 libslang2
 libslopy7.6
@@ -1907,6 +1908,7 @@ libxnvctrl0
 libxpm-dev
 libxpm4
 libxpm4
+libxpresent1
 libxrandr-dev
 libxrandr2
 libxrandr2
@@ -2034,6 +2036,7 @@ mokutil
 mount
 mpi-default-bin
 mpi-default-dev
+mpv
 mupdf-tools
 mysql-apt-config
 mysql-client
@@ -2583,6 +2586,7 @@ python3-mistune
 python3-more-itertools
 python3-mpmath
 python3-msgpack
+python3-mutagen
 python3-nbclient
 python3-nbconvert
 python3-nbformat
@@ -2607,6 +2611,7 @@ python3-psutil
 python3-ptyprocess
 python3-pure-eval
 python3-pyaudio
+python3-pycryptodome
 python3-pygments
 python3-pynvim
 python3-pyparsing
@@ -2641,6 +2646,7 @@ python3-urllib3
 python3-wcwidth
 python3-webcolors
 python3-webencodings
+python3-websockets
 python3-wheel
 python3-widgetsnbextension
 python3-xlib
@@ -2862,6 +2868,7 @@ xxd
 xz-utils
 yad
 yq
+yt-dlp
 yudit-common
 zathura
 zathura-pdf-poppler
