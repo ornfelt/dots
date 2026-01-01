@@ -1,31 +1,53 @@
 #! /bin/bash
 
+#set -euo pipefail
+
+# Colors (ANSI escape codes)
+RESET='\033[0m'
+RED='\033[31m'
+GREEN='\033[32m'
+YELLOW='\033[33m'
+BLUE='\033[34m'
+MAGENTA='\033[35m'
+CYAN='\033[36m'
+DARKGRAY='\033[90m'
+
+# Logging helpers
+log_ok()    { printf "%b[ok]%b %b\n"   "$CYAN"   "$RESET" "$*"; }
+log_warn()  { printf "%b[warn]%b %b\n" "$YELLOW" "$RESET" "$*"; }
+log_err()   { printf "%b[err]%b %b\n"  "$RED"    "$RESET" "$*"; }
+log_info()  { printf "%b[i]%b %b\n"    "$DARKGRAY" "$RESET" "$*"; }
+log_step()  { printf "\n%b==>%b %b\n"  "$BLUE"   "$RESET" "$*"; }
+log_sep()   { log_info "--------------------------------------------------------"; }
+
+say()       { printf "%b\n" "$*"; }
+die()       { log_err "$*"; exit 1; }
+
 arg=$(echo "$1" | tr '[:upper:]' '[:lower:]')
 
 if [ $# -eq 0 ]; then
 #if [ -z "$arg" ]; then
-    echo "No arguments provided. Updating installation docs..."
+    log_step "No arguments provided. Updating installation docs..."
     INSTALL_DOCS_DIR="$HOME/Documents/installation"
     INSTALL_SCRIPT="$INSTALL_DOCS_DIR/update.sh"
 
     if [ ! -d "$INSTALL_DOCS_DIR" ]; then
-        echo "Directory $INSTALL_DOCS_DIR does not exist... Exiting."
-        exit 1
+        die "Directory $INSTALL_DOCS_DIR does not exist... Exiting."
     fi
 
     if [ ! -f "$INSTALL_SCRIPT" ]; then
-        echo "Script $INSTALL_SCRIPT does not exist... Exiting."
-        exit 1
+        die "Script $INSTALL_SCRIPT does not exist... Exiting."
     fi
 
     cd "$INSTALL_DOCS_DIR" && ./update.sh && cd - > /dev/null
     rm -rf installation
     cp -r $HOME/Documents/installation installation/
+    log_ok "Updated installation docs."
 else
     if echo "$arg" | grep -q "no-pkg"; then
-        echo "Skipping update due to 'no-pkg' argument."
+        log_info "Skipping update due to 'no-pkg' argument."
     else
-        echo "Unknown argument provided"
+        log_warn "Unknown argument provided: $1"
     fi
 fi
 
@@ -52,7 +74,7 @@ rm -rf .config/zsh
 if [[ -d "$HOME/.config/yazi/plugins" ]]; then
     rm -rf .config/yazi
 else
-    echo "Directory $HOME/.config/yazi/plugins does not exist. Skipping copy."
+    log_warn "Directory $HOME/.config/yazi/plugins does not exist. Skipping copy."
 fi
 
 rm -rf .config/rofi
@@ -68,7 +90,7 @@ rm .Xresources
 rm .Xresources_cat
 rm .zshrc
 
-printf "Removed files...\n"
+log_ok "Removed files..."
 sleep 0.5
 
 cp -r $HOME/.config/awesome .config/awesome/
@@ -94,7 +116,7 @@ cp -r $HOME/.config/zsh .config/zsh/
 if [[ -d "$HOME/.config/yazi/plugins" ]]; then
     cp -r $HOME/.config/yazi .config/yazi/
 else
-    echo "Directory $HOME/.config/yazi/plugins does not exist. Skipping copy."
+    log_warn "Directory $HOME/.config/yazi/plugins does not exist. Skipping copy."
 fi
 
 cp -r $HOME/.config/rofi .config/rofi/
@@ -149,10 +171,10 @@ dirs=(
 
 for dir in "${dirs[@]}"; do
     if [ -d "$dir" ]; then
-        echo "Removing $dir"
+        log_info "Removing $dir"
         rm -rf "$dir"
     else
-        echo "$dir does not exist, skipping."
+        log_warn "$dir does not exist, skipping."
     fi
 done
 
@@ -171,12 +193,12 @@ update_font_size() {
 }
 
 if ! grep -q "size: $DEFAULT_FONT_SIZE" "$HOME/.config/alacritty/alacritty.yml"; then
-  echo "Reverting font size in alacritty.yml to default size $DEFAULT_FONT_SIZE."
+  log_info "Reverting font size in alacritty.yml to default size $DEFAULT_FONT_SIZE."
   update_font_size ".config/alacritty/alacritty.yml" "$DEFAULT_FONT_SIZE"
 fi
 
 if ! grep -q "size = $DEFAULT_FONT_SIZE" "$HOME/.config/alacritty/alacritty.toml"; then
-  echo "Reverting font size in alacritty.toml to default size $DEFAULT_FONT_SIZE."
+  log_info "Reverting font size in alacritty.toml to default size $DEFAULT_FONT_SIZE."
   update_font_size ".config/alacritty/alacritty.toml" "$DEFAULT_FONT_SIZE"
 fi
 
@@ -213,15 +235,15 @@ keys=(
 # Double check that all keys don't have any values (they should be empty "")
 for key in "${keys[@]}"; do
   if grep -qE "export $key=\"[^\"]+\"" ./.bash_profile; then
-    echo "Key $key contains a value. Deleting ./bash_profile."
+    log_err "Key $key contains a value. Deleting ./bash_profile."
     rm -f ./.bash_profile
-    exit 0
+    exit 1 # exit with error
   fi
 done
 
-echo "All keys are empty. ./bash_profile is intact."
+log_ok "All keys are empty. ./bash_profile is intact."
 
-printf "\nCopied latest files...\n"
+log_ok "Copied latest files..."
 
 #git add -A
 #git commit -m $1

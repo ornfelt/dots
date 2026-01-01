@@ -2,12 +2,35 @@
 
 # {my_notes_path}/linux/setup_notes.txt
 
-printf "\n***** Setting up config files! *****\n\n"
+# Colors (ANSI escape codes)
+RESET='\033[0m'
+RED='\033[31m'
+GREEN='\033[32m'
+YELLOW='\033[33m'
+BLUE='\033[34m'
+MAGENTA='\033[35m'
+CYAN='\033[36m'
+DARKGRAY='\033[90m'
+
+# Logging helpers
+# %b makes printf interpret \033 escapes properly
+log_ok()    { printf "%b[ok]%b %b\n"   "$CYAN"   "$RESET" "$*"; }
+log_warn()  { printf "%b[warn]%b %b\n" "$YELLOW" "$RESET" "$*"; }
+log_err()   { printf "%b[err]%b %b\n"  "$RED"    "$RESET" "$*"; }
+log_info()  { printf "%b[i]%b %b\n"    "$DARKGRAY" "$RESET" "$*"; }
+log_step()  { printf "\n%b==>%b %b\n"  "$BLUE"   "$RESET" "$*"; }
+log_sep() { log_info "--------------------------------------------------------"; }
+log_q() { printf "\n%b[q]%b %b\n" "$MAGENTA" "$RESET" "$*"; }
+
+say()       { printf "%b\n" "$*"; }
+die()       { log_err "$*"; exit 1; }
+
+log_step "Setting up config files!"
 
 CURRENT_DIR="$PWD"
 
 # Setup required dirs
-mkdir -p $HOME/.config/
+mkdir -p "$HOME/.config/" || die "Failed to create ~/.config"
 mkdir -p $HOME/.config/wezterm
 mkdir -p $HOME/.config/gtk-3.0
 mkdir -p $HOME/.local/bin/
@@ -68,8 +91,9 @@ cp .tmux.conf $HOME/.tmux.conf
 cp .wezterm.lua $HOME/.wezterm.lua
 if [[ -f "$HOME/.xinitrc" ]]; then
   sudo chown "$USER:$USER" "$HOME/.xinitrc"
+  log_ok "chown ~/.xinitrc"
 else
-  echo "No ~/.xinitrc to chown, skipping."
+  log_warn "No ~/.xinitrc to chown, skipping."
 fi
 cp .xinitrc $HOME/.xinitrc
 sudo chown "$USER:$USER" "$HOME/.xinitrc"
@@ -87,7 +111,7 @@ TOML_FILE="$ALACRITTY_CONFIG_DIR/alacritty.toml"
 if [[ -d "$ALACRITTY_CONFIG_DIR" && -f "$YML_FILE" ]]; then
     CURRENT_FONT_SIZE=$(grep -oP 'size:\s*\K[0-9.]+' "$YML_FILE")
 else
-    echo "[warn] Alacritty config directory or alacritty.yml not found, skipping font-size sync."
+    log_warn "Alacritty config directory or alacritty.yml not found, skipping font-size sync."
     CURRENT_FONT_SIZE=""
 fi
 
@@ -102,7 +126,7 @@ update_font_size() {
   fi
 }
 if [ -n "$CURRENT_FONT_SIZE" ] && [ "$CURRENT_FONT_SIZE" != "$DEFAULT_FONT_SIZE" ]; then
-  echo "Current font size is $CURRENT_FONT_SIZE. Updating to $CURRENT_FONT_SIZE in source configuration before copying alacritty files."
+  log_info "Current font size is $CURRENT_FONT_SIZE. Syncing into repo alacritty config before copy."
   update_font_size ".config/alacritty/alacritty.yml" "$CURRENT_FONT_SIZE"
   update_font_size ".config/alacritty/alacritty.toml" "$CURRENT_FONT_SIZE"
 fi
@@ -110,15 +134,16 @@ fi
 cp -r ".config/alacritty" "$HOME/.config/"
 
 if [ -n "$CURRENT_FONT_SIZE" ] && [ "$CURRENT_FONT_SIZE" != "$DEFAULT_FONT_SIZE" ]; then
-  echo "Reverting font size in alacritty configs to default size $DEFAULT_FONT_SIZE."
+  log_info "Reverting repo alacritty font size back to default ($DEFAULT_FONT_SIZE)."
   update_font_size ".config/alacritty/alacritty.yml" "$DEFAULT_FONT_SIZE"
   update_font_size ".config/alacritty/alacritty.toml" "$DEFAULT_FONT_SIZE"
 fi
 
 if [ ! -f $HOME/.bash_profile ]; then
     cp -r .bash_profile $HOME/.bash_profile
+    log_ok ".bash_profile installed."
 else
-    echo "[ok] .bash_profile already exists."
+    log_ok ".bash_profile already exists."
 fi
 
 USE_OH_MY_ZSH=false
@@ -128,80 +153,90 @@ if $USE_OH_MY_ZSH; then
     if [ ! -d "$HOME/.oh-my-zsh" ]; then
         sh -c "$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
     else
-        echo "[ok] oh-my-zsh already installed."
+        log_ok "oh-my-zsh already installed."
     fi
 
     if [ ! -d "${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/plugins/zsh-autosuggestions/.git" ]; then
         git clone https://github.com/zsh-users/zsh-autosuggestions "${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/plugins/zsh-autosuggestions"
+        log_ok "zsh-autosuggestions installed."
     else
-        echo "[ok] zsh-autosuggestions already installed."
+        log_ok "zsh-autosuggestions already installed."
     fi
 
     if [ ! -d "${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting/.git" ]; then
         git clone https://github.com/zsh-users/zsh-syntax-highlighting.git "${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting"
+        log_ok "zsh-syntax-highlighting installed."
     else
-        echo "[ok] zsh-syntax-highlighting already installed."
+        log_ok "zsh-syntax-highlighting already installed."
     fi
 else
     if [ ! -d "$HOME/.zsh/zsh-autosuggestions/.git" ]; then
         git clone https://github.com/zsh-users/zsh-autosuggestions "$HOME/.zsh/zsh-autosuggestions"
+        log_ok "zsh-autosuggestions installed."
     else
-        echo "[ok] zsh-autosuggestions already installed."
+        log_ok "zsh-autosuggestions already installed."
     fi
 
     if [ ! -d "$HOME/.zsh/zsh-syntax-highlighting/.git" ]; then
         git clone https://github.com/zsh-users/zsh-syntax-highlighting "$HOME/.zsh/zsh-syntax-highlighting"
+        log_ok "zsh-syntax-highlighting installed."
     else
-        echo "[ok] zsh-syntax-highlighting already installed."
+        log_ok "zsh-syntax-highlighting already installed."
     fi
 
     if [ ! -d "$HOME/.zsh/zsh-completions/.git" ]; then
         git clone https://github.com/zsh-users/zsh-completions "$HOME/.zsh/zsh-completions"
+        log_ok "zsh-completions installed."
     else
-        echo "[ok] zsh-completions already installed."
+        log_ok "zsh-completions already installed."
     fi
 
     if [ ! -d "$HOME/.zsh/zsh-system-clipboard/.git" ]; then
         git clone https://github.com/kutsan/zsh-system-clipboard "$HOME/.zsh/zsh-system-clipboard"
+        log_ok "zsh-system-clipboard installed."
     else
-        echo "[ok] zsh-system-clipboard already installed."
+        log_ok "zsh-system-clipboard already installed."
     fi
 
     if [ ! -d "$HOME/.zsh/zsh-vi-mode/.git" ]; then
         git clone https://github.com/jeffreytse/zsh-vi-mode "$HOME/.zsh/zsh-vi-mode"
+        log_ok "zsh-vi-mode installed."
     else
-        echo "[ok] zsh-vi-mode already installed."
+        log_ok "zsh-vi-mode already installed."
     fi
 fi
 
 original_dir=$(pwd)
-cd "$HOME/Downloads"
+cd "$HOME/Downloads" || die "Failed to cd to $HOME/Downloads"
 
 # polybar-themes
 if [ ! -d "$HOME/Downloads/polybar-themes" ]; then
+    log_step "Installing polybar-themes"
     git clone --depth=1 https://github.com/adi1090x/polybar-themes.git
     cd polybar-themes
     chmod +x setup.sh
     ./setup.sh
     cd "$original_dir"
 else
-    echo "[ok] polybar-themes already cloned."
+    log_ok "polybar-themes already cloned."
 fi
 
 # gruvbox-dark-gtk theme
 if [ ! -d "$HOME/.themes/gruvbox-dark-gtk" ]; then
+    log_step "Installing gruvbox-dark-gtk theme"
     git clone https://github.com/jmattheis/gruvbox-dark-gtk "$HOME/.themes/gruvbox-dark-gtk"
-    echo "Set gruvbox-dark theme through lxappearance (should appear through dmenu)"
+    log_info "Set gruvbox-dark theme through lxappearance (should appear through dmenu)."
 else
-    echo "[ok] gruvbox-dark-gtk theme already installed."
+    log_ok "gruvbox-dark-gtk theme already installed."
 fi
 
 # fzf
 if [ ! -d "$HOME/.fzf" ]; then
+    log_step "Installing fzf"
     git clone --depth 1 https://github.com/junegunn/fzf.git "$HOME/.fzf"
     "$HOME/.fzf/install"
 else
-    echo "[ok] fzf already installed."
+    log_ok "fzf already installed."
 fi
 
 # packer.nvim (old)
@@ -216,21 +251,23 @@ fi
 
 # wezterm session manager
 if [ ! -d "$HOME/.config/wezterm/wezterm-session-manager" ]; then
+    log_step "Installing wezterm-session-manager"
     git clone https://github.com/danielcopper/wezterm-session-manager.git $HOME/.config/wezterm/wezterm-session-manager
-    echo "wezterm-session-manager installed!"
+    log_ok "wezterm-session-manager installed!"
 else
-    echo "[ok] wezterm-session-manager already installed."
+    log_ok "wezterm-session-manager already installed."
 fi
 
 # tmux-resurrect plugin
 if [ ! -d "$HOME/.tmux/plugins" ]; then
-    mkdir -p "$HOME/.tmux/plugins"
+    mkdir -p "$HOME/.tmux/plugins" || die "Failed to create $HOME/.tmux/plugins"
 fi
 if [ ! -d "$HOME/.tmux/plugins/tmux-resurrect/.git" ]; then
+    log_step "Installing tmux-resurrect"
     git clone --recurse-submodules -j8 https://github.com/tmux-plugins/tmux-resurrect "$HOME/.tmux/plugins/tmux-resurrect"
-    echo "tmux-resurrect installed!"
+    log_ok "tmux-resurrect installed!"
 else
-    echo "[ok] tmux-resurrect already installed."
+    log_ok "tmux-resurrect already installed."
 fi
 
 # Copy tmux session (resurrect) file if none exist
@@ -238,23 +275,23 @@ TMUX_TARGET_DIR="$HOME/.local/share/tmux/resurrect"
 SESSION_DIR="$CURRENT_DIR/tmux_session"
 TMUX_SOURCE_FILE=$(find "$SESSION_DIR" -maxdepth 1 -type f -name "*.txt" -print -quit)
 if [ -z "$TMUX_SOURCE_FILE" ]; then
-    echo "[warn] No session file found in $SCRIPT_DIR/tmux_session. Skipping copy."
+    log_warn "No session file found in $SESSION_DIR. Skipping copy."
 else
     # Check if the target directory exists
     if [[ ! -d "$TMUX_TARGET_DIR" ]]; then
-        echo "Directory $TMUX_TARGET_DIR does not exist. Creating it."
-        mkdir -p "$TMUX_TARGET_DIR"
+        log_info "Directory $TMUX_TARGET_DIR does not exist. Creating it."
+        mkdir -p "$TMUX_TARGET_DIR" || die "Failed to create $TMUX_TARGET_DIR"
     fi
     # Check if there are any .txt files in the directory
     if ! find "$TMUX_TARGET_DIR" -type f -name "*.txt" | read; then
-        echo "No .txt files found in $TMUX_TARGET_DIR. Copying $TMUX_SOURCE_FILE to $TMUX_TARGET_DIR."
+        log_info "No session files found in $TMUX_TARGET_DIR. Copying $(basename "$TMUX_SOURCE_FILE")."
         cp "$TMUX_SOURCE_FILE" "$TMUX_TARGET_DIR"
         # Create or update the 'last' symlink to point to the new session file.
         TARGET_SESSION_PATH="$TMUX_TARGET_DIR/$(basename "$TMUX_SOURCE_FILE")"
         ln -sf "$TARGET_SESSION_PATH" "$TMUX_TARGET_DIR/last"
-        echo "Created symlink 'last' -> '$TARGET_SESSION_PATH'"
+        log_ok "Created symlink 'last' -> '$TARGET_SESSION_PATH'"
     else
-        echo "[ok] Directory $TMUX_TARGET_DIR contains session files already."
+        log_ok "Directory $TMUX_TARGET_DIR contains session files already."
     fi
 fi
 
@@ -264,8 +301,9 @@ PLUGIN_DIR="$HOME/.config/yazi/plugins"
 if [ "$ADD_YAZI_PLUGINS" = true ]; then
     if command -v yazi &>/dev/null && command -v ya &>/dev/null; then
         if [ ! -d "$PLUGIN_DIR" ]; then
-            echo "yazi plugins dir missing. Creating it and installing plugins..."
-            mkdir -p "$PLUGIN_DIR"
+            log_step "Installing yazi plugins"
+            log_info "yazi plugins dir missing. Creating it and installing plugins..."
+            mkdir -p "$PLUGIN_DIR" || die "Failed to create $PLUGIN_DIR"
 
             ya pack -a lpnh/fg
             ya pack -a dedukun/bookmarks
@@ -276,12 +314,12 @@ if [ "$ADD_YAZI_PLUGINS" = true ]; then
 
             # Run install once after all packs are added
             ya pack -i
-            echo "yazi plugins installed!"
+            log_ok "yazi plugins installed!"
         else
-            echo "[ok] yazi plugins dir already exists."
+            log_ok "yazi plugins dir already exists."
         fi
     else
-        echo "yazi or ya command not found, skipping yazi plugin installation."
+        log_warn "yazi or ya command not found, skipping yazi plugin installation."
     fi
 else
     if [ ! -d "$PLUGIN_DIR" ]; then
@@ -301,7 +339,7 @@ EOF
         #printf "  ya pkg add yazi-rs/plugins:smart-enter\n"
         #printf "  ya pkg install\n"
     else
-        echo "[ok] yazi plugins installed already."
+        log_ok "yazi plugins installed already."
     fi
 fi
 
@@ -316,14 +354,16 @@ check_font_exists() {
 
 # Download and install
 install_jetbrains_mono() {
-    echo "Downloading JetBrains Mono font..."
+    log_step "JetBrains Mono font"
+    log_info "Downloading JetBrains Mono font..."
     cd $HOME/Downloads && wget https://github.com/ryanoasis/nerd-fonts/releases/download/v3.1.1/JetBrainsMono.zip
     
-    echo "Installing JetBrains Mono font..."
+    log_info "Installing JetBrains Mono font..."
     mkdir -p $HOME/.local/share/fonts/ && unzip JetBrainsMono.zip -d $HOME/.local/share/fonts/
     
-    echo "Updating font cache..."
+    log_info "Updating font cache..."
     fc-cache -fv
+    log_ok "JetBrains Mono installed."
 }
 
 # Install fonts on debian only since arch uses the package: ttf-jetbrains-mono-nerd
@@ -331,10 +371,10 @@ if grep -qEi 'debian|raspbian' /etc/os-release; then
     if ! check_font_exists; then
         install_jetbrains_mono
     else
-        echo "[ok] JetBrains Mono font already installed."
+        log_ok "JetBrains Mono font already installed."
     fi
 else
-    echo "Install jetbrains via sudo pacman -S ttf-jetbrains-mono-nerd"
+    log_warn "Non-debian OS detected. Install via: sudo pacman -S ttf-jetbrains-mono-nerd"
 fi
 
 # Variable to control whether to skip prompts and proceed directly
@@ -347,9 +387,8 @@ print_and_cd_to_dir() {
     local dir_path=$1
     local print_prefix=$2
 
-    echo -e "\n--------------------------------------------------------"
-    echo -e "$print_prefix projects in $dir_path...\n"
-    cd "$dir_path" || exit
+    log_step "$print_prefix projects in $dir_path"
+    cd "$dir_path" || die "Failed to cd to $dir_path"
 }
 
 clone_repo_if_missing() {
@@ -360,25 +399,27 @@ clone_repo_if_missing() {
 
     my_repo_dirs=("my_notes" "utils" "my_js" "my_cplusplus" "my_lua" "wc" "my_wow" "my_sql" "my_c")
 
-    echo "--------------------------------------------------------"
+    log_info "Checking repo: $repo_dir"
+
     if printf '%s\n' "${my_repo_dirs[@]}" | grep -q "^$repo_dir$"; then
     #if [[ "${repo_dir,,}" == "my_notes" || "${repo_dir,,}" == "utils" ]]; then
         if [ -z "$GITHUB_TOKEN" ]; then
-            echo "[warn] GITHUB_TOKEN environment variable is not set. Skipping $repo_dir..."
+            log_warn "GITHUB_TOKEN is not set. Skipping $repo_dir..."
             return 1
         fi
     fi
 
     # Case insensitive check
     if find "$parent_dir" -maxdepth 1 -type d -iname "$(basename "$repo_dir")" | grep -iq "$(basename "$repo_dir")$"; then
-        echo "[ok] $repo_dir already cloned."
+        log_ok "$repo_dir already cloned."
         return 0
     else
         if $justInform; then
-            echo "$repo_dir NOT cloned."
+            log_warn "$repo_dir NOT cloned."
             return 0
         fi
-        echo "Cloning $repo_dir from $repo_url"
+
+        log_info "Cloning $repo_dir from $repo_url"
 
         # Clone based on specific cases
         local clone_cmd="git clone --recurse-submodules"
@@ -398,8 +439,18 @@ clone_repo_if_missing() {
         fi
 
         clone_cmd="$clone_cmd $repo_url $repo_dir"
-        eval "$clone_cmd"
-        return $?
+
+        #eval "$clone_cmd"
+        #log_ok "Cloned $repo_dir"
+        #return $?
+        # check success/failure
+        if eval "$clone_cmd"; then
+            log_ok "Cloned $repo_dir"
+            return 0
+        else
+            log_err "Failed to clone $repo_dir"
+            return 1
+        fi
     fi
 }
 
@@ -435,30 +486,30 @@ clone_projects() {
     for path in "${MEDIA_PATHS[@]}"; do
         if [ -d "$path/2025/re3" ]; then
             MEDIA_PATH="$path"
-            echo -e "\nFound mounted hard drive at: $MEDIA_PATH\n"
+            log_ok "Found mounted hard drive at: $MEDIA_PATH"
             break
         fi
     done
 
     # Check if MEDIA_PATH was set
     if [ -z "$MEDIA_PATH" ]; then
-        echo "[warn] The hard drive is not mounted. Can't copy re3 dirs."
+        log_warn "The hard drive is not mounted. Can't copy re3 dirs."
     else
         TARGET_DIR="$HOME/Code/c++"
         SOURCE_DIR="$MEDIA_PATH/2025"
 
         if [ ! -d "$TARGET_DIR/re3" ] && [ -d "$SOURCE_DIR/re3" ]; then
-            echo "Copying re3 to $TARGET_DIR..."
+            log_info "Copying re3 to $TARGET_DIR..."
             cp -r "$SOURCE_DIR/re3" "$TARGET_DIR"
         else
-            echo "Skipping re3 copy - already exists or source is missing."
+            log_ok "Skipping re3 copy (already exists or source missing)."
         fi
 
         if [ ! -d "$TARGET_DIR/re3_vice" ] && [ -d "$SOURCE_DIR/re3_vice" ]; then
-            echo "Copying re3_vice to $TARGET_DIR..."
+            log_info "Copying re3_vice to $TARGET_DIR..."
             cp -r "$SOURCE_DIR/re3_vice" "$TARGET_DIR"
         else
-            echo "[warn] Skipping re3_vice copy - already exists or source is missing."
+            log_warn "Skipping re3_vice copy (already exists or source missing)."
         fi
     fi
 
@@ -486,12 +537,13 @@ clone_projects() {
     clone_repo_if_missing "stk-code" "https://github.com/ornfelt/stk-code"
     if [ ! -d "stk-assets" ]; then
         if $justInform; then
-            echo "$repo_dir NOT cloned."
+            log_info "$repo_dir NOT cloned."
         else
             svn co https://svn.code.sf.net/p/supertuxkart/code/stk-assets stk-assets
+            log_ok "stk-assets cloned."
         fi
     else
-        echo "[ok] stk-assets already cloned."
+        log_ok "stk-assets already cloned."
     fi
     clone_repo_if_missing "small_games" "https://github.com/ornfelt/small_games" "linux"
     clone_repo_if_missing "AzerothCore-wotlk-with-NPCBots" "https://github.com/rewow/AzerothCore-wotlk-with-NPCBots"
@@ -501,44 +553,46 @@ clone_projects() {
         cd "$MODULES_DIR"
 
         if [ -f /etc/arch-release ]; then
-            echo "Arch Linux detected, checking out 'linux' branch..."
-            git checkout linux || { echo "Failed to checkout linux branch"; exit 1; }
+            log_info "Arch Linux detected, checking out 'linux' branch..."
+            git checkout linux || die "Failed to checkout linux branch"
         fi
 
         clone_repo_if_missing "mod-eluna" "https://github.com/azerothcore/mod-eluna"
 
         cd ..
 
-        echo "Fetching latest non-merge commit from AzerothCore..."
+        log_info "Fetching latest non-merge commit from AzerothCore..."
 
         ACORE_COMMIT=$(git log --no-merges --grep='Merge branch' --invert-grep -1 --format="%H")
         ACORE_DATE=$(git show -s --format=%ci "$ACORE_COMMIT")
-        echo "Latest non-merge AzerothCore commit: $ACORE_COMMIT ($ACORE_DATE)"
+        log_ok "Latest non-merge AzerothCore commit: $ACORE_COMMIT ($ACORE_DATE)"
 
-        cd "modules/mod-eluna" || exit 1
+        cd "modules/mod-eluna" || die "Failed to cd to modules/mod-eluna"
 
-        echo "Checking latest mod-eluna commit..."
+        log_info "Checking latest mod-eluna commit..."
         ELUNA_LATEST_COMMIT=$(git rev-parse HEAD)
         ELUNA_LATEST_DATE=$(git show -s --format=%ci "$ELUNA_LATEST_COMMIT")
-        echo "Latest mod-eluna commit: $ELUNA_LATEST_COMMIT ($ELUNA_LATEST_DATE)"
+        log_ok "Latest mod-eluna commit: $ELUNA_LATEST_COMMIT ($ELUNA_LATEST_DATE)"
 
         if [[ "$ELUNA_LATEST_DATE" < "$ACORE_DATE" ]]; then
-            echo "[ok] mod-eluna is already older than AzerothCore. No checkout needed."
+            log_ok "mod-eluna is already older than AzerothCore. No checkout needed."
         else
-            echo "Searching for a mod-eluna commit before $ACORE_DATE..."
+            log_info "Searching for a mod-eluna commit before $ACORE_DATE..."
             ELUNA_TARGET_COMMIT=$(git log --before="$ACORE_DATE" -1 --format="%H")
             if [ -n "$ELUNA_TARGET_COMMIT" ]; then
-                echo "Checking out mod-eluna commit $ELUNA_TARGET_COMMIT"
-                git checkout "$ELUNA_TARGET_COMMIT" || { echo "Failed to checkout commit"; exit 1; }
+                log_info "Checking out mod-eluna commit $ELUNA_TARGET_COMMIT"
+                git checkout "$ELUNA_TARGET_COMMIT" || die "Failed to checkout commit"
+                log_ok "Checked out $ELUNA_TARGET_COMMIT"
             else
-                echo "[warn] No earlier mod-eluna commit found before $ACORE_DATE"
+                log_warn "No earlier mod-eluna commit found before $ACORE_DATE"
             fi
         fi
 
         cd ../../..
     else
-        echo "[warn] Directory $MODULES_DIR does NOT exist."
+        log_warn "Directory $MODULES_DIR does NOT exist."
     fi
+
     clone_repo_if_missing "Trinitycore-3.3.5-with-NPCBots" "https://github.com/rewow/Trinitycore-3.3.5-with-NPCBots" "npcbots_3.3.5"
     clone_repo_if_missing "simc" "https://github.com/ornfelt/simc"
     clone_repo_if_missing "simc_wotlk" "https://github.com/ornfelt/simc_wotlk"
@@ -600,9 +654,9 @@ if $justDoIt; then
     clone_projects
 else
     if $justInform; then
-        echo -e "\n[q] Do you want to check cloned projects? (yes/y)"
+        log_q "Do you want to check cloned projects? (yes/y)"
     else
-        echo -e "\n[q] Do you want to proceed with cloning projects? (yes/y)"
+        log_q "Do you want to proceed with cloning projects? (yes/y)"
     fi
     read answer
     # To lowercase using awk
@@ -610,6 +664,8 @@ else
 
     if [[ "$answer" == "yes" ]] || [[ "$answer" == "y" ]]; then
         clone_projects
+    else
+        log_info "Skipping clone_projects."
     fi
 fi
 
@@ -619,61 +675,68 @@ install_if_missing() {
     local directory=$2
     local binary_path="$HOME/.config/$directory/$binary"
 
-    echo "--------------------------------------------------------"
+    log_sep
+
     #if ! command -v $binary &> /dev/null; then
     # Check if the binary exists instead of the command
     if [ ! -f "$binary_path" ]; then
-        echo "$binary NOT found..."
+        log_info "$binary NOT found."
         if $justInform; then
             return 0
         fi
 
-        echo "installing: $binary"
+        log_step "Installing: $binary"
 
         if [ "$binary" == "clipmenu" ]; then
-            cd $HOME/.config/$binary || exit
+            cd "$HOME/.config/$binary" || die "Failed to cd to $HOME/.config/$binary"
         else
-            cd $HOME/.config/$directory || exit
+            cd "$HOME/.config/$directory" || die "Failed to cd to $HOME/.config/$directory"
         fi
 
         if [ "$binary" == "dwmblocks" ]; then
             # if blocks.h is missing, try to seed it from blocks.def.h
             if [[ ! -f "blocks.h" ]]; then
                 if [[ -f "blocks.def.h" ]]; then
-                echo "-> blocks.h missing; copying blocks.def.h -> blocks.h"
-                cp blocks.def.h blocks.h
+                    log_info "blocks.h missing; copying blocks.def.h -> blocks.h"
+                    cp blocks.def.h blocks.h
                 else
-                echo "-> blocks.def.h also missing; skipping dwmblocks compile."
-                cd - >/dev/null
-                return 0
+                    log_warn "blocks.def.h also missing; skipping dwmblocks compile."
+                    cd - >/dev/null
+                    return 0
                 fi
             fi
 
             if [[ -f "blocks.h" ]]; then
-                echo "-> Compiling dwmblocks"
+                log_info "Compiling dwmblocks"
                 ./compile.sh
             else
-                echo "-> blocks.h still not found; compilation skipped."
+                log_warn "blocks.h still not found; compilation skipped."
             fi
 
         else
             sudo make clean install
         fi
 
-        cd - || exit # Return to previous directory
+        #cd - || exit # Return to previous directory
+        cd - >/dev/null || die "Failed to cd back"
     else
-        echo "[ok] $binary exists, skipping installation."
+        log_ok "$binary exists, skipping installation."
     fi
 }
 
 ask_for_compile() {
     local dir_name=$1
 
-    read -p "Compile $dir_name? (yes/y to confirm): " user_input
-    if [[ "$user_input" =~ ^([yY][eE][sS]|[yY])$ ]]; then
-        echo "Proceeding with compilation of $dir_name..."
+    #read -p "Compile $dir_name? (yes/y to confirm): " user_input
+    #if [[ "$user_input" =~ ^([yY][eE][sS]|[yY])$ ]]; then
+    log_q "Compile $dir_name? (yes/y)"
+    read -r user_input
+    user_input=$(printf "%s" "$user_input" | awk '{print tolower($0)}')
+
+    if [ "$user_input" = "yes" ] || [ "$user_input" = "y" ]; then
+        log_ok "Proceeding with compilation of $dir_name..."
     else
-        echo "Skipping compilation of $dir_name."
+        log_warn "Skipping compilation of $dir_name."
         return 1 # False
     fi
 }
@@ -681,7 +744,8 @@ ask_for_compile() {
 check_dir() {
     local dir_name=$1
     local dir_type=${2:-build} # Default to build
-    echo "--------------------------------------------------------"
+
+    log_sep
 
     # Capture the actual directory name, preserving its case
     #local actual_dir_name=$(find . -maxdepth 1 -type d -iname "${dir_name}" -exec basename {} \; | head -n 1)
@@ -699,11 +763,11 @@ check_dir() {
         if [[ "$dir_type" == "build*" ]]; then
             # Use find and grep to check for the existence of matching directories
             if find "./${actual_dir_name}" -maxdepth 1 -type d -name "${dir_type}" | grep -q .; then
-                echo "[ok] ${target_dir} already compiled."
+                log_ok "${target_dir} already compiled."
                 return 1 # Return false
             else
                 if $justInform; then
-                    echo "${target_dir} NOT compiled."
+                    log_warn "${target_dir} NOT compiled."
                     return 1
                 fi
 
@@ -711,18 +775,18 @@ check_dir() {
                     return 1
                 fi
     
-                echo "Entering ${actual_dir_name}..."
+                log_info "Entering ${actual_dir_name}..."
                 cd "./${actual_dir_name}"
                 sleep 1
                 return 0 # Return true
             fi
         else
             if [ -d "$target_dir" ]; then
-                echo "[ok] ${target_dir} already compiled."
+                log_ok "${target_dir} already compiled."
                 return 1 # Return false
             else
                 if $justInform; then
-                    echo "${target_dir} NOT compiled."
+                    log_warn "${target_dir} NOT compiled."
                     return 1
                 fi
 
@@ -731,10 +795,10 @@ check_dir() {
                 fi
 
                 if [[ "$dir_type" == *"build"* ]]; then
-                    echo "Creating and entering ${target_dir}..."
+                    log_info "Creating and entering ${target_dir}..."
                     mkdir -p "$target_dir" && cd "$target_dir"
                 else
-                    echo "Entering ${actual_dir_name}..."
+                    log_info "Entering ${actual_dir_name}..."
                     cd "./${actual_dir_name}"
                 fi
                 sleep 1
@@ -742,7 +806,7 @@ check_dir() {
             fi
         fi
     else
-        echo "Directory $dir_name does NOT exist."
+        log_warn "Directory $dir_name does NOT exist."
         return 1 # Return false
     fi
 }
@@ -750,7 +814,8 @@ check_dir() {
 check_file() {
     local dir_name=$1
     local file_path=$2
-    echo "--------------------------------------------------------"
+
+    log_sep
 
     # Capture the actual directory name, preserving its case
     #local actual_dir_name=$(find . -maxdepth 1 -type d -iname "$dir_name" -exec basename {} \; | head -n 1)
@@ -766,12 +831,12 @@ check_file() {
     #if [ -f "$full_file_path" ]; then
     # Check case-insensitively if the file exists
     if find "$(dirname "$full_file_path")" -maxdepth 1 -type f -iname "$(basename "$full_file_path")" 2>/dev/null | grep -iq "$(basename "$full_file_path")$" >/dev/null 2>&1; then
-        echo "[ok] ${dir_name} already compiled."
+        log_ok "${dir_name} already compiled."
         return 1 # Return false
     else
-        echo "File ${file_path} in ${dir_name} does NOT exist."
+        log_warn "File ${file_path} in ${dir_name} does NOT exist."
         if $justInform; then
-            echo "${dir_name} NOT compiled."
+            log_warn "${dir_name} NOT compiled."
             return 1
         fi
 
@@ -779,7 +844,7 @@ check_file() {
             return 1
         fi
 
-        echo "Entering ${actual_dir_name}..."
+        log_info "Entering ${actual_dir_name}..."
         cd "./${actual_dir_name}"
         return 0 # Return true
     fi
@@ -794,19 +859,20 @@ change_ownership_if_exists() {
         local DIR_OWNER=$(stat -c '%U' "$dir")
         if [ "$DIR_OWNER" != "$CURRENT_USER" ]; then
             sudo chown -R $USER:$USER "$dir"
-            echo "Changed ownership of $dir to $USER"
+            log_ok "Changed ownership of $dir to $USER"
         else
-            echo "[ok] Ownership of $dir is already set to $CURRENT_USER, skipping chown"
+            log_ok "Ownership of $dir is already set to $CURRENT_USER, skipping chown"
         fi
     else
-        echo "Directory $dir does NOT exist, skipping."
+        log_warn "Directory $dir does NOT exist, skipping."
     fi
 }
 
 fix_ownerships() {
     local CURRENT_USER=$(whoami)
     local NPM_PREFIX=$(npm config get prefix)
-    sudo mkdir -p "$NPM_PREFIX/lib/node_modules"
+
+    sudo mkdir -p "$NPM_PREFIX/lib/node_modules" || die "Failed to mkdir $NPM_PREFIX/lib/node_modules"
 
     # Check ownership and change only if necessary
     #for dir in "$NPM_PREFIX/lib/node_modules" "$NPM_PREFIX/bin" "$NPM_PREFIX/share"; do
@@ -815,10 +881,14 @@ fix_ownerships() {
             # Get owner of dir
             local DIR_OWNER=$(stat -c '%U' "$dir")
             if [ "$DIR_OWNER" != "$CURRENT_USER" ]; then
-                sudo chown -R "$CURRENT_USER" "$dir"
-                echo "Changed ownership of $dir to $CURRENT_USER"
+                sudo chown -R "$CURRENT_USER" "$dir" || log_err "Failed to chown $dir"
+                if sudo chown -R "$CURRENT_USER" "$dir"; then
+                    log_ok "Changed ownership of $dir to $CURRENT_USER"
+                else
+                    log_err "Failed to chown $dir"
+                fi
             else
-                echo "[ok] Ownership of $dir is already set to $CURRENT_USER, skipping chown"
+                log_ok "Ownership of $dir is already set to $CURRENT_USER, skipping chown"
             fi
         fi
     done
@@ -852,12 +922,14 @@ fix_ownerships() {
 
 # Compile projects (unless already done)
 compile_projects() {
-    printf "\n***** Compiling projects! *****\n\n"
+    log_step "Compiling projects!"
+
     architecture=$(uname -m)
-    echo -e "Identified architecture: $architecture\n"
+    log_info "Identified architecture: $architecture"
     fix_ownerships
 
-    echo -e "\nCompiling projects in $HOME/.config..."
+    log_step "Compiling projects in $HOME/.config..."
+
     install_if_missing dwm dwm
     install_if_missing dwmblocks dwmblocks
     install_if_missing dmenu dmenu
@@ -866,7 +938,7 @@ compile_projects() {
     if grep -qEi 'debian|raspbian' /etc/os-release; then
         clipmenu_dir="$HOME/.config/clipmenu"
         if [ ! -d "$clipmenu_dir" ]; then
-            echo "Directory $clipmenu_dir does not exist. Cloning clipmenu..."
+            log_info "Directory $clipmenu_dir does not exist. Cloning clipmenu..."
             git clone https://github.com/cdown/clipmenu "$clipmenu_dir"
         fi
         install_if_missing clipmenu "clipmenu/src"
@@ -906,22 +978,21 @@ compile_projects() {
             # For Debian based systems using dpkg
             mygui_version=$(dpkg -l | grep mygui | awk '{print $3}')
         else
-            echo "[error] Unsupported Linux distribution."
-            exit 1
+            die "Unsupported Linux distribution."
         fi
 
         if [ ! -z "$mygui_version" ]; then
-            echo "MyGUI version detected: $mygui_version"
+            log_info "MyGUI version detected: $mygui_version"
 
             #if [ -f /etc/debian_version ]; then
             if [[ "$mygui_version" == "3.4.2"* ]]; then
-                echo "MyGUI version is 3.4.2"
+                log_info "MyGUI version is 3.4.2 -> checking out compatible commit"
                 git checkout 1c2f92cac9
             elif [[ "$mygui_version" == "3.4.1"* ]]; then
-                echo "MyGUI version is 3.4.1"
+                log_info "MyGUI version is 3.4.1 -> checking out compatible commit"
                 git checkout abb71eeb
             else
-                echo "MyGUI version is: $mygui_version"
+                log_info "MyGUI version is: $mygui_version"
             fi
             #fi
 
@@ -944,7 +1015,7 @@ compile_projects() {
             #cd ...
             #cd ../..
         else
-            echo "MyGUI is not installed or not found."
+            log_warn "MyGUI is not installed or not found."
         fi
         cd "$HOME/Code/c++"
     fi
@@ -985,6 +1056,7 @@ compile_projects() {
     if check_dir "re3"; then
         cd ..
         if [[ "$architecture" == arm* ]] || [[ "$architecture" == aarch64* ]]; then
+            log_info "ARM detected: building premake5 from source"
             cd $HOME/Downloads
             git clone --recurse-submodules https://github.com/premake/premake-core
             cd premake-core
@@ -1070,10 +1142,10 @@ compile_projects() {
     # Print npm/node info
     npm_version=$(npm --version)
     node_version=$(node --version)
-    echo "npm version: $npm_version"
-    echo "node version: $node_version"
+    log_info "npm version: ${npm_version:-unknown}"
+    log_info "node version: ${node_version:-unknown}"
     for i in {3..1}; do
-        echo "Proceeding with compilation in $i..."
+        log_info "Proceeding with compilation in $i..."
         sleep 1
     done
 
@@ -1091,48 +1163,48 @@ compile_projects() {
     print_and_cd_to_dir "$HOME/Code/rust" "Compiling"
 
     if ! command -v rustc &>/dev/null; then
-        echo "[warn] rustc is not installed. Skipping rust projects..."
+        log_warn "rustc is not installed. Skipping rust projects..."
     else
         # Only compile if rust version is > 1.63
         #rust_version=$(rustc --version | awk '{print $2}') # Also works...
         rust_version=$(rustc --version | grep -oP 'rustc \K[^\s]+')
         major_version=$(echo "$rust_version" | cut -d'.' -f1)
         minor_version=$(echo "$rust_version" | cut -d'.' -f2)
-        echo "Rust version: $rust_version"
-        echo "major: $major_version"
-        echo "minor: $minor_version"
+        log_info "Rust version: $rust_version"
+        log_info "major: $major_version"
+        log_info "minor: $minor_version"
 
         if grep -qEi 'arch' /etc/os-release; then
             if command -v eww &>/dev/null; then
-                echo "[ok] eww is already installed"
+                log_ok "eww is already installed"
             elif check_dir "eww" "target"; then
                 if [ "$major_version" -gt 1 ] || { [ "$major_version" -eq 1 ] && [ "$minor_version" -gt 63 ]; }; then
-                    echo "rustc version is above 1.63"
+                    log_info "rustc version is above 1.63"
                     cargo build --release --no-default-features --features x11
                     cd target/release
                     chmod +x ./eww
                 else
                     cd ..
-                    echo "rustc version is 1.63 or below. Skipping rust project..."
+                    log_warn "rustc version is 1.63 or below. Skipping rust project..."
                 fi
                 cd "$HOME/Code/rust"
             fi
 
             if command -v swww &>/dev/null; then
-                echo "[ok] swww is already installed"
+                log_ok "swww is already installed"
             elif check_dir "swww" "target"; then
                 if [ "$major_version" -gt 1 ] || { [ "$major_version" -eq 1 ] && [ "$minor_version" -gt 63 ]; }; then
-                    echo "rustc version is above 1.63"
+                    log_info "rustc version is above 1.63"
                     cargo build --release
                 else
                     cd ..
-                    echo "rustc version is 1.63 or below. Skipping rust project..."
+                    log_warn "rustc version is 1.63 or below. Skipping rust project..."
                 fi
                 cd "$HOME/Code/rust"
             fi
         else
             OS_ID=$(grep "^ID=" /etc/os-release | cut -d'=' -f2)
-            echo "Skipping compilation of eww and swww (only for Arch). Found os: $OS_ID"
+            log_info "Skipping compilation of eww and swww (only for Arch). Found os: $OS_ID"
         fi
     fi
 
@@ -1141,13 +1213,15 @@ compile_projects() {
     if check_dir "ioq3"; then
         cd ..
         if [[ -f Makefile || -f makefile || -f GNUmakefile ]]; then
+            log_info "Building ioq3 via make"
             make
             #make -j"$(nproc)"
         elif [[ -f CMakeLists.txt ]]; then
+            log_info "Building ioq3 via cmake"
             cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
             cmake --build build -j"$(nproc)"
         else
-            echo "[warn] No Makefile or CMakeLists.txt found in $(pwd)" >&2
+            log_warn "No Makefile or CMakeLists.txt found in $(pwd)"
         fi
 
         cd "$HOME/Code2/C"
@@ -1227,7 +1301,7 @@ compile_projects() {
 
     if check_dir "OpenJKDF2" "build*"; then
         if ! python3 -c "import cogapp" &> /dev/null; then
-            echo "[warn] The Python package 'cogapp' needs to be installed for compiling OpenJKDF2..."
+            log_warn "Python package 'cogapp' is required to compile OpenJKDF2 (pip install cogapp)."
         else
             export CC=clang
             export CXX=clang++
@@ -1238,7 +1312,7 @@ compile_projects() {
 
     if check_dir "devilutionX" "build*"; then
         if grep -qEi 'debian|raspbian' /etc/os-release; then
-            echo "Running on Debian or Raspbian. Installing smpq package from tools script."
+            log_info "Debian/Raspbian detected: rebuilding smpq via devilutionX tools"
             sudo apt remove smpq -y
             cd tools
             source build_and_install_smpq.sh
@@ -1302,9 +1376,9 @@ compile_projects() {
         #if [ -f /etc/os-release ] && grep -qi '^ID=arch' /etc/os-release; then
             # Note the space after CMAKE_CXX_STANDARD (needed to not match CMAKE_CXX_STANDARD_REQUIRED etc.)
             occurrence_count=$(grep -c 'CMAKE_CXX_STANDARD ' "$VMANGOS_CMAKE_FILE")
-            echo "Found CMAKE_CXX_STANDARD occurrences: $occurrence_count"
+            log_info "Found CMAKE_CXX_STANDARD occurrences: $occurrence_count"
             if [ "$occurrence_count" -eq 1 ]; then
-                echo "Changing C++ standard version from 14 to 17 in $VMANGOS_CMAKE_FILE"
+                log_info "Changing C++ standard version from 14 to 17 in $VMANGOS_CMAKE_FILE"
                 sed -i 's/CMAKE_CXX_STANDARD 14/CMAKE_CXX_STANDARD 17/' "$VMANGOS_CMAKE_FILE"
             fi
         fi
@@ -1356,31 +1430,32 @@ compile_projects() {
         GO_VERSION=$(go version 2>/dev/null)
 
         if [ -z "$GO_VERSION" ]; then
-            echo "[error] Go is not installed..."
-            exit 1
+            die "Go is not installed."
         fi
 
         MAJOR_MINOR=$(echo "$GO_VERSION" | grep -oP 'go\d+\.\d+' | grep -oP '\d+\.\d+')
         IFS='.' read -r MAJOR MINOR PATCH <<< "$MAJOR_MINOR.0" # Adding .0 to handle versions without patch number
 
-        echo "Go version: $MAJOR_MINOR"
-        echo "Go major version: $MAJOR"
-        echo "Go minor version: $MINOR"
+        log_info "Go version: $MAJOR_MINOR"
+        log_info "Go major version: $MAJOR"
+        log_info "Go minor version: $MINOR"
 
         if (( MAJOR < 1 )) || { (( MAJOR == 1 )) && (( MINOR < 21 )); } || { (( MAJOR == 1 )) && (( MINOR == 21 )) && (( PATCH < 1 )); }; then
-            echo "Go version is below 1.21.1. Installing go 1.21.1..."
+            log_warn "Go version is below 1.21.1. Installing go 1.21.1..."
             # Don't install dependencies through apt since they are too old for
             # this repo...
             curl -O https://dl.google.com/go/go1.21.1.linux-amd64.tar.gz
             sudo rm -rf /usr/local/go 
             sudo rm /usr/bin/go
             sudo tar -C /usr/local -xzf go1.21.1.linux-amd64.tar.gz
+
+            log_info "Updating PATH/GOPATH in ~/.bashrc"
             echo 'export PATH=$PATH:/usr/local/go/bin' >> $HOME/.bashrc
             echo 'export GOPATH=$HOME/go' >> $HOME/.bashrc
             echo 'export PATH=$PATH:$GOPATH/bin' >> $HOME/.bashrc
             source $HOME/.bashrc
         else
-            echo "Go version is 1.21.1 or higher. Continuing with install..."
+            log_ok "Go version is 1.21.1 or higher. Continuing..."
         fi
 
         if grep -qEi 'debian|raspbian' /etc/os-release; then
@@ -1492,24 +1567,23 @@ compile_projects() {
 
         # First check if the target exists
         if [ ! -e "$RANLIB_TARGET" ]; then
-            echo "[error] $RANLIB_TARGET does not exist. Please install it."
-            exit 1
+            die "$RANLIB_TARGET does not exist. Please install it."
         fi
 
         # Check if the symlink already exists
         if [ ! -e "$RANLIB_LINK" ]; then
-            echo "$RANLIB_LINK not found. Creating symlink..."
+            log_warn "$RANLIB_LINK not found. Creating symlink..."
             sudo ln -s "$RANLIB_TARGET" "$RANLIB_LINK"
         else
-            echo "[ok] $RANLIB_LINK already exists. Skipping symlink creation."
+            log_ok "$RANLIB_LINK already exists. Skipping symlink creation."
         fi
 
         # Check if Vulkan header exists
         VULKAN_HEADER="/usr/include/vulkan/vulkan.h"
         if [ -f "$VULKAN_HEADER" ]; then
-            echo "Found Vulkan header at $VULKAN_HEADER"
+            log_ok "Found Vulkan header at $VULKAN_HEADER"
             for i in {3..1}; do
-                echo "Proceeding with wc compilation in $i..."
+                log_info "Proceeding with wc compilation in $i..."
                 sleep 1
             done
             # Do the thing
@@ -1517,7 +1591,7 @@ compile_projects() {
             make lib
             make
         else
-            echo "[warn] Vulkan header not found!"
+            log_warn "Vulkan header not found: $VULKAN_HEADER"
             
             # Check distro using /etc/os-release if available
             if [ -f /etc/os-release ]; then
@@ -1532,11 +1606,11 @@ compile_projects() {
                         echo "  sudo pacman -S vulkan-headers"
                         ;;
                     *)
-                        echo "Please install the Vulkan headers for your distribution."
+                        log_info "Please install Vulkan headers for your distribution."
                         ;;
                 esac
             else
-                echo "[warn] Unable to detect distribution. Please install Vulkan headers manually."
+                log_warn "Unable to detect distribution. Please install Vulkan headers manually."
             fi
         fi
 
@@ -1550,9 +1624,9 @@ if $justDoIt; then
     compile_projects
 else
     if $justInform; then
-        echo -e "\n[q] Do you want to check compiled projects? (yes/y)"
+        log_q "Do you want to check compiled projects? (yes/y)"
     else
-        echo -e "\n[q] Do you want to proceed with compiling projects? (yes/y)"
+        log_q "Do you want to proceed with compiling projects? (yes/y)"
     fi
     read answer
     # To lowercase using awk
@@ -1564,7 +1638,7 @@ else
 fi
 
 check_pip_packages() {
-    printf "\n***** Checking pip packages! *****\n\n"
+    log_step "Checking pip packages!"
     requirements_path="$HOME/Documents/installation/requirements.txt"
 
     # Extract package names from requirements.txt, ignoring versions
@@ -1582,7 +1656,8 @@ check_pip_packages() {
     for pkg in $installed_packages; do installed["$pkg"]=1; done
 
     # Compare: find packages in requirements.txt not installed
-    echo -e "\nPackages in requirements.txt but not installed:\n"
+    log_sep
+    log_info "Packages in requirements.txt but not installed:"
     for pkg in "${!reqs[@]}"; do
         if [[ ! ${installed["$pkg"]} ]]; then
             echo "$pkg"
@@ -1590,7 +1665,8 @@ check_pip_packages() {
     done
 
     # Compare: find installed packages not in requirements.txt
-    echo -e "\nInstalled packages not in requirements.txt:\n"
+    log_sep
+    log_info "Installed packages not in requirements.txt:"
     for pkg in "${!installed[@]}"; do
         if [[ ! ${reqs["$pkg"]} ]]; then
             echo "$pkg"
@@ -1599,26 +1675,31 @@ check_pip_packages() {
 }
 
 install_pip_packages() {
-    printf "\n***** Installing pip packages! *****\n\n"
+    log_step "Installing pip packages!"
     #pip3 install -r $HOME/Documents/installation/f6295c9d66/requirements.txt
     requirements_path="$HOME/Documents/installation/f6295c9d66/requirements.txt"
+
+    if [ ! -f "$requirements_path" ]; then
+        die "requirements.txt not found: $requirements_path"
+    fi
 
     # Read each line in requirements.txt, remove version specifications, and install
     while read -r package || [[ -n $package ]]; do
         package_name=$(echo "$package" | cut -d'=' -f1)
+        log_info "pip install $package_name"
         pip3 install "$package_name"
     done < "$requirements_path"
 }
 
 # Install python packages
 if $justDoIt; then
-    echo "Installing python packages..."
+    log_step "Installing python packages..."
     install_pip_packages
 else
     if $justInform; then
-        echo -e "\n[q] Do you want to check python packages? (yes/y)"
+        log_q "Do you want to check python packages? (yes/y)"
     else
-        echo -e "\n[q] Do you want to install python packages? (yes/y)"
+        log_q "Do you want to install python packages? (yes/y)"
     fi
     read answer
     # To lowercase using awk
@@ -1626,12 +1707,14 @@ else
 
     if [[ "$answer" == "yes" ]] || [[ "$answer" == "y" ]]; then
         if $justInform; then
-            echo "Checking python packages..."
+            log_step "Checking python packages..."
             check_pip_packages
         else
-            echo "Installing python packages..."
+            log_step "Installing python packages..."
             install_pip_packages
         fi
+    else
+        log_info "Skipped python packages step."
     fi
 fi
 
@@ -1647,43 +1730,53 @@ copy_dir_to_target() {
         if [ ! -d "$DEST" ]; then
 
             if [ -d "$ALT_DEST_MNT" ]; then
-                echo "[ok] $BASE_NAME already exists in /mnt/new/, skipping copy."
+                log_ok "$BASE_NAME already exists in /mnt/new/, skipping copy."
                 return 0
             elif [ -d "$ALT_DEST_MEDIA" ]; then
-                echo "[ok] $BASE_NAME already exists in /media/, skipping copy."
+                log_ok "$BASE_NAME already exists in /media/, skipping copy."
                 return 0
             fi
 
-            $justInform && echo "Copied $SRC to $DEST" && return 0
+            #$justInform && echo "Copied $SRC to $DEST" && return 0
+            if $justInform; then
+                log_info "Would copy $SRC -> $DEST"
+                return 0
+            fi
 
             cp -r "$SRC" "$DEST"
-            echo "Copied $SRC to $DEST"
+            log_ok "Copied $SRC -> $DEST"
         else
-            echo "[ok] $DEST already exists, skipping copy."
+            log_ok "$DEST already exists, skipping copy."
         fi
     else
-        echo "[warn] $SRC does NOT exist, skipping."
+        log_warn "$SRC does NOT exist, skipping."
     fi
 }
 
 check_space() {
-    printf "Checking disk space...\n"
     local dir=$1
+
+    log_info "Checking disk space for: $dir"
+    if [ ! -d "$dir" ]; then
+        log_warn "Directory does not exist: $dir"
+        return 1
+    fi
+
     local min_space_gb=30
     local available_space_kb=$(df "$dir" --output=avail | tail -n 1)
     local available_space_gb=$((available_space_kb / 1024 / 1024))
 
     if (( available_space_gb > min_space_gb )); then
-        echo "Disk at $dir has more than $min_space_gb GB available. Space left: $available_space_gb GB"
+        log_ok "Disk at $dir has > ${min_space_gb}GB available. Left: ${available_space_gb}GB"
         return 0
     else
-        echo "[warn] Disk at $dir does not have more than $min_space_gb GB available. Space left: $available_space_gb GB"
+        log_warn "Disk at $dir has <= ${min_space_gb}GB available. Left: ${available_space_gb}GB"
         return 1
     fi
 }
 
 copy_game_data() {
-    printf "\n***** Copying game data! *****\n\n"
+    log_step "Copying game data!"
 
     if [ -d "/mnt/new/other" ] || [ -d "/mnt/new/my_files" ]; then
         DOWNLOADS_DIR="/mnt/new"
@@ -1711,14 +1804,14 @@ copy_game_data() {
     for path in "${MEDIA_PATHS[@]}"; do
         if [ -d "$path/2024/wow" ]; then
             MEDIA_PATH="$path"
-            echo -e "\nFound mounted hard drive at: $MEDIA_PATH\n"
+            log_ok "Found mounted hard drive at: $MEDIA_PATH"
             break
         fi
     done
 
     # Check if MEDIA_PATH was set
     if [ -z "$MEDIA_PATH" ]; then
-        echo "[warn] The hard drive is not mounted. Skipping copy of game data..."
+        log_warn "The hard drive is not mounted. Skipping copy of game data..."
         return 1
     fi
 
@@ -1728,17 +1821,17 @@ copy_game_data() {
     # Check space 
     if [ "$DOWNLOADS_DIR" = "/mnt/new" ]; then
         if ! check_space "$DOWNLOADS_DIR"; then
-            echo "[warn] Not enough space on disk... Skipping."
+            log_warn "Not enough space on disk ($DOWNLOADS_DIR). Skipping."
             return 1
         fi
     else
         if ! check_space "/"; then
-            echo "[warn] Not enough space on disk... Skipping."
+            log_warn "Not enough space on /. Skipping."
             return 1
         fi
     fi
 
-    echo -e "\n***Copying wow, wow_classic, wow_tbc, wow_retail and cata to $DOWNLOADS_DIR***"
+    log_step "Copying wow data -> $DOWNLOADS_DIR"
     for dir in "${DIRS[@]}"; do
         SRC="$MEDIA_PATH/2024/$dir"
         DEST="$DOWNLOADS_DIR/$dir"
@@ -1747,7 +1840,7 @@ copy_game_data() {
 
     # AzerothCore
     DEST_DIR="$HOME/acore/bin"
-    echo -e "\n***Copying acore files to $DEST_DIR***"
+    log_step "Copying acore files -> $DEST_DIR"
     copy_dir_to_target "$MEDIA_PATH/2024/acore/Cameras" "$DEST_DIR/Cameras"
     copy_dir_to_target "$MEDIA_PATH/2024/acore/dbc" "$DEST_DIR/dbc"
     copy_dir_to_target "$MEDIA_PATH/2024/acore/dbc_old" "$DEST_DIR/dbc_old"
@@ -1763,7 +1856,7 @@ copy_game_data() {
     #        script_name=$(basename "$script")
     #        if [ ! -f "$DEST_DIR/lua_scripts/$script_name" ]; then
     #            cp "$script" "$DEST_DIR/lua_scripts/$script_name"
-    #            echo "Copied $script to $DEST_DIR/lua_scripts/$script_name"
+    #            echo "Copied $script -> $DEST_DIR/lua_scripts/$script_name"
     #        else
     #            echo "[ok] $DEST_DIR/lua_scripts/$script_name already exists, skipping copy."
     #        fi
@@ -1780,30 +1873,30 @@ copy_game_data() {
                     # Copy the subdirectory recursively
                     if [ ! -d "$DEST_DIR/lua_scripts/$item_name" ]; then
                         cp -r "$item" "$DEST_DIR/lua_scripts/$item_name"
-                        echo "Copied directory $item to $DEST_DIR/lua_scripts/$item_name"
+                        log_info "Copied directory $item -> $DEST_DIR/lua_scripts/$item_name"
                     else
-                        echo "[ok] Directory $DEST_DIR/lua_scripts/$item_name already exists, skipping copy."
+                        log_ok "Dir exists: $DEST_DIR/lua_scripts/$item_name (skipping)"
                     fi
                 else
                     # Copy the file
                     if [ ! -f "$DEST_DIR/lua_scripts/$item_name" ]; then
                         cp "$item" "$DEST_DIR/lua_scripts/$item_name"
-                        echo "Copied file $item to $DEST_DIR/lua_scripts/$item_name"
+                        log_info "Copied file $item -> $DEST_DIR/lua_scripts/$item_name"
                     else
-                        echo "[ok] File $DEST_DIR/lua_scripts/$item_name already exists, skipping copy."
+                        log_ok "File exists: $DEST_DIR/lua_scripts/$item_name (skipping)"
                     fi
                 fi
             fi
         done
     else
-        echo "[warn] $LUA_SRC does NOT exist, skipping."
+        log_warn "$LUA_SRC does NOT exist, skipping."
     fi
 
     # acore_old -> local Documents dir (for navigation dll)
     ACORE_OLD_SRC="$MEDIA_PATH/2024/acore_old"
     ACORE_OLD_DEST="$HOME/Documents/local/acore/bin"
 
-    echo -e "\n***Copying acore_old files to $ACORE_OLD_DEST***"
+    log_step "Copying acore_old -> $ACORE_OLD_DEST"
     if [ -d "$ACORE_OLD_SRC" ]; then
         mkdir -p "$ACORE_OLD_DEST"
 
@@ -1815,19 +1908,19 @@ copy_game_data() {
             if [ -d "$item" ]; then
                 if [ ! -d "$ACORE_OLD_DEST/$name" ]; then
                     cp -r -- "$item" "$ACORE_OLD_DEST/$name"
-                    echo "Copied dir $name -> $ACORE_OLD_DEST/"
+                    log_info "Copied dir $name -> $ACORE_OLD_DEST/"
                 else
-                    echo "[ok] Dir already exists: $ACORE_OLD_DEST/$name (skipping)"
+                    log_ok "Dir exists: $ACORE_OLD_DEST/$name (skipping)"
                 fi
             fi
         done
     else
-        echo "[warn] $ACORE_OLD_SRC does NOT exist, skipping."
+        log_warn "$ACORE_OLD_SRC does NOT exist, skipping."
     fi
 
     # TrinityCore
     DEST_DIR="$HOME/tcore/bin"
-    echo -e "\n***Copying tcore files to $DEST_DIR***"
+    log_step "Copying tcore files -> $DEST_DIR"
     #cp -r "$MEDIA_PATH/2024/tcore/"* "$HOME/tcore/bin"
     copy_dir_to_target "$MEDIA_PATH/2024/tcore/Cameras" "$DEST_DIR/Cameras"
     copy_dir_to_target "$MEDIA_PATH/2024/tcore/dbc" "$DEST_DIR/dbc"
@@ -1842,15 +1935,15 @@ copy_game_data() {
     SRC_FILE="$MEDIA_PATH/2024/tcore/$FILE_NAME"
     DEST_FILE="$HOME/tcore/bin/$FILE_NAME"
     if [ -f "$DEST_FILE" ]; then
-        echo "[ok] File already exists, skipping copy."
+        log_ok "TDB file already exists: $DEST_FILE (skip)"
     else
         cp "$SRC_FILE" "$DEST_FILE"
-        echo "Copied $FILE_NAME to $HOME/tcore/bin"
+        log_info "Copied $FILE_NAME -> $HOME/tcore/bin"
     fi
 
     # Cmangos
     DEST_DIR="$HOME/cmangos/run/bin"
-    echo -e "\n***Copying cmangos files to $DEST_DIR***"
+    log_step "Copying cmangos files -> $DEST_DIR"
     copy_dir_to_target "$MEDIA_PATH/2024/cmangos/x64_RelWithDebInfo/Cameras" "$DEST_DIR/Cameras"
     copy_dir_to_target "$MEDIA_PATH/2024/cmangos/x64_RelWithDebInfo/dbc" "$DEST_DIR/dbc"
     copy_dir_to_target "$MEDIA_PATH/2024/cmangos/x64_RelWithDebInfo/maps" "$DEST_DIR/maps"
@@ -1859,7 +1952,7 @@ copy_game_data() {
 
     # Vmangos
     DEST_DIR="$HOME/vmangos/bin"
-    echo -e "\n***Copying vmangos files to $DEST_DIR***"
+    log_step "Copying vmangos files -> $DEST_DIR"
     copy_dir_to_target "$MEDIA_PATH/2024/vmangos/RelWithDebInfo/Cameras" "$DEST_DIR/Cameras"
     copy_dir_to_target "$MEDIA_PATH/2024/vmangos/RelWithDebInfo/5875" "$DEST_DIR/5875"
     copy_dir_to_target "$MEDIA_PATH/2024/vmangos/RelWithDebInfo/maps" "$DEST_DIR/maps"
@@ -1868,7 +1961,7 @@ copy_game_data() {
 
     # Mangoszero
     DEST_DIR="$HOME/mangoszero/run/etc"
-    echo -e "\n***Copying mangoszero files to $DEST_DIR***"
+    log_step "Copying mangoszero files -> $DEST_DIR"
     copy_dir_to_target "$MEDIA_PATH/2024/mangoszero/RelWithDebInfo/dbc" "$DEST_DIR/dbc"
     copy_dir_to_target "$MEDIA_PATH/2024/mangoszero/RelWithDebInfo/maps" "$DEST_DIR/maps"
     copy_dir_to_target "$MEDIA_PATH/2024/mangoszero/RelWithDebInfo/mmaps" "$DEST_DIR/mmaps"
@@ -1876,7 +1969,7 @@ copy_game_data() {
 
     # Cmangos-tbc
     DEST_DIR="$HOME/cmangos-tbc/run/bin"
-    echo -e "\n***Copying cmangos-tbc files to $DEST_DIR***"
+    log_step "Copying cmangos-tbc files -> $DEST_DIR"
     copy_dir_to_target "$MEDIA_PATH/2024/cmangos-tbc/Buildings" "$DEST_DIR/Buildings"
     copy_dir_to_target "$MEDIA_PATH/2024/cmangos-tbc/Cameras" "$DEST_DIR/Cameras"
     copy_dir_to_target "$MEDIA_PATH/2024/cmangos-tbc/dbc" "$DEST_DIR/dbc"
@@ -1885,130 +1978,131 @@ copy_game_data() {
     copy_dir_to_target "$MEDIA_PATH/2024/cmangos-tbc/vmaps" "$DEST_DIR/vmaps"
     
     # db backups
-    #echo -e "\n***Copying db_bkp files to $HOME/Documents***"
+    #log_step "Copying db_bkp files to $HOME/Documents"
     #copy_dir_to_target "$MEDIA_PATH/2024/db_bkp" "$HOME/Documents/db_bkp"
 
     # Diablo
     SRC_DIABLO="$MEDIA_PATH/2024/diasurgical/devilution"
     DEST_DIR_DIABLO="$HOME/Code2/C++/devilutionX/build"
-    echo -e "\n***Copying diablo files to $DEST_DIR_DIABLO***"
+    log_step "Copying diablo files -> $DEST_DIR_DIABLO"
     if [ -d "$SRC_DIABLO" ]; then
         mkdir -p "$DEST_DIR_DIABLO"
         for file in "$SRC_DIABLO"/*; do
             file_name=$(basename "$file")
             if [ ! -f "$DEST_DIR_DIABLO/$file_name" ]; then
                 cp "$file" "$DEST_DIR_DIABLO/$file_name"
-                echo "Copied $file to $DEST_DIR_DIABLO/$file_name"
+                log_info "Copied $file -> $DEST_DIR_DIABLO/$file_name"
             else
-                echo "[ok] $DEST_DIR_DIABLO/$file_name already exists, skipping copy."
+                log_ok "Exists: $DEST_DIR_DIABLO/$file_name (skip)"
             fi
         done
     else
-        echo "[warn] $SRC_DIABLO does NOT exist, skipping."
+        log_warn "$SRC_DIABLO does NOT exist, skipping."
     fi
 
     # doom3
-    echo -e "\n***Copying doom3 files to $DOWNLOADS_DIR***"
+    log_step "Copying doom3 -> $DOWNLOADS_DIR"
     if [ ! -d "$DOWNLOADS_DIR/doom3" ]; then
         cp "$MEDIA_PATH/2024/doom3_base.zip" "$DOWNLOADS_DIR"
         unzip "$DOWNLOADS_DIR/doom3_base.zip" -d "$DOWNLOADS_DIR/doom3"
-        echo "Copied and unzipped doom3_base.zip to $DOWNLOADS_DIR/doom3"
+        log_info "Copied and unzipped doom3_base.zip -> $DOWNLOADS_DIR/doom3"
     else
-        echo "[ok] $DOWNLOADS_DIR/doom3 already exists, skipping copy and unzip."
+        log_ok "$DOWNLOADS_DIR/doom3 exists, skipping."
     fi
 
     # doom
-    echo -e "\n***Copying doom files to $DOWNLOADS_DIR***"
+    log_step "Copying doom files -> $DOWNLOADS_DIR"
     if [ ! -d "$DOWNLOADS_DIR/doom" ]; then
         unzip DOOM.zip -d "$DOWNLOADS_DIR"
         cp "$MEDIA_PATH/2024/DOOM.zip" "$DOWNLOADS_DIR"
         unzip "$DOWNLOADS_DIR/DOOM.zip" -d "$DOWNLOADS_DIR/doom"
-        echo "Copied and unzipped DOOM.zip to $DOWNLOADS_DIR/doom"
+        log_info "Copied and unzipped DOOM.zip -> $DOWNLOADS_DIR/doom"
     else
-        echo "[ok] $DOWNLOADS_DIR/doom already exists, skipping copy and unzip."
+        log_ok "$DOWNLOADS_DIR/doom exists, skipping."
     fi
 
-    echo -e "\n***Copying GTA3 files to $DOWNLOADS_DIR***"
+    log_step "Copying GTA3 -> $DOWNLOADS_DIR"
     copy_dir_to_target "$MEDIA_PATH/2024/GTA3" "$DOWNLOADS_DIR/gta3"
-    echo -e "\n***Copying GTA_VICE files to $DOWNLOADS_DIR***"
+
+    log_step "Copying GTA_VICE -> $DOWNLOADS_DIR"
     copy_dir_to_target "$MEDIA_PATH/2024/GTA_VICE" "$DOWNLOADS_DIR/gta_vice"
 
     # jo
-    echo -e "\n***Copying JediOutcast files to $HOME/.local/share/openjk/JediOutcast/base***"
+    log_step "Copying JediOutcast files -> $HOME/.local/share/openjk/JediOutcast/base"
     if [ ! -f "$HOME/.local/share/openjk/JediOutcast/base/assets0.pk3" ]; then
         cp "$MEDIA_PATH/2024/jedi_outcast_gamedata.zip" "$DOWNLOADS_DIR"
         unzip "$DOWNLOADS_DIR/jedi_outcast_gamedata.zip" -d "$DOWNLOADS_DIR/jedi_outcast_gamedata"
         cp "$DOWNLOADS_DIR/jedi_outcast_gamedata/base"/*.pk3 "$HOME/.local/share/openjk/JediOutcast/base/"
-        echo "Copied and unzipped jedi_outcast_gamedata.zip and moved *.pk3 files to $HOME/.local/share/openjk/JediOutcast/base/"
+        log_info "Copied and unzipped jedi_outcast_gamedata.zip and moved *.pk3 -> $HOME/.local/share/openjk/JediOutcast/base/"
     else
-        echo "[ok] assets0.pk3 already exists in $HOME/.local/share/openjk/JediOutcast/base/, skipping copy and unzip."
+        log_ok "assets0.pk3 already exists in $HOME/.local/share/openjk/JediOutcast/base/, skipping."
     fi
 
     # ja
-    echo -e "\n***Copying JediAcademy files to $HOME/.local/share/openjk/JediAcademy/base***"
+    log_step "Copying JediAcademy files -> $HOME/.local/share/openjk/JediAcademy/base"
     # Not 100% sure about JediKnightGalaxies and jk2mv...
     if [ ! -f "$HOME/.local/share/openjk/JediAcademy/base/assets0.pk3" ] && [ ! -f "$HOME/.local/share/openjk/base/assets0.pk3" ]; then
         cp "$MEDIA_PATH/2024/JK_JA_GameData.zip" "$DOWNLOADS_DIR"
         unzip "$DOWNLOADS_DIR/JK_JA_GameData.zip" -d "$DOWNLOADS_DIR/JK_JA_GameData"
         cp "$DOWNLOADS_DIR/JK_JA_GameData/base"/*.pk3 "$HOME/.local/share/openjk/JediAcademy/base"
-        echo "Copied and unzipped JK_JA_GameData.zip and moved *.pk3 files to $HOME/.local/share/openjk/JediAcademy/base"
+        log_info "Copied and unzipped JK_JA_GameData.zip and moved *.pk3 -> $HOME/.local/share/openjk/JediAcademy/base"
     else
-        echo "[ok] assets0.pk3 already exists in $HOME/.local/share/openjk/JediAcademy/base or $HOME/.local/share/openjk/base, skipping copy and unzip."
+        log_ok "assets0.pk3 already exists in JediAcademy base or openjk base, skipping."
     fi
 
     # my_docs
-    #echo -e "\n***Copying my_docs files to $HOME/Documents***"
+    #log_step "Copying my_docs files to $HOME/Documents"
     #copy_dir_to_target "$MEDIA_PATH/2024/my_docs" "$HOME/Documents/my_docs"
 
     # openmw
-    echo -e "\n***Copying openmw files to $DOWNLOADS_DIR***"
+    log_step "Copying openmw files -> $DOWNLOADS_DIR"
     if [ ! -d "$DOWNLOADS_DIR/Morrowind" ] && [ ! -d "/mnt/new/openmw_gamedata" ]; then
         cp "$MEDIA_PATH/2024/Morrowind.zip" "$DOWNLOADS_DIR"
         unzip "$DOWNLOADS_DIR/Morrowind.zip" -d "$DOWNLOADS_DIR/Morrowind"
-        echo "Copied and unzipped Morrowind.zip to $DOWNLOADS_DIR/Morrowind"
+        log_info "Copied and unzipped Morrowind.zip -> $DOWNLOADS_DIR/Morrowind"
     else
-        echo "[ok] $DOWNLOADS_DIR/Morrowind or /mnt/new/openmw_gamedata already exists, skipping copy and unzip."
+        log_ok "$DOWNLOADS_DIR/Morrowind or /mnt/new/openmw_gamedata already exists, skipping."
     fi
 
     # openjkdf2
-    echo -e "\n***Copying openjkdf2 files to $HOME/.local/share/OpenJKDF2/openjkdf2***"
+    log_step "Copying openjkdf2 files -> $HOME/.local/share/OpenJKDF2/openjkdf2"
     if [ ! -d "$HOME/.local/share/OpenJKDF2/openjkdf2/Episode" ]; then
         cp -r "$MEDIA_PATH/2024/star_wars_jkdf2/"* "$HOME/.local/share/OpenJKDF2/openjkdf2"
-        echo "Copied all files and directories from star_wars_jkdf2 to $HOME/.local/share/OpenJKDF2/openjkdf2"
+        log_info "Copied star_wars_jkdf2 -> $HOME/.local/share/OpenJKDF2/openjkdf2"
     else
-        echo "[ok] Episode directory already exists in $HOME/.local/share/OpenJKDF2/openjkdf2, skipping copy."
+        log_ok "Episode directory already exists in OpenJKDF2, skipping."
     fi
 
     # kotor
-    echo -e "\n***Copying kotor files to $DOWNLOADS_DIR***"
+    log_step "Copying kotor files -> $DOWNLOADS_DIR"
     if [ ! -d "$DOWNLOADS_DIR/kotor" ]; then
         cp "$MEDIA_PATH/2024/Star Wars - KotOR.zip" "$DOWNLOADS_DIR"
         unzip "$DOWNLOADS_DIR/Star Wars - KotOR.zip" -d "$DOWNLOADS_DIR/kotor"
-        echo "Copied and unzipped 'Star Wars - KotOR.zip' to $DOWNLOADS_DIR/kotor"
+        log_info "Copied and unzipped 'Star Wars - KotOR.zip' -> $DOWNLOADS_DIR/kotor"
     else
-        echo "[ok] $DOWNLOADS_DIR/kotor already exists, skipping copy and unzip."
+        log_ok "$DOWNLOADS_DIR/kotor already exists, skipping."
     fi
 
     # kotor2
-    echo -e "\n***Copying kotor2 files to $DOWNLOADS_DIR***"
+    log_step "Copying kotor2 files -> $DOWNLOADS_DIR"
     if [ ! -d "$DOWNLOADS_DIR/kotor2" ]; then
         cp "$MEDIA_PATH/2024/Star Wars - KotOR2.zip" "$DOWNLOADS_DIR"
         unzip "$DOWNLOADS_DIR/Star Wars - KotOR2.zip" -d "$DOWNLOADS_DIR/kotor2"
-        echo "Copied and unzipped 'Star Wars - KotOR2.zip' to $DOWNLOADS_DIR/kotor2"
+        log_info "Copied and unzipped 'Star Wars - KotOR2.zip' -> $DOWNLOADS_DIR/kotor2"
     else
-        echo "[ok] $DOWNLOADS_DIR/kotor2 already exists, skipping copy and unzip."
+        log_ok "$DOWNLOADS_DIR/kotor2 already exists, skipping."
     fi
 
     # stk addons
-    echo -e "\n***Copying stk addon files to $HOME/.local/share/supertuxkart/addons***"
+    log_step "Copying stk addon files -> $HOME/.local/share/supertuxkart/addons"
     for dir in "$MEDIA_PATH/2024/stk_addons"/*; do
         if [ -d "$dir" ]; then
             dest_dir="$HOME/.local/share/supertuxkart/addons/$(basename "$dir")"
             if [ ! -d "$dest_dir" ]; then
                 cp -r "$dir" "$dest_dir"
-                echo "Copied $(basename "$dir") to $HOME/.local/share/supertuxkart/addons"
+                log_info "Copied $(basename "$dir") -> $HOME/.local/share/supertuxkart/addons"
             else
-                echo "[ok] $(basename "$dir") already exists in $HOME/.local/share/supertuxkart/addons, skipping copy."
+                log_ok "$(basename "$dir") already exists in addons, skipping."
             fi
         fi
     done
@@ -2022,11 +2116,11 @@ copy_game_data() {
     fi
     # if still missing: print and skip this step
     if [ ! -d "$IOQ3_RELEASE_DIR" ]; then
-        echo "[skip] ioq3 release dir not found: $IOQ3_BUILD_DIR/Release or $IOQ3_BUILD_DIR/release-linux-x86_64"
+        log_info "Skipping ioq3: release dir not found: $IOQ3_BUILD_DIR/Release or $IOQ3_BUILD_DIR/release-linux-x86_64"
     else
         IOQ3_BASEQ3_DIR="$IOQ3_RELEASE_DIR/baseq3"
 
-        echo -e "\n*** Copying ioq3 files to $IOQ3_BASEQ3_DIR/ ***"
+        log_step "Copying ioq3 files -> $IOQ3_BASEQ3_DIR"
         mkdir -p "$IOQ3_BASEQ3_DIR"
 
         for file in "$MEDIA_PATH/2024/baseq3/"*.pk3; do
@@ -2035,34 +2129,34 @@ copy_game_data() {
             dest_file="$IOQ3_BASEQ3_DIR/$(basename "$file")"
             if [ ! -f "$dest_file" ]; then
                 cp -- "$file" "$dest_file"
-                echo "Copied $(basename "$file") to $IOQ3_BASEQ3_DIR/"
+                log_info "Copied $(basename "$file") -> $IOQ3_BASEQ3_DIR"
             else
-                echo "[ok] $(basename "$file") already exists in $IOQ3_BASEQ3_DIR/, skipping copy."
+                log_ok "$(basename "$file") already exists in $IOQ3_BASEQ3_DIR, skipping."
             fi
         done
     fi
 
     # Diablo 2
-    echo -e "\n***Copying d2 files to $DOWNLOADS_DIR***"
+    log_step "Copying d2 files -> $DOWNLOADS_DIR"
     copy_dir_to_target "$MEDIA_PATH/2024/d2" "$DOWNLOADS_DIR/d2"
 
     # Jar files
-    echo -e "\n***Copying jar files to $DOWNLOADS_DIR***"
+    log_step "Copying jar files -> $DOWNLOADS_DIR"
     copy_dir_to_target "$MEDIA_PATH/my_files/my_docs/jar_files/linux" "$DOWNLOADS_DIR/jar_files"
 
     # Setup dir lwjgl and joml jars
     LWJGL_JARS_DIR="$DOWNLOADS_DIR/lwjgl_jars"
     if [ ! -d "$LWJGL_JARS_DIR" ]; then
-        echo "***Creating directory $LWJGL_JARS_DIR***"
+        log_step "Creating directory $LWJGL_JARS_DIR"
         mkdir -p "$LWJGL_JARS_DIR"
 
         # Copy joml jar
         JOML_JAR="$DOWNLOADS_DIR/jar_files/250630/lwjgl_jars/joml-1.10.8.jar"
         if [ -f "$JOML_JAR" ]; then
-            echo "***Copying $JOML_JAR to $LWJGL_JARS_DIR***"
+            log_info "Copying $JOML_JAR -> $LWJGL_JARS_DIR"
             cp "$JOML_JAR" "$LWJGL_JARS_DIR"
         else
-            echo "[warn] $JOML_JAR does not exist."
+            log_warn "$JOML_JAR does not exist."
         fi
 
         # Array of dirs to copy .jar files from
@@ -2075,10 +2169,10 @@ copy_game_data() {
         # Copy all .jar files from each specified directory
         for DIR in "${JAR_SOURCE_DIRS[@]}"; do
             if [ -d "$DIR" ]; then
-                echo "***Copying .jar files from $DIR to $LWJGL_JARS_DIR***"
+                log_info "Copying .jar files from $DIR -> $LWJGL_JARS_DIR"
                 cp "$DIR"/*.jar "$LWJGL_JARS_DIR"
             else
-                echo "[warn] Source directory $DIR does not exist."
+                log_warn "Source directory $DIR does not exist."
             fi
         done
     fi
@@ -2088,20 +2182,20 @@ copy_game_data() {
         mkdir -p "$HOME/Documents/local"
         if [ -f "$MEDIA_PATH/my_files/my_docs/local/config_home_pc.txt" ]; then
             cp "$MEDIA_PATH/my_files/my_docs/local/config_home_pc.txt" "$HOME/Documents/local/config.txt"
-            echo "Copied config file to $HOME/Documents/local/config.txt"
+            log_info "Copied config file -> $HOME/Documents/local/config.txt"
             windows_path="C:/Users/jonas/OneDrive/Documents/Code2/c#/BloogBot/Bot/db.db"
             #unix_path="$HOME/Code2/C#/BloogBot/Bot/db.db"
             unix_path="${HOME}/Code2/C#/BloogBot/Bot/db.db"
             if grep -Fq "$windows_path" "$HOME/Documents/local/config.txt"; then
                 # Use double quotes around the sed delimiters to expand HOME
                 sed -i "s|$windows_path|$unix_path|g" "$HOME/Documents/local/config.txt"
-                echo "Updated database path in config file."
+                log_ok "Updated database path in config file."
             fi
         else
-            echo "[warn] Source config file at $MEDIA_PATH/my_files/my_docs/local/config_home_pc.txt not found."
+            log_warn "Source config file not found: $MEDIA_PATH/my_files/my_docs/local/config_home_pc.txt"
         fi
     else
-        echo "[ok] Config file already exists at $HOME/Documents/local/config.txt"
+        log_ok "Config file already exists at $HOME/Documents/local/config.txt"
     fi
 
     # Copy config.txt if missing
@@ -2109,12 +2203,12 @@ copy_game_data() {
         mkdir -p "$HOME/Documents/local"
         if [ -f "$MEDIA_PATH/my_files/my_docs/local/config_home_pc.txt" ]; then
             cp "$MEDIA_PATH/my_files/my_docs/local/config_home_pc.txt" "$HOME/Documents/local/config.txt"
-            echo "Copied config file to $HOME/Documents/local/config.txt"
+            log_info "Copied config file -> $HOME/Documents/local/config.txt"
         else
-            echo "[warn] Source config file at $MEDIA_PATH/my_files/my_docs/local/config_home_pc.txt not found."
+            log_warn "Source config file not found: $MEDIA_PATH/my_files/my_docs/local/config_home_pc.txt"
         fi
     else
-        echo "[ok] Config file already exists at $HOME/Documents/local/config.txt"
+        log_ok "Config file already exists at $HOME/Documents/local/config.txt"
     fi
 
     # Adjust BloogBot connection string if needed
@@ -2125,9 +2219,9 @@ copy_game_data() {
         if grep -Fq "$windows_path" "$HOME/Documents/local/config.txt"; then
             # Use double quotes around the sed delimiters to expand HOME
             sed -i "s|$windows_path|$unix_path|g" "$HOME/Documents/local/config.txt"
-            echo "Updated database path in config file."
+            log_ok "Updated database path in config file."
         else
-            echo "[ok] Config file does not have windows path for BloogBot connection string"
+            log_ok "Config file does not have windows path for BloogBot connection string"
         fi
     fi
 
@@ -2135,36 +2229,51 @@ copy_game_data() {
     if [ -d "$HOME/Code2/C#/BloogBot" ]; then
         if [ ! -d "$HOME/Code2/C#/BloogBot/Bot" ]; then
             mkdir -p "$HOME/Code2/C#/BloogBot/Bot"
-            echo "Created directory $HOME/Code2/C#/BloogBot/Bot"
+            log_info "Created directory $HOME/Code2/C#/BloogBot/Bot"
         fi
 
         if [ ! -f "$HOME/Code2/C#/BloogBot/Bot/db.db" ]; then
             cp "$MEDIA_PATH/my_files/my_docs/db_bkp/bloogbot/db.db" "$HOME/Code2/C#/BloogBot/Bot"
-            echo "Copied db.db to $HOME/Code2/C#/BloogBot/Bot"
+            log_info "Copied db.db -> $HOME/Code2/C#/BloogBot/Bot"
         else
-            echo "[ok] File db.db already exists in $HOME/Code2/C#/BloogBot/Bot"
+            log_ok "File db.db already exists in $HOME/Code2/C#/BloogBot/Bot"
         fi
     else
-        echo "[warn] Directory $HOME/Code2/C#/BloogBot does not exist."
+        log_warn "Directory $HOME/Code2/C#/BloogBot does not exist."
     fi
 }
 
 if $justDoIt; then
-    echo "Copying game data..."
+    log_step "Copying game data..."
     copy_game_data
 else
     if $justInform; then
-        echo -e "\n[q] Do you want to check game data? (yes/y)"
+        log_q "Do you want to check game data? (yes/y)"
     else
-        echo -e "\n[q] Do you want to copy game data? (yes/y)"
+        log_q "Do you want to copy game data? (yes/y)"
     fi
-    read answer
-    # To lowercase using awk
-    answer=$(echo $answer | awk '{print tolower($0)}')
 
-    if [[ "$answer" == "yes" ]] || [[ "$answer" == "y" ]]; then
-        $justInform && echo "Checking game data..." || echo "Copying game data..."
+    #read answer
+    ## To lowercase using awk
+    #answer=$(echo $answer | awk '{print tolower($0)}')
+    #
+    #if [[ "$answer" == "yes" ]] || [[ "$answer" == "y" ]]; then
+    #    $justInform && echo "Checking game data..." || echo "Copying game data..."
+    #    copy_game_data
+    #fi
+
+    read -r answer
+    answer="$(printf "%s" "$answer" | awk '{print tolower($0)}')"
+
+    if [[ "$answer" == "yes" || "$answer" == "y" ]]; then
+        if $justInform; then
+            log_step "Checking game data..."
+        else
+            log_step "Copying game data..."
+        fi
         copy_game_data
+    else
+        log_info "Skipping game data."
     fi
 fi
 
@@ -2173,9 +2282,9 @@ check_database_exists() {
     local db_name=$1
     result=$(mysql -u"$MYSQL_USER" -p"$MYSQL_PASSWORD" -h"$MYSQL_HOST" -P"$MYSQL_PORT" -e "SHOW DATABASES LIKE '$db_name';" 2>/dev/null)
     if [[ "$result" == *"$db_name"* ]]; then
-        echo "[ok] Database $db_name exists."
+        log_ok "Database $db_name exists."
     else
-        echo "[warn] Database $db_name does NOT exist."
+        log_warn "Database $db_name does NOT exist."
     fi
 }
 
@@ -2192,13 +2301,11 @@ check_dbs() {
 
     # Get MSQL info from set values
     if [ -z "$MYSQL_ROOT_PWD" ]; then
-        echo "[error] MYSQL_ROOT_PWD environment variable is not set. Exiting..."
-        exit 1
+        die "MYSQL_ROOT_PWD environment variable is not set."
     fi
 
     if ! command -v mysql &> /dev/null; then
-        echo "[error] mysql command not found. Please install MySQL client. Exiting..."
-        exit 1
+        die "mysql command not found. Please install MySQL client."
     fi
 
     MYSQL_USER="root"
@@ -2224,7 +2331,7 @@ check_dbs() {
 
 # Fix conf files etc.
 fix_other_files() {
-    printf "\n***** Fixing other files! *****\n\n"
+    log_step "Fixing other files!"
 
     # Fix OpenDiablo2 config.json if it exists
     if [ -f "$HOME/.config/OpenDiablo2/config.json" ]; then
@@ -2245,7 +2352,7 @@ fix_other_files() {
 
         # Check if a new path was found
         if [ -z "$NEW_PATH" ]; then
-            echo "No valid Diablo 2 directory found."
+            log_warn "No valid Diablo 2 directory found."
         fi
 
         if [ -n "$NEW_PATH" ]; then
@@ -2256,14 +2363,15 @@ fix_other_files() {
 
         # Update config.json file with new path
         sed -i "s|\"MpqPath\": \".*\"|\"MpqPath\": \"$ESCAPED_NEW_PATH\"|g" $HOME/.config/OpenDiablo2/config.json
-        echo "Updated config.json with new MpqPath path: $NEW_PATH"
+        log_ok "Updated config.json with new MpqPath: $NEW_PATH"
     else
-        echo "$HOME/.config/config.json does NOT exist yet. OpenDiablo2 has not been run yet..."
+        log_warn "$HOME/.config/OpenDiablo2/config.json does NOT exist yet (OpenDiablo2 not run)."
     fi
 
     # japp aka japlus
     #cp $HOME/Code2/C++/japp/*.so $HOME/.local/share/openjk/japlus/
-    echo -e "\n"
+    log_sep
+    log_step "Checking japlus .so libs"
     SRC_DIR="$HOME/Code2/C++/japp"
     DEST_DIR="$HOME/.local/share/openjk/japlus"
 
@@ -2273,18 +2381,19 @@ fix_other_files() {
                 dest_file="$DEST_DIR/$(basename "$file")"
                 if [ ! -f "$dest_file" ]; then
                     cp "$file" "$dest_file"
-                    printf "Copied %s to %s\n" "$(basename "$file")" "$DEST_DIR"
+                    log_info "Copied $(basename "$file") -> $DEST_DIR"
                 else
-                    printf "[ok] %s already exists in %s, skipping copy.\n" "$(basename "$file")" "$DEST_DIR"
+                    log_ok "$(basename "$file") already exists in $DEST_DIR, skipping."
                 fi
             fi
         done
     else
-        echo "[warn] Either source directory ($SRC_DIR) or destination directory ($DEST_DIR) does not exist. Skipping copy of japlus lib files..."
+        log_warn "Missing $SRC_DIR or $DEST_DIR. Skipping japlus lib copy."
     fi
 
     # Copy japp-assets to japlus dir
-    echo -e "\n"
+    log_sep
+    log_step "Checking japp-assets"
     SRC_DIR="$HOME/Code2/Lua/my_lua/my_stuff/japp-assets"
     DEST_DIR="$HOME/.local/share/openjk/japlus"
     # Use rsync to copy only files and directories that don't already exist in the destination
@@ -2295,27 +2404,28 @@ fix_other_files() {
             
             if [ ! -e "$DEST_DIR/$base_item" ]; then
                 cp -r "$item" "$DEST_DIR"
-                echo "Copied $item to $DEST_DIR"
+                log_info "Copied $base_item -> $DEST_DIR"
             else
-                echo "[ok] $DEST_DIR/$base_item already exists, skipping"
+                log_ok "$base_item already exists in $DEST_DIR, skipping."
             fi
         done
     else
-        echo "[warn] Either source directory ($SRC_DIR) or destination directory ($DEST_DIR) does not exist. Skipping copy of japp-assets..."
+        log_warn "Missing $SRC_DIR or $DEST_DIR. Skipping japp-assets."
     fi
     
     # Python
-    echo -e "\n"
+    log_sep
+    log_step "Checking python symlink/copy (Debian/Raspbian only)"
     if grep -qEi 'debian|raspbian' /etc/os-release; then
         if [ ! -f /usr/bin/python ]; then
             sudo cp /usr/bin/python3 /usr/bin/python
-            echo "Copied /usr/bin/python3 to /usr/bin/python"
+            log_ok "Copied /usr/bin/python3 -> /usr/bin/python"
         else
-            echo "[ok] /usr/bin/python already exists, skipping copy."
+            log_ok "/usr/bin/python already exists, skipping."
         fi
     else
         OS_ID=$(grep "^ID=" /etc/os-release | cut -d'=' -f2)
-        echo "Skipping copy of python binary (only for Debian or Raspbian architectures). Found os: $OS_ID"
+        log_info "Skipping python copy (non Debian/Raspbian). OS: $OS_ID"
     fi
 
     CLASSIC_CONF_SCRIPT="$HOME/Documents/my_notes/scripts/wow/update_conf_classic.py"
@@ -2324,14 +2434,14 @@ fix_other_files() {
     print_and_cd_to_dir "$HOME/Code2/C++" "Cloning"
     clone_repo_if_missing "vmangos_db" "https://github.com/brotalnia/database"
 
-    echo -e "\nSetting up vmangos conf files\n"
+    log_step "Setting up vmangos conf files"
     #cp $HOME/vmangos/etc/mangosd.conf.dist $HOME/vmangos/etc/mangosd.conf
     #cp $HOME/vmangos/etc/realmd.conf.dist $HOME/vmangos/etc/realmd.conf
     #python3 $HOME/Documents/my_notes/scripts/wow/update_conf_classic.py "vmangos"
     if [[ -d "$HOME/vmangos/etc" && -f "$HOME/vmangos/etc/mangosd.conf.dist" && -f "$HOME/vmangos/etc/realmd.conf.dist" ]]; then
         python3 "$CLASSIC_CONF_SCRIPT" vmangos
     else
-        echo "[warn] Skipping vmangos conf script: missing one of ~/vmangos/etc/{mangosd.conf.dist,realmd.conf.dist}"
+        log_warn "Skipping vmangos conf script: missing one of ~/vmangos/etc/{mangosd.conf.dist,realmd.conf.dist}"
     fi
     # Follow vmangos install notes from setup_notes.txt...
 
@@ -2339,7 +2449,7 @@ fix_other_files() {
     print_and_cd_to_dir "$HOME/Code2/C++" "Cloning"
     clone_repo_if_missing "classic-db" "https://github.com/cmangos/classic-db"
 
-    echo -e "\nSetting up cmangos conf files\n"
+    log_step "Setting up cmangos conf files"
     #cp $HOME/cmangos/run/etc/aiplayerbot.conf.dist $HOME/cmangos/run/etc/aiplayerbot.conf
     #cp $HOME/cmangos/run/etc/ahbot.conf.dist $HOME/cmangos/run/etc/ahbot.conf
     #cp $HOME/cmangos/run/etc/mangosd.conf.dist $HOME/cmangos/run/etc/mangosd.conf
@@ -2348,7 +2458,7 @@ fix_other_files() {
     if [[ -d "$HOME/cmangos/run/etc" && -f "$HOME/cmangos/run/etc/mangosd.conf.dist" && -f "$HOME/cmangos/run/etc/realmd.conf.dist" && -f "$HOME/cmangos/run/etc/aiplayerbot.conf.dist" ]]; then
         python3 "$CLASSIC_CONF_SCRIPT" cmangos
     else
-        echo "[warn] Skipping cmangos: missing one of ~/cmangos/run/etc/{mangosd.conf.dist,realmd.conf.dist,aiplayerbot.conf.dist}"
+        log_warn "Skipping cmangos: missing one of ~/cmangos/run/etc/{mangosd.conf.dist,realmd.conf.dist,aiplayerbot.conf.dist}"
     fi
     # Follow cmangos install notes from setup_notes.txt...
 
@@ -2361,53 +2471,58 @@ fix_other_files() {
     if [ -d "$src_dir" ]; then
         if [ -d "$dest_dir" ]; then
             cp -r "$src_dir"/* "$dest_dir"
-            echo -e "\nAll files copied from $src_dir to $dest_dir."
+            log_ok "All files copied from $src_dir -> $dest_dir."
+        else
+            log_warn "$dest_dir does NOT exist. Can't copy mangoszero sql files."
         fi
     else
-        echo -e "\n[warn] $src_dir does NOT exist. Can't copy mangoszero sql files from it..."
+        log_warn "$src_dir does NOT exist. Can't copy mangoszero sql files from it..."
     fi
 
     # cmangos-tbc
     print_and_cd_to_dir "$HOME/Code2/C++" "Cloning"
     clone_repo_if_missing "tbc-db" "https://github.com/cmangos/tbc-db"
 
-    echo -e "\nSetting up cmangos-tbc conf files\n"
+    log_step "Setting up cmangos-tbc conf files"
     if [[ -d "$HOME/cmangos-tbc/run/etc" && -f "$HOME/cmangos-tbc/run/etc/mangosd.conf.dist" && -f "$HOME/cmangos-tbc/run/etc/realmd.conf.dist" && -f "$HOME/cmangos-tbc/run/etc/aiplayerbot.conf.dist" ]]; then
         python3 "$CLASSIC_CONF_SCRIPT" cmangos-tbc
     else
-        echo "Skipping cmangos-tbc: missing one of ~/cmangos-tbc/run/etc/{mangosd.conf.dist,realmd.conf.dist,aiplayerbot.conf.dist}"
+        log_warn "Skipping cmangos-tbc: missing one of ~/cmangos-tbc/run/etc/{mangosd.conf.dist,realmd.conf.dist,aiplayerbot.conf.dist}"
     fi
 
     # Fix liblua...
+    log_step "Checking liblua symlink/copy (Debian/Raspbian only)"
     if grep -qEi 'debian|raspbian' /etc/os-release; then
         if [ -f "/usr/lib/x86_64-linux-gnu/liblua5.2.so" ]; then
-            echo "/usr/lib/x86_64-linux-gnu/liblua5.2.so exists."
+            log_ok "/usr/lib/x86_64-linux-gnu/liblua5.2.so exists."
 
             if [ ! -f "/usr/lib/x86_64-linux-gnu/liblua52.so" ]; then
-                echo -e "\n/usr/lib/x86_64-linux-gnu/liblua52.so does NOT exist. Copying it."
+                log_info "/usr/lib/x86_64-linux-gnu/liblua52.so does NOT exist. Copying it."
                 sudo cp /usr/lib/x86_64-linux-gnu/liblua5.2.so /usr/lib/x86_64-linux-gnu/liblua52.so
+                log_ok "Copied liblua5.2.so -> liblua52.so"
             else
-                echo -e "\n[ok] /usr/lib/x86_64-linux-gnu/liblua52.so already exists."
+                log_ok "/usr/lib/x86_64-linux-gnu/liblua52.so already exists."
             fi
         else
-            echo -e "\n/usr/lib/x86_64-linux-gnu/liblua5.2.so does NOT exist. Skipping."
+            log_warn "/usr/lib/x86_64-linux-gnu/liblua5.2.so does NOT exist. Skipping."
         fi
     fi
 
     # Check if $HOME/mangoszero/run/bin exists
     if [ -d "$HOME/mangoszero/run/bin" ]; then
-        echo "$HOME/mangoszero/run/bin exists."
+        log_ok "$HOME/mangoszero/run/bin exists."
 
         if [ ! -d "$HOME/mangoszero/run/etc" ]; then
-            echo "$HOME/mangoszero/run/etc does NOT exist."
+            log_warn "$HOME/mangoszero/run/etc does NOT exist."
 
             if [ -d "$HOME/mangoszero/etc" ]; then
-                echo "$HOME/mangoszero/etc exists. Moving it to $HOME/mangoszero/run/"
+                log_info "$HOME/mangoszero/etc exists. Moving it to $HOME/mangoszero/run/"
                 mv "$HOME/mangoszero/etc" "$HOME/mangoszero/run/"
+                log_ok "Moved etc -> run/"
             fi
         fi
 
-        echo -e "\nSetting up mangoszero conf files\n"
+        log_step "Setting up mangoszero conf files"
         #cp "$HOME/mangoszero/run/etc/aiplayerbot.conf.dist" "$HOME/mangoszero/run/etc/aiplayerbot.conf"
         #cp "$HOME/mangoszero/run/etc/ahbot.conf.dist" "$HOME/mangoszero/run/etc/ahbot.conf"
         #cp "$HOME/mangoszero/run/etc/mangosd.conf.dist" "$HOME/mangoszero/run/etc/mangosd.conf"
@@ -2416,11 +2531,11 @@ fix_other_files() {
         if [[ -d "$HOME/mangoszero/run/etc" && -f "$HOME/mangoszero/run/etc/mangosd.conf.dist" && -f "$HOME/mangoszero/run/etc/realmd.conf.dist" && -f "$HOME/mangoszero/run/etc/aiplayerbot.conf.dist" ]]; then
             python3 "$CLASSIC_CONF_SCRIPT" mangoszero
         else
-            echo "Skipping mangoszero: missing one of ~/mangoszero/run/etc/{mangosd.conf.dist,realmd.conf.dist,aiplayerbot.conf.dist}"
+            log_warn "Skipping mangoszero: missing one of ~/mangoszero/run/etc/{mangosd.conf.dist,realmd.conf.dist,aiplayerbot.conf.dist}"
         fi
         # Follow mangoszero install notes from setup_notes.txt...
     else
-        echo "$HOME/mangoszero/run/bin does NOT exist. Skipping."
+        log_warn "$HOME/mangoszero/run/bin does NOT exist. Skipping."
     fi
 
     # AzerothCore and TrinityCore
@@ -2435,6 +2550,7 @@ fix_other_files() {
     )
 
     # Copy files if they don't already exist in target dirs
+    log_step "Ensuring extra files exist in acore/tcore bin dirs"
     for target_dir in "${TARGET_DIRS[@]}"; do
         for source_file in "${SOURCE_FILES[@]}"; do
             file_name=$(basename "$source_file")
@@ -2442,24 +2558,25 @@ fix_other_files() {
 
             if [ ! -f "$target_file" ]; then
                 sudo cp "$source_file" "$target_file"
-                echo "Copied $source_file to $target_file"
+                log_info "Copied $source_file -> $target_file"
             else
-                echo "[ok] $target_file already exists. Skipping."
+                log_ok "$target_file already exists. Skipping."
             fi
         done
     done
 
-    echo -e "\nSetting up AzerothCore conf files\n"
+    log_step "Setting up AzerothCore conf files"
     python3 $HOME/Documents/my_notes/scripts/wow/update_conf.py "acore"
-    echo -e "\nSetting up TrinityCore conf files\n"
+
+    log_step "Setting up TrinityCore conf files"
     python3 $HOME/Documents/my_notes/scripts/wow/update_conf.py "tcore"
     # Follow acore / tcore install notes in setup_notes.txt or setup db from
     # existing dbs in db_bkp
 
-    echo -e "\nChecking mpq files\n"
+    log_step "Checking mpq files"
     # Check mpq exports
     if [ -d "$HOME/Code2/Wow/tools/mpq" ]; then
-        echo "$HOME/Code2/Wow/tools/mpq exists."
+        log_ok "$HOME/Code2/Wow/tools/mpq exists."
 
         dir_to_use="$HOME/Downloads"
         export_dir="$HOME/Code2/Wow/tools/mpq"
@@ -2467,6 +2584,7 @@ fix_other_files() {
             dir_to_use="/mnt/new"
             export_dir="/mnt/new/mpq"
             mkdir -p "$export_dir"
+            log_info "Using /mnt/new paths for mpq export."
         fi
 
         if [ ! -d "$HOME/Code2/Wow/tools/mpq/Export" ]; then
@@ -2474,14 +2592,14 @@ fix_other_files() {
             #printf "You should run: cd $HOME/Code2/Wow/tools/mpq && ./mopaq export --chain-json docs/wotlk-chain.json --working-directory \"%s/wow/Data\" --export-directory \"%s/Export\"\n" "$dir_to_use" "$export_dir"
             printf "You should run: cd $HOME/Code2/Wow/tools/mpq && ./mopaq export docs/wotlk-chain.json -d \"%s/wow/Data\" -o \"%s/Export\"\n" "$dir_to_use" "$export_dir"
         else
-            echo "[ok] $HOME/Code2/Wow/tools/mpq/Export already exists."
+            log_ok "$HOME/Code2/Wow/tools/mpq/Export already exists."
         fi
     else
-        echo "$HOME/Code2/Wow/tools/mpq does NOT exist. Skipping."
+        log_warn "$HOME/Code2/Wow/tools/mpq does NOT exist. Skipping."
     fi
 
     # Fix mysql extension in php.ini
-    echo -e "\nChecking php.ini file\n"
+    log_step "Checking php.ini file"
     # Prefer the global php.ini if it exists
     PHP_INI_FILE="/etc/php/php.ini"
     PHP_INI_FOUND=false
@@ -2497,41 +2615,58 @@ fix_other_files() {
             if [[ -f "$FALLBACK" ]]; then
                 PHP_INI_FILE="$FALLBACK"
                 PHP_INI_FOUND=true
-                echo "Using fallback php.ini: $PHP_INI_FILE"
+                log_info "Using fallback php.ini: $PHP_INI_FILE"
             else
-                echo "[warn] Neither /etc/php/php.ini nor $FALLBACK exists. Skipping."
+                log_warn "Neither /etc/php/php.ini nor $FALLBACK exists. Skipping."
             fi
         else
-            echo "[warn] php not found and /etc/php/php.ini missing. Skipping."
+            log_warn "php not found and /etc/php/php.ini missing. Skipping."
         fi
     fi
 
     # If the PHP_INI_FILE contains ";extension=mysqli"
     if [ "$PHP_INI_FOUND" = true ]; then
         if grep -q ";extension=mysqli" "$PHP_INI_FILE"; then
-            echo "Found ';extension=mysqli' - updating to 'extension=mysqli'"
+            log_info "Found ';extension=mysqli' - updating to 'extension=mysqli'"
             sudo sed -i 's/;extension=mysqli/extension=mysqli/g' "$PHP_INI_FILE"
+            log_ok "Updated mysql extension line in $PHP_INI_FILE"
         else
-            echo "[ok] 'extension=mysqli' already fixed in $PHP_INI_FILE"
+            log_ok "'extension=mysqli' already fixed in $PHP_INI_FILE"
         fi
     fi
 
-    echo -e "\nChecking databases...\n"
+    log_step "Checking databases..."
     check_dbs
 }
 
 if $justDoIt; then
-    echo "Fixing other files..."
+    log_step "Fixing other files..."
     fix_other_files
 else
-    $justInform && echo -e "\n[q] Do you want to check other files? (yes/y)" || echo -e "\n[q] Do you want to fix other files? (yes/y)"
-    read answer
-    # To lowercase using awk
-    answer=$(echo $answer | awk '{print tolower($0)}')
+    #$justInform && echo -e "\n[q] Do you want to check other files? (yes/y)" || echo -e "\n[q] Do you want to fix other files? (yes/y)"
+    #read answer
+    ## To lowercase using awk
+    #answer=$(echo $answer | awk '{print tolower($0)}')
+    #
+    #if [[ "$answer" == "yes" ]] || [[ "$answer" == "y" ]]; then
+    #    $justInform && echo "Checking other files..." || echo "Fixing other files..."
+    #    fix_other_files
+    #fi
 
-    if [[ "$answer" == "yes" ]] || [[ "$answer" == "y" ]]; then
-        $justInform && echo "Checking other files..." || echo "Fixing other files..."
+    if $justInform; then
+        log_q "Do you want to check other files? (yes/y)"
+    else
+        log_q "Do you want to fix other files? (yes/y)"
+    fi
+
+    read -r answer
+    answer="$(printf "%s" "$answer" | awk '{print tolower($0)}')"
+
+    if [[ "$answer" == "yes" || "$answer" == "y" ]]; then
+        $justInform && log_step "Checking other files..." || log_step "Fixing other files..."
         fix_other_files
+    else
+        log_info "Skipping other files."
     fi
 fi
 
