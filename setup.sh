@@ -14,13 +14,20 @@ DARKGRAY='\033[90m'
 
 # Logging helpers
 # %b makes printf interpret \033 escapes properly
-log_ok()    { printf "%b[ok]%b %b\n"   "$CYAN"   "$RESET" "$*"; }
-log_warn()  { printf "%b[warn]%b %b\n" "$YELLOW" "$RESET" "$*"; }
-log_err()   { printf "%b[err]%b %b\n"  "$RED"    "$RESET" "$*"; }
-log_info()  { printf "%b[i]%b %b\n"    "$DARKGRAY" "$RESET" "$*"; }
-log_step()  { printf "\n%b==>%b %b\n"  "$BLUE"   "$RESET" "$*"; }
-log_sep() { log_info "--------------------------------------------------------"; }
-log_q() { printf "\n%b[q]%b %b\n" "$MAGENTA" "$RESET" "$*"; }
+#log_ok()    { printf "%b[ok]%b %b\n"   "$CYAN"   "$RESET" "$*"; }
+#log_warn()  { printf "%b[warn]%b %b\n" "$YELLOW" "$RESET" "$*"; }
+#log_err()   { printf "%b[err]%b %b\n"  "$RED"    "$RESET" "$*"; }
+#log_info()  { printf "%b[i]%b %b\n"    "$DARKGRAY" "$RESET" "$*"; }
+#log_step()  { printf "\n%b==>%b %b\n"  "$BLUE"   "$RESET" "$*"; }
+#log_sep() { log_info "--------------------------------------------------------"; }
+#log_q() { printf "\n%b[q]%b %b\n" "$MAGENTA" "$RESET" "$*"; }
+# color the entire line
+log_ok()    { printf "%b[ok] %b%b\n"   "$CYAN"    "$*" "$RESET"; }
+log_warn()  { printf "%b[warn] %b%b\n" "$YELLOW"  "$*" "$RESET"; }
+log_err()   { printf "%b[err] %b%b\n"  "$RED"     "$*" "$RESET"; }
+log_info()  { printf "%b[i] %b%b\n"    "$DARKGRAY" "$*" "$RESET"; }
+log_step()  { printf "\n%b==> %b%b\n"  "$BLUE"    "$*" "$RESET"; }
+log_q()     { printf "\n%b[q] %b%b\n"  "$MAGENTA" "$*" "$RESET"; }
 
 say()       { printf "%b\n" "$*"; }
 die()       { log_err "$*"; exit 1; }
