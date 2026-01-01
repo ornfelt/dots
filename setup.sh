@@ -1784,8 +1784,6 @@ check_space() {
 }
 
 copy_game_data() {
-    log_step "Copying game data!"
-
     if [ -d "/mnt/new/other" ] || [ -d "/mnt/new/my_files" ]; then
         DOWNLOADS_DIR="/mnt/new"
     else
@@ -2339,8 +2337,6 @@ check_dbs() {
 
 # Fix conf files etc.
 fix_other_files() {
-    log_step "Fixing other files!"
-
     # Fix OpenDiablo2 config.json if it exists
     if [ -f "$HOME/.config/OpenDiablo2/config.json" ]; then
         DIABLO_DIRS=(
