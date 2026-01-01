@@ -1,3 +1,4 @@
+lsb-release
 lsof
 lua-lgi
 lua5.2
@@ -87,6 +88,7 @@ scons
 sed
 sensible-utils
 shim-signed
+spotify-client
 sqv
 subversion
 suckless-tools

@@ -28,6 +28,7 @@ build-essential
 busybox
 bzip2
 ca-certificates
+cava
 checkinstall
 chromium
 clang
@@ -401,6 +402,7 @@ scons
 sed
 sensible-utils
 shim-signed
+spotify-client
 sqv
 subversion
 suckless-tools

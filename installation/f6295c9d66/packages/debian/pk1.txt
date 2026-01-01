@@ -28,6 +28,7 @@ build-essential
 busybox
 bzip2
 ca-certificates
+cava
 checkinstall
 chromium
 clang
@@ -154,4 +155,3 @@ libcap-ng0
 libcap2-bin
 libcap2
 libcglm-dev
-libcollada-dom-dev

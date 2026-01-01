@@ -174,7 +174,7 @@ for dir in "${dirs[@]}"; do
         log_info "Removing $dir"
         rm -rf "$dir"
     else
-        log_warn "$dir does not exist, skipping."
+        log_info "$dir does not exist, skipping."
     fi
 done
 
