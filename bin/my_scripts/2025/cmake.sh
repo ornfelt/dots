@@ -3,8 +3,34 @@
 # Usage:
 # ./cmake.sh            # detect path and RUN the chosen cmake
 # ./cmake.sh onlyprint  # detect path and PRINT commands (no execution)
+# ./cmake.sh r/release  # RUN in Release mode
+# ./cmake.sh r foo      # RUN in Release mode and PRINT commands (no execution)
 
-OnlyPrint="${1:-}"
+# Use OnlyPrint if any arg is provided
+#OnlyPrint="${1:-}"
+
+# Use OnlyPrint if any arg is provided EXCEPT r/release
+Arg="${1:-}"
+arg_lc="${Arg,,}"
+
+# Print-only unless argument is "r" or "release" (case-insensitive)
+OnlyPrint=""
+Release=""
+if [[ -n "$Arg" ]]; then
+    if [[ "$arg_lc" == "r" || "$arg_lc" == "release" ]]; then
+        Release=1
+        # If there's also another arg, enable print-only too
+        [[ -n "${2:-}" ]] && OnlyPrint=1
+    else
+        OnlyPrint=1
+    fi
+fi
+
+# build type helper
+BuildType="Debug"
+[[ -n "$Release" ]] && BuildType="Release"
+
+# get current working dir
 cwd="$(pwd)"
 lc="${cwd,,}" # lowercase for case-insensitive checks
 
@@ -86,7 +112,7 @@ elif [[ "$lc" == *trinitycore* ]]; then
 elif [[ "$lc" == *my_web_wow* && "$lc" == *c++* ]]; then
     test_cmakelists current "my_web_wow C++ (expecting CMakeLists.txt in current directory)"
 
-    main='cmake -B build -S . -DCMAKE_BUILD_TYPE=Debug'
+    main="cmake -B build -S . -DCMAKE_BUILD_TYPE=$BuildType"
     run_or_print "$main"
 
     if [[ -n "$OnlyPrint" ]]; then
@@ -160,9 +186,9 @@ elif [[ "$lc" == *server* ]]; then
 
 elif [[ "$lc" == *tbc* && "$lc" == *c++* ]]; then
     test_cmakelists parent "my_wow tbc c++ (expecting CMakeLists.txt one level up)"
-    main='cmake .. -DUSE_SDL2=ON -DUSE_SOUND=ON -DUSE_NAMIGATOR=OFF -DUSE_STOPWATCH_DT=ON -DCMAKE_BUILD_TYPE=Debug'
+    main="cmake .. -DUSE_SDL2=ON -DUSE_SOUND=ON -DUSE_NAMIGATOR=OFF -DUSE_STOPWATCH_DT=ON -DCMAKE_BUILD_TYPE=$BuildType"
     alts=(
-        'cmake .. -DUSE_SDL2=OFF -DUSE_SOUND=ON -DUSE_NAMIGATOR=ON -DUSE_STOPWATCH_DT=OFF -DCMAKE_BUILD_TYPE=Release'
+        "cmake .. -DUSE_SDL2=OFF -DUSE_SOUND=ON -DUSE_NAMIGATOR=ON -DUSE_STOPWATCH_DT=OFF -DCMAKE_BUILD_TYPE=$BuildType"
     )
     run_or_print "$main"
     print_alternatives "${alts[@]}"
@@ -188,7 +214,7 @@ elif [[ "$lc" == *ioq3* ]]; then
 
     if [[ -n "$OnlyPrint" ]]; then
         echo
-        echo 'cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug && cmake --build build'
+        echo "cmake -S . -B build -DCMAKE_BUILD_TYPE=$BuildType && cmake --build build"
     fi
 
 elif [[ "$lc" == *torchless* ]]; then
@@ -210,7 +236,7 @@ elif [[ "$lc" == *llama.cpp* ]]; then
 
     if [[ -n "$OnlyPrint" ]]; then
         echo
-        echo 'cmake -B build && cmake --build build --config Debug'
+        echo "cmake -B build && cmake --build build --config $BuildType"
     fi
 
 else
@@ -218,7 +244,7 @@ else
     # Default fallback
     echo "No cmake command found for: $cwd"
     echo "Using default cmake command..."
-    main='cmake ../ -DCMAKE_BUILD_TYPE=Debug'
+    main="cmake ../ -DCMAKE_BUILD_TYPE=$BuildType"
     run_or_print "$main"
 fi
 

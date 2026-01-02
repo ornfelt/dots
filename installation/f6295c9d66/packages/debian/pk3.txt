@@ -55,6 +55,7 @@ php
 picom
 pkg-config
 poppler-utils
+portaudio19-dev
 procps
 protobuf-compiler
 pulseaudio

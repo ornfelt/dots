@@ -1020,6 +1020,7 @@ libiw30t64
 libixml11t64
 libjack-jackd2-0
 libjack-jackd2-0
+libjack-jackd2-dev
 libjansson4
 libjbig-dev
 libjbig0
@@ -1360,6 +1361,7 @@ libpoppler-glib8t64
 libpoppler147
 libpopt0
 libportaudio2
+libportaudiocpp0
 libpostproc58
 libpotrace0
 libpq5
@@ -2506,6 +2508,7 @@ pocketsphinx-en-us
 polkitd
 poppler-data
 poppler-utils
+portaudio19-dev
 powertop
 ppp
 procps
