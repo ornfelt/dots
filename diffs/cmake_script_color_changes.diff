@@ -1,0 +1,82 @@
+diff --git a/bin/my_scripts/2025/cmake.sh b/bin/my_scripts/2025/cmake.sh
+index 985b8ada..5fad569c 100755
+--- a/bin/my_scripts/2025/cmake.sh
++++ b/bin/my_scripts/2025/cmake.sh
+@@ -30,6 +30,24 @@ fi
+ BuildType="Debug"
+ [[ -n "$Release" ]] && BuildType="Release"
+ 
++# Colors (ANSI escape codes)
++RESET='\033[0m'
++RED='\033[31m'
++GREEN='\033[32m'
++YELLOW='\033[33m'
++BLUE='\033[34m'
++MAGENTA='\033[35m'
++CYAN='\033[36m'
++DARKGRAY='\033[90m'
++DARKYELLOW='\033[93m'
++
++# Debug print (PowerShell-style)
++if [[ -n "$OnlyPrint" ]]; then
++    printf "%b[OnlyPrint]=ON  [BuildType]=%s%b\n" "$MAGENTA" "$BuildType" "$RESET"
++else
++    printf "%b[OnlyPrint]=OFF  [BuildType]=%s%b\n" "$MAGENTA" "$BuildType" "$RESET"
++fi
++
+ # get current working dir
+ cwd="$(pwd)"
+ lc="${cwd,,}" # lowercase for case-insensitive checks
+@@ -39,9 +57,12 @@ run_or_print() {
+     if [[ -n "$OnlyPrint" ]]; then
+         printf '%s\n' "$cmd"
+     else
+-        echo "Executing: $cmd"
++        printf "%bExecuting: %s%b\n" "$CYAN" "$cmd" "$RESET"
+         eval "$cmd"
+     fi
++
++    printf "%bIf needed, run:%b\n" "$BLUE" "$RESET"
++    printf "%bmake -j\$(nproc)%b\n" "$BLUE" "$RESET"
+ }
+ 
+ print_alternatives() {
+@@ -66,17 +87,17 @@ test_cmakelists() {
+         return 0
+     fi
+ 
+-    echo "CMakeLists.txt not found at: $cmake_path ($context)" >&2
++    printf "%bCMakeLists.txt not found at: %s (%s)%b\n" "$DARKYELLOW" "$cmake_path" "$context" "$RESET"
+ 
+     if [[ "$where" == "parent" ]]; then
+-        echo "Maybe try:"
+-        echo "-> mkdir build && cd build"
+-        echo "Then run the command again!"
++        printf "%bMaybe try:%b\n" "$DARKYELLOW" "$RESET"
++        printf "%b-> mkdir build && cd build%b\n" "$DARKYELLOW" "$RESET"
++        printf "%bThen run the command again!%b\n" "$DARKYELLOW" "$RESET"
+     fi
+ 
+     #echo "Switching to PRINT-ONLY mode." >&2
+     #echo >&2
+-    echo "Switching to PRINT-ONLY mode."
++    printf "%bSwitching to PRINT-ONLY mode.%b\n" "$DARKYELLOW" "$RESET"
+     echo
+ 
+     OnlyPrint=1
+@@ -240,10 +261,12 @@ elif [[ "$lc" == *llama.cpp* ]]; then
+     fi
+ 
+ else
+-    test_cmakelists parent
++    #test_cmakelists parent
++    test_cmakelists parent "$(basename "$cwd")"
++
+     # Default fallback
+-    echo "No cmake command found for: $cwd"
+-    echo "Using default cmake command..."
++    printf "%bNo cmake command found for: %s%b\n" "$DARKYELLOW" "$cwd" "$RESET"
++    printf "%bUsing default cmake command...%b\n" "$DARKYELLOW" "$RESET"
+     main="cmake ../ -DCMAKE_BUILD_TYPE=$BuildType"
+     run_or_print "$main"
+ fi
