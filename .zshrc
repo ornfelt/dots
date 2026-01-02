@@ -388,6 +388,30 @@ alias .mw="mw_cd"
 alias .mwr="cd $HOME/Code2/Wow/tools/my_wow && $HOME/Code2/Wow/tools/my_wow/c++/tbc/run_with_args.sh 1"
 alias .mww="cd $HOME/Code2/Wow/tools/my_wow && echo TODO..."
 
+# colors
+RESET=$'\033[0m'
+RED=$'\033[31m'
+CYAN=$'\033[36m'
+mw_cd_docs() {
+  local base
+
+  if [[ -n "$code_root_dir" ]]; then
+    base="$code_root_dir/Code2/Wow/tools/my_wow_docs"
+  else
+    base="$HOME/Code2/Wow/tools/my_wow_docs"
+  fi
+
+  if [[ -d "$base" ]]; then
+    cd -- "$base" || return 1
+    printf "%bcd -> %s%b\n" "$CYAN" "$base" "$RESET"
+  else
+    printf "%b[missing] %s%b\n" "$RED" "$base" "$RESET"
+    return 1
+  fi
+}
+
+alias .mwd='mw_cd_docs'
+
 playermap ()
 {
     if [ -n "$1" ]; then

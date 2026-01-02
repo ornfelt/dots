@@ -23,31 +23,36 @@ if [ -d "$ACORE_DIR" ]; then
     ACORE_DATE=$(git show -s --format=%ci "$ACORE_COMMIT")
     echo "Latest non-merge AzerothCore commit: $ACORE_COMMIT ($ACORE_DATE)"
 
-    cd "modules/mod-eluna" || exit 1
+    ELUNA_DIR="modules/mod-eluna"
+    if [[ -d "$ELUNA_DIR" ]]; then
+        cd "$ELUNA_DIR" || exit 1
 
-    sleep 0.5
-    git pull
-    sleep 0.5
+        sleep 0.5
+        git pull
+        sleep 0.5
 
-    echo "Checking latest mod-eluna commit..."
-    ELUNA_LATEST_COMMIT=$(git rev-parse HEAD)
-    ELUNA_LATEST_DATE=$(git show -s --format=%ci "$ELUNA_LATEST_COMMIT")
-    echo "Latest mod-eluna commit: $ELUNA_LATEST_COMMIT ($ELUNA_LATEST_DATE)"
+        echo "Checking latest mod-eluna commit..."
+        ELUNA_LATEST_COMMIT=$(git rev-parse HEAD)
+        ELUNA_LATEST_DATE=$(git show -s --format=%ci "$ELUNA_LATEST_COMMIT")
+        echo "Latest mod-eluna commit: $ELUNA_LATEST_COMMIT ($ELUNA_LATEST_DATE)"
 
-    if [[ "$ELUNA_LATEST_DATE" < "$ACORE_DATE" ]]; then
-        echo "mod-eluna is already older than AzerothCore. No checkout needed."
-    else
-        echo "Searching for a mod-eluna commit before $ACORE_DATE..."
-        ELUNA_TARGET_COMMIT=$(git log --before="$ACORE_DATE" -1 --format="%H")
-        if [ -n "$ELUNA_TARGET_COMMIT" ]; then
-            echo "Checking out mod-eluna commit $ELUNA_TARGET_COMMIT"
-            git checkout "$ELUNA_TARGET_COMMIT" || { echo "Failed to checkout commit"; exit 1; }
+        if [[ "$ELUNA_LATEST_DATE" < "$ACORE_DATE" ]]; then
+            echo "mod-eluna is already older than AzerothCore. No checkout needed."
         else
-            echo "No earlier mod-eluna commit found before $ACORE_DATE"
+            echo "Searching for a mod-eluna commit before $ACORE_DATE..."
+            ELUNA_TARGET_COMMIT=$(git log --before="$ACORE_DATE" -1 --format="%H")
+            if [ -n "$ELUNA_TARGET_COMMIT" ]; then
+                echo "Checking out mod-eluna commit $ELUNA_TARGET_COMMIT"
+                git checkout "$ELUNA_TARGET_COMMIT" || { echo "Failed to checkout commit"; exit 1; }
+            else
+                echo "No earlier mod-eluna commit found before $ACORE_DATE"
+            fi
         fi
-    fi
 
-    cd ../..
+        cd ../..
+    else
+        echo "Skipping eluna update since dir doesn't exist: '$ELUNA_DIR' in $(pwd)"
+    fi
 else
     echo "Directory $ACORE_DIR does NOT exist."
 fi

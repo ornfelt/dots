@@ -557,6 +557,8 @@ clone_projects() {
     clone_repo_if_missing "AzerothCore-wotlk-with-NPCBots" "https://github.com/rewow/AzerothCore-wotlk-with-NPCBots"
     ACORE_DIR="AzerothCore-wotlk-with-NPCBots"
     MODULES_DIR="$ACORE_DIR/modules"
+    USE_ELUNA=false
+    #USE_ELUNA=true
     if [ -d "$MODULES_DIR" ]; then
         cd "$MODULES_DIR"
 
@@ -565,38 +567,43 @@ clone_projects() {
             git checkout linux || die "Failed to checkout linux branch"
         fi
 
-        clone_repo_if_missing "mod-eluna" "https://github.com/azerothcore/mod-eluna"
+        if $USE_ELUNA; then
+            clone_repo_if_missing "mod-eluna" "https://github.com/azerothcore/mod-eluna"
 
-        cd ..
+            cd ..
 
-        log_info "Fetching latest non-merge commit from AzerothCore..."
+            log_info "Fetching latest non-merge commit from AzerothCore..."
 
-        ACORE_COMMIT=$(git log --no-merges --grep='Merge branch' --invert-grep -1 --format="%H")
-        ACORE_DATE=$(git show -s --format=%ci "$ACORE_COMMIT")
-        log_ok "Latest non-merge AzerothCore commit: $ACORE_COMMIT ($ACORE_DATE)"
+            ACORE_COMMIT=$(git log --no-merges --grep='Merge branch' --invert-grep -1 --format="%H")
+            ACORE_DATE=$(git show -s --format=%ci "$ACORE_COMMIT")
+            log_ok "Latest non-merge AzerothCore commit: $ACORE_COMMIT ($ACORE_DATE)"
 
-        cd "modules/mod-eluna" || die "Failed to cd to modules/mod-eluna"
+            cd "modules/mod-eluna" || die "Failed to cd to modules/mod-eluna"
 
-        log_info "Checking latest mod-eluna commit..."
-        ELUNA_LATEST_COMMIT=$(git rev-parse HEAD)
-        ELUNA_LATEST_DATE=$(git show -s --format=%ci "$ELUNA_LATEST_COMMIT")
-        log_ok "Latest mod-eluna commit: $ELUNA_LATEST_COMMIT ($ELUNA_LATEST_DATE)"
+            log_info "Checking latest mod-eluna commit..."
+            ELUNA_LATEST_COMMIT=$(git rev-parse HEAD)
+            ELUNA_LATEST_DATE=$(git show -s --format=%ci "$ELUNA_LATEST_COMMIT")
+            log_ok "Latest mod-eluna commit: $ELUNA_LATEST_COMMIT ($ELUNA_LATEST_DATE)"
 
-        if [[ "$ELUNA_LATEST_DATE" < "$ACORE_DATE" ]]; then
-            log_ok "mod-eluna is already older than AzerothCore. No checkout needed."
-        else
-            log_info "Searching for a mod-eluna commit before $ACORE_DATE..."
-            ELUNA_TARGET_COMMIT=$(git log --before="$ACORE_DATE" -1 --format="%H")
-            if [ -n "$ELUNA_TARGET_COMMIT" ]; then
-                log_info "Checking out mod-eluna commit $ELUNA_TARGET_COMMIT"
-                git checkout "$ELUNA_TARGET_COMMIT" || die "Failed to checkout commit"
-                log_ok "Checked out $ELUNA_TARGET_COMMIT"
+            if [[ "$ELUNA_LATEST_DATE" < "$ACORE_DATE" ]]; then
+                log_ok "mod-eluna is already older than AzerothCore. No checkout needed."
             else
-                log_warn "No earlier mod-eluna commit found before $ACORE_DATE"
+                log_info "Searching for a mod-eluna commit before $ACORE_DATE..."
+                ELUNA_TARGET_COMMIT=$(git log --before="$ACORE_DATE" -1 --format="%H")
+                if [ -n "$ELUNA_TARGET_COMMIT" ]; then
+                    log_info "Checking out mod-eluna commit $ELUNA_TARGET_COMMIT"
+                    git checkout "$ELUNA_TARGET_COMMIT" || die "Failed to checkout commit"
+                    log_ok "Checked out $ELUNA_TARGET_COMMIT"
+                else
+                    log_warn "No earlier mod-eluna commit found before $ACORE_DATE"
+                fi
             fi
-        fi
 
-        cd ../../..
+            cd ../../..
+        else
+            log_info "Skipping eluna..."
+            cd ../..
+        fi
     else
         log_warn "Directory $MODULES_DIR does NOT exist."
     fi
