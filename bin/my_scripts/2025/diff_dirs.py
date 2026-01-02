@@ -46,6 +46,11 @@ IGNORE_PREFIXES = [
 # Paths that cause "contains" skip
 IGNORE_CONTAINS = [
     "node_modules/",
+    "llama2.c/.git",
+    "llama2.c/build",
+    "llama3.2.c/.git",
+    "llama3.2.c/build",
+    "__pycache__/",
 ]
 
 # Paths that cause "equals" skip

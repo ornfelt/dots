@@ -37,6 +37,26 @@ if [[ -z "$wowRoot" ]]; then
   exit 1
 fi
 
+# Override with hdd path (to effectively update files on hdd)
+USE_HDD=false
+#USE_HDD=true
+
+# Note: if needed, also sync Config.wtf to hdd via below commands:
+# cp $wow_dir/WTF/Config.wtf /media2/2024/wow/WTF/
+# cp $wow_tbc_dir/WTF/Config.wtf /media2/2024/wow_tbc/WTF/
+# cp $wow_classic_dir/WTF/Config.wtf /media2/2024/wow_classic/WTF/
+
+if [[ "$USE_HDD" == true ]]; then
+    case "$ver" in
+        wotlk)   wowRoot="/media2/2024/wow" ;;
+        tbc)     wowRoot="/media2/2024/wow_tbc" ;;
+        classic) wowRoot="/media2/2024/wow_classic" ;;
+    esac
+fi
+
+# Debug
+echo "Using wowRoot: $wowRoot"
+
 # Resolve code_root_dir or fallback to $HOME
 code_root_dir="${code_root_dir:-$HOME}"
 destRoot="$code_root_dir/Code2/Wow/addons/wow_addons/$addonSubDir"

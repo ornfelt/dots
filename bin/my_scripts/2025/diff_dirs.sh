@@ -45,12 +45,17 @@ IGNORE_PREFIXES=(
 # Paths that cause "contains" skip
 IGNORE_CONTAINS=(
   "node_modules/"
+  "llama2.c/.git"
+  "llama2.c/build"
+  "llama3.2.c/.git"
+  "llama3.2.c/build"
+  "__pycache__/"
 )
 
 # Paths that cause "equals" skip
 IGNORE_EQUALS=(
-  "Movies"
-  "recordings"
+  #"Movies"
+  #"recordings"
   "Magician Launcher.app"
   "Magician Launcher.exe"
   "RootCA.crt"
@@ -60,7 +65,7 @@ IGNORE_EQUALS=(
   "Samsung Portable SSD SW for Android.txt"
 )
 
-should_skip_path() {
+should_skip_path_old() {
   local path="$1"
 
   # If filtering disabled, never skip
@@ -85,6 +90,47 @@ should_skip_path() {
   # equals specific names
   for p in "${IGNORE_EQUALS[@]}"; do
     if [[ "$path" == "$p" ]]; then
+      return 0
+    fi
+  done
+
+  return 1
+}
+# py/cs prunes IGNORE_EQUALS during traversal (for example: os.walk never
+# descends into it). This should replicate it.
+should_skip_path() {
+  local path="$1"
+
+  # If filtering disabled, never skip
+  if [[ "$IGNORE_PATH_FILTERS" != true ]]; then
+    return 1
+  fi
+
+  # starts with prefixes
+  for p in "${IGNORE_PREFIXES[@]}"; do
+    # If prefix ends with "/", also skip the directory name itself (without "/")
+    if [[ "$p" == */ ]]; then
+      local p_dir="${p%/}"
+      if [[ "$path" == "$p_dir" || "$path" == "$p"* ]]; then
+        return 0
+      fi
+    else
+      if [[ "$path" == "$p"* ]]; then
+        return 0
+      fi
+    fi
+  done
+
+  # contains substrings
+  for p in "${IGNORE_CONTAINS[@]}"; do
+    if [[ "$path" == *"$p"* ]]; then
+      return 0
+    fi
+  done
+
+  # equals specific names (and anything under them)
+  for p in "${IGNORE_EQUALS[@]}"; do
+    if [[ "$path" == "$p" || "$path" == "$p/"* ]]; then
       return 0
     fi
   done

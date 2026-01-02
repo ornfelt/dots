@@ -5,6 +5,9 @@ using System.IO;
 using System.Linq;
 using System.Text;
 
+// Usage:
+// dotnet run -c Release --f net9.0 
+
 class Program
 {
     // Hard-coded dirs to compare
@@ -51,6 +54,11 @@ class Program
     static readonly string[] IGNORE_CONTAINS = new[]
     {
         "node_modules/",
+        "llama2.c/.git",
+        "llama2.c/build",
+        "llama3.2.c/.git",
+        "llama3.2.c/build",
+        "__pycache__/",
     };
 
     // Paths that cause "equals" skip
