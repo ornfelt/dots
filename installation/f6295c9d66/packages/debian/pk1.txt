@@ -155,3 +155,4 @@ libcap-ng0
 libcap2-bin
 libcap2
 libcglm-dev
+libcollada-dom-dev

@@ -1,4 +1,3 @@
-lsb-release
 lsof
 lua-lgi
 lua5.2

@@ -799,6 +799,8 @@ libfribidi0
 libfs-dev
 libfs6
 libfstrm0
+libfuse-dev
+libfuse2t64
 libfuse3-4
 libfyba0t64
 libgail-common

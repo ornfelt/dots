@@ -171,6 +171,7 @@ libffi-dev
 libfmt-dev
 libfontconfig1-dev
 libfreetype-dev
+libfuse-dev
 libgcc-s1
 libgdk-pixbuf-2.0-dev
 libgl1-mesa-dev

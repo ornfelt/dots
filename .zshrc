@@ -345,6 +345,28 @@ alias .wotlk_sim="cd $HOME/Code2/Go/wotlk-sim && ./wowsimwotlk"
 alias .opend2="cd $HOME/Code2/Go/OpenDiablo2 && $HOME/.local/bin/my_scripts/2025/run_open_d2.sh"
 alias .help="$HOME/.local/bin/my_scripts/help.sh"
 
+run_edex() {
+  local f="$HOME/Downloads/eDEX-UI-Linux-x86_64.AppImage"
+
+  if [[ ! -f "$f" ]]; then
+    printf '[err] eDEX-UI AppImage not found: %s\n' "$f" >&2
+    return 1
+  fi
+
+  if [[ ! -x "$f" ]]; then
+    printf '[warn] Not executable, running: chmod +x %s\n' "$f" >&2
+    chmod +x -- "$f" || {
+      printf '[err] Failed to chmod +x: %s\n' "$f" >&2
+      return 1
+    }
+  fi
+
+  printf '[i] Launching: %s\n' "$f"
+  "$f" "$@"
+}
+
+alias .edex="run_edex"
+
 mw_cd() {
   local output target
   # Capture *all* output while still printing it
