@@ -105,6 +105,7 @@ nvidia-nccl-cu12==2.27.5
 nvidia-nvjitlink-cu12==12.8.93
 nvidia-nvshmem-cu12==3.3.20
 nvidia-nvtx-cu12==12.8.90
+ocrspace==2.3.0
 olefile==0.47
 packaging==25.0
 pandas==2.3.3
@@ -132,8 +133,10 @@ PyMySQL==1.1.2
 pynvim==0.5.2
 PyOpenGL==3.1.10
 pyparsing==3.1.2
+pyperclip==1.11.0
 PySDL2==0.9.17
 pysmbc==1.0.25.1
+pytesseract==0.3.13
 python-apt==3.0.0
 python-dateutil==2.9.0
 python-debian==1.0.1
