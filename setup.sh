@@ -1649,6 +1649,8 @@ else
 
     if [[ "$answer" == "yes" ]] || [[ "$answer" == "y" ]]; then
         compile_projects
+    else
+        log_info "Skipping compile_projects."
     fi
 fi
 

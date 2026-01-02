@@ -28,31 +28,36 @@ if [ -d "$MANGOS_DIR" ]; then
     MANGOS_DATE=$(git show -s --format=%ci "$MANGOS_COMMIT")
     echo "Latest non-merge $MANGOS_DIR commit: $MANGOS_COMMIT ($MANGOS_DATE)"
 
-    cd "src/modules/PlayerBots" || exit 1
+    PB_DIR="src/modules/PlayerBots"
+    if [[ -d "$PB_DIR" ]]; then
+        cd "$PB_DIR" || exit 1
 
-    sleep 0.5
-    git pull
-    sleep 0.5
+        sleep 0.5
+        git pull
+        sleep 0.5
 
-    echo "Checking latest PlayerBots commit..."
-    PB_LATEST_COMMIT=$(git rev-parse HEAD)
-    PB_LATEST_DATE=$(git show -s --format=%ci "$PB_LATEST_COMMIT")
-    echo "Latest PlayerBots commit: $PB_LATEST_COMMIT ($PB_LATEST_DATE)"
+        echo "Checking latest PlayerBots commit..."
+        PB_LATEST_COMMIT=$(git rev-parse HEAD)
+        PB_LATEST_DATE=$(git show -s --format=%ci "$PB_LATEST_COMMIT")
+        echo "Latest PlayerBots commit: $PB_LATEST_COMMIT ($PB_LATEST_DATE)"
 
-    if [[ "$PB_LATEST_DATE" < "$MANGOS_DATE" ]]; then
-        echo "PlayerBots is already older than $MANGOS_DIR. No checkout needed."
-    else
-        echo "Searching for a PlayerBots commit before $MANGOS_DATE..."
-        PB_TARGET_COMMIT=$(git log --before="$MANGOS_DATE" -1 --format="%H")
-        if [ -n "$PB_TARGET_COMMIT" ]; then
-            echo "Checking out PlayerBots commit $PB_TARGET_COMMIT"
-            git checkout "$PB_TARGET_COMMIT" || { echo "Failed to checkout commit"; exit 1; }
+        if [[ "$PB_LATEST_DATE" < "$MANGOS_DATE" ]]; then
+            echo "PlayerBots is already older than $MANGOS_DIR. No checkout needed."
         else
-            echo "No earlier PlayerBots commit found before $MANGOS_DATE"
+            echo "Searching for a PlayerBots commit before $MANGOS_DATE..."
+            PB_TARGET_COMMIT=$(git log --before="$MANGOS_DATE" -1 --format="%H")
+            if [ -n "$PB_TARGET_COMMIT" ]; then
+                echo "Checking out PlayerBots commit $PB_TARGET_COMMIT"
+                git checkout "$PB_TARGET_COMMIT" || { echo "Failed to checkout commit"; exit 1; }
+            else
+                echo "No earlier PlayerBots commit found before $MANGOS_DATE"
+            fi
         fi
-    fi
 
-    cd ../../../..
+        cd ../../../.. || exit 1
+    else
+        echo "Skipping PlayerBots update since dir doesn't exist: '$PB_DIR' in $(pwd)"
+    fi
 else
     echo "Directory $MANGOS_DIR does NOT exist."
 fi
