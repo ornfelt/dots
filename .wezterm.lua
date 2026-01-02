@@ -117,7 +117,7 @@ config.tab_bar_at_bottom = true
 config.show_new_tab_button_in_tab_bar = false
 config.switch_to_last_active_tab_when_closing_tab = true
 
-local TAB_MAX_WIDTH = 25
+local TAB_MAX_WIDTH = 20
 config.tab_max_width = TAB_MAX_WIDTH
 
 config.colors = {
