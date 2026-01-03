@@ -2764,6 +2764,7 @@ tipa
 tk8.6-blt2.5
 tmux
 traceroute
+tree-sitter-cli
 tumbler
 tumbler-common
 tzdata

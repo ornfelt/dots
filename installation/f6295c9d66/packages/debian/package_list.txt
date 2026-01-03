@@ -284,6 +284,7 @@ libunistring5
 libunshield-dev
 libuuid1
 libvorbis-dev
+libvulkan-dev
 libwayland-dev
 libwine
 libwlroots-0.18-dev
@@ -422,6 +423,7 @@ texlive
 thunar
 tmux
 traceroute
+tree-sitter-cli
 tzdata
 ucf
 udev

@@ -156,3 +156,4 @@ libcap2-bin
 libcap2
 libcglm-dev
 libcollada-dom-dev
+libcom-err2

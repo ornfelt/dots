@@ -1,6 +1,6 @@
 return {
   "nvim-treesitter/nvim-treesitter-textobjects",
-  --branch = "main",
+  branch = "main",
   dependencies = { "nvim-treesitter/nvim-treesitter" },
   lazy = false,
   --event = "VeryLazy",

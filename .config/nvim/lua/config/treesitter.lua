@@ -2,8 +2,8 @@ local check_file_size = function(_, bufnr)
   return vim.api.nvim_buf_line_count(bufnr) > 100000
 end
 
-local USE_TS_MAIN = false
---local USE_TS_MAIN = true
+--local USE_TS_MAIN = false
+local USE_TS_MAIN = true
 
 -- master branch config
 if not USE_TS_MAIN then
@@ -178,7 +178,7 @@ else
       --vim.wo.foldexpr = "v:lua.vim.treesitter.foldexpr()"
 
       -- Indentation
-      vim.bo[bufnr].indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
+      --vim.bo[bufnr].indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
 
       if vim.bo[bufnr].filetype == "markdown" then
         vim.bo[bufnr].syntax = "markdown"
