@@ -55,9 +55,11 @@ class Program
     {
         "node_modules/",
         "llama2.c/.git",
-        "llama2.c/build",
         "llama3.2.c/.git",
+        "torchless/.git",
+        "llama2.c/build",
         "llama3.2.c/build",
+        "torchless/build",
         "__pycache__/",
     };
 
