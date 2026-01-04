@@ -214,6 +214,29 @@ else
     zle -N bracketed-paste bracketed-paste-magic
     zle -N self-insert url-quote-magic
 
+    # If the command line starts with cd or mkdir
+    # then typing '#' will insert '\#' instead.
+    #function _hash_escape_after_cmd() {
+    #    if [[ $LBUFFER == (cd|mkdir)(|[[:space:]]*) ]]; then
+    #        LBUFFER+='\#'
+    #    else
+    #        LBUFFER+='#'
+    #    fi
+    #}
+    # If previous char is c (case insensitive)
+    # then typing '#' will insert '\#' instead.
+    function _hash_escape_after_cmd() {
+        local prev="${LBUFFER[-1]}"
+        if [[ -n "$prev" && "$prev" == [cC] ]]; then
+            LBUFFER+='\#'
+        else
+            LBUFFER+='#'
+        fi
+    }
+
+    zle -N _hash_escape_after_cmd
+    bindkey '#' _hash_escape_after_cmd
+
     if [ $(command -v "fzf") ]; then
         source $HOME/.config/zsh/scripts_fzf.zsh
     fi
