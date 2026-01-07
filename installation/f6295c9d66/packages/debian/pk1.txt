@@ -94,10 +94,16 @@ gnupg
 gnuplot
 golang
 gopls
+graphviz
 grep
 groff-base
 grub-common
 grub-efi-amd64
+gstreamer1.0-libav
+gstreamer1.0-plugins-base
+gstreamer1.0-plugins-good
+gstreamer1.0-pulseaudio
+gstreamer1.0-vaapi
 gzip
 hostname
 htop
@@ -157,3 +163,7 @@ libcap2
 libcglm-dev
 libcollada-dom-dev
 libcom-err2
+libcpprest-dev
+libcrypt1
+libcurl4-openssl-dev
+libdb5.3t64

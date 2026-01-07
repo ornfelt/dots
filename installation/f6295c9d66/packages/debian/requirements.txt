@@ -88,6 +88,7 @@ nbformat==5.9.1
 nest-asyncio==1.5.4
 netifaces==0.11.0
 networkx==3.6.1
+nodeenv==1.10.0
 notebook==6.4.13
 numpy==2.2.4
 nvidia-cublas-cu12==12.8.4.1
@@ -134,6 +135,7 @@ pynvim==0.5.2
 PyOpenGL==3.1.10
 pyparsing==3.1.2
 pyperclip==1.11.0
+pyright==1.1.407
 PySDL2==0.9.17
 pysmbc==1.0.25.1
 pytesseract==0.3.13
