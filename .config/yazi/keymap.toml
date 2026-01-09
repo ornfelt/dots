@@ -231,8 +231,9 @@ on = [ "b", "D" ]
 run = "plugin bookmarks delete_all"
 desc = "Delete all bookmarks"
 
+###
 # Custom
-# ...
+###
 
 # Image commands
 [[mgr.prepend_keymap]]
@@ -307,6 +308,7 @@ desc = "Copy selection to clipboard"
 
 ###
 # https://github.com/lpnh/fg.yazi
+###
 # Add the plugin
 #ya pack -a lpnh/fg
 # Install the plugin
@@ -333,9 +335,73 @@ desc = "find file by content (ripgrep-all)"
 on   = [ "f", "f" ]
 run  = "plugin fg --args='fzf'"
 desc = "find file by filename"
+
+###
+# extract / compress
 ###
 
+# Extract archive
+[[mgr.prepend_keymap]]
+on = ["e", "x"]
+run = '''
+    shell '$HOME/.local/bin/my_scripts/2025/extract.sh "$0"' --confirm
+'''
+desc = "Extract archive"
+
+# Compress - various formats
+[[mgr.prepend_keymap]]
+on = ["z", "z"]
+run = '''
+    shell '$HOME/.local/bin/my_scripts/2025/compress.sh "$0" zip' --confirm
+'''
+desc = "Compress as .zip"
+
+[[mgr.prepend_keymap]]
+on = ["z", "g"]
+run = '''
+    shell '$HOME/.local/bin/my_scripts/2025/compress.sh "$0" tar.gz' --confirm
+'''
+desc = "Compress as .tar.gz"
+
+[[mgr.prepend_keymap]]
+on = ["z", "x"]
+run = '''
+    shell '$HOME/.local/bin/my_scripts/2025/compress.sh "$0" tar.xz' --confirm
+'''
+desc = "Compress as .tar.xz"
+
+[[mgr.prepend_keymap]]
+on = ["z", "b"]
+run = '''
+    shell '$HOME/.local/bin/my_scripts/2025/compress.sh "$0" tar.bz2' --confirm
+'''
+desc = "Compress as .tar.bz2"
+
+[[mgr.prepend_keymap]]
+on = ["z", "s"]
+run = '''
+    shell '$HOME/.local/bin/my_scripts/2025/compress.sh "$0" tar.zst' --confirm
+'''
+desc = "Compress as .tar.zst"
+
+[[mgr.prepend_keymap]]
+on = ["z", "7"]
+run = '''
+    shell '$HOME/.local/bin/my_scripts/2025/compress.sh "$0" 7z' --confirm
+'''
+desc = "Compress as .7z"
+
+[[mgr.prepend_keymap]]
+on = ["z", "t"]
+run = '''
+    shell '$HOME/.local/bin/my_scripts/2025/compress.sh "$0" tar' --confirm
+'''
+desc = "Compress as .tar (no compression)"
+
+
+###
 # Old (kept for reference)
+###
 
 #[[manager.prepend_keymap]]
 #on = "y"

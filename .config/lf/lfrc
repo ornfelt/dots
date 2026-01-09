@@ -183,8 +183,11 @@ map ,e :set sortby ext; set info
 map zh set hidden!
 map zr set reverse!
 map zn set info
-map zs set info size
-map zt set info time
+#map zs set info size
+#map zt set info time
+# avoid conflict with compress binds
+map zc set info size
+map zi set info time
 map za set info size:time
 map <c-h> set hidden!
 map . set hidden!
@@ -282,7 +285,51 @@ cmd manage_file ${{
 
 map <space><space> manage_file
 
+###
+# extract / compress
+###
+
+# Extract archive
+cmd extract ${{
+    $HOME/.local/bin/my_scripts/2025/extract.sh "$f"
+}}
+map e # unmap e
+map ex extract
+
+# Compress - various formats
+cmd compress_zip ${{
+    $HOME/.local/bin/my_scripts/2025/compress.sh "$f" zip
+}}
+cmd compress_targz ${{
+    $HOME/.local/bin/my_scripts/2025/compress.sh "$f" tar.gz
+}}
+cmd compress_tarxz ${{
+    $HOME/.local/bin/my_scripts/2025/compress.sh "$f" tar.xz
+}}
+cmd compress_tarbz2 ${{
+    $HOME/.local/bin/my_scripts/2025/compress.sh "$f" tar.bz2
+}}
+cmd compress_tarzst ${{
+    $HOME/.local/bin/my_scripts/2025/compress.sh "$f" tar.zst
+}}
+cmd compress_7z ${{
+    $HOME/.local/bin/my_scripts/2025/compress.sh "$f" 7z
+}}
+cmd compress_tar ${{
+    $HOME/.local/bin/my_scripts/2025/compress.sh "$f" tar
+}}
+
+map zz compress_zip
+map zg compress_targz
+map zx compress_tarxz
+map zb compress_tarbz2
+map zs compress_tarzst
+map z7 compress_7z
+map zt compress_tar
+
+###
 # Old (kept for reference)
+###
 
 # Use space-space instead of these
 #map X !tar -zxvf %f
