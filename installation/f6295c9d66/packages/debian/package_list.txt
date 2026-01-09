@@ -10,6 +10,7 @@ apt-transport-https
 apt-utils
 apt
 aspnetcore-runtime-10.0
+assimp-utils
 autoconf
 automake
 autopkgtest
@@ -136,6 +137,7 @@ libacl1
 libapparmor1
 libapt-pkg7.0
 libasound2-dev
+libassimp-dev
 libattr1
 libaudit-common
 libaudit1
@@ -285,6 +287,7 @@ libsqlite3-dev
 libss2
 libssl-dev
 libssl3t64
+libstb-dev
 libstdc++6
 libswresample-dev
 libswscale-dev
@@ -309,10 +312,15 @@ libwine
 libwlroots-0.18-dev
 libx11-dev
 libx11-xcb-dev
+libxcb-cursor-dev
+libxcb-dri2-0-dev
 libxcb-ewmh-dev
+libxcb-glx0-dev
 libxcb-icccm4-dev
+libxcb-keysyms1-dev
 libxcb-res0-dev
 libxcb-util0-dev
+libxcb-xinerama0-dev
 libxcb1-dev
 libxcursor-dev
 libxft-dev

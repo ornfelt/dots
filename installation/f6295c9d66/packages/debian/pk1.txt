@@ -10,6 +10,7 @@ apt-transport-https
 apt-utils
 apt
 aspnetcore-runtime-10.0
+assimp-utils
 autoconf
 automake
 autopkgtest
@@ -136,6 +137,7 @@ libacl1
 libapparmor1
 libapt-pkg7.0
 libasound2-dev
+libassimp-dev
 libattr1
 libaudit-common
 libaudit1

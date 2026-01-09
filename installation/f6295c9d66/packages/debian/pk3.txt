@@ -1,3 +1,7 @@
+logrotate
+logsave
+lsb-release
+lsof
 lua-lgi
 lua5.2
 lua5.3

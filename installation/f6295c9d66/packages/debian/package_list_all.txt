@@ -24,6 +24,7 @@ aspnetcore-runtime-10.0
 aspnetcore-runtime-9.0
 aspnetcore-targeting-pack-10.0
 aspnetcore-targeting-pack-9.0
+assimp-utils
 assistant-qt6
 at-spi2-common
 at-spi2-core
@@ -395,6 +396,8 @@ libasound2-plugins
 libasound2t64
 libasound2t64
 libass9
+libassimp-dev
+libassimp5
 libassuan9
 libasync-interrupt-perl
 libasyncns0
@@ -704,6 +707,7 @@ libdjvulibre-text
 libdjvulibre21
 libdouble-conversion3
 libdpkg-perl
+libdraco8
 libdrm-amdgpu1
 libdrm-amdgpu1
 libdrm-common
@@ -1416,6 +1420,7 @@ libpsl5t64
 libpsl5t64
 libpsm2-2
 libptexenc1
+libpugixml-dev
 libpugixml1v5
 libpulse-dev
 libpulse-mainloop-glib0
@@ -1661,6 +1666,7 @@ libssl-dev
 libssl3t64
 libssl3t64
 libstartup-notification0
+libstb-dev
 libstb0t64
 libstdc++-14-dev
 libstdc++6
@@ -1864,9 +1870,11 @@ libxaw7
 libxaw7-dev
 libxcb-composite0
 libxcb-composite0-dev
+libxcb-cursor-dev
 libxcb-cursor0
 libxcb-damage0
 libxcb-dri2-0
+libxcb-dri2-0-dev
 libxcb-dri3-0
 libxcb-dri3-0
 libxcb-dri3-dev
@@ -1876,11 +1884,13 @@ libxcb-ewmh-dev
 libxcb-ewmh2
 libxcb-glx0
 libxcb-glx0
+libxcb-glx0-dev
 libxcb-icccm4
 libxcb-icccm4-dev
 libxcb-image0
 libxcb-image0-dev
 libxcb-keysyms1
+libxcb-keysyms1-dev
 libxcb-present-dev
 libxcb-present0
 libxcb-present0
@@ -1910,6 +1920,7 @@ libxcb-xfixes0
 libxcb-xfixes0
 libxcb-xfixes0-dev
 libxcb-xinerama0
+libxcb-xinerama0-dev
 libxcb-xinput-dev
 libxcb-xinput0
 libxcb-xkb-dev
