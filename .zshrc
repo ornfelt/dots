@@ -240,6 +240,8 @@ else
     if [ $(command -v "fzf") ]; then
         source $HOME/.config/zsh/scripts_fzf.zsh
     fi
+
+    ...() { cd ../..; }
 fi
 
 # User configuration

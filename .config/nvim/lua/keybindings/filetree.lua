@@ -154,7 +154,7 @@ function toggle_filetree()
           if lnum then
             vim.api.nvim_win_set_cursor(0, { lnum, 0 })
           end
-        end, 60)
+        end, 50)
       end)
     end
 
