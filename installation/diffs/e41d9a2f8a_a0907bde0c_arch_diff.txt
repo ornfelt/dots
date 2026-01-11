@@ -1,0 +1,30 @@
+Differences between e41d9a2f8a and a0907bde0c for arch packages:
+
+-> e41d9a2f8a has unique entries:
+asciidoctor
+clipmenu
+clipnotify
+eww
+eww-debug
+gpsd
+libnvme
+linux-firmware-amdgpu
+linux-firmware-atheros
+linux-firmware-broadcom
+linux-firmware-cirrus
+linux-firmware-intel
+linux-firmware-mediatek
+linux-firmware-nvidia
+linux-firmware-other
+linux-firmware-radeon
+linux-firmware-realtek
+openh264
+pps-tools
+ruby
+rubygems
+woff2-font-awesome
+
+--------------------------------------------------
+
+-> a0907bde0c has unique entries:
+ttf-font-awesome

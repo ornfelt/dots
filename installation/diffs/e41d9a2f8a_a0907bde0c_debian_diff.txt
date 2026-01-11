@@ -1,0 +1,19 @@
+Differences between e41d9a2f8a and a0907bde0c for debian packages:
+
+-> e41d9a2f8a has unique entries:
+galera-4
+libconfig-inifiles-perl
+libdbd-mariadb-perl
+libdbi-perl
+libhtml-template-perl
+libmysql++3v5
+liburing2
+linux-image-6.1.0-37-amd64
+pv
+rsync
+socat
+
+--------------------------------------------------
+
+-> a0907bde0c has unique entries:
+linux-image-6.1.0-38-amd64
