@@ -356,6 +356,7 @@ maim
 make
 man-db
 manpages
+maven
 mawk
 media-types
 mesa-common-dev

@@ -1,5 +1,3 @@
-logrotate
-logsave
 lsb-release
 lsof
 lua-lgi
@@ -14,6 +12,7 @@ maim
 make
 man-db
 manpages
+maven
 mawk
 media-types
 mesa-common-dev

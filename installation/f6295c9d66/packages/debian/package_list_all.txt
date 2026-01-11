@@ -374,6 +374,8 @@ libanyevent-i3-perl
 libanyevent-perl
 libaom3
 libaom3
+libaopalliance-java
+libapache-pom-java
 libapache2-mod-php8.4
 libapparmor1
 libapr1t64
@@ -403,6 +405,7 @@ libasync-interrupt-perl
 libasyncns0
 libasyncns0
 libatasmart4
+libatinject-jsr330-api-java
 libatk-bridge2.0-0t64
 libatk-bridge2.0-0t64
 libatk-bridge2.0-dev
@@ -617,6 +620,7 @@ libcares2
 libcbor0.10
 libcc1-0
 libcddb2
+libcdi-api-java
 libcdio-cdda2t64
 libcdio-paranoia2t64
 libcdio19t64
@@ -653,6 +657,12 @@ libcolord2
 libcom-err2
 libcom-err2
 libcommon-sense-perl
+libcommons-cli-java
+libcommons-codec-java
+libcommons-io-java
+libcommons-lang3-java
+libcommons-logging-java
+libcommons-parent-java
 libconfig11
 libconfuse-common
 libconfuse2
@@ -751,6 +761,7 @@ libepoxy-dev
 libepoxy0
 libepoxy0
 liberror-perl
+liberror-prone-java
 libev-perl
 libev4t64
 libevdev-dev
@@ -848,6 +859,8 @@ libgdk-pixbuf2.0-common
 libgeos-c1t64
 libgeos3.13.1
 libgeotiff5
+libgeronimo-annotation-1.3-spec-java
+libgeronimo-interceptor-3.0-spec-java
 libgfortran-14-dev
 libgfortran5
 libgif7
@@ -954,9 +967,11 @@ libgtk2.0-dev
 libgts-0.7-5t64
 libgts-bin
 libguard-perl
+libguava-java
 libgudev-1.0-0
 libgudev-1.0-0
 libgudev-1.0-dev
+libguice-java
 libgumbo3
 libgupnp-1.6-0
 libgupnp-igd-1.6-0
@@ -999,6 +1014,8 @@ libhttp-daemon-perl
 libhttp-date-perl
 libhttp-message-perl
 libhttp-negotiate-perl
+libhttpclient-java
+libhttpcore-java
 libhwasan0
 libhwloc-dev
 libhwloc-plugins
@@ -1051,6 +1068,7 @@ libixml11t64
 libjack-jackd2-0
 libjack-jackd2-0
 libjack-jackd2-dev
+libjansi-java
 libjansson4
 libjbig-dev
 libjbig0
@@ -1097,6 +1115,8 @@ libjson-glib-1.0-0
 libjson-glib-1.0-common
 libjson-xs-perl
 libjsoncpp26
+libjsoup-java
+libjsr305-java
 libjxl0.11
 libjxl0.11
 libjxr-tools
@@ -1180,6 +1200,10 @@ libmail-sendmail-perl
 libmailtools-perl
 libmariadb3
 libmatroska7
+libmaven-parent-java
+libmaven-resolver-java
+libmaven-shared-utils-java
+libmaven3-core-java
 libmaxminddb0
 libmbedcrypto16
 libmbedcrypto16
@@ -1386,6 +1410,12 @@ libpixman-1-0
 libpixman-1-dev
 libpkgconf3
 libplacebo349
+libplexus-cipher-java
+libplexus-classworlds-java
+libplexus-component-annotations-java
+libplexus-interpolation-java
+libplexus-sec-dispatcher-java
+libplexus-utils2-java
 libplist-2.0-4
 libpmix-dev
 libpmix2t64
@@ -1613,9 +1643,12 @@ libshout3
 libshout3
 libsidplay2
 libsigsegv2
+libsisu-inject-java
+libsisu-plexus-java
 libsixel1
 libslang2
 libslang2
+libslf4j-java
 libslopy7.6
 libsm-dev
 libsm6
@@ -1813,6 +1846,9 @@ libvulkan1
 libwacom-common
 libwacom-dev
 libwacom9
+libwagon-file-java
+libwagon-http-java
+libwagon-provider-api-java
 libwavpack1
 libwavpack1
 libwayland-bin
@@ -2104,6 +2140,7 @@ man-db
 manpages
 manpages-dev
 mariadb-common
+maven
 mawk
 mecab-ipadic
 mecab-ipadic-utf8
