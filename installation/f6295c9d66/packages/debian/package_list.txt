@@ -444,6 +444,7 @@ scons
 sed
 sensible-utils
 shim-signed
+silversearcher-ag
 spotify-client
 sqv
 subversion

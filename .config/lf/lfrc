@@ -204,7 +204,7 @@ map gM cd /mnt
 map ga cd ~/Downloads
 map gd cd ~/Documents
 map gw cd ~/Pictures/Wallpapers
-map gm cd /media/data/Movies
+map gm cd /media2/Movies
 map g. cd ~/.config
 #map g? cd /usr/share/doc/lf
 map g? cd ~/.config/lf

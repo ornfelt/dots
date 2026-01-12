@@ -105,7 +105,7 @@ desc = "cd to Wallpapers"
 
 [[mgr.prepend_keymap]]
 on = ["g", "m"]
-run = [ '''cd /media/data/Movies''' ]
+run = [ '''cd /media2/Movies''' ]
 desc = "cd to Movies"
 
 [[mgr.prepend_keymap]]
@@ -304,7 +304,7 @@ run = [
     shell 'echo "$@" | sed "s/ /,/g" | xargs -I {} /home/jonas/.local/bin/my_scripts/manage_file.sh "{}"' --confirm
 '''
 ]
-desc = "Copy selection to clipboard"
+desc = "Manage file"
 
 ###
 # https://github.com/lpnh/fg.yazi

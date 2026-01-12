@@ -2896,6 +2896,7 @@ shim-helpers-amd64-signed
 shim-signed
 shim-signed-common
 shim-unsigned
+silversearcher-ag
 sound-theme-freedesktop
 spotify-client
 sqv
