@@ -25,7 +25,7 @@ local get_custom_opts = ya.sync(function(self)
 	}
 end)
 
-local fzf_from = function(job_args, opts_tbl, major, minor)
+local fzf_from = function(job_args, opts_tbl)
 	local cmd_tbl = {
 		rg = {
 			grep = "rg --color=always --line-number --smart-case" .. opts_tbl.rg,
@@ -69,6 +69,7 @@ local fzf_from = function(job_args, opts_tbl, major, minor)
 		"--nth=3..",
 		cmd.prev,
 		cmd.prompt,
+		"--bind='start:reload:" .. cmd.grep .. " {q}'",
 		"--bind='change:reload:sleep 0.1; " .. cmd.grep .. " {q} || true'",
 		"--bind='ctrl-]:change-preview-window(80%|66%)'",
 		"--bind='ctrl-\\:change-preview-window(right|up)'",
@@ -76,13 +77,7 @@ local fzf_from = function(job_args, opts_tbl, major, minor)
 		opts_tbl.fzf,
 	}
 
-	-- start event requires fzf v0.35 or above
-	if major > 0 or minor >= 35 then
-		table.insert(fzf_tbl, "--bind='start:reload:" .. cmd.grep .. " {q}'")
-	end
-
-	-- transform action requires fzf v0.45 or above
-	if (major > 0 or minor >= 45) and cmd.extra then
+	if cmd.extra then
 		table.insert(fzf_tbl, cmd.extra(cmd.grep))
 	end
 
@@ -102,17 +97,9 @@ local function setup(self, opts)
 end
 
 local function entry(_, job)
-	-- TODO: remove fallback after next stable release
-	local _permit = ui.hide and ui.hide() or ya.hide()
-
-	local fzf_version, err = Command("fzf"):arg("--version"):output()
-	if err then
-		return fail("`fzf` was not found")
-	end
-	local major, minor = fzf_version.stdout:match("(%d+)%.(%d+)")
-
+	local _permit = ya.hide()
 	local custom_opts = get_custom_opts()
-	local args = fzf_from(job.args[1], custom_opts, tonumber(major), tonumber(minor))
+	local args = fzf_from(job.args[1], custom_opts)
 	local cwd = tostring(get_cwd())
 
 	local child, err = Command(shell)
@@ -143,7 +130,7 @@ local function entry(_, job)
 		local colon_pos = string.find(target, ":")
 		local file_url = colon_pos and string.sub(target, 1, colon_pos - 1) or target
 
-		ya.emit("reveal", { file_url })
+		ya.manager_emit("reveal", { file_url })
 	end
 end
 

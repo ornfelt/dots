@@ -318,23 +318,28 @@ desc = "Manage file"
 
 [[mgr.prepend_keymap]]
 on   = [ "f", "g" ]
-run  = "plugin fg"
-desc = "find file by content (fuzzy match)"
+run  = "plugin fr rg"
+desc = "find file by content (rg search; Ctrl-s toggles rg/fzf match)"
 
 [[mgr.prepend_keymap]]
 on   = [ "f", "G" ]
-run  = "plugin fg --args='rg'"
-desc = "find file by content (ripgrep match)"
+run  = "plugin fr rg"
+desc = "find file by content (rg search)"
 
 [[mgr.prepend_keymap]]
 on   = [ "f", "a" ]
-run  = "plugin fg --args='rga'"
+run  = "plugin fr rga"
 desc = "find file by content (ripgrep-all)"
 
 [[mgr.prepend_keymap]]
 on   = [ "f", "f" ]
-run  = "plugin fg --args='fzf'"
-desc = "find file by filename"
+run  = "search --via=fd"
+desc = "find file by filename (fd search)"
+
+[[mgr.prepend_keymap]]
+on   = [ "f", "F" ]
+run  = "search --via=fd --args='-H'"
+desc = "find file by filename (fd search + hidden files)"
 
 ###
 # extract / compress

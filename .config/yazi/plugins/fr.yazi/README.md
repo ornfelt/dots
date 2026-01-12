@@ -15,7 +15,7 @@ a Yazi plugin that integrates `fzf` with `bat` preview for `rg` search and
 ## installation
 
 ```sh
-ya pkg add lpnh/fr
+ya pack -a lpnh/fr
 ```
 
 ## usage
@@ -39,12 +39,12 @@ below is an example of how to configure both in the
 `~/.config/yazi/keymap.toml` file:
 
 ```toml
-[[mgr.prepend_keymap]]
+[[manager.prepend_keymap]]
 on = ["f", "r"]
 run = "plugin fr rg"
 desc = "Search file by content (rg)"
 
-[[mgr.prepend_keymap]]
+[[manager.prepend_keymap]]
 on = ["f", "a"]
 run = "plugin fr rga"
 desc = "Search file by content (rga)"
