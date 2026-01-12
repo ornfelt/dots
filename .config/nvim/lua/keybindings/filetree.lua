@@ -85,7 +85,8 @@ end
 --  end
 --end
 
-function toggle_filetree()
+function toggle_filetree(jump_to_current)
+  if jump_to_current == nil then jump_to_current = true end
   local fullpath = vim.fn.expand("%:p")
   local target_name = (fullpath ~= "") and vim.fn.fnamemodify(fullpath, ":t") or nil
   local filepath = (fullpath == "") and "~/" or vim.fn.expand("%:p:h")
@@ -121,7 +122,7 @@ function toggle_filetree()
     vim.cmd("Oil " .. filepath)
 
     -- Jump cursor to current file (by basename.ext) if possible
-    if target_name then
+    if jump_to_current and target_name then
       vim.schedule(function()
         -- small sleep so Oil has time to populate the buffer
         vim.defer_fn(function()
@@ -165,5 +166,5 @@ function toggle_filetree()
   end
 end
 
-myconfig.map('n', '<M-e>', ':lua toggle_filetree()<CR>')
+myconfig.map('n', '<M-e>', ':lua toggle_filetree(true)<CR>')
 
