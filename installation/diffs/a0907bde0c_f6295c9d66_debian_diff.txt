@@ -1001,7 +1001,6 @@ scantv
 scdoc
 screen
 scrot
-silversearcher-ag
 slurp
 software-properties-common
 speedtest-cli

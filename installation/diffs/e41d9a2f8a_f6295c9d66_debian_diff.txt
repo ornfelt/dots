@@ -1009,7 +1009,6 @@ scantv
 scdoc
 screen
 scrot
-silversearcher-ag
 slurp
 socat
 software-properties-common
