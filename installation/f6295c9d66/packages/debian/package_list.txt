@@ -90,6 +90,7 @@ gdb
 gettext-base
 gettext
 git
+glslang-tools
 glslc
 gnupg
 gnuplot

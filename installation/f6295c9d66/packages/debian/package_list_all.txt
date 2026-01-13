@@ -239,6 +239,7 @@ glib-networking
 glib-networking
 glib-networking-common
 glib-networking-services
+glslang-tools
 glslc
 gnome-accessibility-themes
 gnome-themes-extra
@@ -2898,6 +2899,7 @@ shim-signed-common
 shim-unsigned
 silversearcher-ag
 sound-theme-freedesktop
+spirv-tools
 spotify-client
 sqv
 sse3-support

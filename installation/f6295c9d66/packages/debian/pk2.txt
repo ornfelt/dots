@@ -1,3 +1,4 @@
+libdebconfclient0
 libdrm-dev
 libedit2
 libelf1t64
@@ -169,4 +170,3 @@ locales
 login.defs
 login
 logrotate
-logsave

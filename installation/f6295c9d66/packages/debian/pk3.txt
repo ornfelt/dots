@@ -1,3 +1,4 @@
+logsave
 lsb-release
 lsof
 lua-lgi

@@ -90,6 +90,7 @@ gdb
 gettext-base
 gettext
 git
+glslang-tools
 glslc
 gnupg
 gnuplot
@@ -169,4 +170,3 @@ libcpprest-dev
 libcrypt1
 libcurl4-openssl-dev
 libdb5.3t64
-libdebconfclient0
