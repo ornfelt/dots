@@ -2981,6 +2981,8 @@ vlc-plugin-skins2
 vlc-plugin-video-output
 vlc-plugin-video-splitter
 vlc-plugin-visualization
+vulkan-tools
+vulkan-validationlayers
 w3m
 w3m-img
 wamerican

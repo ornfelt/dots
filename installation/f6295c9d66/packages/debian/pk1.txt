@@ -170,3 +170,5 @@ libcpprest-dev
 libcrypt1
 libcurl4-openssl-dev
 libdb5.3t64
+libdebconfclient0
+libdrm-dev

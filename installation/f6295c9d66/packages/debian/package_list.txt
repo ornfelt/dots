@@ -308,6 +308,7 @@ libunshield-dev
 libuuid1
 libvorbis-dev
 libvulkan-dev
+libvulkan1
 libwayland-dev
 libwine
 libwlroots-0.18-dev
@@ -362,6 +363,7 @@ mawk
 media-types
 mesa-common-dev
 mesa-utils
+mesa-vulkan-drivers
 meson
 minizip
 mount
@@ -477,6 +479,8 @@ util-linux
 vim-common
 vim-tiny
 visidata
+vulkan-tools
+vulkan-validationlayers
 wamerican
 wayland-protocols
 wezterm

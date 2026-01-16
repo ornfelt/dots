@@ -1,5 +1,3 @@
-libdebconfclient0
-libdrm-dev
 libedit2
 libelf1t64
 libenet-dev
@@ -136,6 +134,7 @@ libunshield-dev
 libuuid1
 libvorbis-dev
 libvulkan-dev
+libvulkan1
 libwayland-dev
 libwine
 libwlroots-0.18-dev
@@ -170,3 +169,6 @@ locales
 login.defs
 login
 logrotate
+logsave
+lsb-release
+lsof
