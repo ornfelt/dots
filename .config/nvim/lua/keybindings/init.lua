@@ -232,6 +232,11 @@ end)
 -- This should be enough?
 myconfig.map('n', '<leader>(', [[:/\v(^\s*$\n){2,}<CR>]])
 
+-- diff search
+--myconfig.map('n', '<leader>)', [[:/diff --<CR>]])
+-- markdown code section search
+myconfig.map('n', '<leader>)', [[:/\`\`\`<CR>]])
+
 myconfig.map("n", "Q", "<nop>") -- Remove Ex Mode
 
 -- Function keys

@@ -1,3 +1,4 @@
+lsof
 lua-lgi
 lua5.2
 lua5.3
@@ -132,6 +133,7 @@ vim-common
 vim-tiny
 visidata
 vulkan-tools
+vulkan-utility-libraries-dev
 vulkan-validationlayers
 wamerican
 wayland-protocols

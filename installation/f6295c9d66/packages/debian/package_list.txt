@@ -173,6 +173,7 @@ libdb5.3t64
 libdebconfclient0
 libdrm-dev
 libedit2
+libegl1
 libelf1t64
 libenet-dev
 libexiv2-dev
@@ -186,6 +187,8 @@ libfuse-dev
 libgcc-s1
 libgdk-pixbuf-2.0-dev
 libgl1-mesa-dev
+libgl1-mesa-dri
+libgles2
 libglew-dev
 libglfw3-dev
 libglib2.0-dev
@@ -480,6 +483,7 @@ vim-common
 vim-tiny
 visidata
 vulkan-tools
+vulkan-utility-libraries-dev
 vulkan-validationlayers
 wamerican
 wayland-protocols

@@ -2982,6 +2982,7 @@ vlc-plugin-video-output
 vlc-plugin-video-splitter
 vlc-plugin-visualization
 vulkan-tools
+vulkan-utility-libraries-dev
 vulkan-validationlayers
 w3m
 w3m-img
