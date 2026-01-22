@@ -13,6 +13,7 @@
 
 #define FILES "thunar"
 //#define FILEX "ranger"
+//#define FILEX "lf"
 #define FILEX "yazi"
 
 /* appearance */

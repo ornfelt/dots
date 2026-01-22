@@ -101,19 +101,19 @@ local themes = {
 local chosen_theme = themes[5]
 local modkey       = "Mod4"
 local altkey       = "Mod1"
-local ctrlkey     = "Control"
+local ctrlkey      = "Control"
 --local terminal     = "urxvtc"
 
 local vi_focus     = false -- vi-like client focus https://github.com/lcpz/awesome-copycats/issues/275
 local cycle_prev   = true  -- cycle with only the previously focused client or all https://github.com/lcpz/awesome-copycats/issues/274
 local editor       = os.getenv("EDITOR") or "nvim"
---local browser      = "librewolf"
 local browser      = "firefox"
 
 local terminal    = "wezterm"
-local secterminal    = "alacritty"
---local filex    = "ranger"
-local filex    = "yazi"
+local secterminal = "alacritty"
+--local filex       = "ranger"
+--local filex       = "lf"
+local filex       = "yazi"
 
 awful.util.terminal = terminal
 awful.util.tagnames = { "1", "2", "3", "4", "5", "6", "7", "8", "9" }
@@ -354,8 +354,11 @@ globalkeys = mytable.join(
     awful.util.spawn("/home/jonas/.local/bin/my_scripts/code_helper.sh new "..terminal)   end,
               {description = "code launcher", group = "launcher"}),
 
+    --awful.key({ modkey, "Control" },            "c",     function ()
+    --awful.util.spawn("GTK_THEME=Adwaita:dark gnome-calendar")   end,
+    --          {description = "calendar", group = "launcher"}),
     awful.key({ modkey, "Control" },            "c",     function ()
-    awful.util.spawn("GTK_THEME=Adwaita:dark gnome-calendar")   end,
+    awful.util.spawn("yad --calendar --no-buttons")   end,
               {description = "calendar", group = "launcher"}),
 
     awful.key({ modkey, "Shift" },            "d",     function ()

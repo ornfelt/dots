@@ -11528,7 +11528,7 @@ index cc12cfd..0000000
 -    layout = wibox.layout.align.vertical
 -}
 diff --git a/rc.lua b/rc.lua
-index 899a8b7..647ba45 100644
+index 899a8b7..823d3d8 100644
 --- a/rc.lua
 +++ b/rc.lua
 @@ -1,107 +1,135 @@
@@ -11668,36 +11668,40 @@ index 899a8b7..647ba45 100644
 -local chosen_theme = themes[3]
 -local theme_path = string.format("%s/.config/awesome/themes/%s/theme.lua", os.getenv("HOME"), chosen_theme)
 -beautiful.init(theme_path)
--
--local modkey      = "Mod4"
--local altkey      = "Mod1"
 +local chosen_theme = themes[5]
 +local modkey       = "Mod4"
 +local altkey       = "Mod1"
- local ctrlkey     = "Control"
---- local terminal    = "urxvt"
---- local terminal    = "st"
++local ctrlkey      = "Control"
 +--local terminal     = "urxvtc"
 +
 +local vi_focus     = false -- vi-like client focus https://github.com/lcpz/awesome-copycats/issues/275
 +local cycle_prev   = true  -- cycle with only the previously focused client or all https://github.com/lcpz/awesome-copycats/issues/274
 +local editor       = os.getenv("EDITOR") or "nvim"
-+--local browser      = "librewolf"
 +local browser      = "firefox"
-+
+ 
+-local modkey      = "Mod4"
+-local altkey      = "Mod1"
+-local ctrlkey     = "Control"
+--- local terminal    = "urxvt"
+--- local terminal    = "st"
  local terminal    = "wezterm"
- local secterminal    = "alacritty"
- --local filex    = "ranger"
- local filex    = "yazi"
+-local secterminal    = "alacritty"
+---local filex    = "ranger"
+-local filex    = "yazi"
 -local files    = "thunar"
 -local browser     = "firefox"
- 
+-
 ---local editor      = os.getenv("EDITOR") or "vim"
 ---local emacs       = "emacsclient -c -a 'emacs' "
 ---local mediaplayer = "mpv"
 ---local soundplayer = "ffplay -nodisp -autoexit " -- The program that will play system sounds
 -
 --- awesome variables
++local secterminal = "alacritty"
++--local filex       = "ranger"
++--local filex       = "lf"
++local filex       = "yazi"
++
  awful.util.terminal = terminal
  awful.util.tagnames = { "1", "2", "3", "4", "5", "6", "7", "8", "9" }
 --- awful.util.tagnames = { "", "", "", "", " ", " ", " ", " ", " " }
@@ -11812,12 +11816,12 @@ index 899a8b7..647ba45 100644
 -lain.layout.cascade.tile.nmaster       = 5
 -lain.layout.cascade.tile.ncol          = 2
 +beautiful.init(string.format("%s/.config/awesome/themes/%s/theme.lua", os.getenv("HOME"), chosen_theme))
- 
--beautiful.init(string.format(gears.filesystem.get_configuration_dir() .. "/themes/%s/theme.lua", chosen_theme))
++
 +-- }}}
  
+-beautiful.init(string.format(gears.filesystem.get_configuration_dir() .. "/themes/%s/theme.lua", chosen_theme))
 +-- {{{ Menu
-+
+ 
 +-- Create a launcher widget and a main menu
  local myawesomemenu = {
 -    { "hotkeys", function() return false, hotkeys_popup.show_help end },
@@ -11941,8 +11945,7 @@ index 899a8b7..647ba45 100644
 +check_toggle_widget_visibility()
 +
 +-- }}}
- 
--globalkeys = my_table.join(
++
 +-- {{{ Mouse bindings
 +
 +--root.buttons(mytable.join(
@@ -11950,7 +11953,8 @@ index 899a8b7..647ba45 100644
 +--    awful.button({ }, 4, awful.tag.viewnext),
 +--    awful.button({ }, 5, awful.tag.viewprev)
 +--))
-+
+ 
+-globalkeys = my_table.join(
 +-- }}}
 +
 +-- {{{ Key bindings
@@ -11977,7 +11981,20 @@ index 899a8b7..647ba45 100644
      -- Run launcher
      awful.key({ modkey },            "a",     function ()
      awful.util.spawn("/home/jonas/.local/bin/my_scripts/tmux_attach.sh "..terminal)  end,
-@@ -285,7 +363,7 @@ globalkeys = my_table.join(
+@@ -276,8 +354,11 @@ globalkeys = my_table.join(
+     awful.util.spawn("/home/jonas/.local/bin/my_scripts/code_helper.sh new "..terminal)   end,
+               {description = "code launcher", group = "launcher"}),
+ 
++    --awful.key({ modkey, "Control" },            "c",     function ()
++    --awful.util.spawn("GTK_THEME=Adwaita:dark gnome-calendar")   end,
++    --          {description = "calendar", group = "launcher"}),
+     awful.key({ modkey, "Control" },            "c",     function ()
+-    awful.util.spawn("GTK_THEME=Adwaita:dark gnome-calendar")   end,
++    awful.util.spawn("yad --calendar --no-buttons")   end,
+               {description = "calendar", group = "launcher"}),
+ 
+     awful.key({ modkey, "Shift" },            "d",     function ()
+@@ -285,7 +366,7 @@ globalkeys = my_table.join(
                {description = "code launcher", group = "launcher"}),
  
      awful.key({ modkey },            "r",     function ()
@@ -11986,7 +12003,7 @@ index 899a8b7..647ba45 100644
                {description = "run dmenu", group = "launcher"}),
  
      awful.key({ modkey },            "w",     function ()
-@@ -434,18 +512,18 @@ globalkeys = my_table.join(
+@@ -434,18 +515,18 @@ globalkeys = my_table.join(
          {description = "Focus previous by index", group = "client"}),
  
      -- By direction client focus
@@ -12017,7 +12034,7 @@ index 899a8b7..647ba45 100644
  
          -- By direction client focus with arrows
      awful.key({ ctrlkey, modkey }, "Down", function() awful.client.focus.global_bydirection("down")
-@@ -481,20 +559,38 @@ globalkeys = my_table.join(
+@@ -481,20 +562,38 @@ globalkeys = my_table.join(
          {description = "increment useless gaps", group = "tag"}),
      awful.key({ modkey }, "-", function () lain.util.useless_gaps_resize(-1) end,
          {description = "decrement useless gaps", group = "tag"}),
@@ -12061,7 +12078,7 @@ index 899a8b7..647ba45 100644
      --     {description = "rename tag", group = "tag"}),
      -- awful.key({ modkey, "Shift" }, "Left", function () lain.util.move_tag(-1) end,
      --     {description = "move tag to the left", group = "tag"}),
-@@ -544,10 +640,16 @@ globalkeys = my_table.join(
+@@ -544,10 +643,16 @@ globalkeys = my_table.join(
      --     {description = "show weather", group = "widgets"}),
  
      -- Brightness
@@ -12082,7 +12099,7 @@ index 899a8b7..647ba45 100644
  
      -- ALSA volume control
      --awful.key({ ctrlkey }, "Up",
-@@ -587,7 +689,7 @@ globalkeys = my_table.join(
+@@ -587,7 +692,7 @@ globalkeys = my_table.join(
      --]]
  )
  
@@ -12091,7 +12108,7 @@ index 899a8b7..647ba45 100644
      -- awful.key({ altkey, "Shift" }, "m",      lain.util.magnify_client,
      --           {description = "magnify client", group = "client"}),
      awful.key({ modkey,           }, "f",
-@@ -600,8 +702,21 @@ clientkeys = my_table.join(
+@@ -600,8 +705,21 @@ clientkeys = my_table.join(
      awful.key({ modkey }, "q", function (c) c:kill() end,
        {description = "close", group = "hotkeys"}),
  
@@ -12115,7 +12132,7 @@ index 899a8b7..647ba45 100644
  
      -- awful.key({ modkey, ctrlkey }, "Return", function (c) c:swap(awful.client.getmaster()) end,
      --   {description = "move to master", group = "client"}),
-@@ -618,7 +733,7 @@ clientkeys = my_table.join(
+@@ -618,7 +736,7 @@ clientkeys = my_table.join(
          function ()
              local c = client.focus
              if c then c:move_to_screen(c.screen.index-1) end
@@ -12124,7 +12141,7 @@ index 899a8b7..647ba45 100644
  
      -- awful.key({ modkey,         }, "n",
      --     function (c)
-@@ -628,92 +743,262 @@ clientkeys = my_table.join(
+@@ -628,92 +746,262 @@ clientkeys = my_table.join(
      --     end ,
      -- {description = "minimize", group = "client"}),
  
@@ -12360,8 +12377,9 @@ index 899a8b7..647ba45 100644
 +    client.focus:move_to_tag(tag)
 +    toggle_tag(tag)
 +  end
-+end
-+
+ end
+ 
+-clientbuttons = gears.table.join(
 +local function switch_to_tag_stay(tag_index)
 +  local num_screens = screen:count()
 +
@@ -12461,14 +12479,13 @@ index 899a8b7..647ba45 100644
 +      end,
 +      {description = "toggle focused client on tag #" .. i, group = "tag"})
 +  )
- end
- 
--clientbuttons = gears.table.join(
++end
++
 +clientbuttons = mytable.join(
      awful.button({ }, 1, function (c)
          c:emit_signal("request::activate", "mouse_click", {raise = true})
      end),
-@@ -730,12 +1015,33 @@ clientbuttons = gears.table.join(
+@@ -730,12 +1018,33 @@ clientbuttons = gears.table.join(
  -- Set keys
  root.keys(globalkeys)
  
@@ -12502,7 +12519,7 @@ index 899a8b7..647ba45 100644
                       focus = awful.client.focus.filter,
                       raise = true,
                       keys = clientkeys,
-@@ -746,92 +1052,51 @@ awful.rules.rules = {
+@@ -746,92 +1055,51 @@ awful.rules.rules = {
       }
      },
  
@@ -12637,7 +12654,7 @@ index 899a8b7..647ba45 100644
  
  -- Signal function to execute when a new client appears.
  client.connect_signal("manage", function (c)
-@@ -839,8 +1104,8 @@ client.connect_signal("manage", function (c)
+@@ -839,8 +1107,8 @@ client.connect_signal("manage", function (c)
      -- i.e. put it at the end of others instead of setting it master.
      -- if not awesome.startup then awful.client.setslave(c) end
  
@@ -12648,7 +12665,7 @@ index 899a8b7..647ba45 100644
        and not c.size_hints.program_position then
          -- Prevent clients from being unreachable after screen count changes.
          awful.placement.no_offscreen(c)
-@@ -857,7 +1122,7 @@ client.connect_signal("request::titlebars", function(c)
+@@ -857,7 +1125,7 @@ client.connect_signal("request::titlebars", function(c)
  
      -- Default
      -- buttons for the titlebar
@@ -12657,7 +12674,7 @@ index 899a8b7..647ba45 100644
          awful.button({ }, 1, function()
              c:emit_signal("request::activate", "titlebar", {raise = true})
              awful.mouse.client.move(c)
-@@ -868,7 +1133,7 @@ client.connect_signal("request::titlebars", function(c)
+@@ -868,7 +1136,7 @@ client.connect_signal("request::titlebars", function(c)
          end)
      )
  
@@ -12666,7 +12683,7 @@ index 899a8b7..647ba45 100644
          { -- Left
              awful.titlebar.widget.iconwidget(c),
              buttons = buttons,
-@@ -894,72 +1159,159 @@ client.connect_signal("request::titlebars", function(c)
+@@ -894,72 +1162,159 @@ client.connect_signal("request::titlebars", function(c)
      }
  end)
  
@@ -12690,24 +12707,6 @@ index 899a8b7..647ba45 100644
 +        c:raise()
 +    end
 +end
-+
-+-- attach to minimized state
-+client.connect_signal("property::minimized", backham)
-+-- attach to closed state
-+client.connect_signal("unmanage", backham)
-+-- ensure there is always a selected client during tag switching or logins
-+tag.connect_signal("property::selected", backham)
-+
-+-- }}}
-+
-+-- Multiple monitor taglist setup
-+-- See: {code_root_dir}/Code2/Lua/my_lua/testing/awsm_tag_testing.lua
-+
-+local function setup_tags_for_monitors()
-+  local num_screens = screen.count()
-+
-+  for s in screen do
-+    s.tags = {}
  
 --- No border for maximized clients
 ---function border_adjust(c)
@@ -12753,6 +12752,24 @@ index 899a8b7..647ba45 100644
 ---            end
 ---        end
 ---    end
++-- attach to minimized state
++client.connect_signal("property::minimized", backham)
++-- attach to closed state
++client.connect_signal("unmanage", backham)
++-- ensure there is always a selected client during tag switching or logins
++tag.connect_signal("property::selected", backham)
++
++-- }}}
++
++-- Multiple monitor taglist setup
++-- See: {code_root_dir}/Code2/Lua/my_lua/testing/awsm_tag_testing.lua
++
++local function setup_tags_for_monitors()
++  local num_screens = screen.count()
++
++  for s in screen do
++    s.tags = {}
++
 +    if num_screens == 2 then
 +      for i = 1, 9 do
 +        if s.index == 1 and is_odd_with_mask(i) then
