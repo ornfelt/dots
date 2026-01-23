@@ -25,12 +25,12 @@ config.enable_wayland = false -- Required for hyprland?
 local user_domain = os.getenv("USERDOMAIN") or ""
 if string.lower(user_domain):find("lenovo2") then
   config.font_size = 10.0
+  -- https://wezfurlong.org/wezterm/config/lua/config/max_fps.html
+  config.max_fps = 240
 else
   config.font_size = 11.0
+  config.max_fps = 60 -- default
 end
-
--- https://wezfurlong.org/wezterm/config/lua/config/max_fps.html
-config.max_fps = 240
 
 -- https://wezfurlong.org/wezterm/hyperlinks.html#implicit-hyperlinks
 config.hyperlink_rules = wezterm.default_hyperlink_rules()
