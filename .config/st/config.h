@@ -234,12 +234,19 @@ ResourcePref resources[] = {
  */
 static MouseShortcut mshortcuts[] = {
     /* mask                 button   function        argument       release */
+    /* bind button4: kscrollup 1 (scroll up) */
     { XK_NO_MOD,            Button4, kscrollup,      {.i = 1} },
+    /* bind button5: kscrolldown 1 (scroll down) */
     { XK_NO_MOD,            Button5, kscrolldown,    {.i = 1} },
+    /* bind any-button2: selpaste (middle click paste) */
     { XK_ANY_MOD,           Button2, selpaste,       {.i = 0},      1 },
+    /* bind shift-button4: ttysend Page Up */
     { ShiftMask,            Button4, ttysend,        {.s = "\033[5;2~"} },
+    /* bind any-button4: ttysend Ctrl-Y */
     { XK_ANY_MOD,           Button4, ttysend,        {.s = "\031"} },
+    /* bind shift-button5: ttysend Page Down */
     { ShiftMask,            Button5, ttysend,        {.s = "\033[6;2~"} },
+    /* bind any-button5: ttysend Ctrl-E */
     { XK_ANY_MOD,           Button5, ttysend,        {.s = "\005"} },
 };
 
@@ -253,38 +260,71 @@ static char *copyoutput[] = { "/bin/sh", "-c", "st-copyout", "externalpipe", NUL
 
 static Shortcut shortcuts[] = {
     /* mask                 keysym          function        argument */
+    /* bind any-break: sendbreak */
     { XK_ANY_MOD,           XK_Break,       sendbreak,      {.i =  0} },
+    /* bind ctrl-print: toggleprinter */
     { ControlMask,          XK_Print,       toggleprinter,  {.i =  0} },
+    /* bind shift-print: printscreen */
     { ShiftMask,            XK_Print,       printscreen,    {.i =  0} },
+    /* bind any-print: printsel */
     { XK_ANY_MOD,           XK_Print,       printsel,       {.i =  0} },
+    /* bind alt-shift-prior: zoom +1 (increase font) */
     { TERMMOD,              XK_Prior,       zoom,           {.f = +1} },
+    /* bind alt-shift-next: zoom -1 (decrease font) */
     { TERMMOD,              XK_Next,        zoom,           {.f = -1} },
+    /* bind alt-shift-home: zoomreset */
     { TERMMOD,              XK_Home,        zoomreset,      {.f =  0} },
+    /* bind alt-shift-c: clipcopy */
     { TERMMOD,              XK_C,           clipcopy,       {.i =  0} },
+    /* bind alt-ctrl-c: clipcopy */
     { MODKEY|ControlMask,   XK_c,           clipcopy,       {.i =  0} },
+    /* bind alt-shift-v: clippaste */
     { TERMMOD,              XK_V,           clippaste,      {.i =  0} },
+    /* bind shift-insert: clippaste */
     { ShiftMask,            XK_Insert,      clippaste,      {.i =  0} },
+    /* bind alt-v: clippaste */
     { MODKEY,               XK_v,           clippaste,      {.i =  0} },
+    /* bind shift-insert: selpaste */
     { ShiftMask,            XK_Insert,      selpaste,       {.i =  0} },
+    /* bind alt-shift-numlock: numlock */
     { TERMMOD,              XK_Num_Lock,    numlock,        {.i =  0} },
+    /* bind shift-pageup: kscrollup -1 (scroll page up) */
     { ShiftMask,            XK_Page_Up,     kscrollup,      {.i = -1} },
+    /* bind shift-pagedown: kscrolldown -1 (scroll page down) */
     { ShiftMask,            XK_Page_Down,   kscrolldown,    {.i = -1} },
+    /* bind alt-pageup: kscrollup -1 (scroll page up) */
     { MODKEY,               XK_Page_Up,     kscrollup,      {.i = -1} },
+    /* bind alt-pagedown: kscrolldown -1 (scroll page down) */
     { MODKEY,               XK_Page_Down,   kscrolldown,    {.i = -1} },
+    /* bind alt-up: kscrollup 1 (scroll line up) */
     { MODKEY,               XK_Up,          kscrollup,      {.i =  1} },
+    /* bind alt-down: kscrolldown 1 (scroll line down) */
     { MODKEY,               XK_Down,        kscrolldown,    {.i =  1} },
+    /* bind alt-shift-k: kscrollup 1 (scroll line up) */
     { TERMMOD,				XK_K,           kscrollup,      {.i =  1} },
+    /* bind alt-shift-j: kscrolldown 1 (scroll line down) */
     { TERMMOD,				XK_J,           kscrolldown,    {.i =  1} },
+    /* bind alt-shift-s: changealpha -0.05 (decrease opacity) */
     { TERMMOD,				XK_S,			changealpha,	{.f = -0.05} },
+    /* bind alt-shift-a: changealpha +0.05 (increase opacity) */
     { TERMMOD,				XK_A,			changealpha,	{.f = +0.05} },
+    /* bind alt-shift-up: zoom +1 (increase font) */
     { TERMMOD,              XK_Up,          zoom,           {.f = +1} },
+    /* bind alt-shift-down: zoom -1 (decrease font) */
     { TERMMOD,              XK_Down,        zoom,           {.f = -1} },
+    /* bind ctrl-+: zoom +1 (increase font) */
     { ControlMask,			XK_plus,        zoom,           {.f = +1} },
+    /* bind ctrl--: zoom -1 (decrease font) */
     { ControlMask,			XK_minus,       zoom,           {.f = -1} },
+    /* bind alt-+: zoom +2 (increase font fast) */
     { MODKEY,				XK_plus,        zoom,           {.f = +2} },
+    /* bind alt--: zoom -2 (decrease font fast) */
     { MODKEY,				XK_minus,       zoom,           {.f = -2} },
+    /* bind alt-shift-l: externalpipe openurlcmd (open url) */
     { TERMMOD,              XK_L,           externalpipe,   {.v = openurlcmd } },
+    /* bind alt-shift-y: externalpipe copyurlcmd (copy url) */
     { TERMMOD,              XK_Y,           externalpipe,   {.v = copyurlcmd } },
+    /* bind alt-shift-o: externalpipe copyoutput (copy output) */
     { TERMMOD,              XK_O,           externalpipe,   {.v = copyoutput } },
 };
 
