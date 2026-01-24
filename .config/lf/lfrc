@@ -149,67 +149,105 @@ cmd mkdir $mkdir -p "$(echo $* | tr ' ' '\ ')"
 # Keys
 # Defaults:
 # https://github.com/gokcehan/lf/blob/master/doc.md
+# bind ctrl-r: reload
 map <c-r> reload
+# bind \:: shell
 map \: shell
 
 #map <enter> &mimeopen "$f"
 #map o &mimeopen "$f"
 #map O $mimeopen --ask "$f"
+# bind enter: open file
 map <enter> open "$f"
+# bind o: shell
 map o shell
 
+# bind v: invert-below (invert selection)
 map v invert-below
 
 cmd spawn_shell ${{
     cd "$PWD" && $SHELL
 }}
 
+# bind S: spawn_shell
 map S spawn_shell
 
+# bind D: delete
 map D delete
 #map E extract
 #map C copyto
 #map M moveto
 
 # Sorting
+# bind ,n: sort by natural
 map ,n :set sortby natural; set info
+# bind ,s: sort by size
 map ,s :set sortby size; set info size
+# bind ,t: sort by time
 map ,t :set sortby time; set info time
+# bind ,a: sort by atime
 map ,a :set sortby atime; set info atime
+# bind ,c: sort by ctime
 map ,c :set sortby ctime; set info ctime
+# bind ,e: sort by extension
 map ,e :set sortby ext; set info
 
 # Settings
+# bind zh: toggle hidden
 map zh set hidden!
+# bind zr: toggle reverse
 map zr set reverse!
+# bind zn: set info none
 map zn set info
 #map zs set info size
 #map zt set info time
 # avoid conflict with compress binds
+# bind zc: set info size
 map zc set info size
+# bind zi: set info time
 map zi set info time
+# bind za: set info size:time
 map za set info size:time
+# bind ctrl-h: toggle hidden
 map <c-h> set hidden!
+# bind .: toggle hidden
 map . set hidden!
 
-# g-binds
+# g-binds (go to directory)
+# bind gg: top (go to top)
 map gg top
+# bind gC: cd /
 map gC cd /
+# bind ge: cd /etc
 map ge cd /etc
+# bind gu: cd /usr
 map gu cd /usr
+# bind gh: cd /home/jonas
 map gh cd /home/jonas
+# bind gl: cd ~/.local
 map gl cd ~/.local
+# bind gL: cd ~/.local/share
 map gL cd ~/.local/share
+# bind gM: cd /mnt
 map gM cd /mnt
+# bind ga: cd ~/Downloads
 map ga cd ~/Downloads
+# bind gd: cd ~/Documents
 map gd cd ~/Documents
+# bind gw: cd ~/Pictures/Wallpapers
 map gw cd ~/Pictures/Wallpapers
+# bind gm: cd /media2/Movies
 map gm cd /media2/Movies
+# bind g.: cd ~/.config
 map g. cd ~/.config
 #map g? cd /usr/share/doc/lf
+# bind g?: cd ~/.config/lf
 map g? cd ~/.config/lf
+# bind gc: cd ~/Code2
 map gc cd ~/Code2
+# bind gn: cd ~/Documents/my_notes
 map gn cd ~/Documents/my_notes
+# bind gp: cd ~/Documents/windows_dots
 map gp cd ~/Documents/windows_dots
 
 cmd term_vim ${{
@@ -220,30 +258,43 @@ cmd firefox_open ${{
     firefox "$fx"
 }}
 
+# bind gr: cd to git root
 map gr $lf -remote "send cd \"$(git rev-parse --show-toplevel)\""
+# bind gf: open file in vim via term_vim.sh
 map gf term_vim
+# bind gx: open file in firefox
 map gx firefox_open
 
 # Fuzzy search
+# bind ctrl-f: fzf select
 map <c-f> $lf -remote "send $id select \"$(fzf)\""
 
 # Rename
 #map c push A<c-u> # new rename
 map c
+# bind cw: rename (clear and type new name)
 map cw push A<c-u> # new rename
+# bind a: rename after extension
 map a push A<a-b> # after extension
+# bind A: rename at the very end
 map A rename # at the very end
+# bind I: rename at the very beginning
 map I push A<c-a> # at the very beginning
+# bind i: rename before extension
 map i push A<a-b><a-b><a-f> # before extension
+# bind cW: bulkrename
 map cW bulkrename
 
 # Tagging / marking
 map <space>
 #map <space> :toggle; down
+# bind space-s: toggle mark and move down
 map <space>s :toggle; down
 
 # Custom
+# bind V: open nvim console
 map V push :!nvim<space>
+# bind ctrl-n: mkdir
 map <c-n> push :mkdir<space>
 
 # Image commands
@@ -255,7 +306,9 @@ cmd set_bg ${{
 	feh --bg-fill $fx
 }}
 
+# bind bg: set background with feh
 map bg set_bg
+# bind bc: rotate image 90 degrees
 map bc convert_rotate
 
 # Copy path
@@ -271,7 +324,9 @@ cmd copy_path_arg ${{
     echo "$fx" | tr '\n' ' ' | sed 's/ /,/g' | xargs -I {} /home/jonas/.local/bin/my_scripts/copy_path.sh {} 1
 }}
 
+# bind space--: copy_path
 map <space>- copy_path
+# bind space-_: copy_path_arg (alternate)
 map <space>_ copy_path_arg
 
 # Manage file
@@ -283,6 +338,7 @@ cmd manage_file ${{
     #echo "$fx" | tr '\n' ' ' | sed 's/ /,/g' | xargs -I {} /home/jonas/.local/bin/my_scripts/manage_file.sh {} 1 # Rofi
 }}
 
+# bind space-space: manage_file
 map <space><space> manage_file
 
 ###
@@ -294,6 +350,7 @@ cmd extract ${{
     $HOME/.local/bin/my_scripts/2025/extract.sh "$f"
 }}
 map e # unmap e
+# bind ex: extract archive
 map ex extract
 
 # Compress - various formats
@@ -319,12 +376,19 @@ cmd compress_tar ${{
     $HOME/.local/bin/my_scripts/2025/compress.sh "$f" tar
 }}
 
+# bind zz: compress_zip
 map zz compress_zip
+# bind zg: compress_targz
 map zg compress_targz
+# bind zx: compress_tarxz
 map zx compress_tarxz
+# bind zb: compress_tarbz2
 map zb compress_tarbz2
+# bind zs: compress_tarzst
 map zs compress_tarzst
+# bind z7: compress_7z
 map z7 compress_7z
+# bind zt: compress_tar
 map zt compress_tar
 
 ###
