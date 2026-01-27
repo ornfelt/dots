@@ -58,6 +58,25 @@ index 0000000..d42c9e0
 +dkms.conf
 +a.out
 +dwm
+diff --git a/LICENSE b/LICENSE
+index 596e6cd..995172f 100644
+--- a/LICENSE
++++ b/LICENSE
+@@ -1,6 +1,5 @@
+ MIT/X Consortium License
+ 
+-© 2010-2026 Hiltjo Posthuma <hiltjo@codemadness.org>
+ © 2006-2019 Anselm R Garbe <anselm@garbe.ca>
+ © 2006-2009 Jukka Salmi <jukka at salmi dot ch>
+ © 2006-2007 Sander van Dijk <a dot h dot vandijk at gmail dot com>
+@@ -12,6 +11,7 @@ MIT/X Consortium License
+ © 2008 Martin Hurton <martin dot hurton at gmail dot com>
+ © 2008 Neale Pickett <neale dot woozle dot org>
+ © 2009 Mate Nagy <mnagy at port70 dot net>
++© 2010-2016 Hiltjo Posthuma <hiltjo@codemadness.org>
+ © 2010-2012 Connor Lane Smith <cls@lubutu.com>
+ © 2011 Christoph Lohmann <20h@r-36.net>
+ © 2015-2016 Quentin Rameau <quinq@fifth.space>
 diff --git a/config.def.h b/config.def.h
 index 81c3fc0..13c77a9 100644
 --- a/config.def.h
@@ -300,10 +319,10 @@ index 81c3fc0..13c77a9 100644
  	{ ClkTagBar,            MODKEY,         Button1,        tag,            {0} },
 diff --git a/config.h b/config.h
 new file mode 100644
-index 0000000..98fb30c
+index 0000000..65b429f
 --- /dev/null
 +++ b/config.h
-@@ -0,0 +1,366 @@
+@@ -0,0 +1,367 @@
 +/* See LICENSE file for copyright and license details. */
 +
 +/* Constants */
@@ -319,6 +338,7 @@ index 0000000..98fb30c
 +
 +#define FILES "thunar"
 +//#define FILEX "ranger"
++//#define FILEX "lf"
 +#define FILEX "yazi"
 +
 +/* appearance */
@@ -671,9 +691,16 @@ index 0000000..98fb30c
 +    { ClkRootWin,           0,              Button2,        togglebar,      {0} },
 +};
 diff --git a/config.mk b/config.mk
-index b469a2b..93f9739 100644
+index 6e875f1..93f9739 100644
 --- a/config.mk
 +++ b/config.mk
+@@ -1,5 +1,5 @@
+ # dwm version
+-VERSION = 6.7
++VERSION = 6.6
+ 
+ # Customize below to fit your system
+ 
 @@ -20,10 +20,11 @@ FREETYPEINC = /usr/include/freetype2
  # OpenBSD (uncomment)
  #FREETYPEINC = ${X11INC}/freetype2
@@ -787,7 +814,7 @@ index ddc8321..d04bec6 100644
  dwm is customized by creating a custom config.h and (re)compiling the source
  code. This keeps it fast, secure and simple.
 diff --git a/dwm.c b/dwm.c
-index 4f345ee..c1962e8 100644
+index 53b393e..c1962e8 100644
 --- a/dwm.c
 +++ b/dwm.c
 @@ -29,6 +29,7 @@
@@ -1448,7 +1475,7 @@ index 4f345ee..c1962e8 100644
  void
  expose(XEvent *e)
  {
-@@ -834,30 +1118,35 @@ focusmon(const Arg *arg)
+@@ -834,49 +1118,77 @@ focusmon(const Arg *arg)
  	focus(NULL);
  }
  
@@ -1503,7 +1530,22 @@ index 4f345ee..c1962e8 100644
  }
  
  Atom
-@@ -876,6 +1165,30 @@ getatomprop(Client *c, Atom prop)
+ getatomprop(Client *c, Atom prop)
+ {
+ 	int di;
+-	unsigned long nitems, dl;
++	unsigned long dl;
+ 	unsigned char *p = NULL;
+ 	Atom da, atom = None;
+ 
+ 	if (XGetWindowProperty(dpy, c->win, prop, 0L, sizeof atom, False, XA_ATOM,
+-		&da, &di, &nitems, &dl, &p) == Success && p) {
+-		if (nitems > 0)
+-			atom = *(Atom *)p;
++		&da, &di, &dl, &dl, &p) == Success && p) {
++		atom = *(Atom *)p;
+ 		XFree(p);
+ 	}
  	return atom;
  }
  
@@ -1534,7 +1576,7 @@ index 4f345ee..c1962e8 100644
  int
  getrootptr(int *x, int *y)
  {
-@@ -1030,18 +1343,20 @@ killclient(const Arg *arg)
+@@ -1031,18 +1343,20 @@ killclient(const Arg *arg)
  void
  manage(Window w, XWindowAttributes *wa)
  {
@@ -1556,7 +1598,7 @@ index 4f345ee..c1962e8 100644
  
  	updatetitle(c);
  	if (XGetTransientForHint(dpy, w, &trans) && (t = wintoclient(trans))) {
-@@ -1050,6 +1365,7 @@ manage(Window w, XWindowAttributes *wa)
+@@ -1051,6 +1365,7 @@ manage(Window w, XWindowAttributes *wa)
  	} else {
  		c->mon = selmon;
  		applyrules(c);
@@ -1564,7 +1606,7 @@ index 4f345ee..c1962e8 100644
  	}
  
  	if (c->x + WIDTH(c) > c->mon->wx + c->mon->ww)
-@@ -1067,6 +1383,10 @@ manage(Window w, XWindowAttributes *wa)
+@@ -1068,6 +1383,10 @@ manage(Window w, XWindowAttributes *wa)
  	updatewindowtype(c);
  	updatesizehints(c);
  	updatewmhints(c);
@@ -1575,7 +1617,7 @@ index 4f345ee..c1962e8 100644
  	XSelectInput(dpy, w, EnterWindowMask|FocusChangeMask|PropertyChangeMask|StructureNotifyMask);
  	grabbuttons(c, 0);
  	if (!c->isfloating)
-@@ -1084,6 +1404,8 @@ manage(Window w, XWindowAttributes *wa)
+@@ -1085,6 +1404,8 @@ manage(Window w, XWindowAttributes *wa)
  	c->mon->sel = c;
  	arrange(c->mon);
  	XMapWindow(dpy, c->win);
@@ -1584,7 +1626,7 @@ index 4f345ee..c1962e8 100644
  	focus(NULL);
  }
  
-@@ -1124,23 +1446,6 @@ monocle(Monitor *m)
+@@ -1125,23 +1446,6 @@ monocle(Monitor *m)
  		resize(c, m->wx, m->wy, m->ww - 2 * c->bw, m->wh - 2 * c->bw, 0);
  }
  
@@ -1608,7 +1650,7 @@ index 4f345ee..c1962e8 100644
  void
  movemouse(const Arg *arg)
  {
-@@ -1171,7 +1476,7 @@ movemouse(const Arg *arg)
+@@ -1172,7 +1476,7 @@ movemouse(const Arg *arg)
  			handler[ev.type](&ev);
  			break;
  		case MotionNotify:
@@ -1617,7 +1659,7 @@ index 4f345ee..c1962e8 100644
  				continue;
  			lasttime = ev.xmotion.time;
  
-@@ -1244,16 +1549,36 @@ propertynotify(XEvent *e)
+@@ -1245,16 +1549,36 @@ propertynotify(XEvent *e)
  			drawbars();
  			break;
  		}
@@ -1658,7 +1700,7 @@ index 4f345ee..c1962e8 100644
  void
  quit(const Arg *arg)
  {
-@@ -1291,6 +1616,13 @@ resizeclient(Client *c, int x, int y, int w, int h)
+@@ -1292,6 +1616,13 @@ resizeclient(Client *c, int x, int y, int w, int h)
  	c->oldw = c->w; c->w = wc.width = w;
  	c->oldh = c->h; c->h = wc.height = h;
  	wc.border_width = c->bw;
@@ -1672,7 +1714,7 @@ index 4f345ee..c1962e8 100644
  	XConfigureWindow(dpy, c->win, CWX|CWY|CWWidth|CWHeight|CWBorderWidth, &wc);
  	configure(c);
  	XSync(dpy, False);
-@@ -1325,7 +1657,7 @@ resizemouse(const Arg *arg)
+@@ -1326,7 +1657,7 @@ resizemouse(const Arg *arg)
  			handler[ev.type](&ev);
  			break;
  		case MotionNotify:
@@ -1681,7 +1723,7 @@ index 4f345ee..c1962e8 100644
  				continue;
  			lasttime = ev.xmotion.time;
  
-@@ -1389,6 +1721,89 @@ run(void)
+@@ -1390,6 +1721,89 @@ run(void)
  			handler[ev.type](&ev); /* call handler */
  }
  
@@ -1771,7 +1813,7 @@ index 4f345ee..c1962e8 100644
  void
  scan(void)
  {
-@@ -1432,6 +1847,25 @@ sendmon(Client *c, Monitor *m)
+@@ -1433,6 +1847,25 @@ sendmon(Client *c, Monitor *m)
  	arrange(NULL);
  }
  
@@ -1797,7 +1839,7 @@ index 4f345ee..c1962e8 100644
  void
  setclientstate(Client *c, long state)
  {
-@@ -1506,6 +1940,23 @@ setfullscreen(Client *c, int fullscreen)
+@@ -1507,6 +1940,23 @@ setfullscreen(Client *c, int fullscreen)
  	}
  }
  
@@ -1821,7 +1863,7 @@ index 4f345ee..c1962e8 100644
  void
  setlayout(const Arg *arg)
  {
-@@ -1520,6 +1971,206 @@ setlayout(const Arg *arg)
+@@ -1521,6 +1971,206 @@ setlayout(const Arg *arg)
  		drawbar(selmon);
  }
  
@@ -2028,7 +2070,7 @@ index 4f345ee..c1962e8 100644
  /* arg > 1.0 will set mfact absolutely */
  void
  setmfact(const Arg *arg)
-@@ -1575,6 +2226,7 @@ setup(void)
+@@ -1576,6 +2226,7 @@ setup(void)
  	netatom[NetWMState] = XInternAtom(dpy, "_NET_WM_STATE", False);
  	netatom[NetWMCheck] = XInternAtom(dpy, "_NET_SUPPORTING_WM_CHECK", False);
  	netatom[NetWMFullscreen] = XInternAtom(dpy, "_NET_WM_STATE_FULLSCREEN", False);
@@ -2036,7 +2078,7 @@ index 4f345ee..c1962e8 100644
  	netatom[NetWMWindowType] = XInternAtom(dpy, "_NET_WM_WINDOW_TYPE", False);
  	netatom[NetWMWindowTypeDialog] = XInternAtom(dpy, "_NET_WM_WINDOW_TYPE_DIALOG", False);
  	netatom[NetClientList] = XInternAtom(dpy, "_NET_CLIENT_LIST", False);
-@@ -1583,7 +2235,8 @@ setup(void)
+@@ -1584,7 +2235,8 @@ setup(void)
  	cursor[CurResize] = drw_cur_create(drw, XC_sizing);
  	cursor[CurMove] = drw_cur_create(drw, XC_fleur);
  	/* init appearance */
@@ -2046,7 +2088,7 @@ index 4f345ee..c1962e8 100644
  	for (i = 0; i < LENGTH(colors); i++)
  		scheme[i] = drw_scm_create(drw, colors[i], 3);
  	/* init bars */
-@@ -1631,6 +2284,10 @@ showhide(Client *c)
+@@ -1632,6 +2284,10 @@ showhide(Client *c)
  	if (!c)
  		return;
  	if (ISVISIBLE(c)) {
@@ -2057,7 +2099,7 @@ index 4f345ee..c1962e8 100644
  		/* show clients top down */
  		XMoveWindow(dpy, c->win, c->x, c->y);
  		if ((!c->mon->lt[c->mon->sellt]->arrange || c->isfloating) && !c->isfullscreen)
-@@ -1643,6 +2300,20 @@ showhide(Client *c)
+@@ -1644,6 +2300,20 @@ showhide(Client *c)
  	}
  }
  
@@ -2078,7 +2120,7 @@ index 4f345ee..c1962e8 100644
  void
  spawn(const Arg *arg)
  {
-@@ -1665,14 +2336,111 @@ spawn(const Arg *arg)
+@@ -1666,14 +2336,111 @@ spawn(const Arg *arg)
  	}
  }
  
@@ -2195,7 +2237,7 @@ index 4f345ee..c1962e8 100644
  }
  
  void
-@@ -1684,31 +2452,56 @@ tagmon(const Arg *arg)
+@@ -1685,31 +2452,56 @@ tagmon(const Arg *arg)
  }
  
  void
@@ -2274,7 +2316,7 @@ index 4f345ee..c1962e8 100644
  }
  
  void
-@@ -1720,6 +2513,18 @@ togglebar(const Arg *arg)
+@@ -1721,6 +2513,18 @@ togglebar(const Arg *arg)
  	arrange(selmon);
  }
  
@@ -2293,7 +2335,7 @@ index 4f345ee..c1962e8 100644
  void
  togglefloating(const Arg *arg)
  {
-@@ -1728,12 +2533,74 @@ togglefloating(const Arg *arg)
+@@ -1729,12 +2533,74 @@ togglefloating(const Arg *arg)
  	if (selmon->sel->isfullscreen) /* no support for fullscreen windows */
  		return;
  	selmon->sel->isfloating = !selmon->sel->isfloating || selmon->sel->isfixed;
@@ -2370,7 +2412,7 @@ index 4f345ee..c1962e8 100644
  void
  toggletag(const Arg *arg)
  {
-@@ -1780,6 +2647,20 @@ unmanage(Client *c, int destroyed)
+@@ -1781,6 +2647,20 @@ unmanage(Client *c, int destroyed)
  	Monitor *m = c->mon;
  	XWindowChanges wc;
  
@@ -2391,7 +2433,7 @@ index 4f345ee..c1962e8 100644
  	detach(c);
  	detachstack(c);
  	if (!destroyed) {
-@@ -1795,9 +2676,12 @@ unmanage(Client *c, int destroyed)
+@@ -1796,9 +2676,12 @@ unmanage(Client *c, int destroyed)
  		XUngrabServer(dpy);
  	}
  	free(c);
@@ -2407,7 +2449,7 @@ index 4f345ee..c1962e8 100644
  }
  
  void
-@@ -1870,11 +2754,11 @@ updategeom(void)
+@@ -1871,11 +2754,11 @@ updategeom(void)
  
  #ifdef XINERAMA
  	if (XineramaIsActive(dpy)) {
@@ -2424,7 +2466,7 @@ index 4f345ee..c1962e8 100644
  
  		for (n = 0, m = mons; m; m = m->next, n++);
  		/* only consider unique geometries as separate screens */
-@@ -1893,6 +2777,51 @@ updategeom(void)
+@@ -1894,6 +2777,51 @@ updategeom(void)
  			else
  				mons = createmon();
  		}
@@ -2476,7 +2518,7 @@ index 4f345ee..c1962e8 100644
  		for (i = 0, m = mons; i < nn && m; m = m->next, i++)
  			if (i >= n
  			|| unique[i].x_org != m->mx || unique[i].y_org != m->my
-@@ -2026,6 +2955,9 @@ updatewindowtype(Client *c)
+@@ -2027,6 +2955,9 @@ updatewindowtype(Client *c)
  
  	if (state == netatom[NetWMFullscreen])
  		setfullscreen(c, 1);
@@ -2486,7 +2528,7 @@ index 4f345ee..c1962e8 100644
  	if (wtype == netatom[NetWMWindowTypeDialog])
  		c->isfloating = 1;
  }
-@@ -2052,13 +2984,157 @@ updatewmhints(Client *c)
+@@ -2053,13 +2984,157 @@ updatewmhints(Client *c)
  void
  view(const Arg *arg)
  {
@@ -2651,7 +2693,7 @@ index 4f345ee..c1962e8 100644
  }
  
  Client *
-@@ -2139,6 +3215,60 @@ zoom(const Arg *arg)
+@@ -2140,6 +3215,60 @@ zoom(const Arg *arg)
  	pop(c);
  }
  
@@ -2712,7 +2754,7 @@ index 4f345ee..c1962e8 100644
  int
  main(int argc, char *argv[])
  {
-@@ -2150,15 +3280,22 @@ main(int argc, char *argv[])
+@@ -2151,15 +3280,22 @@ main(int argc, char *argv[])
  		fputs("warning: no locale support\n", stderr);
  	if (!(dpy = XOpenDisplay(NULL)))
  		die("dwm: cannot open display");

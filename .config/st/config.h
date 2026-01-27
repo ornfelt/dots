@@ -250,6 +250,8 @@ static MouseShortcut mshortcuts[] = {
 static char *openurlcmd[] = { "/bin/sh", "-c", "st-urlhandler -o", "externalpipe", NULL };
 static char *copyurlcmd[] = { "/bin/sh", "-c", "st-urlhandler -c", "externalpipe", NULL };
 static char *copyoutput[] = { "/bin/sh", "-c", "st-copyout", "externalpipe", NULL };
+static char *quickselectpaths[] = { "/bin/sh", "-c", "/home/jonas/.local/bin/my_scripts/2025/st-quickselect-paths-2.sh", "externalpipe", NULL };
+static char *quickselectwords[] = { "/bin/sh", "-c", "/home/jonas/.local/bin/my_scripts/2025/st-quickselect-words-2.sh", "externalpipe", NULL };
 
 static Shortcut shortcuts[] = {
     /* mask                 keysym          function        argument */
@@ -286,6 +288,8 @@ static Shortcut shortcuts[] = {
     { TERMMOD,              XK_L,           externalpipe,   {.v = openurlcmd } },
     { TERMMOD,              XK_Y,           externalpipe,   {.v = copyurlcmd } },
     { TERMMOD,              XK_O,           externalpipe,   {.v = copyoutput } },
+    { TERMMOD,              XK_E,           externalpipe,   {.v = quickselectpaths } },
+    { TERMMOD,              XK_W,           externalpipe,   {.v = quickselectwords } },
 };
 
 /*
