@@ -20,6 +20,7 @@ local function create_hellow_mapping(ft, fe)
 end
 
 -- Set mappings for various filetypes
+-- autocmd asm, c, clojure, clj, cobol, cob, cpp, cs, dart, erlang, erl, elixir, ex, fortran, f90, fsharp, fs, go, groovy, haskell, hs, java, julia, jl, javascript, js, kotlin, kt, lua, ocaml, ml, nim, pascal, pas, perl, pl, php, py,python, py, r, ruby, rb, rust, rs, scala, scheme, scm, st, swift, typescript, ts, vb, zig: hellow
 create_hellow_mapping("asm")
 create_hellow_mapping("c")
 create_hellow_mapping("clojure", "clj")

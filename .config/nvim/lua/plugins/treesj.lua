@@ -6,16 +6,19 @@ return {
     -- everything else stays default
   },
   keys = {
+    -- bind leader-tsm: toggle split/join (n)
     {
       "<leader>tsm",
       function() require("treesj").toggle() end,
       desc = "Treesj: Toggle split/join",
     },
+    -- bind leader-tsj: join (n)
     {
       "<leader>tsj",
       function() require("treesj").join() end,
       desc = "Treesj: Join",
     },
+    -- bind leader-tss: split (n)
     {
       "<leader>tss",
       function() require("treesj").split() end,

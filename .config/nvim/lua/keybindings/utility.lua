@@ -15,9 +15,10 @@ local function togglebar()
   end
 end
 
+-- bind leader-b: togglebar (n)
 myconfig.map('n', '<leader>b', togglebar) -- Toggle lualine
 
--- lua calculator
+-- bind m-+: lua calculator (i)
 vim.keymap.set("i", "<m-+>", function()
   vim.ui.input({ prompt = "Calc: " }, function(input)
     local calc = load("return " .. (input or ""))()
@@ -27,6 +28,7 @@ vim.keymap.set("i", "<m-+>", function()
   end)
 end)
 
+-- bind m-+: lua calculator (v)
 vim.keymap.set("v", "<m-+>", function()
   -- local start_pos = vim.fn.getpos("'<")
   -- local end_pos = vim.fn.getpos("'>")
@@ -92,6 +94,7 @@ end
 -- lua print(vim.fn.getenv("my_notes_path"))
 -- lua print(vim.fn.getenv("code_root_dir"))
 -- lua print(vim.fn.getenv("ps_profile_path"))
+-- bind leader-,: execute_command (n, v)
 vim.api.nvim_set_keymap('n', '<leader>,', ':lua execute_command()<CR>', { noremap = true, silent = true })
 vim.api.nvim_set_keymap('v', '<leader>,', ':lua execute_command()<CR>', { noremap = true, silent = true })
 
@@ -113,6 +116,7 @@ function count_characters()
 end
 
 -- Keybindings for counting characters
+-- bind leader-cc: count_characters (n,v)
 vim.api.nvim_set_keymap("n", "<leader>cc", ":lua count_characters()<CR>", { noremap = true, silent = true })
 vim.api.nvim_set_keymap("v", "<leader>cc", "<cmd>lua count_characters()<CR>", { noremap = true, silent = true })
 
@@ -228,6 +232,7 @@ local function fileinfo_cmd(opts)
   collect_info(path)
 end
 
+-- cmd FileInfo: fileinfo_cmd
 vim.api.nvim_create_user_command(
   "FileInfo",
   fileinfo_cmd,
@@ -284,6 +289,7 @@ local function copy_history(opts)
   print(string.format("Copied %d history items to clipboard", #lines))
 end
 
+-- cmd CopyHist: copy_history
 vim.api.nvim_create_user_command("CopyHist", copy_history, {
   --nargs = "+",
   nargs = "*", -- allows zero or more arguments

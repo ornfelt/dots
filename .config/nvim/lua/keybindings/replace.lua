@@ -47,9 +47,12 @@ local function VisualReplaceCommand()
   vim.api.nvim_feedkeys(keys, 'n', false)
 end
 
+-- bind leader-r: replace word under cursor (n)
 vim.keymap.set("n", "<leader>r", [[:%s/\<<C-r><C-w>\>/<C-r><C-w>/gI<Left><Left><Left>]]) -- Replace word under cursor
+-- bind leader-s-r: VisualSubstituteCommand (v)
 vim.api.nvim_set_keymap('v', '<leader>R', '<cmd>lua VisualSubstituteCommand()<CR>', { noremap = true, silent = true })
 
+-- bind leader-r: VisualReplaceCommand (v)
 vim.keymap.set('v', '<leader>r', function()
   VisualReplaceCommand()
 end, { noremap = true, silent = true })

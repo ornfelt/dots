@@ -99,15 +99,24 @@ vim.api.nvim_create_autocmd('LspAttach', {
       vim.defer_fn(function() vim.lsp.buf.definition() end, 100)
     end
 
+    -- bind m-r: vim.lsp.buf.references (n)
     vim.keymap.set('n', '<M-r>', vim.lsp.buf.references, opts)
+    -- bind m-d: vim.lsp.buf.definition (n)
     vim.keymap.set('n', '<M-d>', vim.lsp.buf.definition, opts)
+    -- bind m-s-d: vim.lsp.buf.implementation (n)
     vim.keymap.set('n', '<M-s-D>', vim.lsp.buf.implementation, opts)
     -- vim.keymap.set('n', '<M-s-d>', go_to_definition_twice, opts)
+    -- bind leader-la: vim.lsp.buf.code_action (n)
     vim.keymap.set('n', '<leader>la', vim.lsp.buf.code_action, opts)
+    -- bind leader-lr: vim.lsp.buf.rename (n)
     vim.keymap.set('n', '<leader>lr', vim.lsp.buf.rename, opts)
+    -- bind leader-lh: vim.lsp.buf.signature_help (n)
     vim.keymap.set('n', '<leader>lh', vim.lsp.buf.signature_help, opts)
+    -- bind leader-lo: vim.lsp.buf.hover (n)
     vim.keymap.set('n', '<leader>lo', vim.lsp.buf.hover, opts)
+    -- bind leader-ld: vim.lsp.buf.type_definition (n)
     vim.keymap.set('n', '<leader>ld', vim.lsp.buf.type_definition, opts)
+    -- bind leader-lc: vim.lsp.buf.declaration (n)
     vim.keymap.set('n', '<leader>lc', vim.lsp.buf.declaration, opts)
   end,
 })
@@ -127,6 +136,7 @@ function _G.toggle_hover()
   print(hover_enabled and "Hover enabled" or "Hover disabled")
 end
 
+-- bind leader-lot: toggle_hover (n)
 vim.api.nvim_set_keymap("n", "<leader>lot", "<cmd>lua toggle_hover()<CR>", { noremap=true, silent=true })
 vim.api.nvim_create_autocmd("CursorHold", {
   pattern = "*",
@@ -168,21 +178,28 @@ cmp.setup({
     -- documentation = cmp.config.window.bordered(),
   },
   mapping = cmp.mapping.preset.insert({
+    -- bind C-b: cmp.mapping.scroll_docs(-4) (i)
     ['<C-b>']     = cmp.mapping.scroll_docs(-4),
+    -- bind C-f: cmp.mapping.scroll_docs(4) (i)
     ['<C-f>']     = cmp.mapping.scroll_docs(4),
+    -- bind C-space: cmp.mapping.complete (i)
     ['<C-Space>'] = cmp.mapping.complete(),
+    -- bind C-e: cmp.mapping.abort (i)
     ['<C-e>']     = cmp.mapping.abort(),
+    -- bind CR: cmp.mapping.confirm (i)
     ['<CR>']      = cmp.mapping.confirm({ select = true }),
+    -- bind Tab: cmp.select_next_item (i,s)
     ['<Tab>'] = cmp.mapping(function(fallback)
       if cmp.visible() then cmp.select_next_item() else fallback() end
     end, { 'i', 's' }),
+    -- bind S-Tab: cmp.select_prev_item (i,s)
     ['<S-Tab>'] = cmp.mapping(function(fallback)
       if cmp.visible() then cmp.select_prev_item() else fallback() end
     end, { 'i', 's' }),
   }),
   sources = cmp.config.sources({
     { name = 'nvim_lsp' },
-    { name = 'vsnip' }, -- switch to 'luasnip' / 'ultisnips' / 'snippy' if you prefer
+    { name = 'vsnip' }, -- or 'luasnip' / 'ultisnips' / 'snippy'
   }, {
     { name = 'buffer' },
   }),

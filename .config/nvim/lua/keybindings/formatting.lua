@@ -1,11 +1,16 @@
 local myconfig = require("myconfig")
 
+-- bind leader-ws: show extra whitespace (n)
 myconfig.map('n', '<leader>ws', "/\\s\\+$/<CR>") -- Show extra whitespace
+-- bind leader-wr: remove all extra whitespace (n)
 myconfig.map('n', '<leader>wr', ':%s/\\s\\+$<CR>') -- Remove all extra whitespace
+-- bind leader-wu: remove all extra unicode chars (n)
 myconfig.map('n', '<leader>wu', ':%s/\\%u200b//g<CR>') -- Remove all extra unicode chars
+-- bind leader-wb: remove all hidden characters (n)
 myconfig.map('n', '<leader>wb', ':%s/[[:cntrl:]]//g<CR>') -- Remove all hidden characters
 --myconfig.map('n', '<leader>wf', 'gqG<C-o>zz') -- Format rest of the text with vim formatting, go back and center screen
 
+-- bind leader-gu: capitalize first letter of each word on visually selected line (v)
 myconfig.map('v', '<leader>gu', ':s/\\<./\\u&/g<CR>:noh<CR>:noh<CR>') -- Capitalize first letter of each word on visually selected line
 
 function ReplaceQuotes()
@@ -15,9 +20,11 @@ function ReplaceQuotes()
     ]])
 end
 
+-- bind leader-wq: ReplaceQuotes (n)
 vim.api.nvim_set_keymap('n', '<leader>wq', ':lua ReplaceQuotes()<CR>', { noremap = true, silent = true })
 
 -- replace unicode typographic chars with ASCII equivalents
+-- bind leader-wa: replace Unicode typography with ASCII (n)
 vim.keymap.set('n', '<leader>wa', function()
   local pos = vim.api.nvim_win_get_cursor(0)
 
@@ -92,6 +99,7 @@ vim.keymap.set('n', '<leader>wa', function()
 end, { desc = 'Replace Unicode typography with ASCII' })
 
 -- Replace some math-related unicode chars to ascii equivalents
+-- bind leader-wm: replace Unicode math chars with ASCII (n)
 vim.keymap.set('n', '<leader>wm', function()
   local pos = vim.api.nvim_win_get_cursor(0)
 
@@ -185,6 +193,7 @@ function format_file()
   end
 end
 
+-- bind leader-=: format_file (n)
 vim.api.nvim_set_keymap('n', '<leader>=', ':lua format_file()<CR>', { noremap = true, silent = true })
 
 -- Commands to convert current word to another casing convention. 
@@ -348,8 +357,12 @@ local function convert_case(style)
   end
 end
 
+-- cmd ToSnake: convert_case(snake)
 vim.api.nvim_create_user_command("ToSnake", function() convert_case("snake") end, {})
+-- cmd ToKebab: convert_case(kebab)
 vim.api.nvim_create_user_command("ToKebab", function() convert_case("kebab") end, {})
+-- cmd ToCamel: convert_case(camel)
 vim.api.nvim_create_user_command("ToCamel", function() convert_case("camel") end, {})
+-- cmd ToPascal: convert_case(pascal)
 vim.api.nvim_create_user_command("ToPascal", function() convert_case("pascal") end, {})
 

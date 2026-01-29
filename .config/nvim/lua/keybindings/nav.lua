@@ -32,13 +32,21 @@ if term_program == "wezterm" or term_program == "tmux" then
   --vim.api.nvim_set_keymap('n', '<C-w>j', '<Plug>WinMoveDown', { noremap = false, silent = true })
   --vim.api.nvim_set_keymap('n', '<C-w>k', '<Plug>WinMoveUp', { noremap = false, silent = true })
   --vim.api.nvim_set_keymap('n', '<C-w>l', '<Plug>WinMoveRight', { noremap = false, silent = true })
+  -- bind c-w-h: move_or_split left (n)
   vim.keymap.set('n', '<C-w>h', function() move_or_split('h') end, { noremap = true, silent = true })
+  -- bind c-w-j: move_or_split down (n)
   vim.keymap.set('n', '<C-w>j', function() move_or_split('j') end, { noremap = true, silent = true })
+  -- bind c-w-k: move_or_split up (n)
   vim.keymap.set('n', '<C-w>k', function() move_or_split('k') end, { noremap = true, silent = true })
+  -- bind c-w-l: move_or_split right (n)
   vim.keymap.set('n', '<C-w>l', function() move_or_split('l') end, { noremap = true, silent = true })
+  -- bind m-c-u: increase window height (n)
   myconfig.map('n', '<M-c-u>', ':resize +2<CR>')
+  -- bind m-c-i: decrease window height (n)
   myconfig.map('n', '<M-c-i>', ':resize -2<CR>')
+  -- bind m-c-o: increase window width (n)
   myconfig.map('n', '<M-c-o>', ':vertical resize +2<CR>')
+  -- bind m-c-y: decrease window width (n)
   myconfig.map('n', '<M-c-y>', ':vertical resize -2<CR>')
 end
 
@@ -47,25 +55,40 @@ if term_program ~= "wezterm" then
   --myconfig.map('n', '<M-j>', '<Plug>WinMoveDown')
   --myconfig.map('n', '<M-k>', '<Plug>WinMoveUp')
   --myconfig.map('n', '<M-l>', '<Plug>WinMoveRight')
+  -- bind m-h: move_or_split left (n)
   vim.keymap.set('n', '<M-h>', function() move_or_split('h') end, { noremap = true, silent = true })
+  -- bind m-j: move_or_split down (n)
   vim.keymap.set('n', '<M-j>', function() move_or_split('j') end, { noremap = true, silent = true })
+  -- bind m-k: move_or_split up (n)
   vim.keymap.set('n', '<M-k>', function() move_or_split('k') end, { noremap = true, silent = true })
+  -- bind m-l: move_or_split right (n)
   vim.keymap.set('n', '<M-l>', function() move_or_split('l') end, { noremap = true, silent = true })
+  -- bind m-u: increase window height (n)
   myconfig.map('n', '<M-u>', ':resize +2<CR>')
+  -- bind m-i: decrease window height (n)
   myconfig.map('n', '<M-i>', ':resize -2<CR>')
+  -- bind m-o: increase window width (n)
   myconfig.map('n', '<M-o>', ':vertical resize +2<CR>')
+  -- bind m-y: decrease window width (n)
   myconfig.map('n', '<M-y>', ':vertical resize -2<CR>')
 end
 
 -- Navigate splits in terminal
+-- bind m-h: navigate to left split (t)
 myconfig.map('t', '<M-h>', [[<C-\><C-n><C-w>h]])
+-- bind m-j: navigate to down split (t)
 myconfig.map('t', '<M-j>', [[<C-\><C-n><C-w>j]])
+-- bind m-k: navigate to up split (t)
 myconfig.map('t', '<M-k>', [[<C-\><C-n><C-w>k]])
+-- bind m-l: navigate to right split (t)
 myconfig.map('t', '<M-l>', [[<C-\><C-n><C-w>l]])
+-- bind m-q: quit terminal (t)
 myconfig.map('t', '<M-q>', [[<C-\><C-n>:q<CR>]])
+-- bind esc: exit terminal mode (t)
 myconfig.map('t', '<Esc>', [[<C-\><C-n>]])
 
 --map('n', '<leader>z', '<Plug>Zoom')
+-- bind leader-z: toggle window zoom (n)
 vim.keymap.set('n', '<leader>z', function()
     local zoomed = vim.w.zoomed
 
@@ -81,9 +104,12 @@ end, { desc = "Toggle Zoom for Current Split" })
 
 -- Tab keybinds
 
+-- bind m-t: new tab (n)
 myconfig.map('n', '<M-t>', ':tabe<CR>')
 --myconfig.map('n', '<M-s>', ':split<CR>')
+-- bind m-enter: vertical split with terminal (n)
 myconfig.map('n', '<M-Enter>', ':vsp | terminal ' .. (vim.loop.os_uname().sysname == "Windows_NT" and "powershell" or "") .. '<CR>')
+-- bind m-<: horizontal split with terminal (n)
 myconfig.map('n', '<M-<>', ':split | terminal ' .. (vim.loop.os_uname().sysname == "Windows_NT" and "powershell" or "") .. '<CR>')
 --if vim.fn.has('win32') == 1 and vim.fn.exists('g:GuiLoaded') == 1 then
 --if vim.fn.has('win32') == 1 and vim.g.neovide then
@@ -91,6 +117,7 @@ myconfig.map('n', '<M-<>', ':split | terminal ' .. (vim.loop.os_uname().sysname 
 --end
 
 -- Go to tab by number
+-- bind m-0-9: go to tab x (n)
 myconfig.map('n', '<M-1>', '1gt')
 myconfig.map('n', '<M-2>', '2gt')
 myconfig.map('n', '<M-3>', '3gt')
@@ -104,8 +131,11 @@ myconfig.map('n', '<M-0>', ':tablast<CR>')
 myconfig.map('n', '<leader>o', '<C-^>')
 
 -- Open new tabs
+-- bind m-m: open nvim init.lua (n)
 myconfig.map('n', '<M-m>', ':tabe ~/.config/nvim/init.lua<CR>')
+-- bind m-,: open zshrc (n)
 myconfig.map('n', '<M-,>', ':tabe ~/.zshrc<CR>')
+-- bind m-.: open vimtutor notes (n)
 myconfig.map('n', '<M-.>', '<cmd>tabe ' .. my_notes_path .. '/vimtutor.txt<CR>')
 
 local function get_file_prefix()
@@ -120,6 +150,7 @@ local function get_file_prefix()
   end
 end
 
+-- bind m-;: open terminal-specific text file (n)
 vim.keymap.set("n", "<M-;>", function()
   local file_prefix = get_file_prefix()
   local file_path = myconfig.home_dir .. file_prefix .. "_text.txt"
@@ -128,7 +159,9 @@ end, { noremap = true, silent = true })
 
 -- Windows
 if vim.fn.has('win32') == 1 then
+  -- bind m-m: open nvim init.lua (n)
   vim.api.nvim_set_keymap('n', '<M-m>', '<cmd>tabe ' .. vim.fn.expand('$LOCALAPPDATA') .. '/nvim/init.lua<CR>', { noremap = true, silent = true })
+  -- bind m-,: open PowerShell profile (n)
   vim.api.nvim_set_keymap('n', '<M-,>', '<cmd>tabe ' .. ps_profile_path .. '/Microsoft.PowerShell_profile.ps1<CR>', { noremap = true, silent = true })
 end
 
@@ -146,7 +179,9 @@ function goto_last_tab()
   end
 end
 
+-- bind leader-tl: goto_last_tab (n)
 vim.api.nvim_set_keymap('n', '<leader>tl', '<cmd>lua goto_last_tab()<CR>', { noremap = true, silent = true })
+-- bind leader-tl: goto_last_tab (v)
 vim.api.nvim_set_keymap('v', '<leader>tl', '<cmd>lua goto_last_tab()<CR>', { noremap = true, silent = true })
 
 -- Merge with right tab
@@ -170,12 +205,16 @@ local function tab_merge()
   vim.cmd("tabclose " .. (current + 1))
 end
 
+-- bind leader-tm: tab_merge (n)
 vim.keymap.set('n', '<leader>tm', tab_merge, { noremap = true, silent = true })
 
 -- Unbind ctrl-tab (used for wezterm and tmux)
+-- bind c-tab: unbind (used for wezterm/tmux) (n)
 vim.api.nvim_set_keymap('n', '<C-Tab>', '', { noremap = true, silent = true })
+-- bind c-s-tab: unbind (used for wezterm/tmux) (n)
 vim.api.nvim_set_keymap('n', '<C-S-Tab>', '', { noremap = true, silent = true })
 
+-- bind leader-ts: start tmux-sessionizer (n)
 vim.keymap.set("n", "<leader>ts", "<cmd>silent !tmux neww tmux-sessionizer<CR>") -- Start tmux-sessionizer
 
 -- Wezterm split
@@ -230,6 +269,8 @@ function save_resolved_path_to_file()
   end
 end
 
+-- bind leader-dw: split_pane_in_wezterm (n)
 vim.api.nvim_set_keymap('n', '<leader>dw', ':lua split_pane_in_wezterm()<CR>', { noremap = true, silent = true })
+-- bind c-w-d: save_resolved_path_to_file (n)
 vim.api.nvim_set_keymap('n', '<C-w>d', ':lua save_resolved_path_to_file()<CR>', { noremap = true, silent = true })
 

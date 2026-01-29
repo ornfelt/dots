@@ -11,6 +11,7 @@ function NormalizePath()
   vim.cmd('silent! s,/\\+,/,g')
   vim.cmd('silent! noh')
 end
+-- bind leader-wp: NormalizePath (n)
 vim.api.nvim_set_keymap('n', '<leader>wp', ':lua NormalizePath()<CR>', { noremap = true, silent = true })
 
 function ReplacePathBasedOnContext()
@@ -96,6 +97,7 @@ function ReplacePathBasedOnContext()
   vim.fn.setline(".", line)
 end
 
+-- bind leader-wo: ReplacePathBasedOnContext (n)
 vim.api.nvim_set_keymap('n', '<leader>wo', ':lua ReplacePathBasedOnContext()<CR>', { noremap = true, silent = true })
 
 local function get_current_file_path()
@@ -237,7 +239,9 @@ function copy_current_file_path(replace_env_vars)
   print("Copied to clipboard: " .. path)
 end
 
+-- bind leader--: copy file path with env vars replaced (n)
 vim.api.nvim_set_keymap('n', '<leader>-', ':lua copy_current_file_path(true)<CR>', { noremap = true, silent = true })
+-- bind leader--: copy directory path (v)
 vim.api.nvim_set_keymap('v', '<leader>-', ':lua copy_current_file_path(false)<CR>', { noremap = true, silent = true })
 
 -- keybind for vscode-like copying of active file path
@@ -247,6 +251,7 @@ vim.api.nvim_set_keymap('v', '<leader>-', ':lua copy_current_file_path(false)<CR
 --vim.fn.expand('%:t') -- Just filename: file.txt
 -- alt-shift-c conflicts with wezterm copy...
 --vim.keymap.set('n', '<M-C>', function()
+-- bind m-c-c: copy full file path to clipboard (n)
 vim.keymap.set('n', '<M-c-c>', function()
     local path = vim.fn.expand('%:p') -- full path
     if path == '' then
@@ -366,6 +371,7 @@ function open_file_with_env()
   end
 end
 
+-- bind gf: open_file_with_env (n)
 vim.api.nvim_set_keymap('n', 'gf', ':lua open_file_with_env()<CR>', { noremap = true, silent = true })
 
 function open_in_firefox()
@@ -390,5 +396,6 @@ end
 -- vim.api.nvim_set_keymap('n', 'gx', ':!open <cWORD><CR>', { noremap = true, silent = true })
 -- vim.api.nvim_set_keymap('n', 'gx', ':!nohup firefox <cWORD> &<CR>', { noremap = true, silent = true })
 -- vim.api.nvim_set_keymap('n', 'gx', ':!firefox <cWORD> &<CR>', { noremap = true, silent = true })
+-- bind gx: open_in_firefox (n)
 vim.api.nvim_set_keymap('n', 'gx', ':lua open_in_firefox()<CR>', { noremap = true, silent = true })
 

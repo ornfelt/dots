@@ -78,10 +78,12 @@ function fuzzy_files()
   end
 end
 
+-- bind m-a: fuzzy_project_files (n)
 vim.api.nvim_set_keymap('n', '<M-a>', '<cmd>lua fuzzy_project_files()<CR>', { noremap = true, silent = true, desc = "Project Files (git-aware)" })
+-- bind m-s-a: fuzzy_files (n)
 vim.api.nvim_set_keymap('n', '<M-A>', '<cmd>lua fuzzy_files()<CR>', { noremap = true, silent = true, desc = "All Files" })
 
--- fuzzy search at '/' or 'C:/'
+-- bind m-c-a: fuzzy search at root directory (n)
 vim.keymap.set('n', '<M-C-a>', function()
   local use_fzf = myconfig.get_file_picker() == myconfig.FilePicker.FZF
   local use_fzf_lua = myconfig.get_file_picker() == myconfig.FilePicker.FZF_LUA
@@ -136,9 +138,13 @@ end
 
 -- vim.api.nvim_create_user_command('RunFZFCodeRootDirWithCode', function() StartFinder("code_root_dir", "Code") end, {})
 -- vim.api.nvim_set_keymap('n', '<leader>a', '<cmd>RunFZFCodeRootDirWithCode<CR>', { noremap = true, silent = true })
+-- bind leader-a: StartFinder code_root_dir/Code (n)
 vim.api.nvim_set_keymap('n', '<leader>a', ':lua StartFinder("code_root_dir", "Code")<CR>', { noremap = true, silent = true })
+-- bind leader-s: StartFinder code_root_dir/Code2 (n)
 vim.api.nvim_set_keymap('n', '<leader>s', ':lua StartFinder("code_root_dir", "Code2")<CR>', { noremap = true, silent = true })
+-- bind leader-s-a: StartFinder code_root_dir (n)
 vim.api.nvim_set_keymap('n', '<leader>A', ':lua StartFinder("code_root_dir")<CR>', { noremap = true, silent = true })
+-- bind leader-f: StartFinder my_notes_path (n)
 vim.api.nvim_set_keymap('n', '<leader>f', ':lua StartFinder("my_notes_path")<CR>', { noremap = true, silent = true })
 
 function open_files_from_list()
@@ -225,6 +231,7 @@ function open_files_from_list()
   end
 end
 
+-- bind leader-w: open_files_from_list (n)
 vim.api.nvim_set_keymap('n', '<leader>w', ':lua open_files_from_list()<CR>', { noremap = true, silent = true })
 
 -- List tabs with telescope
@@ -305,6 +312,7 @@ function list_tabs()
   end
 end
 
+-- bind m-s: list_tabs (n)
 vim.api.nvim_set_keymap("n", "<M-s>", ":lua list_tabs()<CR>", { noremap = true, silent = true })
 
 local function norm_date(iso)
@@ -473,6 +481,7 @@ function _G.list_recent_files()
   end
 end
 
+-- bind m-s-s: list_recent_files (n)
 vim.keymap.set("n", "<M-S>", _G.list_recent_files, { noremap = true, silent = true, desc = "Recent git files" })
 
 -- Currently changed files
@@ -658,5 +667,6 @@ function _G.list_changed_files()
   end
 end
 
+-- bind m-c-s: list_changed_files (n)
 vim.keymap.set("n", "<M-C-s>", _G.list_changed_files, { noremap = true, silent = true, desc = "Changed git files" })
 

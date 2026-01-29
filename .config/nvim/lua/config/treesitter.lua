@@ -198,22 +198,27 @@ else
     },
   })
 
+  -- bind af: select_textobject @function.outer (x, o)
   vim.keymap.set({ "x", "o" }, "af", function()
     require("nvim-treesitter-textobjects.select").select_textobject("@function.outer", "textobjects")
   end)
 
+  -- bind if: select_textobject @function.inner (x, o)
   vim.keymap.set({ "x", "o" }, "if", function()
     require("nvim-treesitter-textobjects.select").select_textobject("@function.inner", "textobjects")
   end)
 
+  -- bind ac: select_textobject @class.outer (x, o)
   vim.keymap.set({ "x", "o" }, "ac", function()
     require("nvim-treesitter-textobjects.select").select_textobject("@class.outer", "textobjects")
   end)
 
+  -- bind ic: select_textobject @class.inner (x, o)
   vim.keymap.set({ "x", "o" }, "ic", function()
     require("nvim-treesitter-textobjects.select").select_textobject("@class.inner", "textobjects")
   end)
 
+  -- bind as: select_textobject @local.scope (x, o)
   vim.keymap.set({ "x", "o" }, "as", function()
     require("nvim-treesitter-textobjects.select").select_textobject("@local.scope", "locals")
   end)
@@ -372,7 +377,9 @@ function select_function_node(inner)
   vim.cmd("normal! V" .. line_count .. "j")
 end
 
+-- bind vif: select_function_node(true) (n)
 vim.api.nvim_set_keymap("n", "vif", ":lua select_function_node(true)<CR>", { noremap = true, silent = true })
+-- bind vaf: select_function_node(false) (n)
 vim.api.nvim_set_keymap("n", "vaf", ":lua select_function_node(false)<CR>", { noremap = true, silent = true })
 
 -- WIP: select inside or around a class-like treesitter node
@@ -439,10 +446,13 @@ function select_class_node(inner)
   vim.cmd("normal! V" .. line_count .. "j")
 end
 
+-- bind vic: select_class_node(true) (n)
 vim.api.nvim_set_keymap("n", "vic", ":lua select_class_node(true)<CR>", { noremap = true, silent = true })
+-- bind vac: select_class_node(false) (n)
 vim.api.nvim_set_keymap("n", "vac", ":lua select_class_node(false)<CR>", { noremap = true, silent = true })
 
 -- WIP: copy current buffer but replace every function body with "..."
+-- cmd SkeletonCopy: skeleton copy with function bodies replaced
 vim.api.nvim_create_user_command("SkeletonCopy", function(opts)
   local bufnr = vim.api.nvim_get_current_buf()
   local ft   = vim.bo.filetype

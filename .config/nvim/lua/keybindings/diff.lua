@@ -641,9 +641,14 @@ function diff_buffers_or_file()
   end
 end
 
+-- cmd DiffCp: diff_copy
 vim.api.nvim_create_user_command('DiffCp', diff_copy, {})
+-- cmd Diffi: diff_current_lines
 vim.api.nvim_create_user_command('Diffi', diff_current_lines, {})
+-- cmd Diffg: diffg_command
 vim.api.nvim_create_user_command('Diffg', diffg_command, {})
+-- cmd Diffgf: diffgf_command
 vim.api.nvim_create_user_command('Diffgf', diffgf_command, {})
+-- bind leader-di: diff_buffers_or_file (n)
 vim.api.nvim_set_keymap("n", "<leader>di", ":lua diff_buffers_or_file()<CR>", { noremap = true, silent = true })
 

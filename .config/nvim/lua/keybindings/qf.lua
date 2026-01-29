@@ -1,12 +1,18 @@
 local myconfig = require("myconfig")
 
 -- QuickFix Lists
+-- bind m-v: quickfix search and replace (n)
 myconfig.map('n', '<M-v>', ':cdo s///gc | update<C-f><Esc>0f/li')
 -- myconfig.map('n', '<M-v>', ':cfdo s//x/gc<left><left><left><left><left><C-f>i')
+-- bind m-n: next quickfix item (n)
 myconfig.map('n', '<M-n>', ':cnext<CR>')
+-- bind m-p: previous quickfix item (n)
 myconfig.map('n', '<M-p>', ':cprev<CR>')
+-- bind m-s-p: last quickfix item (n)
 myconfig.map('n', '<M-P>', ':clast<CR>')
+-- bind m-b: open quickfix list (n)
 myconfig.map('n', '<M-b>', ':copen<CR>')
+-- bind m-s-b: close quickfix list (n)
 myconfig.map('n', '<M-B>', ':cclose<CR>')
 
 function ToggleQuickfix()
@@ -29,6 +35,7 @@ end
 
 --vim.keymap.set('n', '<leader>db', '<cmd>lua vim.diagnostic.setqflist()<CR>', { noremap = true, silent = true })
 
+-- bind leader-db: set diagnostics to quickfix and jump to current line (n)
 vim.keymap.set('n', '<leader>db', function()
   local current_line = vim.fn.line('.')
   vim.diagnostic.setqflist()
@@ -49,8 +56,10 @@ vim.keymap.set('n', '<leader>db', function()
 end, { noremap = true, silent = true })
 
 -- Diagnostics
+-- bind leader-df: open diagnostic float (n)
 vim.keymap.set('n', '<leader>df', '<cmd>lua vim.diagnostic.open_float()<CR>', { noremap = true, silent = true })
 
+-- bind leader-dc: copy diagnostic message to clipboard (n)
 vim.keymap.set('n', '<leader>dc', function()
   local diagnostics = vim.diagnostic.get(0, { lnum = vim.fn.line('.') - 1 })
   if #diagnostics > 0 then

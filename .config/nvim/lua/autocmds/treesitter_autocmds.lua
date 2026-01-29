@@ -35,7 +35,7 @@ local function add_async()
   vim.api.nvim_buf_set_text(buffer, start_row, start_col, start_row, start_col, { "async " })
 end
 
--- Set keybinding for JavaScript and TypeScript
+-- autocmd javascript,typescript: t (i)
 vim.api.nvim_create_autocmd("FileType", {
   pattern = { "javascript", "typescript" },
   callback = function()

@@ -42,8 +42,11 @@ local function PythonCommand()
   end
 end
 
+-- cmd RunPythonCommand: PythonCommand
 vim.api.nvim_create_user_command('RunPythonCommand', PythonCommand, {})
+-- bind leader-h: RunPythonCommand (v)
 vim.api.nvim_set_keymap('v', '<leader>h', '<cmd>RunPythonCommand<CR>', { noremap = true, silent = true })
+-- bind leader-h: RunPythonCommand (n)
 vim.api.nvim_set_keymap('n', '<leader>h', '<cmd>RunPythonCommand<CR>', { noremap = true, silent = true })
 
 function PythonExecCommand()
@@ -128,6 +131,7 @@ function PythonExecCommand()
   end
 end
 
+-- bind m-c: PythonExecCommand (n,v,i)
 vim.api.nvim_set_keymap('n', '<M-c>', '<cmd>lua PythonExecCommand()<CR>', { noremap = true, silent = true })
 vim.api.nvim_set_keymap('v', '<M-c>', '<cmd>lua PythonExecCommand()<CR>', { noremap = true, silent = true })
 vim.api.nvim_set_keymap('i', '<M-c>', '<cmd>lua PythonExecCommand()<CR>', { noremap = true, silent = true })
