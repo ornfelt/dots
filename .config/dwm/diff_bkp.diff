@@ -65,10 +65,18 @@ index 482b545..95d4fd0 100644
  
  
 diff --git a/config.h b/config.h
-index 342750a..98fb30c 100644
+index 342750a..65b429f 100644
 --- a/config.h
 +++ b/config.h
-@@ -28,15 +28,16 @@ static int smartgaps            = 0;        /* 1 means no outer gap when there i
+@@ -13,6 +13,7 @@
+ 
+ #define FILES "thunar"
+ //#define FILEX "ranger"
++//#define FILEX "lf"
+ #define FILEX "yazi"
+ 
+ /* appearance */
+@@ -28,15 +29,16 @@ static int smartgaps            = 0;        /* 1 means no outer gap when there i
  static int browsergaps          = 0;        /* 0 means no outer gap when there is only one window and it is firefox */
  static int showbar              = 1;        /* 0 means no bar */
  static int topbar               = 1;        /* 0 means bottom bar */
@@ -91,7 +99,7 @@ index 342750a..98fb30c 100644
  static const char col1[]        = "#98971a";
  static const char col21[]       = "#fb4934";
  static const char col22[]       = "#ebdbb2";
-@@ -56,8 +57,10 @@ typedef struct {
+@@ -56,8 +58,10 @@ typedef struct {
      const char *name;
      const void *cmd;
  } Sp;
@@ -104,7 +112,7 @@ index 342750a..98fb30c 100644
  /* const char *spcmd2[] = {"st", "-n", "spcalc", "-f", "monospace:size=16", "-g", "50x20", "-e", "bc", "-lq", NULL }; */
  static Sp scratchpads[] = {
      /* name          cmd  */
-@@ -90,6 +93,7 @@ static const Rule rules[] = {
+@@ -90,6 +94,7 @@ static const Rule rules[] = {
  static float mfact     = 0.55; /* factor of master area size [0.05..0.95] */
  static int nmaster     = 1;    /* number of clients in master area */
  static int resizehints = 0;    /* 1 means respect size hints in tiled resizals */
@@ -112,7 +120,7 @@ index 342750a..98fb30c 100644
  
  #define FORCE_VSPLIT 1  /* nrowgrid layout: force two clients to always split vertically */
  #include "vanitygaps.c"
-@@ -127,8 +131,13 @@ static const Layout layouts[] = {
+@@ -127,8 +132,13 @@ static const Layout layouts[] = {
  /* helper for spawning shell commands in the pre dwm-5.0 fashion */
  #define SHCMD(cmd) { .v = (const char*[]){ "/bin/sh", "-c", cmd, NULL } }
  
@@ -126,7 +134,7 @@ index 342750a..98fb30c 100644
  
  /*
   * Xresources preferences to load at startup
-@@ -157,7 +166,6 @@ ResourcePref resources[] = {
+@@ -157,7 +167,6 @@ ResourcePref resources[] = {
  };
  
  #include <X11/XF86keysym.h>
@@ -134,7 +142,7 @@ index 342750a..98fb30c 100644
  
  static const Key keys[] = {
      /*  modifier                    key                 function            argument */
-@@ -203,12 +211,12 @@ static const Key keys[] = {
+@@ -203,12 +212,12 @@ static const Key keys[] = {
          { MODKEY,                   XK_minus,           incrgaps,           {.i = -3 } },
          { MODKEY|ShiftMask,         XK_plus,            incrgaps,           {.i = +1 } },
          { MODKEY|ShiftMask,         XK_minus,           incrgaps,           {.i = -1 } },
@@ -150,7 +158,7 @@ index 342750a..98fb30c 100644
          { MODKEY|ControlMask|ShiftMask,     XK_p,       togglebar,          {0} },
          { MODKEY,                   XK_h,               focusmon,           { .i = -1 } },
          { MODKEY|ShiftMask,         XK_h,               tagmonview,         { .i = -1 } },
-@@ -328,17 +336,19 @@ static const Key keys[] = {
+@@ -328,17 +337,19 @@ static const Key keys[] = {
          /* { 0, XF86XK_TouchpadOn,                         spawn,              SHCMD("synclient TouchpadOff=0") }, */
  };
  
