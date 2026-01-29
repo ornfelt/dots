@@ -33,31 +33,37 @@ style = "Bold"
 family = "JetBrainsMono Nerd Font"
 style = "Regular"
 
+# bind alt-v: ToggleViMode
 [[keyboard.bindings]]
 action = "ToggleViMode"
 key = "V"
 mods = "Alt"
 
+# bind alt-shift-c: Copy
 [[keyboard.bindings]]
 action = "Copy"
 key = "C"
 mods = "Alt|Shift"
 
+# bind alt-shift-v: Paste
 [[keyboard.bindings]]
 action = "Paste"
 key = "V"
 mods = "Alt|Shift"
 
+# bind alt-shift-j: ScrollPageDown
 [[keyboard.bindings]]
 key = "J"
 mods = "Alt|Shift"
 action = "ScrollPageDown"
 
+# bind alt-shift-k: ScrollPageUp
 [[keyboard.bindings]]
 key = "K"
 mods = "Alt|Shift"
 action = "ScrollPageUp"
 
+# bind alt-ctrl-t: CreateNewWindow
 [[keyboard.bindings]]
 action = "CreateNewWindow"
 key = "T"
@@ -140,6 +146,7 @@ y = 5
 #binding = { key = "F", mods = "Control|Shift" }
 #regex = '(\n|.)*/\.[^/]*[^~]'
 
+# bind alt-shift-o: open url via xdg-open (quickselect)
 [[hints.enabled]]
 regex = "https?://[^\"]+"
 #command = { program = "cmd", args = ["/c", "start", "firefox", "--new-tab", "{}"] }
@@ -150,6 +157,7 @@ command = "xdg-open"
 #binding = { key = "Space", mods = "Control|Shift" }
 binding = { key = "o", mods = "Alt|Shift" }
 
+# bind alt-shift-space: paste last word (quickselect)
 # https://github.com/alacritty/alacritty/issues/4063
 [[hints.enabled]]
 regex = '[^ ]+(?:\s*)$' 
@@ -160,6 +168,7 @@ regex = '[^ ]+(?:\s*)$'
 action="Paste"
 binding = { key = "Space", mods = "Alt|Shift" }
 
+# bind alt-shift-w: paste word (quickselect, min 2 chars)
 [[hints.enabled]]
 regex = "\\S{2,}"
 action="Paste"
@@ -175,6 +184,7 @@ binding = { key = "W", mods = "Alt|Shift" }
 #action="Paste"
 #binding = { key = "E", mods = "Alt|Shift" }
 
+# bind alt-shift-e: paste path (quickselect, unix/windows/UNC paths)
 [[hints.enabled]]
 #regex = "(?:[-._~/a-zA-Z0-9])*/(?:[-._~/a-zA-Z0-9]*)|[a-zA-Z]:\\\\(?:[-._a-zA-Z0-9\\\\ ]+)"
 #regex = "(?:[-._~#/a-zA-Z0-9])*/(?:[-._~#/a-zA-Z0-9]*)|[a-zA-Z]:\\\\(?:[-._#a-zA-Z0-9\\\\]+(?: [^ ]+)?\\\\*)"

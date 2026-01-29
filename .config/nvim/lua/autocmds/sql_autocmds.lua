@@ -149,6 +149,7 @@ function insert_engine_env_values()
   vim.api.nvim_put({ engine_line, env_line, blank_line }, "c", true, true)
 end
 
+-- autocmd sql: cnfa (i)
 vim.api.nvim_create_autocmd("FileType", {
   pattern = "sql",
   callback = function()
@@ -328,6 +329,7 @@ function insert_engine_env_from_db()
   vim.api.nvim_put({ engine_line, env_line, blank_line }, "c", true, true)
 end
 
+-- autocmd sql: cnf (i)
 vim.api.nvim_create_autocmd("FileType", {
   pattern = "sql",
   callback = function()
@@ -462,6 +464,7 @@ function insert_select_statements_from_db()
   vim.api.nvim_put(statements, "c", true, true)
 end
 
+-- cnfd
 vim.api.nvim_create_autocmd("FileType", {
   pattern = "sql",
   callback = function()
@@ -675,6 +678,7 @@ function insert_dynamic_sql(mapping_func)
   vim.api.nvim_win_set_cursor(0, { row + #statements + 1, 0 })
 end
 
+-- autocmd sql: sout, soutf, soutd, souti, souts, soutb, func, proc, view (i)
 vim.api.nvim_create_autocmd("FileType", {
   pattern = "sql",
   callback = function()
@@ -773,6 +777,7 @@ function switch_sqls_connection()
   vim.notify(string.format("[sqls] Switched to index %d: %s", matched_index, connections[matched_index].dataSourceName))
 end
 
+-- autocmd sql: switch (i)
 vim.api.nvim_create_autocmd("FileType", {
   pattern = "sql",
   callback = function()
@@ -781,6 +786,7 @@ vim.api.nvim_create_autocmd("FileType", {
   end,
 })
 -- Run automagically at BufEnter
+-- autocmd *.sql: (BufEnter)
 vim.api.nvim_create_autocmd("BufEnter", {
   pattern = "*.sql",
   callback = function()
@@ -811,6 +817,7 @@ local function sqlmini_switch(idx)
     end)
 end
 
+-- cmd SqlMiniSwitch: sqlmini_switch
 vim.api.nvim_create_user_command('SqlMiniSwitch', function(opts)
   sqlmini_switch(opts.args)
 end, { nargs = 1, complete = function()
@@ -855,5 +862,6 @@ local function sqlmini_dump()
     end)
 end
 
+-- cmd SqlMiniDump: sqlmini_dump
 vim.api.nvim_create_user_command("SqlMiniDump", sqlmini_dump, { nargs = 0 })
 

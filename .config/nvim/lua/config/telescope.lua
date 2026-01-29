@@ -21,18 +21,34 @@ local action_state = require("telescope.actions.state")
 --end)
 --vim.keymap.set('n', '<leader>vh', builtin.help_tags, {})
 
-  --vim.api.nvim_set_keymap('n', '<leader>tf', '<cmd>Telescope find_files<CR>', { noremap = true, silent = true })
+--vim.api.nvim_set_keymap('n', '<leader>tf', '<cmd>Telescope find_files<CR>', { noremap = true, silent = true })
+
+-- bind leader-tg: Telescope live_grep (n)
 vim.api.nvim_set_keymap('n', '<leader>tg', '<cmd>Telescope live_grep<CR>', { noremap = true, silent = true })
+
 --vim.api.nvim_set_keymap('n', '<leader>tb', '<cmd>Telescope buffers<CR>', { noremap = true, silent = true })
+-- bind leader-t: Telescope buffers (n)
 vim.api.nvim_set_keymap('n', '<leader>t', '<cmd>Telescope buffers<CR>', { noremap = true, silent = true })
+
+-- bind leader-th: Telescope help_tags (n)
 vim.api.nvim_set_keymap('n', '<leader>th', '<cmd>Telescope help_tags<CR>', { noremap = true, silent = true })
 
+-- bind leader-td: Telescope lsp_definitions (n)
 vim.api.nvim_set_keymap('n', '<leader>td', '<cmd>Telescope lsp_definitions<CR>', { noremap = true, silent = true })
+
+-- bind leader-tr: Telescope lsp_references (n)
 vim.api.nvim_set_keymap('n', '<leader>tr', '<cmd>Telescope lsp_references<CR>', { noremap = true, silent = true })
 
+-- bind leader-gs: telescope.builtin.git_status (n)
 vim.api.nvim_set_keymap('n', '<leader>gs', ':lua require("telescope.builtin").git_status()<CR>', { noremap = true, silent = true })
+
+-- bind leader-gb: telescope.builtin.git_branches (n)
 vim.api.nvim_set_keymap('n', '<leader>gb', ':lua require("telescope.builtin").git_branches()<CR>', { noremap = true, silent = true })
+
+-- bind leader-gt: telescope.builtin.git_stash (n)
 vim.api.nvim_set_keymap('n', '<leader>gt', ':lua require("telescope.builtin").git_stash()<CR>', { noremap = true, silent = true })
+
+-- bind leader-gc: telescope.builtin.git_commits (n)
 vim.api.nvim_set_keymap('n', '<leader>gc', ':lua require("telescope.builtin").git_commits()<CR>', { noremap = true, silent = true })
 -- vim.api.nvim_set_keymap('n', '<leader>gc', ':lua builtin.git_bcommits()<CR>', { noremap = true, silent = true })
 -- vim.api.nvim_set_keymap('n', '<leader>gc', ':lua builtin.git_bcommits_range()<CR>', { noremap = true, silent = true })
@@ -89,6 +105,7 @@ local makefile_targets = function(opts)
   }):find()
 end
 
+-- cmd MakefileTargets: makefile_targets
 vim.api.nvim_create_user_command("MakefileTargets", makefile_targets, {})
 -- return require("telescope").register_extension({
 require("telescope").register_extension({
@@ -258,6 +275,7 @@ function golang_test_files(opts)
   picker:find()
 end
 
+-- cmd GoLangTestFiles: golang_test_files
 vim.api.nvim_create_user_command("GoLangTestFiles", golang_test_files, {})
 
 function document_symbols_for_selected(prompt_bufnr)
@@ -366,11 +384,12 @@ require('telescope').setup({
     --    preview_height = 0.5,
     --  },
     --},
+    -- bind c-b: open_with_trouble (i, n)
+    -- bind c-s: document_symbols_for_selected (i, n)
     mappings = {
       i = {
         ["<esc>"] = actions.close,
         ["<C-b>"] = open_with_trouble,
-        -- map: 'i', 'n' '<C-s>' -> document_symbols_for_selected
         ["<C-s>"] = document_symbols_for_selected,
       },
       n = {

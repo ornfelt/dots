@@ -9,26 +9,37 @@ if myconfig.is_plugin_installed('chatgpt') then
   -- Model can be changed in actions for this plugin
   require("chatgpt").setup(chatgpt_config)
 
+  -- bind leader-e: ChatGPTEditWithInstructions (n, v)
   myconfig.map('n', '<leader>e', ':ChatGPTEditWithInstructions<CR>')
   myconfig.map('v', '<leader>e', ':ChatGPTEditWithInstructions<CR>')
+  -- bind leader-x: ChatGPTRun explain_code (n, v)
   myconfig.map('n', '<leader>x', ':ChatGPTRun explain_code<CR>')
   myconfig.map('v', '<leader>x', ':ChatGPTRun explain_code<CR>')
+  -- bind leader-c: ChatGPTRun complete_code (n, v)
   myconfig.map('n', '<leader>c', ':ChatGPTRun complete_code<CR>')
   myconfig.map('v', '<leader>c', ':ChatGPTRun complete_code<CR>')
+  -- bind leader-v: ChatGPTRun summarize (n, v)
   myconfig.map('n', '<leader>v', ':ChatGPTRun summarize<CR>')
   myconfig.map('v', '<leader>v', ':ChatGPTRun summarize<CR>')
+  -- bind leader-g: ChatGPTRun grammar_correction (n, v)
   myconfig.map('n', '<leader>g', ':ChatGPTRun grammar_correction<CR>')
   myconfig.map('v', '<leader>g', ':ChatGPTRun grammar_correction<CR>')
+  -- bind leader-6: ChatGPTRun docstring (n, v)
   myconfig.map('n', '<leader>6', ':ChatGPTRun docstring<CR>')
   myconfig.map('v', '<leader>6', ':ChatGPTRun docstring<CR>')
+  -- bind leader-7: ChatGPTRun add_tests (n, v)
   myconfig.map('n', '<leader>7', ':ChatGPTRun add_tests<CR>')
   myconfig.map('v', '<leader>7', ':ChatGPTRun add_tests<CR>')
+  -- bind leader-8: ChatGPTRun optimize_code (n, v)
   myconfig.map('n', '<leader>8', ':ChatGPTRun optimize_code<CR>')
   myconfig.map('v', '<leader>8', ':ChatGPTRun optimize_code<CR>')
+  -- bind leader-9: ChatGPTRun code_readability_analysis (n, v)
   myconfig.map('n', '<leader>9', ':ChatGPTRun code_readability_analysis<CR>')
   myconfig.map('v', '<leader>9', ':ChatGPTRun code_readability_analysis<CR>')
+  -- bind leader-0: ChatGPT (n, v)
   myconfig.map('n', '<leader>0', ':ChatGPT<CR>')
   myconfig.map('v', '<leader>0', ':ChatGPT<CR>')
+  -- bind m-c: ChatGPTRun send_request (n, v, i)
   myconfig.map('n', '<M-c>', ':ChatGPTRun send_request<CR>')
   myconfig.map('v', '<M-c>', ':ChatGPTRun send_request<CR>')
   myconfig.map('i', '<M-c>', ':ChatGPTRun send_request<CR>')
@@ -49,28 +60,38 @@ if myconfig.is_plugin_installed('gp') then
   --require("gp").setup({openai_api_key: os.getenv("OPENAI_API_KEY")})
   require("gp").setup(gp_config)
 
+  -- bind leader-e: GpAppend (n, v)
   myconfig.map('n', '<leader>e', ':GpAppend<CR>')
   myconfig.map('v', '<leader>e', ':GpAppend<CR>')
+  -- bind leader-x: GpTabnew (n, v)
   myconfig.map('n', '<leader>x', ':GpTabnew<CR>')
   myconfig.map('v', '<leader>x', ':GpTabnew<CR>')
+  -- bind leader-c: GpNew (n, v)
   myconfig.map('n', '<leader>c', ':GpNew<CR>')
   myconfig.map('v', '<leader>c', ':GpNew<CR>')
+  -- bind leader-v: GpVnew (n, v)
   myconfig.map('n', '<leader>v', ':GpVnew<CR>')
   myconfig.map('v', '<leader>v', ':GpVnew<CR>')
+  -- bind leader-g: GpRewrite (n, v)
   myconfig.map('n', '<leader>g', ':GpRewrite<CR>')
   myconfig.map('v', '<leader>g', ':GpRewrite<CR>')
+  -- bind leader-6: GpImplement (n, v)
   myconfig.map('n', '<leader>6', ':GpImplement<CR>')
   myconfig.map('v', '<leader>6', ':GpImplement<CR>')
+  -- bind leader-7: GpChatRespond (n, v)
   myconfig.map('n', '<leader>7', ':GpChatRespond<CR>')
   myconfig.map('v', '<leader>7', ':GpChatRespond<CR>')
+  -- bind leader-8: GpNextAgent (n, v)
   -- myconfig.map('n', '<leader>8', ':GpChatFinder<CR>')
   -- myconfig.map('v', '<leader>8', ':GpChatFinder<CR>')
   -- myconfig.map('n', '<leader>8', ':GpContext<CR>')
   -- myconfig.map('v', '<leader>8', ':GpContext<CR>')
   myconfig.map('n', '<leader>8', ':GpNextAgent<CR>')
   myconfig.map('v', '<leader>8', ':GpNextAgent<CR>')
+  -- bind leader-9: GpChatNew (n, v)
   myconfig.map('n', '<leader>9', ':GpChatNew<CR>')
   myconfig.map('v', '<leader>9', ':GpChatNew<CR>')
+  -- bind leader-0: GpChatToggle (n, v)
   myconfig.map('n', '<leader>0', ':GpChatToggle<CR>')
   myconfig.map('v', '<leader>0', ':GpChatToggle<CR>')
   -- There's also:
@@ -246,10 +267,12 @@ if myconfig.is_plugin_installed('model') then
     }
   })
 
+  -- bind m--: Model zephyr (n, i, v)
   vim.api.nvim_set_keymap('n', '<M-->', '<Cmd>:Model zephyr<CR>', {noremap = true, silent = true})
   vim.api.nvim_set_keymap('i', '<M-->', '<Cmd>:Model zephyr<CR>', {noremap = true, silent = true})
   vim.api.nvim_set_keymap('v', '<M-->', '<Cmd>:Model zephyr<CR>', {noremap = true, silent = true})
 else
+  -- bind m--: Llm (n, i, v)
   vim.api.nvim_set_keymap('n', '<M-->', '<Cmd>:Llm<CR>', {noremap = true, silent = true})
   vim.api.nvim_set_keymap('i', '<M-->', '<Cmd>:Llm<CR>', {noremap = true, silent = true})
   vim.api.nvim_set_keymap('v', '<M-->', '<Cmd>:Llm<CR>', {noremap = true, silent = true})
@@ -257,6 +280,7 @@ end
 
 local my_notes_path = myconfig.my_notes_path
 
+-- cmd PrintAiModels: print all AI models from python script
 vim.api.nvim_create_user_command('PrintAiModels', function()
   local script_path = my_notes_path .. "/scripts/gpt/gpt/print_all_models.py"
 
@@ -288,6 +312,7 @@ local function normalize_provider(provider)
 end
 
 -- Fetch models via request
+-- cmd PrintAiModelsByRequest: fetch and print AI models by API request
 vim.api.nvim_create_user_command('PrintAiModelsByRequest', function(opts)
   local should_debug_print = myconfig.should_debug_print()
   local api_key, url, curl_cmd

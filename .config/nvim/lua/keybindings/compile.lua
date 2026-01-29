@@ -330,7 +330,9 @@ function compile_run()
   end
 end
 
+-- bind m-x: compile_run (n, v)
 vim.api.nvim_set_keymap('n', '<M-x>', '<Cmd>lua compile_run()<CR>', { noremap = true, silent = true })
 vim.api.nvim_set_keymap('v', '<M-x>', '<Cmd>lua compile_run()<CR>', { noremap = true, silent = true })
+-- bind m-s-x: chmod +x % (n)
 vim.api.nvim_set_keymap('n', '<M-S-X>', '<Cmd>!chmod +x %<CR>', { noremap = true, silent = true })
 

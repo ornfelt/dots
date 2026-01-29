@@ -25,12 +25,12 @@ config.enable_wayland = false -- Required for hyprland?
 local user_domain = os.getenv("USERDOMAIN") or ""
 if string.lower(user_domain):find("lenovo2") then
   config.font_size = 10.0
+  -- https://wezfurlong.org/wezterm/config/lua/config/max_fps.html
+  config.max_fps = 240
 else
   config.font_size = 11.0
+  config.max_fps = 60 -- default
 end
-
--- https://wezfurlong.org/wezterm/config/lua/config/max_fps.html
-config.max_fps = 240
 
 -- https://wezfurlong.org/wezterm/hyperlinks.html#implicit-hyperlinks
 config.hyperlink_rules = wezterm.default_hyperlink_rules()
@@ -61,12 +61,16 @@ config.quick_select_patterns = {
 config.hide_tab_bar_if_only_one_tab = true
 config.mouse_bindings = {
   -- Open URLs with Ctrl+Click
+  -- bind mouse-ctrl-left-up: act.OpenLinkAtMouseCursor
   {
     event = { Up = { streak = 1, button = 'Left' } },
     mods = 'CTRL',
     action = act.OpenLinkAtMouseCursor,
   },
+
+  -- Triple-click selects a semantic zone (word/path/etc)
   -- https://github.com/wez/wezterm/discussions/2343
+  -- bind mouse-left-down(3): wezterm.action.SelectTextAtMouseCursor('SemanticZone')
   {
     event = { Down = { streak = 3, button = 'Left' } },
     action = wezterm.action.SelectTextAtMouseCursor 'SemanticZone',
@@ -391,21 +395,21 @@ end)
 -- Custom key bindings
 config.keys = {
   -- Leader is defined as Ctrl-A but this allows it to be sent to programs like vim when pressed twice
+  -- bind leader-ctrl-a: wezterm.action.SendKey (pass through to programs like vim)
   { key = 'a', mods = 'LEADER|CTRL', action = wezterm.action.SendKey { key = 'a', mods = 'CTRL' }, },
 
   -- Copy/vim mode
+  -- bind leader-v: act.ActivateCopyMode
   { key = 'v', mods = 'LEADER', action = act.ActivateCopyMode, },
+  -- bind leader-f: wezterm.action.Search
   { key = 'f', mods = 'LEADER', action = wezterm.action.Search {CaseInSensitiveString = 'test' } },
+  -- bind leader-ctrl-f: wezterm.action.Search
   { key = 'f', mods = 'LEADER|CTRL', action = wezterm.action.Search {CaseSensitiveString = 'test' } },
+  -- bind leader-g: wezterm.action.Search
   { key = 'g', mods = 'LEADER', action = wezterm.action.Search {Regex = 'test'} },
 
-  -- ----------------------------------------------------------------
-  -- TABS
-  --
-  -- Where possible, I'm using the same combinations as I would in tmux
-  -- ----------------------------------------------------------------
-
   -- Show tab navigator; similar to listing panes in tmux
+  -- bind leader-w: act.ShowTabNavigator
   {
     key = 'w',
     mods = 'LEADER',
@@ -413,6 +417,7 @@ config.keys = {
   },
 
   -- Rename current tab; analagous to command in tmux
+  -- bind leader-alt-,: act.PromptInputLine (rename tab)
   {
     key = ',',
     mods = 'LEADER|ALT',
@@ -427,6 +432,7 @@ config.keys = {
       ),
     },
   },
+
   -- Move to next/previous TAB
   --{
   --    key = 'n',
@@ -438,7 +444,9 @@ config.keys = {
   --    mods = 'LEADER',
   --    action = act.ActivateTabRelative(-1),
   --},
+
   -- Close tab
+  -- bind leader-shift-q: act.CloseCurrentTab
   {
     key = 'q',
     mods = 'LEADER|SHIFT',
@@ -454,6 +462,7 @@ config.keys = {
   -- ----------------------------------------------------------------
 
   -- Vertical split
+  -- bind leader-enter: act.SplitPane (vertical/right)
   {
     key = 'Enter',
     mods = 'LEADER',
@@ -463,6 +472,7 @@ config.keys = {
     },
   },
   -- Horizontal split
+  -- bind leader-<: act.SplitPane (horizontal/down)
   {
     key = '<',
     mods = 'LEADER',
@@ -471,29 +481,42 @@ config.keys = {
       size = { Percent = 50 },
     },
   },
+  -- bind leader-h: act.ActivatePaneDirection Left
   { key = "h", mods = "LEADER", action = act.ActivatePaneDirection("Left") },
+  -- bind leader-j: act.ActivatePaneDirection Down
   { key = "j", mods = "LEADER", action = act.ActivatePaneDirection("Down") },
+  -- bind leader-k: act.ActivatePaneDirection Up
   { key = "k", mods = "LEADER", action = act.ActivatePaneDirection("Up") },
+  -- bind leader-l: act.ActivatePaneDirection Right
   { key = "l", mods = "LEADER", action = act.ActivatePaneDirection("Right") },
+  -- bind leader-y: act.AdjustPaneSize Left
   { key = 'y', mods = 'LEADER', action = act.AdjustPaneSize { 'Left', 5 }, },
+  -- bind leader-u: act.AdjustPaneSize Down
   { key = 'u', mods = 'LEADER', action = act.AdjustPaneSize { 'Down', 5 }, },
+  -- bind leader-i: act.AdjustPaneSize Up
   { key = 'i', mods = 'LEADER', action = act.AdjustPaneSize { 'Up', 5 } },
+  -- bind leader-o: act.AdjustPaneSize Right
   { key = 'o', mods = 'LEADER', action = act.AdjustPaneSize { 'Right', 5 }, },
+  -- bind leader-q: act.CloseCurrentPane
   { key = "q", mods = "LEADER", action = act.CloseCurrentPane { confirm = false } },
+  -- bind leader-ctrl-q: act.CloseCurrentPane
   { key = "q", mods = "LEADER|CTRL", action = act.CloseCurrentPane { confirm = false } },
 
   -- Swap active pane with another one
+  -- bind leader-shift-t: act.PaneSelect (swap with active)
   {
     key = 'T',
     mods = 'LEADER|SHIFT',
     action = act.PaneSelect { mode = "SwapWithActiveKeepFocus" },
   },
   -- Zoom current pane (toggle)
+  -- bind leader-z: act.TogglePaneZoomState
   {
     key = 'z',
     mods = 'LEADER',
     action = act.TogglePaneZoomState,
   },
+  -- bind leader-shift-f: act.TogglePaneZoomState
   {
     key = 'f',
     mods = 'LEADER|SHIFT',
@@ -526,6 +549,7 @@ config.keys = {
   --},
 
   -- Show list of workspaces
+  -- bind leader-s: act.ShowLauncherArgs WORKSPACES
   {
     key = 's',
     mods = 'LEADER',
@@ -533,6 +557,7 @@ config.keys = {
   },
 
   -- Rename current session; analagous to command in tmux
+  -- bind leader-alt--: act.PromptInputLine (rename session)
   {
     key = '-',
     mods = 'LEADER|ALT',
@@ -552,60 +577,96 @@ config.keys = {
   },
 
   -- Scroll
+  -- bind alt-shift-j: wezterm.action.ScrollByLine (down)
   { key = 'J', mods = 'ALT|SHIFT', action = wezterm.action.ScrollByLine(1), },
+  -- bind alt-shift-k: wezterm.action.ScrollByLine (up)
   { key = 'K', mods = 'ALT|SHIFT', action = wezterm.action.ScrollByLine(-1), },
 
   -- Copying
+  -- bind alt-shift-c: wezterm.action.CopyTo ClipboardAndPrimarySelection
   { key = 'C', mods = 'ALT|SHIFT', action = wezterm.action.CopyTo 'ClipboardAndPrimarySelection', },
+  -- bind alt-shift-v: wezterm.action.PasteFrom
   { key = 'V', mods = 'ALT|SHIFT', action = is_linux and wezterm.action.PasteFrom 'Clipboard' or wezterm.action.PasteFrom 'PrimarySelection' },
 
   -- Session manager
+  -- bind leader-m: wezterm.action.EmitEvent save_session
   {key = "m", mods = "LEADER", action = wezterm.action{EmitEvent = "save_session"}},
+  -- bind leader-.: wezterm.action.EmitEvent restore_session
   {key = ".", mods = "LEADER", action = wezterm.action{EmitEvent = "restore_session"}},
   --{key = "p", mods = "LEADER", action = wezterm.action{EmitEvent = "load_session"}},
 
   -- Disable default
+  -- bind alt-enter: wezterm.action.DisableDefaultAssignment
   { key = 'Enter', mods = 'ALT', action = wezterm.action.DisableDefaultAssignment, },
+  -- bind alt-l: wezterm.action.DisableDefaultAssignment
   { key = 'l', mods = 'ALT', action = wezterm.action.DisableDefaultAssignment, },
+  -- bind alt-h: wezterm.action.DisableDefaultAssignment
   { key = 'h', mods = 'ALT', action = wezterm.action.DisableDefaultAssignment, },
+  -- bind alt-j: wezterm.action.DisableDefaultAssignment
   { key = 'j', mods = 'ALT', action = wezterm.action.DisableDefaultAssignment, },
+  -- bind alt-k: wezterm.action.DisableDefaultAssignment
   { key = 'k', mods = 'ALT', action = wezterm.action.DisableDefaultAssignment, },
+  -- bind ctrl-shift-n: wezterm.action.DisableDefaultAssignment
   { key = 'N', mods = 'CTRL|SHIFT', action = wezterm.action.DisableDefaultAssignment },
   --{ key = 'C', mods = 'ALT|SHIFT', action = wezterm.action.DisableDefaultAssignment, },
 
   -- Tabs
+  -- bind leader-1: wezterm.action.ActivateTab 0
   { key = "1", mods = "LEADER", action = wezterm.action{ActivateTab=0}, },
+  -- bind leader-2: wezterm.action.ActivateTab 1
   { key = "2", mods = "LEADER", action = wezterm.action{ActivateTab=1}, },
+  -- bind leader-3: wezterm.action.ActivateTab 2
   { key = "3", mods = "LEADER", action = wezterm.action{ActivateTab=2}, },
+  -- bind leader-4: wezterm.action.ActivateTab 3
   { key = "4", mods = "LEADER", action = wezterm.action{ActivateTab=3}, },
+  -- bind leader-5: wezterm.action.ActivateTab 4
   { key = "5", mods = "LEADER", action = wezterm.action{ActivateTab=4}, },
+  -- bind leader-6: wezterm.action.ActivateTab 5
   { key = "6", mods = "LEADER", action = wezterm.action{ActivateTab=5}, },
+  -- bind leader-7: wezterm.action.ActivateTab 6
   { key = "7", mods = "LEADER", action = wezterm.action{ActivateTab=6}, },
+  -- bind leader-8: wezterm.action.ActivateTab 7
   { key = "8", mods = "LEADER", action = wezterm.action{ActivateTab=7}, },
+  -- bind leader-9: wezterm.action.ActivateTab 8
   { key = "9", mods = "LEADER", action = wezterm.action{ActivateTab=8}, },
+  -- bind leader-0: wezterm.action.ActivateTab 9
   { key = "0", mods = "LEADER", action = wezterm.action{ActivateTab=9}, },
+  -- bind leader-t: wezterm.action.SpawnTab
   { key = 't', mods = "LEADER", action = wezterm.action{SpawnTab="DefaultDomain"}, },
+  -- bind leader-shift-q: wezterm.action.QuitApplication
   { key = 'q', mods = 'LEADER|SHIFT', action = wezterm.action.QuitApplication },
 
   -- Seamless wezterm/tmux/vim pane integration
+  -- bind alt-h: split_nav Left
   split_nav("h"),
+  -- bind alt-j: split_nav Down
   split_nav("j"),
+  -- bind alt-k: split_nav Up
   split_nav("k"),
+  -- bind alt-l: split_nav Right
   split_nav("l"),
+  -- bind alt-y: resize_pane Left
   resize_pane("y"),
+  -- bind alt-u: resize_pane Down
   resize_pane("u"),
+  -- bind alt-i: resize_pane Up
   resize_pane("i"),
+  -- bind alt-o: resize_pane Right
   resize_pane("o"),
+  -- bind alt-shift-h: rotate_panes CounterClockwise
   rotate_panes("H", "CounterClockwise"),
+  -- bind alt-shift-l: rotate_panes Clockwise
   rotate_panes("L", "Clockwise"),
 
   -- QuickSelect
   -- shift-ctrl-space is provided by default
   -- https://wezfurlong.org/wezterm/config/default-keys.html
+  -- bind alt-shift-space: wezterm.action.QuickSelect
   -- { key = ' ', mods = 'SHIFT|CTRL', action = wezterm.action.QuickSelect },
   { key = ' ', mods = 'ALT|SHIFT', action = wezterm.action.QuickSelect },
 
   -- For below regex, see test cases: {my_notes_path}/wez_quickselect_test.txt
+  -- bind alt-shift-w: wezterm.action.QuickSelectArgs (words)
   {
     key = 'w',
     mods = 'ALT|SHIFT',
@@ -636,6 +697,7 @@ config.keys = {
     },
   },
 
+  -- bind alt-shift-e: wezterm.action.QuickSelectArgs (paths)
   {
     key = 'e',
     mods = 'ALT|SHIFT',
@@ -659,6 +721,7 @@ config.keys = {
 
   -- Customizing QuickSelect
   -- https://wezfurlong.org/wezterm/config/lua/keyassignment/QuickSelectArgs.html
+  -- bind alt-shift-o: wezterm.action.QuickSelectArgs (open url)
   {
     --key = ' ',
     --mods = 'SHIFT|CTRL',
@@ -680,6 +743,7 @@ config.keys = {
   },
 
   -- Make ctrl-tab cycle tabs / windows for both wezterm and tmux
+  -- bind ctrl-tab: act.ActivateTabRelative (next, with tmux support)
   {
     key = "Tab",
     mods = "CTRL",
@@ -709,6 +773,7 @@ config.keys = {
   --  }),
   --},
   -- Fix for debian...
+  -- bind ctrl-shift-tab: act.ActivateTabRelative (previous, with tmux support)
   {
     key = "Tab",
     mods = "CTRL|SHIFT",
@@ -737,6 +802,7 @@ config.keys = {
   -- wezterm cli can also be used, for example:
   -- wezterm cli get-text --start-line -10000 > wez_text.txt
   -- https://wezfurlong.org/wezterm/cli/cli/get-text.html
+  -- bind alt-ctrl-l: act.EmitEvent trigger-vim-with-scrollback-copy-latest
   {
     key = 'L',
     mods = 'ALT|CTRL',
@@ -801,6 +867,7 @@ local function split_to_directory_with_delay(win, pane)
   end
 end
 
+-- bind leader-d: split_to_directory_with_delay
 table.insert(config.keys, {
   key = "d",
   mods = "LEADER",
@@ -898,6 +965,7 @@ local function open_github_repo(win, pane)
   wezterm.run_child_process({ "firefox", github_url })
 end
 
+-- bind leader-g: open_github_repo
 table.insert(config.keys, {
   key = "g",
   mods = "LEADER",

@@ -556,6 +556,7 @@ function remove_session()
   end
 end
 
+-- cmd RemoveSession: remove_session
 vim.api.nvim_create_user_command("RemoveSession", remove_session, {})
 
 -- Simple keybinds for saving and loading single session via file
@@ -563,11 +564,13 @@ vim.api.nvim_create_user_command("RemoveSession", remove_session, {})
 -- myconfig.map('n', '<leader>.', ':silent so ~/.vim/sessions/s.vim<CR>')
 
 -- Customimzed keybinds
+-- bind leader-.: load_session (n)
 myconfig.map('n', '<leader>.', ':lua load_session()<CR>')
 --myconfig.map('n', '<leader>.', ':lua load_session_alt()<CR>')
 -- This works as well (will load via session layout file instead of the one created via mksession)
 --vim.api.nvim_set_keymap('n', '<leader>.', ':lua load_tabs_and_splits()<CR>', { noremap = true, silent = true })
 
 -- Save session keybind
+-- bind leader-m: save_tabs_and_splits (n)
 vim.api.nvim_set_keymap('n', '<leader>m', ':lua save_tabs_and_splits()<CR>', { noremap = true, silent = true })
 

@@ -114,6 +114,7 @@ local function print_config_contents()
   file:close()
 end
 
+-- cmd PrintConfig: print_config_contents
 vim.api.nvim_create_user_command("PrintConfig", print_config_contents, {})
 
 local function read_config(key, default_value)
@@ -225,6 +226,7 @@ function CyclePythonExecCommand()
   print("New PythonExecCommand: " .. new_command)
 end
 
+-- cmd CyclePythonExecCommand: CyclePythonExecCommand
 vim.api.nvim_create_user_command('CyclePythonExecCommand', CyclePythonExecCommand, {})
 
 function M.get_sql_exec_lang()
@@ -292,6 +294,7 @@ function CycleSqlExecLang()
   print("New SqlExecLang: " .. new_lang)
 end
 
+-- cmd CycleSqlExecLang: CycleSqlExecLang
 vim.api.nvim_create_user_command('CycleSqlExecLang', CycleSqlExecLang, {})
 
 function ToggleBooleanSetting(settingKey)
@@ -347,9 +350,13 @@ function ToggleUseCustomLspForSql()
   ToggleBooleanSetting("UseCustomLspForSql")
 end
 
+-- cmd TogglePrioritizeBuildScript: TogglePrioritizeBuildScript
 vim.api.nvim_create_user_command('TogglePrioritizeBuildScript', TogglePrioritizeBuildScript, {})
+-- cmd ToggleDebugPrint: ToggleDebugPrint
 vim.api.nvim_create_user_command('ToggleDebugPrint', ToggleDebugPrint, {})
+-- cmd ToggleUseFilePickerForCommands: ToggleUseFilePickerForCommands
 vim.api.nvim_create_user_command('ToggleUseFilePickerForCommands', ToggleUseFilePickerForCommands, {})
+-- cmd ToggleUseCustomLspForSql: ToggleUseCustomLspForSql
 vim.api.nvim_create_user_command('ToggleUseCustomLspForSql', ToggleUseCustomLspForSql, {})
 
 -- Dynamic filepicker selection
@@ -421,6 +428,7 @@ local function CycleFilePicker()
   print("New file picker selected: " .. new_picker)
 end
 
+-- cmd CycleFilePicker: CycleFilePicker
 vim.api.nvim_create_user_command('CycleFilePicker', CycleFilePicker, {})
 
 return M -- Return the module table

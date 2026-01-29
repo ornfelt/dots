@@ -10,23 +10,27 @@
 #    { on = [ "g", "e" ], run = "cd /etc", desc = "cd to /etc" },
 #]
 
+# bind S: open shell here
 [[mgr.prepend_keymap]]
 on   = "S"
 run  = 'shell "$SHELL" --block --confirm'
 desc = "Open shell here"
 
+# bind ctrl-n: create new directory
 [[mgr.prepend_keymap]]
 on = "<C-n>"
 #run = [ '''shell --block --interactive''' ]
 run = [ '''create --dir''' ]
 desc = "Create new dir"
 
+# bind D: delete file or directory
 [[mgr.prepend_keymap]]
 on = "D"
 run = [ '''delete''' ]
 desc = "Delete file or directory"
 
 # oil-like
+# bind o: create file/dir
 [[mgr.prepend_keymap]]
 on = "o"
 run = [ '''create''' ]
@@ -41,6 +45,7 @@ desc = "Create"
 #desc = "Enter directory or open file"
 # Use plugin instead
 # https://github.com/yazi-rs/plugins/tree/main/smart-enter.yazi
+# bind l: smart-enter (enter dir or open file)
 [[mgr.prepend_keymap]]
 on   = "l"
 run  = "plugin smart-enter"
@@ -53,87 +58,104 @@ desc = "Enter the child directory, or open the file"
 # ...
 
 # g-binds
+# bind gC: cd to /
 [[mgr.prepend_keymap]]
 on = ["g", "C"]
 run = [ '''cd /''' ]
 desc = "cd to /"
 
+# bind ge: cd to /etc
 [[mgr.prepend_keymap]]
 on = ["g", "e"]
 run = [ '''cd /etc''' ]
 desc = "cd to /etc"
 
+# bind gu: cd to /usr
 [[mgr.prepend_keymap]]
 on = ["g", "u"]
 run = [ '''cd /usr''' ]
 desc = "cd to /usr"
 
+# bind gh: cd to /home/jonas
 [[mgr.prepend_keymap]]
 on = ["g", "h"]
 run = [ '''cd /home/jonas''' ]
 desc = "cd to /home/jonas"
 
+# bind gl: cd to ~/.local
 [[mgr.prepend_keymap]]
 on = ["g", "l"]
 run = [ '''cd ~/.local''' ]
 desc = "cd to local data"
 
+# bind gL: cd to ~/.local/share
 [[mgr.prepend_keymap]]
 on = ["g", "L"]
 run = [ '''cd ~/.local/share''' ]
 desc = "cd to config data"
 
+# bind gM: cd to /mnt
 [[mgr.prepend_keymap]]
 on = ["g", "M"]
 run = [ '''cd /mnt''' ]
 desc = "cd to /mnt"
 
+# bind ga: cd to ~/Downloads
 [[mgr.prepend_keymap]]
 on = ["g", "a"]
 run = [ '''cd ~/Downloads''' ]
 desc = "cd to ~/Downloads"
 
+# bind gd: cd to ~/Documents
 [[mgr.prepend_keymap]]
 on = ["g", "d"]
 run = [ '''cd ~/Documents''' ]
 desc = "cd to ~/Documents"
 
+# bind gw: cd to ~/Pictures/Wallpapers
 [[mgr.prepend_keymap]]
 on = ["g", "w"]
 run = [ '''cd ~/Pictures/Wallpapers''' ]
 desc = "cd to Wallpapers"
 
+# bind gm: cd to /media2/Movies
 [[mgr.prepend_keymap]]
 on = ["g", "m"]
 run = [ '''cd /media2/Movies''' ]
 desc = "cd to Movies"
 
+# bind g.: cd to ~/.config
 [[mgr.prepend_keymap]]
 on = ["g", "."]
 run = [ '''cd ~/.config''' ]
 desc = "cd to ~/.config"
 
+# bind g?: cd to ~/.config/yazi
 [[mgr.prepend_keymap]]
 on = ["g", "?"]
 #run = [ '''cd /usr/share/doc/yazi''' ]
 run = [ '''cd ~/.config/yazi''' ]
 desc = "cd to yazi conf"
 
+# bind gc: cd to ~/Code2
 [[mgr.prepend_keymap]]
 on = ["g", "c"]
 run = [ '''cd ~/Code2''' ]
 desc = "cd to ~/Code2"
 
+# bind gn: cd to ~/Documents/my_notes
 [[mgr.prepend_keymap]]
 on = ["g", "n"]
 run = [ '''cd ~/Documents/my_notes''' ]
 desc = "cd to my_notes"
 
+# bind gp: cd to ~/Documents/windows_dots
 [[mgr.prepend_keymap]]
 on = ["g", "p"]
 run = [ '''cd ~/Documents/windows_dots''' ]
 desc = "cd to ps_profile_path"
 
+# bind gr: cd to git root
 [[mgr.prepend_keymap]]
 on = [ "g", "r" ]
 run = '''
@@ -141,6 +163,7 @@ run = '''
 '''
 desc = "cd to git root dir"
 
+# bind gf: open file in vim via term_vim.sh
 [[mgr.prepend_keymap]]
 on = ["g", "f"]
 run = [
@@ -150,6 +173,7 @@ run = [
 ]
 desc = "Open file in vim inside a new wezterm window"
 
+# bind gx: open file in firefox
 [[mgr.prepend_keymap]]
 on = ["g", "x"]
 run = [
@@ -171,12 +195,14 @@ desc = "Open file in firefox"
 #desc = "Search directories"
 
 # Default Z key can also be used instead of this
+# bind ctrl-f: fzf jump to file/directory
 [[mgr.prepend_keymap]]
 on = "<C-f>"
 run = [ '''plugin fzf''' ]
 desc = "Jump to a file/directory via fzf"
 
 # Rename
+# bind cw: rename
 [[mgr.prepend_keymap]]
 on = ["c", "w"]
 run = [ '''rename''' ]
@@ -211,21 +237,25 @@ desc = "Rename"
 #ya pack -i
 # Upgrade the plugin
 #ya pack -u
+# bind m: save bookmark
 [[mgr.prepend_keymap]]
 on = [ "m" ]
 run = "plugin bookmarks save"
 desc = "Save current position as a bookmark"
 
+# bind ': jump to bookmark
 [[mgr.prepend_keymap]]
 on = [ "'" ]
 run = "plugin bookmarks jump"
 desc = "Jump to a bookmark"
 
+# bind bd: delete bookmark
 [[mgr.prepend_keymap]]
 on = [ "b", "d" ]
 run = "plugin bookmarks delete"
 desc = "Delete a bookmark"
 
+# bind bD: delete all bookmarks
 [[mgr.prepend_keymap]]
 on = [ "b", "D" ]
 run = "plugin bookmarks delete_all"
@@ -236,6 +266,7 @@ desc = "Delete all bookmarks"
 ###
 
 # Image commands
+# bind bg: set background with feh
 [[mgr.prepend_keymap]]
 on = ["b", "g"]
 run = [
@@ -245,6 +276,7 @@ run = [
 ]
 desc = "Set current image as background"
 
+# bind bc: rotate image 90 degrees
 [[mgr.prepend_keymap]]
 on = ["b", "c"]
 run = [
@@ -254,6 +286,7 @@ run = [
 ]
 desc = "Rotate image"
 
+# bind bi: resize image to 1440x1080
 [[mgr.prepend_keymap]]
 on = ["b", "i"]
 run = [
@@ -263,6 +296,7 @@ run = [
 ]
 desc = "Resize image"
 
+# bind bt: make image transparent
 [[mgr.prepend_keymap]]
 on = ["b", "t"]
 run = [
@@ -272,6 +306,7 @@ run = [
 ]
 desc = "Resize image"
 
+# bind space--: copy_path.sh
 # Copy path
 [[mgr.prepend_keymap]]
 on = [" ", "-"]
@@ -283,6 +318,7 @@ run = [
 ]
 desc = "Copy selection to clipboard"
 
+# bind space-_: copy_path.sh (alternate)
 [[mgr.prepend_keymap]]
 on = [" ", "_"]
 run = [
@@ -294,6 +330,7 @@ run = [
 desc = "Copy selection to clipboard"
 
 # Manage file
+# bind space-space: manage_file.sh
 [[mgr.prepend_keymap]]
 on = [" ", " "]
 run = [
@@ -316,26 +353,31 @@ desc = "Manage file"
 # Upgrade the plugin
 #ya pack -u
 
+# bind fg: find file by content (rg search)
 [[mgr.prepend_keymap]]
 on   = [ "f", "g" ]
 run  = "plugin fr rg"
 desc = "find file by content (rg search; Ctrl-s toggles rg/fzf match)"
 
+# bind fG: find file by content (rg search)
 [[mgr.prepend_keymap]]
 on   = [ "f", "G" ]
 run  = "plugin fr rg"
 desc = "find file by content (rg search)"
 
+# bind fa: find file by content (ripgrep-all)
 [[mgr.prepend_keymap]]
 on   = [ "f", "a" ]
 run  = "plugin fr rga"
 desc = "find file by content (ripgrep-all)"
 
+# bind ff: find file by filename (fd search)
 [[mgr.prepend_keymap]]
 on   = [ "f", "f" ]
 run  = "search --via=fd"
 desc = "find file by filename (fd search)"
 
+# bind fF: find file by filename (fd search + hidden)
 [[mgr.prepend_keymap]]
 on   = [ "f", "F" ]
 run  = "search --via=fd --args='-H'"
@@ -346,6 +388,7 @@ desc = "find file by filename (fd search + hidden files)"
 ###
 
 # Extract archive
+# bind ex: extract archive
 [[mgr.prepend_keymap]]
 on = ["e", "x"]
 run = '''
@@ -354,6 +397,7 @@ run = '''
 desc = "Extract archive"
 
 # Compress - various formats
+# bind zz: compress to zip
 [[mgr.prepend_keymap]]
 on = ["z", "z"]
 run = '''
@@ -361,6 +405,7 @@ run = '''
 '''
 desc = "Compress as .zip"
 
+# bind zg: compress to tar.gz
 [[mgr.prepend_keymap]]
 on = ["z", "g"]
 run = '''
@@ -368,6 +413,7 @@ run = '''
 '''
 desc = "Compress as .tar.gz"
 
+# bind zx: compress to tar.xz
 [[mgr.prepend_keymap]]
 on = ["z", "x"]
 run = '''
@@ -375,6 +421,7 @@ run = '''
 '''
 desc = "Compress as .tar.xz"
 
+# bind zb: compress to tar.bz2
 [[mgr.prepend_keymap]]
 on = ["z", "b"]
 run = '''
@@ -382,6 +429,7 @@ run = '''
 '''
 desc = "Compress as .tar.bz2"
 
+# bind zs: compress to tar.zst
 [[mgr.prepend_keymap]]
 on = ["z", "s"]
 run = '''
@@ -389,6 +437,7 @@ run = '''
 '''
 desc = "Compress as .tar.zst"
 
+# bind z7: compress to 7z
 [[mgr.prepend_keymap]]
 on = ["z", "7"]
 run = '''
@@ -396,13 +445,13 @@ run = '''
 '''
 desc = "Compress as .7z"
 
+# bind zt: compress to tar (no compression)
 [[mgr.prepend_keymap]]
 on = ["z", "t"]
 run = '''
     shell '$HOME/.local/bin/my_scripts/2025/compress.sh "$0" tar' --confirm
 '''
 desc = "Compress as .tar (no compression)"
-
 
 ###
 # Old (kept for reference)

@@ -54,6 +54,8 @@ local function restore_tab()
   last_closed_tab = nil
 end
 
+-- bind m-q: save_and_close_tab (n)
 vim.keymap.set("n", "<M-q>", save_and_close_tab, { noremap = true, silent = true })
+-- bind m-s-t: restore_tab (n)
 vim.keymap.set("n", "<M-S-T>", restore_tab, { noremap = true, silent = true })
 

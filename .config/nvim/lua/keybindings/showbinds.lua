@@ -62,6 +62,7 @@ local function choose(prompt, options, callback)
 end
 
 -- Keymap: hierarchical pick from headers and subsequent lines -> copy to clipboard on select
+-- bind leader-?: hierarchical keymap picker (n)
 vim.keymap.set('n', '<leader>?', function()
   --local file_path = myconfig.my_notes_path .. "/scripts/files/nvim_keys.txt"
   local file_path = myconfig.my_notes_path .. ".vim/binds.txt"

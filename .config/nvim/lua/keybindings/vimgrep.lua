@@ -93,16 +93,19 @@ local function setup_vimgrep_command(use_current_word)
   enter_vimgrep_command(pattern, use_current_word)
 end
 
--- Key mappings
+-- bind m-f: vimgrep with word/selection in current extension (n,v)
 vim.keymap.set({ 'n', 'v' }, '<M-f>', function()
   setup_vimgrep_command(true) -- Use word under cursor or selection
 end, { noremap = true, silent = true })
 
+-- bind m-c-f: vimgrep in current extension (n)
 vim.keymap.set('n', '<M-C-f>', function()
   setup_vimgrep_command(false) -- Do not use word under cursor or selection
 end, { noremap = true, silent = true })
 
+-- bind m-g: vimgrep with word in all files (n)
 vim.keymap.set( 'n', '<M-g>', function() enter_vimgrep_command('**/*.*', true) end, { noremap = true, silent = true })
+-- bind m-s-g: vimgrep with word in dotfiles (n)
 vim.keymap.set( 'n', '<M-G>', function() enter_vimgrep_command('**/.*', true) end, { noremap = true, silent = true })
 
 -- :vimgrep /mypattern/j *.xml *.js
@@ -113,6 +116,7 @@ local function construct_glob_pattern(extensions)
   return '**/*.{' .. table.concat(extensions, ',') .. '}'
 end
 
+-- bind m-s-f: vimgrep with word in code files (n)
 vim.keymap.set('n', '<M-F>', function()
   local extensions = { 'c', 'cpp', 'cs', 'css', 'go', 'h', 'hpp', 'html', 'java', 'js', 'jsx', 'json', 'lua', 'php', 'py', 'rs', 'sql', 'ts', 'tsx', 'xml', 'zig' }
   local pattern = construct_glob_pattern(extensions)

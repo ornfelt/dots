@@ -22,6 +22,7 @@ if has_oil then
   })
   -- myconfig.map('n', '<M-w>', ':leftabove vsplit | vertical resize 40 | Oil ~/ <CR>')
   -- myconfig.map('n', '<M-w>', ':Oil ~/ <CR>')
+  -- bind m-w: toggle Oil file explorer (n)
   vim.keymap.set('n', '<M-w>', function()
     if vim.bo.filetype == 'oil' then
       -- vim.cmd('bd')
@@ -166,5 +167,6 @@ function toggle_filetree(jump_to_current)
   end
 end
 
+-- bind m-e: toggle_filetree(true) (n)
 myconfig.map('n', '<M-e>', ':lua toggle_filetree(true)<CR>')
 

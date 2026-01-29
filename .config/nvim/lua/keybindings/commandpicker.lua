@@ -246,6 +246,7 @@ local function run_command(label)
   end
 end
 
+-- bind leader-leader: command picker (n)
 vim.keymap.set('n', '<leader><leader>', function()
   local picker    = myconfig.get_file_picker()
   local use_fzf   = picker == myconfig.FilePicker.FZF

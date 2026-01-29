@@ -11,13 +11,14 @@ return {
     ---LHS of toggle mappings in NORMAL mode
     toggler = {
       --line = 'gc',
-      -- map: <C-k> -> toggle comment
+      -- bind c-k: toggle comment (n)
       line = '<C-k>',
       block = 'gb',
     },
     ---LHS of operator-pending mappings in NORMAL and VISUAL mode
     opleader = {
       --line = 'gc',
+      -- bind c-k: toggle comment (n,v)
       line = '<C-k>',
       block = 'gb',
     },
