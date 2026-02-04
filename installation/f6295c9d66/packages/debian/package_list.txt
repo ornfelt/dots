@@ -400,6 +400,7 @@ pamix
 pamixer
 passwd
 pciutils
+pcmanfm
 perl-base
 perl
 php-mysql

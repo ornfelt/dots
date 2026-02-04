@@ -570,7 +570,26 @@ export CMAKE_POLICY_VERSION_MINIMUM=3.5
 
 alias f='fuzzyfind'
 
+is_wsl() {
+  # alt 1:
+  grep -qi microsoft /proc/version 2>/dev/null
+  # alt 2:
+  #case "$(uname -r)" in
+  #  *Microsoft*|*microsoft*) return 0 ;;
+  #  *) return 1 ;;
+  #esac
+  # alt 3:
+  # Mounted Windows drive is a good wsl indicator
+  #[[ -d /mnt/c/Windows/System32 ]] && return 0
+  #return 1
+}
+
+# Ctrl-Space
 bindkey '^ ' autosuggest-accept
+# Silly fix for alacritty->wsl:
+if is_wsl; then
+  bindkey '^[[1;5P' autosuggest-accept
+fi
 
 bindkey '^H' backward-kill-word 
 #bindkey '^H' backward-delete-char

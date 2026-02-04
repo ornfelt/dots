@@ -1,11 +1,27 @@
 #!/bin/bash
 
+Recursive=false
+#Recursive=true
+
 if [ -z "$1" ]; then
-    echo "Usage: mermaid_script.sh <input_file>"
+    echo "Usage: mermaid_script.sh <input_file>/all/*"
     exit 1
 fi
 
 InputFile="$1"
+
+# Handle "all" or "*" to process all .md and .mermaid files
+if [[ "$InputFile" == "all" ]] || [[ "$InputFile" == "*" ]]; then
+    echo "Generating Mermaid diagrams for all .md and .mermaid files..."
+    
+    if [ "$Recursive" = true ]; then
+        find . -type f \( -name "*.md" -o -name "*.mermaid" \) -exec "$0" {} \;
+    else
+        find . -maxdepth 1 -type f \( -name "*.md" -o -name "*.mermaid" \) -exec "$0" {} \;
+    fi
+    
+    exit 0
+fi
 
 # Append .md if no extension present
 if [[ "$InputFile" != *.* ]]; then

@@ -1,11 +1,26 @@
 #!/bin/bash
 
+Recursive=false
+
 if [ -z "$1" ]; then
-    echo "Usage: plantuml_script.sh <input_file>"
+    echo "Usage: plantuml_script.sh <input_file>/all/*"
     exit 1
 fi
 
 InputFile="$1"
+
+# Handle "all" or "*" to process all .txt and .puml files
+if [[ "$InputFile" == "all" ]] || [[ "$InputFile" == "*" ]]; then
+    echo "Generating PlantUML diagrams for all .txt and .puml files..."
+    
+    if [ "$Recursive" = true ]; then
+        find . -type f \( -name "*.txt" -o -name "*.puml" \) -exec "$0" {} \;
+    else
+        find . -maxdepth 1 -type f \( -name "*.txt" -o -name "*.puml" \) -exec "$0" {} \;
+    fi
+    
+    exit 0
+fi
 
 # Append .txt if no extension present
 if [[ "$InputFile" != *.* ]]; then

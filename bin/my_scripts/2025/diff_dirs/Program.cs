@@ -61,13 +61,15 @@ class Program
         "llama3.2.c/build",
         "torchless/build",
         "__pycache__/",
+        ".git/",
+        "build/",
     };
 
     // Paths that cause "equals" skip
     static readonly string[] IGNORE_EQUALS = new[]
     {
         "Movies",
-        "recordings",
+        //"recordings",
         "Magician Launcher.app",
         "Magician Launcher.exe",
         "RootCA.crt",
