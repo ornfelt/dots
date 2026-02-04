@@ -319,10 +319,10 @@ index 81c3fc0..13c77a9 100644
  	{ ClkTagBar,            MODKEY,         Button1,        tag,            {0} },
 diff --git a/config.h b/config.h
 new file mode 100644
-index 0000000..65b429f
+index 0000000..b478853
 --- /dev/null
 +++ b/config.h
-@@ -0,0 +1,367 @@
+@@ -0,0 +1,498 @@
 +/* See LICENSE file for copyright and license details. */
 +
 +/* Constants */
@@ -495,9 +495,22 @@ index 0000000..65b429f
 +
 +static const Key keys[] = {
 +    /*  modifier                    key                 function            argument */
++        /* bind mod-j: focusstack +1 (focus next window) */
++        /* bind mod-k: focusstack -1 (focus previous window) */
++        /* bind mod-ctrl-j: focusstack -1 (focus bottom of stack) */
++        /* bind mod-ctrl-k: focusstack 0 (focus top of stack) */
 +        STACKKEYS(MODKEY,                               focus)
++        /* bind mod-shift-j: pushstack +1 (move window down stack) */
++        /* bind mod-shift-k: pushstack -1 (move window up stack) */
++        /* bind mod-shift-ctrl-j: pushstack -1 (move window to bottom) */
++        /* bind mod-shift-ctrl-k: pushstack 0 (move window to top) */
 +        STACKKEYS(MODKEY|ShiftMask,                     push)
++        /* bind mod-grave: spawn dmenu_run */
 +        { MODKEY,                   XK_grave,           spawn,              SHCMD("dmenu_run -fn 'Linux Libertine Mono'") },
++        /* bind mod-[1-9]: view tag [0-8] */
++        /* bind mod-ctrl-[1-9]: tag window to [0-8] */
++        /* bind mod-shift-[1-9]: tagview [0-8] */
++        /* bind mod-ctrl-shift-[1-9]: toggleview [0-8] */
 +        TAGKEYS(                    XK_1,               0)
 +        TAGKEYS(                    XK_2,               1)
 +        TAGKEYS(                    XK_3,               2)
@@ -507,100 +520,186 @@ index 0000000..65b429f
 +        TAGKEYS(                    XK_7,               6)
 +        TAGKEYS(                    XK_8,               7)
 +        TAGKEYS(                    XK_9,               8)
++        /* bind mod-0: view all tags */
 +        { MODKEY,                   XK_0,               view,               {.ui = ~0 } },
++        /* bind mod-shift-0: tag window to all tags */
 +        { MODKEY|ShiftMask,         XK_0,               tag,                {.ui = ~0 } },
 +
 +        /* Layouts */
++        /* bind mod-shift-less: togglesticky */
 +        { MODKEY|ShiftMask,         XK_less,            togglesticky,       {0} },
++        /* bind mod-less: setlayout spiral */
 +        { MODKEY,                   XK_less,            setlayout,          {.v = &layouts[0]} }, /* Fibonacci spiral */
++        /* bind mod-s: setlayout bstack */
 +        { MODKEY,                   XK_s,               setlayout,          {.v = &layouts[2]} }, /* centeredmaster */
++        /* bind mod-ctrl-t: setlayout tile */
 +        { MODKEY|ControlMask,       XK_t,               setlayout,          {.v = &layouts[1]} }, /* tile */
++        /* bind mod-ctrl-y: setlayout dwindle */
 +        { MODKEY|ControlMask,       XK_y,               setlayout,          {.v = &layouts[3]} }, /* dwindle */
++        /* bind mod-ctrl-u: setlayout deck */
 +        { MODKEY|ControlMask,       XK_u,               setlayout,          {.v = &layouts[4]} }, /* bstack */
++        /* bind mod-ctrl-i: setlayout monocle */
 +        { MODKEY|ControlMask,       XK_i,               setlayout,          {.v = &layouts[5]} }, /* deck*/
++        /* bind mod-ctrl-o: setlayout centeredmaster */
 +        { MODKEY|ControlMask,       XK_o,               setlayout,          {.v = &layouts[6]} }, /* monocle */
++        /* bind mod-ctrl-p: setlayout centeredfloatingmaster */
 +        { MODKEY|ControlMask,       XK_p,               setlayout,          {.v = &layouts[7]} }, /* centeredfloatingmaster */
++        /* bind mod-ctrl-aring: setlayout floating */
 +        { MODKEY|ControlMask,       XK_aring,           setlayout,          {.v = &layouts[8]} },
++        /* bind mod-f: togglefullscr */
 +        { MODKEY,                   XK_f,               togglefullscr,      {0} },
++        /* bind mod-space: togglefloating */
 +        { MODKEY,                   XK_space,           togglefloating,     {0} },
++        /* bind mod-shift-space: zoom (swap with master) */
 +        { MODKEY|ShiftMask,         XK_space,           zoom,               {0} },
++        /* bind mod-y: setmfact -0.05 (shrink master) */
 +        { MODKEY,                   XK_y,               setmfact,           {.f = -0.05} },
++        /* bind mod-o: setmfact +0.05 (grow master) */
 +        { MODKEY,                   XK_o,               setmfact,           {.f = +0.05} },
++        /* bind mod-shift-u: incnmaster +1 */
 +        { MODKEY|ShiftMask,         XK_u,               incnmaster,         {.i = +1 } },
++        /* bind mod-shift-i: incnmaster -1 */
 +        { MODKEY|ShiftMask,         XK_i,               incnmaster,         {.i = -1 } },
++        /* bind mod-shift-y: shifttag +1 (move window to next tag) */
 +        { MODKEY|ShiftMask,         XK_y,               shifttag,           { .i = +1 } },
++        /* bind mod-shift-o: shifttag -1 (move window to prev tag) */
 +        { MODKEY|ShiftMask,         XK_o,               shifttag,           { .i = -1 } },
++        /* bind mod-x: defaultgaps */
 +        { MODKEY,                   XK_x,               defaultgaps,        {0} },
++        /* bind mod-z: togglegaps */
 +        { MODKEY,                   XK_z,               togglegaps,         {0} },
++        /* bind mod-ctrl-z: togglebgaps */
 +        { MODKEY|ControlMask,       XK_z,               togglebgaps,        {0} },
++        /* bind mod-plus: incrgaps +3 */
 +        { MODKEY,                   XK_plus,            incrgaps,           {.i = +3 } },
++        /* bind mod-minus: incrgaps -3 */
 +        { MODKEY,                   XK_minus,           incrgaps,           {.i = -3 } },
++        /* bind mod-shift-plus: incrgaps +1 */
 +        { MODKEY|ShiftMask,         XK_plus,            incrgaps,           {.i = +1 } },
++        /* bind mod-shift-minus: incrgaps -1 */
 +        { MODKEY|ShiftMask,         XK_minus,           incrgaps,           {.i = -1 } },
++        /* bind alt-tab: shiftviewclients +1 (next occupied tag) */
 +        { MODKEY1,                  XK_Tab,             shiftviewclients,          { .i = +1 } },
++        /* bind alt-shift-tab: shiftviewclients -1 (prev occupied tag) */
 +        { MODKEY1|ShiftMask,        XK_Tab,             shiftviewclients,          { .i = -1 } },
 +        /* { MODKEY,                   XK_Tab,             view,               {0} }, */
 +        /* { MODKEY,                   XK_Tab,             view,               {0} }, */
++        /* bind mod-q: killclient */
 +        { MODKEY,                   XK_q,               killclient,         {0} },
++        /* bind mod-shift-p: togglebars */
 +        { MODKEY|ShiftMask,         XK_p,               togglebars,          {0} },
++        /* bind mod-ctrl-shift-p: togglebar */
 +        { MODKEY|ControlMask|ShiftMask,     XK_p,       togglebar,          {0} },
++        /* bind mod-h: focusmon -1 (focus left monitor) */
 +        { MODKEY,                   XK_h,               focusmon,           { .i = -1 } },
++        /* bind mod-shift-h: tagmonview -1 (move window and view left monitor) */
 +        { MODKEY|ShiftMask,         XK_h,               tagmonview,         { .i = -1 } },
++        /* bind mod-ctrl-h: tagmon -1 (move window to left monitor) */
 +        { MODKEY|ControlMask,       XK_h,               tagmon,             { .i = -1 } },
++        /* bind mod-l: focusmon +1 (focus right monitor) */
 +        { MODKEY,                   XK_l,               focusmon,           { .i = +1 } },
++        /* bind mod-shift-l: tagmonview +1 (move window and view right monitor) */
 +        { MODKEY|ShiftMask,         XK_l,               tagmonview,         { .i = +1 } },
++        /* bind mod-ctrl-l: tagmon +1 (move window to right monitor) */
 +        { MODKEY|ControlMask,       XK_l,               tagmon,             { .i = +1 } },
++        /* bind mod-left: focusmon -1 */
 +        { MODKEY,                   XK_Left,            focusmon,           { .i = -1 } },
++        /* bind mod-shift-left: tagmon -1 */
 +        { MODKEY|ShiftMask,         XK_Left,            tagmon,             { .i = -1 } },
++        /* bind mod-right: focusmon +1 */
 +        { MODKEY,                   XK_Right,           focusmon,           { .i = +1 } },
++        /* bind mod-shift-right: tagmon +1 */
 +        { MODKEY|ShiftMask,         XK_Right,           tagmon,             { .i = +1 } },
++        /* bind mod-apostrophe: togglescratch spterm */
 +        { MODKEY,                   XK_apostrophe,      togglescratch,      { .ui = 0 } },
++        /* bind mod-shift-apostrophe: togglescratch spcalc */
 +        { MODKEY|ShiftMask,         XK_apostrophe,      togglescratch,      { .ui = 1 } },
 +        /* { MODKEY,                   XK_semicolon,       shiftview,          { .i = 1 } }, */
 +        /* { MODKEY|ShiftMask,         XK_semicolon,       shifttag,           { .i = 1 } }, */
 +
++        /* bind mod-shift-x: spawn i3lock */
 +        { MODKEY|ShiftMask,         XK_x,               spawn,              SHCMD("i3lock") },
++        /* bind mod-ctrl-x: spawn i3lock with wallpaper */
 +        { MODKEY|ControlMask,       XK_x,               spawn,              SHCMD("i3lock -i ~/Downloads/lock-wallpaper.png")},
++        /* bind mod-w: spawn yazi ~/ */
 +        { MODKEY,                   XK_w,               spawn,              SHCMD(TERMINAL " -e " FILEX " " "~/") },
++        /* bind mod-e: spawn file_explorer_wd.sh */
 +        { MODKEY,                   XK_e,               spawn,              SHCMD("~/.local/bin/my_scripts/file_explorer_wd.sh " TERMINAL " " FILEX) },
++        /* bind mod-shift-e: spawn powermenu.sh */
 +        { MODKEY|ShiftMask,         XK_e,               spawn,              SHCMD("~/.local/bin/my_scripts/alert_exit.sh && ~/.config/polybar/forest/scripts/powermenu.sh") },
++        /* bind mod-shift-s: spawn screenshot to clipboard */
 +        { MODKEY|ShiftMask,         XK_s,               spawn,              SHCMD("import png:- | xclip -selection clipboard -t image/png") },
++        /* bind mod-ctrl-s: spawn tesseract_ocr.sh */
 +        { MODKEY|ControlMask,       XK_s,               spawn,              SHCMD("~/.local/bin/my_scripts/tesseract_ocr.sh") },
++        /* bind mod-d: spawn rofi */
 +        { MODKEY,                   XK_d,               spawn,              SHCMD("rofi -show run -theme ~/.config/rofi/themes/gruvbox/gruvbox-dark.rasi") },
++        /* bind mod-r: spawn dmenu_run */
 +        { MODKEY,                   XK_r,               spawn,              SHCMD("dmenu_run -i -l 20") },
++        /* bind mod-shift-r: spawn rofi launcher */
 +        { MODKEY|ShiftMask,         XK_r,               spawn,              SHCMD("rofi -show run -theme ~/.config/polybar/forest/scripts/rofi/launcher.rasi") },
++        /* bind mod-t: spawn script_copy.sh */
 +        { MODKEY,                   XK_t,               spawn,              SHCMD("~/.local/bin/my_scripts/script_copy.sh") },
++        /* bind mod-shift-t: spawn script_helper.sh */
 +        { MODKEY|ShiftMask,         XK_t,               spawn,              SHCMD("~/.local/bin/my_scripts/script_helper.sh " TERMINAL) },
++        /* bind mod-shift-c: spawn code_helper.sh new */
 +        { MODKEY|ShiftMask,         XK_c,               spawn,              SHCMD("~/.local/bin/my_scripts/code_helper.sh new " TERMINAL) },
++        /* bind mod-shift-d: spawn code_helper.sh old */
 +        { MODKEY|ShiftMask,         XK_d,               spawn,              SHCMD("~/.local/bin/my_scripts/code_helper.sh old " TERMINAL) },
++        /* bind mod-g: spawn fzf_open.sh */
 +        { MODKEY,                   XK_g,               spawn,              SHCMD("~/.local/bin/my_scripts/fzf_open.sh " TERMINAL)},
++        /* bind mod-c: spawn term_calc.sh */
 +        { MODKEY,                   XK_c,               spawn,              SHCMD("~/.local/bin/my_scripts/term_calc.sh " TERMINAL) },
++        /* bind mod-ctrl-c: spawn yad calendar */
 +        { MODKEY|ControlMask,       XK_c,               spawn,              SHCMD("yad --calendar --no-buttons") },
++        /* bind mod-b: spawn htop */
 +        { MODKEY,                   XK_b,               spawn,              SHCMD(TERMINAL " -e htop") },
++        /* bind mod-shift-b: spawn bashtop */
 +        { MODKEY|ShiftMask,         XK_b,               spawn,              SHCMD(TERMINAL " -e bashtop") },
++        /* bind mod-ctrl-b: spawn ytop */
 +        { MODKEY|ControlMask,       XK_b,               spawn,              SHCMD(TERMINAL " -e ytop") },
++        /* bind mod-p: spawn xrandr_helper.sh */
 +        { MODKEY,                   XK_p,               spawn,              SHCMD("~/.local/bin/my_scripts/xrandr_helper.sh") },
++        /* bind mod-n: spawn files_wd.sh */
 +        { MODKEY,                   XK_n,               spawn,              SHCMD("~/.local/bin/my_scripts/files_wd.sh") },
++        /* bind mod-shift-n: spawn thunar */
 +        { MODKEY|ShiftMask,         XK_n,               spawn,              SHCMD(FILES) },
++        /* bind mod-ctrl-n: spawn open_notes.sh 1 */
 +        { MODKEY|ControlMask,       XK_n,               spawn,              SHCMD("~/.local/bin/my_scripts/open_notes.sh 1 " TERMINAL) },
++        /* bind mod-m: spawn nm-connection-editor */
 +        { MODKEY,                   XK_m,               spawn,              SHCMD("nm-connection-editor") },
++        /* bind mod-shift-m: spawn spotify */
 +        { MODKEY|ShiftMask,         XK_m,               spawn,              SHCMD("spotify") },
++        /* bind mod-ctrl-m: spawn open_notes.sh 2 */
 +        { MODKEY|ControlMask,       XK_m,               spawn,              SHCMD("~/.local/bin/my_scripts/open_notes.sh 2 " TERMINAL) },
++        /* bind mod-shift-comma: spawn suspend.sh */
 +        { MODKEY|ShiftMask,         XK_comma,           spawn,              SHCMD("~/.local/bin/my_scripts/alert_exit.sh && ~/.local/bin/my_scripts/suspend.sh")},
++        /* bind mod-ctrl-comma: spawn suspend_mute.sh */
 +        { MODKEY|ControlMask,       XK_comma,           spawn,              SHCMD("~/.local/bin/my_scripts/alert_exit.sh && ~/.local/bin/my_scripts/suspend_mute.sh")},
++        /* bind mod-shift-period: spawn i3lock + suspend */
 +        { MODKEY|ShiftMask,         XK_period,          spawn,              SHCMD("i3lock && ~/.local/bin/my_scripts/alert_exit.sh && systemctl suspend")},
++        /* bind mod-v: spawn clip_history.sh greenclip */
 +        { MODKEY,                   XK_v,               spawn,              SHCMD("~/.local/bin/my_scripts/clip_history.sh greenclip") },
++        /* bind mod-shift-v: spawn qr_clip.sh */
 +        { MODKEY|ShiftMask,         XK_v,               spawn,              SHCMD("~/.local/bin/my_scripts/qr_clip.sh") },
++        /* bind mod-comma: spawn progrm_helper.sh */
 +        { MODKEY,                   XK_comma,           spawn,              SHCMD("~/.local/bin/my_scripts/progrm_helper.sh " TERMINAL) },
++        /* bind mod-period: spawn emojipick */
 +        { MODKEY,                   XK_period,          spawn,              SHCMD("~/.local/bin/my_scripts/emojipick/emojipick") },
++        /* bind mod-a: spawn tmux_attach.sh */
 +        { MODKEY,                   XK_a,               spawn,              SHCMD("~/.local/bin/my_scripts/tmux_attach.sh " TERMINAL) },
++        /* bind mod-shift-a: spawn picom-trans -5 */
 +        { MODKEY|ShiftMask,         XK_a,               spawn,              SHCMD("picom-trans -c -5")},
++        /* bind mod-ctrl-a: spawn picom-trans +5 */
 +        { MODKEY|ControlMask,       XK_a,               spawn,              SHCMD("picom-trans -c +5")},
++        /* bind mod-section: spawn loadEww.sh */
 +        { MODKEY,                   XK_section,         spawn,              SHCMD("~/.local/bin/my_scripts/loadEww.sh") },
 +        /* { MODKEY,                   XK_BackSpace,       spawn,              SHCMD("sysact") }, */
 +        /* { MODKEY|ShiftMask,         XK_BackSpace,       spawn,              SHCMD("sysact") }, */
++        /* bind mod-return: spawn term_wd.sh */
 +        { MODKEY,                   XK_Return,          spawn,              SHCMD("~/.local/bin/my_scripts/term_wd.sh " TERMINAL) },
++        /* bind mod-shift-return: spawn terminal */
 +        { MODKEY|ShiftMask,         XK_Return,          spawn,              {.v = termcmd } },
++        /* bind mod-ctrl-return: spawn term_wd.sh st */
 +        { MODKEY|ControlMask,       XK_Return,          spawn,              SHCMD("~/.local/bin/my_scripts/term_wd.sh " SECTERMINAL) },
 +
 +        /* { MODKEY,                   XK_bracketleft,     spawn,              SHCMD("mpc seek -10") }, */
@@ -614,7 +713,9 @@ index 0000000..65b429f
 +        /* { MODKEY,                   XK_backslash,       view,               {0} }, */
 +        /* { MODKEY,                   XK_F1,              spawn,              SHCMD("groff -mom /usr/local/share/dwm/larbs.mom -Tpdf | zathura -") }, */
 +
++        /* bind F1: spawn show_keys.sh dwm */
 +        { 0,                        XK_F1,              spawn,              SHCMD("~/.local/bin/my_scripts/show_keys.sh dwm " TERMINAL) },
++        /* bind shift-F1: spawn show_keys.sh vim */
 +        { ShiftMask,                XK_F1,              spawn,              SHCMD("~/.local/bin/my_scripts/show_keys.sh vim " TERMINAL) },
 +        /* { MODKEY,                   XK_F2,              spawn,              SHCMD("tutorialvids") }, */
 +        /* { MODKEY,                   XK_F3,              spawn,              SHCMD("displayselect") }, */
@@ -624,18 +725,29 @@ index 0000000..65b429f
 +        /* { MODKEY,                   XK_F7,              spawn,              SHCMD("td-toggle") }, */
 +        /* { MODKEY,                   XK_F8,              spawn,              SHCMD("mw -Y") }, */
 +        /* { MODKEY,                   XK_F9,              spawn,              SHCMD("dmenumount") }, */
++        /* bind F10: spawn pactl toggle mute */
 +        { 0,                        XK_F10,             spawn,              SHCMD("pactl set-sink-mute @DEFAULT_SINK@ toggle ; kill -44 $(pidof dwmblocks)") },
++        /* bind F11: spawn pactl volume -5% */
 +        { 0,                        XK_F11,             spawn,              SHCMD("pactl set-sink-volume @DEFAULT_SINK@ -5%; kill -44 $(pidof dwmblocks)") },
++        /* bind F12: spawn pactl volume +5% */
 +        { 0,                        XK_F12,             spawn,              SHCMD("pactl set-sink-volume @DEFAULT_SINK@ +5%; kill -44 $(pidof dwmblocks)") },
++        /* bind Print: spawn screenshot_select.sh */
 +        { 0,                        XK_Print,           spawn,              SHCMD("~/.local/bin/my_scripts/screenshot_select.sh") },
++        /* bind shift-Print: spawn screenshot.sh */
 +        { ShiftMask,                XK_Print,           spawn,              SHCMD("~/.local/bin/my_scripts/screenshot.sh") },
++        /* bind ctrl-Print: spawn screenshot_ocr.sh */
 +        { ControlMask,              XK_Print,           spawn,              SHCMD("~/.local/bin/my_scripts/screenshot_ocr.sh") },
 +
 +        /* { MODKEY, XK_Insert,                            spawn,              SHCMD("xdotool type $(grep -v '^#' ~/.local/share/larbs/snippets | dmenu -i -l 50 | cut -d' ' -f1)") }, */
++        /* bind XF86AudioMute: spawn pactl toggle mute */
 +        { 0, XF86XK_AudioMute,                          spawn,              SHCMD("pactl set-sink-mute @DEFAULT_SINK@ toggle ; kill -44 $(pidof dwmblocks)") },
++        /* bind XF86AudioRaiseVolume: spawn pactl volume +5% */
 +        { 0, XF86XK_AudioRaiseVolume,                   spawn,              SHCMD("pactl set-sink-volume @DEFAULT_SINK@ +5%; kill -44 $(pidof dwmblocks)") },
++        /* bind XF86AudioLowerVolume: spawn pactl volume -5% */
 +        { 0, XF86XK_AudioLowerVolume,                   spawn,              SHCMD("pactl set-sink-volume @DEFAULT_SINK@ -5%; kill -44 $(pidof dwmblocks)") },
++        /* bind XF86MonBrightnessUp: spawn brightness.sh +10 */
 +        { 0, XF86XK_MonBrightnessUp,                    spawn,              SHCMD("~/.local/bin/my_scripts/brightness.sh +10") },
++        /* bind XF86MonBrightnessDown: spawn brightness.sh -10 */
 +        { 0, XF86XK_MonBrightnessDown,                  spawn,              SHCMD("~/.local/bin/my_scripts/brightness.sh -10") },
 +        /* { 0, XF86XK_AudioPrev,                          spawn,              SHCMD("mpc prev") }, */
 +        /* { 0, XF86XK_AudioNext,                          spawn,              SHCMD("mpc next") }, */
@@ -669,34 +781,53 @@ index 0000000..65b429f
 +static const Button buttons[] = {
 +    /* click                event mask      button          function        argument */
 +#ifndef __OpenBSD__
++    /* bind statustext-button1: sigstatusbar 1 */
 +    { ClkStatusText,        0,              Button1,        sigstatusbar,   {.i = 1} },
++    /* bind statustext-button2: sigstatusbar 2 */
 +    { ClkStatusText,        0,              Button2,        sigstatusbar,   {.i = 2} },
++    /* bind statustext-button3: sigstatusbar 3 */
 +    { ClkStatusText,        0,              Button3,        sigstatusbar,   {.i = 3} },
++    /* bind statustext-button4: sigstatusbar 4 (scroll up) */
 +    { ClkStatusText,        0,              Button4,        sigstatusbar,   {.i = 4} },
++    /* bind statustext-button5: sigstatusbar 5 (scroll down) */
 +    { ClkStatusText,        0,              Button5,        sigstatusbar,   {.i = 5} },
++    /* bind statustext-shift-button1: sigstatusbar 6 */
 +    { ClkStatusText,        ShiftMask,      Button1,        sigstatusbar,   {.i = 6} },
 +#endif
++    /* bind statustext-shift-button3: spawn nvim dwmblocks config */
 +    { ClkStatusText,        ShiftMask,      Button3,        spawn,          SHCMD(TERMINAL " -e nvim ~/.config/dwmblocks/config.h") },
++    /* bind clientwin-mod-button1: movemouse */
 +    { ClkClientWin,         MODKEY,         Button1,        movemouse,      {0} },
++    /* bind clientwin-mod-button2: defaultgaps */
 +    { ClkClientWin,         MODKEY,         Button2,        defaultgaps,    {0} },
++    /* bind clientwin-mod-button3: resizemouse */
 +    { ClkClientWin,         MODKEY,         Button3,        resizemouse,    {0} },
++    /* bind clientwin-mod-button4: incrgaps +1 (scroll up) */
 +    { ClkClientWin,         MODKEY,         Button4,        incrgaps,       {.i = +1} },
++    /* bind clientwin-mod-button5: incrgaps -1 (scroll down) */
 +    { ClkClientWin,         MODKEY,         Button5,        incrgaps,       {.i = -1} },
++    /* bind tagbar-button1: view */
 +    { ClkTagBar,            0,              Button1,        view,           {0} },
++    /* bind tagbar-button3: toggleview */
 +    { ClkTagBar,            0,              Button3,        toggleview,     {0} },
++    /* bind tagbar-mod-button1: tag */
 +    { ClkTagBar,            MODKEY,         Button1,        tag,            {0} },
++    /* bind tagbar-mod-button3: toggletag */
 +    { ClkTagBar,            MODKEY,         Button3,        toggletag,      {0} },
++    /* bind tagbar-button4: shiftview -1 (scroll up) */
 +    { ClkTagBar,            0,              Button4,        shiftview,      {.i = -1} },
++    /* bind tagbar-button5: shiftview +1 (scroll down) */
 +    { ClkTagBar,            0,              Button5,        shiftview,      {.i = 1} },
++    /* bind rootwin-button2: togglebar */
 +    { ClkRootWin,           0,              Button2,        togglebar,      {0} },
 +};
 diff --git a/config.mk b/config.mk
-index 6e875f1..93f9739 100644
+index 982dc21..93f9739 100644
 --- a/config.mk
 +++ b/config.mk
 @@ -1,5 +1,5 @@
  # dwm version
--VERSION = 6.7
+-VERSION = 6.8
 +VERSION = 6.6
  
  # Customize below to fit your system
@@ -814,7 +945,7 @@ index ddc8321..d04bec6 100644
  dwm is customized by creating a custom config.h and (re)compiling the source
  code. This keeps it fast, secure and simple.
 diff --git a/dwm.c b/dwm.c
-index 53b393e..c1962e8 100644
+index 53b393e..ce407e7 100644
 --- a/dwm.c
 +++ b/dwm.c
 @@ -29,6 +29,7 @@
@@ -843,7 +974,7 @@ index 53b393e..c1962e8 100644
  
  #include "drw.h"
  #include "util.h"
-@@ -47,24 +55,33 @@
+@@ -47,24 +55,34 @@
  /* macros */
  #define BUTTONMASK              (ButtonPressMask|ButtonReleaseMask)
  #define CLEANMASK(mask)         (mask & ~(numlockmask|LockMask) & (ShiftMask|ControlMask|Mod1Mask|Mod2Mask|Mod3Mask|Mod4Mask|Mod5Mask))
@@ -866,6 +997,7 @@ index 53b393e..c1962e8 100644
 +#define SPTAGMASK   			(((1 << LENGTH(scratchpads))-1) << LENGTH(tags))
  #define TEXTW(X)                (drw_fontset_getwidth(drw, (X)) + lrpad)
 +#define TRUNC(X,A,B)            (MAX((A), MIN((X), (B))))
++#define SCREEN_MASK 341
  
  /* enums */
  enum { CurNormal, CurResize, CurMove, CurLast }; /* cursor */
@@ -882,7 +1014,7 @@ index 53b393e..c1962e8 100644
  
  typedef union {
  	int i;
-@@ -86,14 +103,18 @@ typedef struct Client Client;
+@@ -86,14 +104,18 @@ typedef struct Client Client;
  struct Client {
  	char name[256];
  	float mina, maxa;
@@ -902,7 +1034,7 @@ index 53b393e..c1962e8 100644
  	Monitor *mon;
  	Window win;
  };
-@@ -118,6 +139,10 @@ struct Monitor {
+@@ -118,6 +140,10 @@ struct Monitor {
  	int by;               /* bar geometry */
  	int mx, my, mw, mh;   /* screen size */
  	int wx, wy, ww, wh;   /* window area  */
@@ -913,7 +1045,7 @@ index 53b393e..c1962e8 100644
  	unsigned int seltags;
  	unsigned int sellt;
  	unsigned int tagset[2];
-@@ -137,9 +162,24 @@ typedef struct {
+@@ -137,9 +163,24 @@ typedef struct {
  	const char *title;
  	unsigned int tags;
  	int isfloating;
@@ -938,7 +1070,7 @@ index 53b393e..c1962e8 100644
  /* function declarations */
  static void applyrules(Client *c);
  static int applysizehints(Client *c, int *x, int *y, int *w, int *h, int interact);
-@@ -160,17 +200,20 @@ static void destroynotify(XEvent *e);
+@@ -160,17 +201,20 @@ static void destroynotify(XEvent *e);
  static void detach(Client *c);
  static void detachstack(Client *c);
  static Monitor *dirtomon(int dir);
@@ -960,7 +1092,7 @@ index 53b393e..c1962e8 100644
  static int gettextprop(Window w, Atom atom, char *text, unsigned int size);
  static void grabbuttons(Client *c, int focused);
  static void grabkeys(void);
-@@ -181,11 +224,11 @@ static void manage(Window w, XWindowAttributes *wa);
+@@ -181,11 +225,11 @@ static void manage(Window w, XWindowAttributes *wa);
  static void mappingnotify(XEvent *e);
  static void maprequest(XEvent *e);
  static void monocle(Monitor *m);
@@ -973,7 +1105,7 @@ index 53b393e..c1962e8 100644
  static void quit(const Arg *arg);
  static Monitor *recttomon(int x, int y, int w, int h);
  static void resize(Client *c, int x, int y, int w, int h, int interact);
-@@ -193,23 +236,46 @@ static void resizeclient(Client *c, int x, int y, int w, int h);
+@@ -193,23 +237,46 @@ static void resizeclient(Client *c, int x, int y, int w, int h);
  static void resizemouse(const Arg *arg);
  static void restack(Monitor *m);
  static void run(void);
@@ -1021,7 +1153,7 @@ index 53b393e..c1962e8 100644
  static void toggletag(const Arg *arg);
  static void toggleview(const Arg *arg);
  static void unfocus(Client *c, int setfocus);
-@@ -232,10 +298,25 @@ static int xerror(Display *dpy, XErrorEvent *ee);
+@@ -232,10 +299,25 @@ static int xerror(Display *dpy, XErrorEvent *ee);
  static int xerrordummy(Display *dpy, XErrorEvent *ee);
  static int xerrorstart(Display *dpy, XErrorEvent *ee);
  static void zoom(const Arg *arg);
@@ -1048,7 +1180,7 @@ index 53b393e..c1962e8 100644
  static int screen;
  static int sw, sh;           /* X display screen geometry width, height */
  static int bh;               /* bar height */
-@@ -248,13 +329,11 @@ static void (*handler[LASTEvent]) (XEvent *) = {
+@@ -248,13 +330,11 @@ static void (*handler[LASTEvent]) (XEvent *) = {
  	[ConfigureRequest] = configurerequest,
  	[ConfigureNotify] = configurenotify,
  	[DestroyNotify] = destroynotify,
@@ -1062,7 +1194,7 @@ index 53b393e..c1962e8 100644
  	[PropertyNotify] = propertynotify,
  	[UnmapNotify] = unmapnotify
  };
-@@ -267,6 +346,8 @@ static Drw *drw;
+@@ -267,6 +347,8 @@ static Drw *drw;
  static Monitor *mons, *selmon;
  static Window root, wmcheckwin;
  
@@ -1071,7 +1203,7 @@ index 53b393e..c1962e8 100644
  /* configuration, allows nested code to access above variables */
  #include "config.h"
  
-@@ -296,8 +377,15 @@ applyrules(Client *c)
+@@ -296,8 +378,15 @@ applyrules(Client *c)
  		&& (!r->class || strstr(class, r->class))
  		&& (!r->instance || strstr(instance, r->instance)))
  		{
@@ -1087,7 +1219,7 @@ index 53b393e..c1962e8 100644
  			for (m = mons; m && m->num != r->monitor; m = m->next);
  			if (m)
  				c->mon = m;
-@@ -307,7 +395,7 @@ applyrules(Client *c)
+@@ -307,7 +396,7 @@ applyrules(Client *c)
  		XFree(ch.res_class);
  	if (ch.res_name)
  		XFree(ch.res_name);
@@ -1096,7 +1228,7 @@ index 53b393e..c1962e8 100644
  }
  
  int
-@@ -414,6 +502,53 @@ attachstack(Client *c)
+@@ -414,6 +503,53 @@ attachstack(Client *c)
  	c->mon->stack = c;
  }
  
@@ -1150,7 +1282,7 @@ index 53b393e..c1962e8 100644
  void
  buttonpress(XEvent *e)
  {
-@@ -425,28 +560,58 @@ buttonpress(XEvent *e)
+@@ -425,28 +561,58 @@ buttonpress(XEvent *e)
  
  	click = ClkRootWin;
  	/* focus monitor if necessary */
@@ -1218,7 +1350,7 @@ index 53b393e..c1962e8 100644
  		XAllowEvents(dpy, ReplayPointer, CurrentTime);
  		click = ClkClientWin;
  	}
-@@ -524,6 +689,10 @@ clientmessage(XEvent *e)
+@@ -524,6 +690,10 @@ clientmessage(XEvent *e)
  		|| cme->data.l[2] == netatom[NetWMFullscreen])
  			setfullscreen(c, (cme->data.l[0] == 1 /* _NET_WM_STATE_ADD    */
  				|| (cme->data.l[0] == 2 /* _NET_WM_STATE_TOGGLE */ && !c->isfullscreen)));
@@ -1229,7 +1361,7 @@ index 53b393e..c1962e8 100644
  	} else if (cme->message_type == netatom[NetActiveWindow]) {
  		if (c != selmon->sel && !c->isurgent)
  			seturgent(c, 1);
-@@ -635,11 +804,18 @@ createmon(void)
+@@ -635,11 +805,18 @@ createmon(void)
  	Monitor *m;
  
  	m = ecalloc(1, sizeof(Monitor));
@@ -1249,7 +1381,7 @@ index 53b393e..c1962e8 100644
  	m->lt[0] = &layouts[0];
  	m->lt[1] = &layouts[1 % LENGTH(layouts)];
  	strncpy(m->ltsymbol, layouts[0].symbol, sizeof m->ltsymbol);
-@@ -654,6 +830,9 @@ destroynotify(XEvent *e)
+@@ -654,6 +831,9 @@ destroynotify(XEvent *e)
  
  	if ((c = wintoclient(ev->window)))
  		unmanage(c, 1);
@@ -1259,7 +1391,7 @@ index 53b393e..c1962e8 100644
  }
  
  void
-@@ -694,6 +873,139 @@ dirtomon(int dir)
+@@ -694,6 +874,139 @@ dirtomon(int dir)
  	return m;
  }
  
@@ -1399,7 +1531,7 @@ index 53b393e..c1962e8 100644
  void
  drawbar(Monitor *m)
  {
-@@ -707,26 +1019,24 @@ drawbar(Monitor *m)
+@@ -707,26 +1020,24 @@ drawbar(Monitor *m)
  		return;
  
  	/* draw status first so it can be overdrawn by tags later */
@@ -1433,7 +1565,7 @@ index 53b393e..c1962e8 100644
  		x += w;
  	}
  	w = TEXTW(m->ltsymbol);
-@@ -734,15 +1044,8 @@ drawbar(Monitor *m)
+@@ -734,15 +1045,8 @@ drawbar(Monitor *m)
  	x = drw_text(drw, x, 0, w, bh, lrpad / 2, m->ltsymbol, 0);
  
  	if ((w = m->ww - tw - x) > bh) {
@@ -1449,7 +1581,7 @@ index 53b393e..c1962e8 100644
  	}
  	drw_map(drw, m->barwin, 0, 0, m->ww, bh);
  }
-@@ -756,25 +1059,6 @@ drawbars(void)
+@@ -756,25 +1060,6 @@ drawbars(void)
  		drawbar(m);
  }
  
@@ -1475,7 +1607,7 @@ index 53b393e..c1962e8 100644
  void
  expose(XEvent *e)
  {
-@@ -834,49 +1118,77 @@ focusmon(const Arg *arg)
+@@ -834,49 +1119,77 @@ focusmon(const Arg *arg)
  	focus(NULL);
  }
  
@@ -1576,7 +1708,7 @@ index 53b393e..c1962e8 100644
  int
  getrootptr(int *x, int *y)
  {
-@@ -1031,18 +1343,20 @@ killclient(const Arg *arg)
+@@ -1031,18 +1344,20 @@ killclient(const Arg *arg)
  void
  manage(Window w, XWindowAttributes *wa)
  {
@@ -1598,7 +1730,7 @@ index 53b393e..c1962e8 100644
  
  	updatetitle(c);
  	if (XGetTransientForHint(dpy, w, &trans) && (t = wintoclient(trans))) {
-@@ -1051,6 +1365,7 @@ manage(Window w, XWindowAttributes *wa)
+@@ -1051,6 +1366,7 @@ manage(Window w, XWindowAttributes *wa)
  	} else {
  		c->mon = selmon;
  		applyrules(c);
@@ -1606,7 +1738,7 @@ index 53b393e..c1962e8 100644
  	}
  
  	if (c->x + WIDTH(c) > c->mon->wx + c->mon->ww)
-@@ -1068,6 +1383,10 @@ manage(Window w, XWindowAttributes *wa)
+@@ -1068,6 +1384,10 @@ manage(Window w, XWindowAttributes *wa)
  	updatewindowtype(c);
  	updatesizehints(c);
  	updatewmhints(c);
@@ -1617,7 +1749,7 @@ index 53b393e..c1962e8 100644
  	XSelectInput(dpy, w, EnterWindowMask|FocusChangeMask|PropertyChangeMask|StructureNotifyMask);
  	grabbuttons(c, 0);
  	if (!c->isfloating)
-@@ -1085,6 +1404,8 @@ manage(Window w, XWindowAttributes *wa)
+@@ -1085,6 +1405,8 @@ manage(Window w, XWindowAttributes *wa)
  	c->mon->sel = c;
  	arrange(c->mon);
  	XMapWindow(dpy, c->win);
@@ -1626,7 +1758,7 @@ index 53b393e..c1962e8 100644
  	focus(NULL);
  }
  
-@@ -1125,23 +1446,6 @@ monocle(Monitor *m)
+@@ -1125,23 +1447,6 @@ monocle(Monitor *m)
  		resize(c, m->wx, m->wy, m->ww - 2 * c->bw, m->wh - 2 * c->bw, 0);
  }
  
@@ -1650,7 +1782,7 @@ index 53b393e..c1962e8 100644
  void
  movemouse(const Arg *arg)
  {
-@@ -1172,7 +1476,7 @@ movemouse(const Arg *arg)
+@@ -1172,7 +1477,7 @@ movemouse(const Arg *arg)
  			handler[ev.type](&ev);
  			break;
  		case MotionNotify:
@@ -1659,7 +1791,7 @@ index 53b393e..c1962e8 100644
  				continue;
  			lasttime = ev.xmotion.time;
  
-@@ -1245,16 +1549,36 @@ propertynotify(XEvent *e)
+@@ -1245,16 +1550,36 @@ propertynotify(XEvent *e)
  			drawbars();
  			break;
  		}
@@ -1700,7 +1832,7 @@ index 53b393e..c1962e8 100644
  void
  quit(const Arg *arg)
  {
-@@ -1292,6 +1616,13 @@ resizeclient(Client *c, int x, int y, int w, int h)
+@@ -1292,6 +1617,13 @@ resizeclient(Client *c, int x, int y, int w, int h)
  	c->oldw = c->w; c->w = wc.width = w;
  	c->oldh = c->h; c->h = wc.height = h;
  	wc.border_width = c->bw;
@@ -1714,7 +1846,7 @@ index 53b393e..c1962e8 100644
  	XConfigureWindow(dpy, c->win, CWX|CWY|CWWidth|CWHeight|CWBorderWidth, &wc);
  	configure(c);
  	XSync(dpy, False);
-@@ -1326,7 +1657,7 @@ resizemouse(const Arg *arg)
+@@ -1326,7 +1658,7 @@ resizemouse(const Arg *arg)
  			handler[ev.type](&ev);
  			break;
  		case MotionNotify:
@@ -1723,7 +1855,7 @@ index 53b393e..c1962e8 100644
  				continue;
  			lasttime = ev.xmotion.time;
  
-@@ -1390,6 +1721,89 @@ run(void)
+@@ -1390,6 +1722,89 @@ run(void)
  			handler[ev.type](&ev); /* call handler */
  }
  
@@ -1813,7 +1945,7 @@ index 53b393e..c1962e8 100644
  void
  scan(void)
  {
-@@ -1433,6 +1847,25 @@ sendmon(Client *c, Monitor *m)
+@@ -1433,6 +1848,25 @@ sendmon(Client *c, Monitor *m)
  	arrange(NULL);
  }
  
@@ -1839,7 +1971,7 @@ index 53b393e..c1962e8 100644
  void
  setclientstate(Client *c, long state)
  {
-@@ -1507,6 +1940,23 @@ setfullscreen(Client *c, int fullscreen)
+@@ -1507,6 +1941,23 @@ setfullscreen(Client *c, int fullscreen)
  	}
  }
  
@@ -1863,7 +1995,7 @@ index 53b393e..c1962e8 100644
  void
  setlayout(const Arg *arg)
  {
-@@ -1521,6 +1971,206 @@ setlayout(const Arg *arg)
+@@ -1521,6 +1972,206 @@ setlayout(const Arg *arg)
  		drawbar(selmon);
  }
  
@@ -2070,7 +2202,7 @@ index 53b393e..c1962e8 100644
  /* arg > 1.0 will set mfact absolutely */
  void
  setmfact(const Arg *arg)
-@@ -1576,6 +2226,7 @@ setup(void)
+@@ -1576,6 +2227,7 @@ setup(void)
  	netatom[NetWMState] = XInternAtom(dpy, "_NET_WM_STATE", False);
  	netatom[NetWMCheck] = XInternAtom(dpy, "_NET_SUPPORTING_WM_CHECK", False);
  	netatom[NetWMFullscreen] = XInternAtom(dpy, "_NET_WM_STATE_FULLSCREEN", False);
@@ -2078,7 +2210,7 @@ index 53b393e..c1962e8 100644
  	netatom[NetWMWindowType] = XInternAtom(dpy, "_NET_WM_WINDOW_TYPE", False);
  	netatom[NetWMWindowTypeDialog] = XInternAtom(dpy, "_NET_WM_WINDOW_TYPE_DIALOG", False);
  	netatom[NetClientList] = XInternAtom(dpy, "_NET_CLIENT_LIST", False);
-@@ -1584,7 +2235,8 @@ setup(void)
+@@ -1584,7 +2236,8 @@ setup(void)
  	cursor[CurResize] = drw_cur_create(drw, XC_sizing);
  	cursor[CurMove] = drw_cur_create(drw, XC_fleur);
  	/* init appearance */
@@ -2088,7 +2220,7 @@ index 53b393e..c1962e8 100644
  	for (i = 0; i < LENGTH(colors); i++)
  		scheme[i] = drw_scm_create(drw, colors[i], 3);
  	/* init bars */
-@@ -1632,6 +2284,10 @@ showhide(Client *c)
+@@ -1632,6 +2285,10 @@ showhide(Client *c)
  	if (!c)
  		return;
  	if (ISVISIBLE(c)) {
@@ -2099,7 +2231,7 @@ index 53b393e..c1962e8 100644
  		/* show clients top down */
  		XMoveWindow(dpy, c->win, c->x, c->y);
  		if ((!c->mon->lt[c->mon->sellt]->arrange || c->isfloating) && !c->isfullscreen)
-@@ -1644,6 +2300,20 @@ showhide(Client *c)
+@@ -1644,6 +2301,20 @@ showhide(Client *c)
  	}
  }
  
@@ -2120,7 +2252,7 @@ index 53b393e..c1962e8 100644
  void
  spawn(const Arg *arg)
  {
-@@ -1666,14 +2336,111 @@ spawn(const Arg *arg)
+@@ -1666,14 +2337,111 @@ spawn(const Arg *arg)
  	}
  }
  
@@ -2160,12 +2292,12 @@ index 53b393e..c1962e8 100644
 +//    if (selmon->sel && arg->ui & TAGMASK) {
 +//        if (mons && mons->next) {
 +//            // Moving to even tag, selected mon != first mon
-+//            if ((arg->ui & 341) == 0 && selmon != mons) {
++//            if ((arg->ui & SCREEN_MASK) == 0 && selmon != mons) {
 +//                selmon->sel->tags = arg->ui & TAGMASK;
 +//                focus(NULL);
 +//                arrange(selmon);
 +//                // Moving to odd tag, selected mon == first mon
-+//            } else if ((arg->ui & 341) > 0 && selmon == mons) {
++//            } else if ((arg->ui & SCREEN_MASK) > 0 && selmon == mons) {
 +//                selmon->sel->tags = arg->ui & TAGMASK;
 +//                focus(NULL);
 +//                arrange(selmon);
@@ -2195,11 +2327,11 @@ index 53b393e..c1962e8 100644
 +
 +    if (mons && mons->next) {
 +        // Moving to even tag, selected mon != first mon
-+        if ((arg->ui & 341) == 0 && selmon != mons) {
++        if ((arg->ui & SCREEN_MASK) == 0 && selmon != mons) {
 +            selmon->sel->tags = arg->ui & TAGMASK;
 +        }
 +        // Moving to odd tag, selected mon == first mon
-+        else if ((arg->ui & 341) > 0 && selmon == mons) {
++        else if ((arg->ui & SCREEN_MASK) > 0 && selmon == mons) {
 +            selmon->sel->tags = arg->ui & TAGMASK;
 +        } else {
 +            tagnextmon(arg);
@@ -2219,11 +2351,11 @@ index 53b393e..c1962e8 100644
 +    if (selmon->sel && arg->ui & TAGMASK) {
 +        if (mons && mons->next) {
 +            // If first monitor and moving to even tag (second mon)
-+            if ((arg->ui & 341) == 0 && selmon == mons) {
++            if ((arg->ui & SCREEN_MASK) == 0 && selmon == mons) {
 +                tagnthmonview(&((Arg) { .i = 1 }));
 +                tagnewmon(arg);
 +                return;
-+            } else if ((arg->ui & 341) > 0 && selmon != mons) {
++            } else if ((arg->ui & SCREEN_MASK) > 0 && selmon != mons) {
 +                tagnthmonview(&((Arg) { .i = 0 }));
 +                tagnewmon(arg);
 +                return;
@@ -2237,7 +2369,7 @@ index 53b393e..c1962e8 100644
  }
  
  void
-@@ -1685,31 +2452,56 @@ tagmon(const Arg *arg)
+@@ -1685,31 +2453,56 @@ tagmon(const Arg *arg)
  }
  
  void
@@ -2316,7 +2448,7 @@ index 53b393e..c1962e8 100644
  }
  
  void
-@@ -1721,6 +2513,18 @@ togglebar(const Arg *arg)
+@@ -1721,6 +2514,18 @@ togglebar(const Arg *arg)
  	arrange(selmon);
  }
  
@@ -2335,7 +2467,7 @@ index 53b393e..c1962e8 100644
  void
  togglefloating(const Arg *arg)
  {
-@@ -1729,12 +2533,74 @@ togglefloating(const Arg *arg)
+@@ -1729,12 +2534,74 @@ togglefloating(const Arg *arg)
  	if (selmon->sel->isfullscreen) /* no support for fullscreen windows */
  		return;
  	selmon->sel->isfloating = !selmon->sel->isfloating || selmon->sel->isfixed;
@@ -2412,7 +2544,7 @@ index 53b393e..c1962e8 100644
  void
  toggletag(const Arg *arg)
  {
-@@ -1781,6 +2647,20 @@ unmanage(Client *c, int destroyed)
+@@ -1781,6 +2648,20 @@ unmanage(Client *c, int destroyed)
  	Monitor *m = c->mon;
  	XWindowChanges wc;
  
@@ -2433,7 +2565,7 @@ index 53b393e..c1962e8 100644
  	detach(c);
  	detachstack(c);
  	if (!destroyed) {
-@@ -1796,9 +2676,12 @@ unmanage(Client *c, int destroyed)
+@@ -1796,9 +2677,12 @@ unmanage(Client *c, int destroyed)
  		XUngrabServer(dpy);
  	}
  	free(c);
@@ -2449,7 +2581,7 @@ index 53b393e..c1962e8 100644
  }
  
  void
-@@ -1871,11 +2754,11 @@ updategeom(void)
+@@ -1871,11 +2755,11 @@ updategeom(void)
  
  #ifdef XINERAMA
  	if (XineramaIsActive(dpy)) {
@@ -2466,7 +2598,7 @@ index 53b393e..c1962e8 100644
  
  		for (n = 0, m = mons; m; m = m->next, n++);
  		/* only consider unique geometries as separate screens */
-@@ -1894,6 +2777,51 @@ updategeom(void)
+@@ -1894,6 +2778,51 @@ updategeom(void)
  			else
  				mons = createmon();
  		}
@@ -2518,7 +2650,7 @@ index 53b393e..c1962e8 100644
  		for (i = 0, m = mons; i < nn && m; m = m->next, i++)
  			if (i >= n
  			|| unique[i].x_org != m->mx || unique[i].y_org != m->my
-@@ -2027,6 +2955,9 @@ updatewindowtype(Client *c)
+@@ -2027,6 +2956,9 @@ updatewindowtype(Client *c)
  
  	if (state == netatom[NetWMFullscreen])
  		setfullscreen(c, 1);
@@ -2528,7 +2660,7 @@ index 53b393e..c1962e8 100644
  	if (wtype == netatom[NetWMWindowTypeDialog])
  		c->isfloating = 1;
  }
-@@ -2053,13 +2984,157 @@ updatewmhints(Client *c)
+@@ -2053,13 +2985,157 @@ updatewmhints(Client *c)
  void
  view(const Arg *arg)
  {
@@ -2544,7 +2676,7 @@ index 53b393e..c1962e8 100644
 +            return;
 +
 +        // GENIUS 101010101
-+        if ((arg->ui & 341) == 0)
++        if ((arg->ui & SCREEN_MASK) == 0)
 +            focusnthmon(&((Arg) { .i = 1 }));
 +        else
 +            focusnthmon(&((Arg) { .i = 0 }));
@@ -2693,7 +2825,7 @@ index 53b393e..c1962e8 100644
  }
  
  Client *
-@@ -2140,6 +3215,60 @@ zoom(const Arg *arg)
+@@ -2140,6 +3216,60 @@ zoom(const Arg *arg)
  	pop(c);
  }
  
@@ -2754,7 +2886,7 @@ index 53b393e..c1962e8 100644
  int
  main(int argc, char *argv[])
  {
-@@ -2151,15 +3280,22 @@ main(int argc, char *argv[])
+@@ -2151,15 +3281,22 @@ main(int argc, char *argv[])
  		fputs("warning: no locale support\n", stderr);
  	if (!(dpy = XOpenDisplay(NULL)))
  		die("dwm: cannot open display");

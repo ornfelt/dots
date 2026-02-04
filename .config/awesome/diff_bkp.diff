@@ -11528,7 +11528,7 @@ index cc12cfd..0000000
 -    layout = wibox.layout.align.vertical
 -}
 diff --git a/rc.lua b/rc.lua
-index 899a8b7..823d3d8 100644
+index 899a8b7..cfdc05d 100644
 --- a/rc.lua
 +++ b/rc.lua
 @@ -1,107 +1,135 @@
@@ -11573,9 +11573,9 @@ index 899a8b7..823d3d8 100644
                        require("awful.hotkeys_popup.keys")
 -local my_table      = awful.util.table or gears.table -- 4.{0,1} compatibility
 +local mytable       = awful.util.table or gears.table -- 4.{0,1} compatibility
- 
-+-- }}}
 +
++-- }}}
+ 
 +-- {{{ Error handling
 +
 +-- Check if awesome encountered an error during startup and fell back to
@@ -11816,12 +11816,12 @@ index 899a8b7..823d3d8 100644
 -lain.layout.cascade.tile.nmaster       = 5
 -lain.layout.cascade.tile.ncol          = 2
 +beautiful.init(string.format("%s/.config/awesome/themes/%s/theme.lua", os.getenv("HOME"), chosen_theme))
-+
-+-- }}}
  
 -beautiful.init(string.format(gears.filesystem.get_configuration_dir() .. "/themes/%s/theme.lua", chosen_theme))
-+-- {{{ Menu
++-- }}}
  
++-- {{{ Menu
++
 +-- Create a launcher widget and a main menu
  local myawesomemenu = {
 -    { "hotkeys", function() return false, hotkeys_popup.show_help end },
@@ -11897,7 +11897,7 @@ index 899a8b7..823d3d8 100644
  
  -- Re-set wallpaper when a screen's geometry changes (e.g. different resolution)
  screen.connect_signal("property::geometry", function(s)
-@@ -212,16 +245,58 @@ screen.connect_signal("property::geometry", function(s)
+@@ -212,32 +245,80 @@ screen.connect_signal("property::geometry", function(s)
      end
  end)
  
@@ -11953,57 +11953,279 @@ index 899a8b7..823d3d8 100644
 +--    awful.button({ }, 4, awful.tag.viewnext),
 +--    awful.button({ }, 5, awful.tag.viewprev)
 +--))
++
++-- }}}
  
 -globalkeys = my_table.join(
-+-- }}}
-+
 +-- {{{ Key bindings
 +globalkeys = mytable.join(
      -- {{{ Personal keybindings
  
      -- Awesome keybindings
-@@ -232,7 +307,7 @@ globalkeys = my_table.join(
++    -- bind mod-return: spawn term_wd.sh
+     awful.key({ modkey,         }, "Return", function () awful.spawn.with_shell( "~/.local/bin/my_scripts/term_wd.sh ".. terminal) end,
+               {description = "Launch terminal wd", group = "awesome"}),
++    -- bind mod-shift-return: spawn terminal
+     awful.key({ modkey, "Shift" }, "Return", function () awful.spawn( terminal ) end,
+               {description = "Launch terminal", group = "awesome"}),
++    -- bind mod-ctrl-return: spawn term_wd.sh alacritty
      awful.key({ modkey, ctrlkey }, "Return", function () awful.spawn.with_shell( "~/.local/bin/my_scripts/term_wd.sh " .. secterminal ) end,
                {description = "Launch terminal", group = "awesome"}),
  
 -    awful.key({ modkey, "Shift" }, "r", awesome.restart,
++    -- bind mod-ctrl-r: awesome.restart
 +    awful.key({ modkey, ctrlkey }, "r", awesome.restart,
                {description = "Reload awesome", group = "awesome"}),
  
++    -- bind mod-shift-q: awesome.quit
      awful.key({ modkey, "Shift" }, "q",   awesome.quit,
-@@ -255,6 +330,9 @@ globalkeys = my_table.join(
+               {description = "Quit awesome", group = "awesome"}),
+ 
++    -- bind F1: hotkeys_popup.show_help
+     awful.key({ }, "F1",      hotkeys_popup.show_help,
+         {description = "Show help", group="awesome"}),
+ 
+@@ -245,6 +326,7 @@ globalkeys = my_table.join(
+     --          {description = "Launch firefox", group = "awesome"}),
+     -- awful.key({ modkey, ctrlkey }, "w", function () awful.util.mymainmenu:show() end,
+     --     {description = "Show main menu", group = "awesome"}),
++    -- bind mod-shift-p: toggle wibox visibility
+     awful.key({ modkey, "Shift" }, "p", function ()
+             for s in screen do
+                 s.mywibox.visible = not s.mywibox.visible
+@@ -255,163 +337,204 @@ globalkeys = my_table.join(
          end,
          {description = "Show/hide wibox (bar)", group = "awesome"}),
  
+-    -- Run launcher
++    -- bind mod-ctrl-p: toggle_widget_visibility
 +    awful.key({ modkey, ctrlkey }, "p", function() toggle_widget_visibility() end,
 +              { description = "toggle widgets visibility", group = "custom" }),
 +
-     -- Run launcher
++    -- bind mod-a: spawn tmux_attach.sh
      awful.key({ modkey },            "a",     function ()
      awful.util.spawn("/home/jonas/.local/bin/my_scripts/tmux_attach.sh "..terminal)  end,
-@@ -276,8 +354,11 @@ globalkeys = my_table.join(
+               {description = "run tmux", group = "launcher"}),
+ 
++    -- bind mod-g: spawn nvim_fzf.sh
+     awful.key({ modkey },            "g",     function ()
+     awful.spawn("/home/jonas/.local/bin/my_scripts/nvim_fzf.sh "..terminal)   end,
+               {description = "nvim_fzf", group = "launcher"}),
+ 
++    -- bind mod-d: spawn rofi
+     awful.key({ modkey },            "d",     function ()
+     awful.util.spawn("rofi -show run -theme ~/.config/rofi/themes/gruvbox/gruvbox-dark.rasi")   end,
+               {description = "run rofi", group = "launcher"}),
+ 
++    -- bind mod-c: spawn term_calc.sh
+     awful.key({ modkey },            "c",     function ()
+     awful.util.spawn("/home/jonas/.local/bin/my_scripts/term_calc.sh "..terminal)   end,
+               {description = "calculator", group = "launcher"}),
+ 
++    -- bind mod-shift-c: spawn code_helper.sh new
+     awful.key({ modkey, "Shift" },            "c",     function ()
      awful.util.spawn("/home/jonas/.local/bin/my_scripts/code_helper.sh new "..terminal)   end,
                {description = "code launcher", group = "launcher"}),
  
 +    --awful.key({ modkey, "Control" },            "c",     function ()
 +    --awful.util.spawn("GTK_THEME=Adwaita:dark gnome-calendar")   end,
 +    --          {description = "calendar", group = "launcher"}),
++    -- bind mod-ctrl-c: spawn yad calendar
      awful.key({ modkey, "Control" },            "c",     function ()
 -    awful.util.spawn("GTK_THEME=Adwaita:dark gnome-calendar")   end,
 +    awful.util.spawn("yad --calendar --no-buttons")   end,
                {description = "calendar", group = "launcher"}),
  
++    -- bind mod-shift-d: spawn code_helper.sh old
      awful.key({ modkey, "Shift" },            "d",     function ()
-@@ -285,7 +366,7 @@ globalkeys = my_table.join(
+     awful.util.spawn("/home/jonas/.local/bin/my_scripts/code_helper.sh old " .. terminal)   end,
                {description = "code launcher", group = "launcher"}),
  
++    -- bind mod-r: spawn dmenu_run
      awful.key({ modkey },            "r",     function ()
 -    awful.util.spawn("dmenu_run -fn 'Linux Libertine Mono'")    end,
 +    awful.util.spawn("dmenu_run -i -l 20")    end,
                {description = "run dmenu", group = "launcher"}),
  
++    -- bind mod-w: spawn yazi ~/
      awful.key({ modkey },            "w",     function ()
-@@ -434,18 +515,18 @@ globalkeys = my_table.join(
+     awful.util.spawn(terminal.. " -e " .. filex .. " ~/")    end,
+               {description = "run ranger", group = "launcher"}),
+ 
++    -- bind mod-e: spawn file_explorer_wd.sh
+     awful.key({ modkey },            "e",        function ()
+     awful.util.spawn("/home/jonas/.local/bin/my_scripts/file_explorer_wd.sh " .. terminal .. " " .. filex )   end,
+               {description = "run ranger in wd", group = "launcher"}),
+ 
++    -- bind mod-shift-e: spawn sysmenu_awsm.sh
+     awful.key({ modkey, "Shift"     },            "e",        function ()
+     awful.util.spawn("sh /home/jonas/.local/bin/my_scripts/sysmenu_awsm.sh")  end,
+               {description = "Run sysmenu", group = "launcher"}),
+ 
++    -- bind mod-shift-s: spawn win_screenshot_awsm.sh
+     awful.key({ modkey, "Shift"     },            "s",        function ()
+     awful.spawn("/home/jonas/.local/bin/my_scripts/win_screenshot_awsm.sh")    end,
+               {description = "Screenshot to cb", group = "launcher"}),
+ 
++    -- bind mod-ctrl-s: spawn tesseract_ocr.sh
+     awful.key({ modkey, "Control"     },            "s",        function ()
+     awful.spawn("/home/jonas/.local/bin/my_scripts/tesseract_ocr.sh")    end,
+               {description = "Screenshot ocr", group = "launcher"}),
+ 
+-	-- Lock screen 
++    -- bind mod-shift-x: spawn i3lock
+     awful.key({ modkey, "Shift"    },            "x",     function ()
+     awful.spawn("i3lock")     end,
+               {description = "i3lock", group = "launcher"}),
+ 
++    -- bind mod-ctrl-x: spawn i3lock with wallpaper
+     awful.key({ modkey, "Control"     },            "x",        function ()
+     awful.spawn("i3lock -i /home/jonas/Downloads/lock-wallpaper.png")  end,
+               {description = "i3lock pic", group = "launcher"}),
+-	-- Suspend 
++
++    -- bind mod-shift-comma: spawn suspend_awsm.sh
+     awful.key({ modkey, "Shift"    },            "comma",     function ()
+     awful.spawn("/home/jonas/.local/bin/my_scripts/suspend_awsm.sh")   end,
+               {description = "Suspend", group = "launcher"}),
+ 
++    -- bind mod-shift-period: spawn suspend_awsm_lock.sh
+     awful.key({ modkey, "Shift"    },            "period",     function ()
+     awful.spawn("/home/jonas/.local/bin/my_scripts/suspend_awsm_lock.sh")    end,
+               {description = "Suspend", group = "launcher"}),
+ 
+-	-- Nice things
++    -- bind mod-v: spawn clip_history.sh greenclip
+     awful.key({modkey},            "v",        function ()
+     awful.util.spawn("/home/jonas/.local/bin/my_scripts/clip_history.sh greenclip")   end,
+               {description = "clip_history", group = "launcher"}),
+ 
++    -- bind mod-period: spawn emojipick
+     awful.key({modkey},            "period",     function ()
+     awful.util.spawn("/home/jonas/.local/bin/my_scripts/emojipick/emojipick")   end,
+               {description = "Emojipick", group = "launcher"}),
+ 
+-	-- Program shortcuts
++    -- bind mod-b: spawn htop
+     awful.key({modkey},            "b",     function ()
+     awful.util.spawn(terminal.. " -e sudo htop")    end,
+               {description = "Htop", group = "launcher"}),
+ 
++    -- bind mod-shift-b: spawn bashtop
+     awful.key({ modkey, "Shift"    },            "b",     function ()
+     awful.util.spawn(terminal.. " -e sudo bashtop") end,
+               {description = "Bashtop", group = "launcher"}),
+ 
++    -- bind mod-ctrl-b: spawn ytop
+     awful.key({ modkey, "Control"    },            "b",     function ()
+     awful.util.spawn(terminal .. " -e sudo ytop")    end,
+               {description = "Ytop", group = "launcher"}),
+ 
++    -- bind mod-n: spawn files_wd.sh
+     awful.key({ modkey },            "n",     function ()
+     awful.util.spawn("/home/jonas/.local/bin/my_scripts/files_wd.sh")     end,
+               {description = "run file manager in wd", group = "launcher"}),
+ 
++    -- bind mod-shift-n: spawn thunar
+     awful.key({ modkey, "Shift"    },            "n",     function ()
+     awful.util.spawn("thunar")  end,
+               {description = "run thunar", group = "launcher"}),
+ 
++    -- bind mod-ctrl-n: spawn open_notes.sh 1
+     awful.key({ modkey, "Control"    },            "n",     function ()
+     awful.util.spawn("/home/jonas/.local/bin/my_scripts/open_notes.sh 1 "..terminal)    end,
+               {description = "Ytop", group = "launcher"}),
+ 
++    -- bind mod-m: spawn nm-connection-editor
+     awful.key({modkey},            "m",     function ()
+     awful.util.spawn("nm-connection-editor")  end,
+               {description = "Network connections", group = "launcher"}),
+ 
++    -- bind mod-shift-m: spawn spotify
+     awful.key({ modkey, "Shift"    },            "m",     function ()
+     awful.util.spawn("spotify")      end,
+               {description = "Spotify", group = "launcher"}),
+ 
++    -- bind mod-ctrl-m: spawn open_notes.sh 2
+     awful.key({ modkey, "Control"    },            "m",     function ()
+     awful.util.spawn("/home/jonas/.local/bin/my_scripts/open_notes.sh 2 "..terminal)   end,
+               {description = "Ytop", group = "launcher"}),
+ 
++    -- bind mod-p: spawn xrandr_helper.sh
+     awful.key({modkey},            "p",     function ()
+     awful.util.spawn("/home/jonas/.local/bin/my_scripts/xrandr_helper.sh")  end,
+               {description = "Xrandr", group = "launcher"}),
+ 
++    -- bind mod-t: spawn script_copy.sh
+     awful.key({modkey},            "t",     function ()
+     awful.util.spawn("/home/jonas/.local/bin/my_scripts/script_copy.sh")  end,
+               {description = "Script_copy", group = "launcher"}),
+ 
++    -- bind mod-shift-t: spawn script_helper.sh
+     awful.key({ modkey, "Shift"    },           "t",     function ()
+     awful.util.spawn("/home/jonas/.local/bin/my_scripts/script_helper.sh "..terminal)      end,
+               {description = "Script_helper", group = "launcher"}),
+ 
++    -- bind mod-section: spawn loadEww.sh
+     awful.key({modkey },            "section",     function ()
+     awful.util.spawn("sh /home/jonas/.local/bin/my_scripts/loadEww.sh")  end,
+               {description = "Load Eww", group = "launcher"}),
+ 
++    -- bind mod-shift-section: dashboard_show
+     awful.key({modkey, "Shift" }, 'section', function() _G.dashboard_show() end,
+               {description = 'toggle dashboard', group = 'awesome'}),
+ 
++    -- bind shift-F1: spawn show_keys.sh vim
+     awful.key({ "Shift" },            "F1",     function ()
+     awful.util.spawn("/home/jonas/.local/bin/my_scripts/show_keys.sh vim "..terminal)   end,
+               {description = "vim keybinds", group = "launcher"}),
+ 
+-	-- Print
++    -- bind Print: spawn screenshot_select.sh
+     awful.key({ },  "Print",     function ()
+     awful.spawn("/home/jonas/.local/bin/my_scripts/screenshot_select.sh")   end,
+               {description = "Screenshot", group = "launcher"}),
+ 
++    -- bind shift-Print: spawn screenshot.sh
+     awful.key({ "Shift"  },  "Print",     function ()
+     awful.spawn("sh /home/jonas/.local/bin/my_scripts/screenshot.sh")  end,
+               {description = "Screenshot", group = "launcher"}),
+ 
++    -- bind ctrl-Print: spawn screenshot_ocr.sh
+     awful.key({ "Control" },  "Print",     function ()
+     awful.spawn("/home/jonas/.local/bin/my_scripts/screenshot_ocr.sh")  end,
+               {description = "Screenshot", group = "launcher"}),
+ 
+-    -- Tag browsing with modkey
++    -- bind mod-left: awful.tag.viewprev
+     awful.key({ modkey,         }, "Left",   awful.tag.viewprev,
+         {description = "view previous", group = "tag"}),
++    -- bind mod-right: awful.tag.viewnext
+     awful.key({ modkey,         }, "Right",  awful.tag.viewnext,
+         {description = "view next", group = "tag"}),
++
+     -- awful.key({ altkey,         }, "Escape", awful.tag.history.restore,
+     --     {description = "go back", group = "tag"}),
+ 
+@@ -421,55 +544,65 @@ globalkeys = my_table.join(
+     --awful.key({ altkey, "Shift" }, "Tab", awful.tag.viewprev,
+     --    {description = "view previous", group = "tag"}),
+ 
+-    -- Non-empty tag browsing CTRL+TAB (CTRL+SHIFT+TAB)
++    -- bind alt-tab: lain.util.tag_view_nonempty -1 (previous nonempty)
+      awful.key({ altkey }, "Tab", function () lain.util.tag_view_nonempty(-1) end,
+                {description = "view  previous nonempty", group = "tag"}),
++
++    -- bind alt-shift-tab: lain.util.tag_view_nonempty +1 (next nonempty)
+      awful.key({ altkey, "Shift" }, "Tab", function () lain.util.tag_view_nonempty(1) end,
+                {description = "view  previous nonempty", group = "tag"}),
+ 
+-    -- Default client focus
++    -- bind mod-j: awful.client.focus.byidx +1 (focus next)
+     awful.key({ modkey,         }, "j", function () awful.client.focus.byidx( 1) end,
+         {description = "Focus next by index", group = "client"}),
++    -- bind mod-k: awful.client.focus.byidx -1 (focus previous)
+     awful.key({ modkey,         }, "k", function () awful.client.focus.byidx(-1) end,
          {description = "Focus previous by index", group = "client"}),
  
      -- By direction client focus
@@ -12019,6 +12241,8 @@ index 899a8b7..823d3d8 100644
 -    awful.key({ altkey, "Shift" }, "l", function() awful.client.focus.global_bydirection("right")
 -        if client.focus then client.focus:raise() end end,
 -        {description = "Focus right", group = "client"}),
+-
+-        -- By direction client focus with arrows
 +    --awful.key({ altkey, "Shift" }, "j", function() awful.client.focus.global_bydirection("down")
 +    --    if client.focus then client.focus:raise() end end,
 +    --    {description = "Focus down", group = "client"}),
@@ -12031,18 +12255,57 @@ index 899a8b7..823d3d8 100644
 +    --awful.key({ altkey, "Shift" }, "l", function() awful.client.focus.global_bydirection("right")
 +    --    if client.focus then client.focus:raise() end end,
 +    --    {description = "Focus right", group = "client"}),
- 
-         -- By direction client focus with arrows
++
++    -- bind mod-ctrl-down: awful.client.focus.global_bydirection down
      awful.key({ ctrlkey, modkey }, "Down", function() awful.client.focus.global_bydirection("down")
-@@ -481,20 +562,38 @@ globalkeys = my_table.join(
+         if client.focus then client.focus:raise() end end,
+         {description = "Focus down", group = "client"}),
++    -- bind mod-ctrl-up: awful.client.focus.global_bydirection up
+     awful.key({ ctrlkey, modkey }, "Up", function() awful.client.focus.global_bydirection("up")
+         if client.focus then client.focus:raise() end end,
+         {description = "Focus up", group = "client"}),
++    -- bind mod-ctrl-left: awful.client.focus.global_bydirection left
+     awful.key({ ctrlkey, modkey }, "Left", function() awful.client.focus.global_bydirection("left")
+         if client.focus then client.focus:raise() end end,
+         {description = "Focus left", group = "client"}),
++    -- bind mod-ctrl-right: awful.client.focus.global_bydirection right
+     awful.key({ ctrlkey, modkey }, "Right", function() awful.client.focus.global_bydirection("right")
+         if client.focus then client.focus:raise() end end,
+         {description = "Focus right", group = "client"}),
+ 
+-    -- Layout manipulation
++    -- bind mod-shift-j: awful.client.swap.byidx +1 (swap next)
+     awful.key({ modkey, "Shift" }, "j", function () awful.client.swap.byidx(1) end,
+         {description = "swap with next client by index", group = "client"}),
++    -- bind mod-shift-k: awful.client.swap.byidx -1 (swap previous)
+     awful.key({ modkey, "Shift" }, "k", function () awful.client.swap.byidx( -1) end,
+         {description = "swap with previous client by index", group = "client"}),
++    -- bind mod-l: awful.screen.focus_relative +1 (focus next screen)
+     awful.key({ modkey          }, "l", function () awful.screen.focus_relative(1) end,
+         {description = "focus the next screen", group = "screen"}),
++    -- bind mod-h: awful.screen.focus_relative -1 (focus previous screen)
+     awful.key({ modkey          }, "h", function () awful.screen.focus_relative(-1) end,
+         {description = "focus the previous screen", group = "screen"}),
++    -- bind mod-u: awful.client.urgent.jumpto
+     awful.key({ modkey,         }, "u", awful.client.urgent.jumpto,
+         {description = "jump to urgent client", group = "client"}),
+     -- awful.key({ ctrlkey,        }, "Tab", function () awful.client.focus.history.previous()
+@@ -477,24 +610,50 @@ globalkeys = my_table.join(
+     --     {description = "go back", group = "client"}),
+ 
+     -- On the fly useless gaps change
++    -- bind mod-+: lain.util.useless_gaps_resize +1 (increment gaps)
+     awful.key({ modkey }, "+", function () lain.util.useless_gaps_resize(1) end,
          {description = "increment useless gaps", group = "tag"}),
++    -- bind mod--: lain.util.useless_gaps_resize -1 (decrement gaps)
      awful.key({ modkey }, "-", function () lain.util.useless_gaps_resize(-1) end,
          {description = "decrement useless gaps", group = "tag"}),
 -    awful.key({ modkey }, "z", function () lain.util.useless_gaps_resize(-8) end,
 -        {description = "No gaps", group = "tag"}),
 -    awful.key({ modkey }, "x", function () lain.util.useless_gaps_resize(8) end,
 -        {description = "Default gaps", group = "tag"}),
-+
+ 
++    -- bind mod-z: disable gaps (set to 0)
 +    awful.key({ modkey }, "z", function ()
 +      local t = awful.screen.focused().selected_tag
 +      if t then
@@ -12051,6 +12314,7 @@ index 899a8b7..823d3d8 100644
 +      end
 +    end, {description = "Disable gaps", group = "tag"}),
 +
++    -- bind mod-x: enable default gaps (set to 8)
 +    awful.key({ modkey }, "x", function ()
 +      local t = awful.screen.focused().selected_tag
 +      if t then
@@ -12058,15 +12322,19 @@ index 899a8b7..823d3d8 100644
 +        awful.layout.arrange(t.screen)
 +      end
 +    end, {description = "Enable default gaps", group = "tag"}),
- 
++
++    -- bind mod-o: awful.tag.incmwfact +0.05 (increase master width)
      awful.key({ modkey }, "o", function () awful.tag.incmwfact( 0.05) end,
          {description = "increase master width factor", group = "layout"}),
++    -- bind mod-y: awful.tag.incmwfact -0.05 (decrease master width)
      awful.key({ modkey }, "y", function () awful.tag.incmwfact(-0.05) end,
          {description = "decrease master width factor", group = "layout"}),
  
++    -- bind mod-shift-a: picom-trans -5 (decrease transparency)
 +    awful.key({ modkey, "Shift" }, "a", function() awful.spawn("picom-trans -c -5") end,
 +        {description = "decrease transparency", group = "custom"}),
 +
++    -- bind mod-ctrl-a: picom-trans +5 (increase transparency)
 +    awful.key({ modkey, "Control" }, "a", function() awful.spawn("picom-trans -c +5") end,
 +        {description = "increase transparency", group = "custom"}),
 +
@@ -12078,7 +12346,16 @@ index 899a8b7..823d3d8 100644
      --     {description = "rename tag", group = "tag"}),
      -- awful.key({ modkey, "Shift" }, "Left", function () lain.util.move_tag(-1) end,
      --     {description = "move tag to the left", group = "tag"}),
-@@ -544,10 +643,16 @@ globalkeys = my_table.join(
+@@ -531,7 +690,7 @@ globalkeys = my_table.join(
+     --           end,
+     --           {description = "restore minimized", group = "client"}),
+ 
+-    -- Dropdown application
++    -- bind mod-F12: toggle dropdown application (quake)
+     awful.key({ modkey, }, "F12", function () awful.screen.focused().quake:toggle() end,
+               {description = "dropdown application", group = "super"}),
+ 
+@@ -544,24 +703,35 @@ globalkeys = my_table.join(
      --     {description = "show weather", group = "widgets"}),
  
      -- Brightness
@@ -12090,16 +12367,35 @@ index 899a8b7..823d3d8 100644
 +    --    {description = "+10%", group = "hotkeys"}),
 +    --awful.key({ }, "XF86MonBrightnessDown", function () os.execute("xbacklight -dec 10") end,
 +    --    {description = "-10%", group = "hotkeys"}),
++    -- bind XF86MonBrightnessUp: spawn brightness.sh +10
 +    awful.key({ },  "XF86MonBrightnessUp", function ()
 +      awful.spawn("/home/jonas/.local/bin/my_scripts/brightness.sh +10") end,
 +      {description = "Screenshot", group = "launcher"}),
++    -- bind XF86MonBrightnessDown: spawn brightness.sh -10
 +    awful.key({ },  "XF86MonBrightnessDown", function ()
 +      awful.spawn("/home/jonas/.local/bin/my_scripts/brightness.sh -10") end,
 +      {description = "Screenshot", group = "launcher"}),
  
      -- ALSA volume control
      --awful.key({ ctrlkey }, "Up",
-@@ -587,7 +692,7 @@ globalkeys = my_table.join(
++    -- bind XF86AudioRaiseVolume: amixer volume +1%
+     awful.key({ }, "XF86AudioRaiseVolume",
+         function ()
+             os.execute(string.format("amixer -q set %s 1%%+", beautiful.volume.channel))
+             beautiful.volume.update()
+         end),
+     --awful.key({ ctrlkey }, "Down",
++    -- bind XF86AudioLowerVolume: amixer volume -1%
+     awful.key({ }, "XF86AudioLowerVolume",
+         function ()
+             os.execute(string.format("amixer -q set %s 1%%-", beautiful.volume.channel))
+             beautiful.volume.update()
+         end),
++    -- bind XF86AudioMute: amixer toggle mute
+     awful.key({ }, "XF86AudioMute",
+         function ()
+             os.execute(string.format("amixer -q set %s toggle", beautiful.volume.togglechannel or beautiful.volume.channel))
+@@ -587,9 +757,10 @@ globalkeys = my_table.join(
      --]]
  )
  
@@ -12107,8 +12403,15 @@ index 899a8b7..823d3d8 100644
 +clientkeys = mytable.join(
      -- awful.key({ altkey, "Shift" }, "m",      lain.util.magnify_client,
      --           {description = "magnify client", group = "client"}),
++    -- bind mod-f: toggle fullscreen
      awful.key({ modkey,           }, "f",
-@@ -600,8 +705,21 @@ clientkeys = my_table.join(
+         function (c)
+             c.fullscreen = not c.fullscreen
+@@ -597,28 +768,45 @@ clientkeys = my_table.join(
+         end,
+         {description = "toggle fullscreen", group = "client"}),
+ 
++    -- bind mod-q: killclient (close window)
      awful.key({ modkey }, "q", function (c) c:kill() end,
        {description = "close", group = "hotkeys"}),
  
@@ -12117,6 +12420,7 @@ index 899a8b7..823d3d8 100644
 +    --awful.key({ modkey,         }, "space", awful.client.floating.toggle,
 +    --  {description = "toggle floating", group = "client"}),
 +
++    -- bind mod-space: toggle floating and center
 +    awful.key(
 +      { modkey }, "space",
 +      function(c)
@@ -12132,7 +12436,18 @@ index 899a8b7..823d3d8 100644
  
      -- awful.key({ modkey, ctrlkey }, "Return", function (c) c:swap(awful.client.getmaster()) end,
      --   {description = "move to master", group = "client"}),
-@@ -618,7 +736,7 @@ clientkeys = my_table.join(
+     -- awful.key({ modkey, "Shift" }, "t", function (c) c.ontop = not c.ontop end,
+     --   {description = "toggle keep on top", group = "client"}),
+ 
++    -- bind mod-shift-l: move client to next screen
+     awful.key({ modkey, "Shift"}, "l",
+         function ()
+             local c = client.focus
+             if c then c:move_to_screen() end
+         end, {description = "move client to next screen", group = "client"}),
+ 
++    -- bind mod-shift-h: move client to previous screen
+     awful.key({ modkey, "Shift"}, "h",
          function ()
              local c = client.focus
              if c then c:move_to_screen(c.screen.index-1) end
@@ -12141,7 +12456,7 @@ index 899a8b7..823d3d8 100644
  
      -- awful.key({ modkey,         }, "n",
      --     function (c)
-@@ -628,92 +746,262 @@ clientkeys = my_table.join(
+@@ -628,99 +816,279 @@ clientkeys = my_table.join(
      --     end ,
      -- {description = "minimize", group = "client"}),
  
@@ -12151,6 +12466,7 @@ index 899a8b7..823d3d8 100644
 -    --         c:raise()
 -    --     end ,
 -    -- {description = "maximize", group = "client"})
++    -- bind mod-shift-ctrl-m: toggle maximize
 +     awful.key({ modkey, "Shift", ctrlkey           }, "m",
 +         function (c)
 +             c.maximized = not c.maximized
@@ -12326,6 +12642,8 @@ index 899a8b7..823d3d8 100644
 +    local client_is_odd = is_odd_with_mask(tag_index)
 +    local focused_client = client.focus
 +
++    if not focused_client then return end
++
 +    if current_screen == primary_screen and not client_is_odd then
 +      -- Currently on primary screen, but tag is even -> Switch to secondary screen
 +      awful.screen.focus(secondary_screen)
@@ -12334,7 +12652,6 @@ index 899a8b7..823d3d8 100644
 +      if target_tag then
 +        focused_client:move_to_tag(target_tag)
 +      end
-+      local target_tag = secondary_screen.tags[tag_index]
 +      target_tag:view_only()
 +      client.focus = focused_client
 +      focused_client:raise()
@@ -12347,7 +12664,6 @@ index 899a8b7..823d3d8 100644
 +      if target_tag then
 +        focused_client:move_to_tag(target_tag)
 +      end
-+      local target_tag = primary_screen.tags[tag_index]
 +      target_tag:view_only()
 +      client.focus = focused_client
 +      focused_client:raise()
@@ -12377,9 +12693,8 @@ index 899a8b7..823d3d8 100644
 +    client.focus:move_to_tag(tag)
 +    toggle_tag(tag)
 +  end
- end
- 
--clientbuttons = gears.table.join(
++end
++
 +local function switch_to_tag_stay(tag_index)
 +  local num_screens = screen:count()
 +
@@ -12436,6 +12751,7 @@ index 899a8b7..823d3d8 100644
 +for i = 1, 9 do
 +  globalkeys = mytable.join(globalkeys,
 +    -- View tag only.
++    -- bind mod-[1-9]: view tag on appropriate monitor
 +    awful.key({ modkey }, "#" .. i + 9,
 +      function ()
 +        switch_to_tag(i)
@@ -12443,6 +12759,7 @@ index 899a8b7..823d3d8 100644
 +      {description = "view tag #"..i.." on appropriate monitor", group = "tag"}),
 +
 +    -- Move client to tag and view it.
++    -- bind mod-shift-[1-9]: move client to tag and view it
 +    awful.key({ modkey, "Shift" }, "#" .. i + 9,
 +      function ()
 +        --if client.focus then
@@ -12455,7 +12772,9 @@ index 899a8b7..823d3d8 100644
 +        switch_to_tag_move(i)
 +      end,
 +      {description = "move focused client to tag #"..i, group = "tag"}),
++
 +    -- Move client to tag.
++    -- bind mod-ctrl-[1-9]: move client to tag (stay on current)
 +    awful.key({ modkey, "Control" }, "#" .. i + 9,
 +      function ()
 +        --if client.focus then
@@ -12467,7 +12786,9 @@ index 899a8b7..823d3d8 100644
 +        switch_to_tag_stay(i)
 +      end,
 +      {description = "move focused client to tag #"..i, group = "tag"}),
++
 +    -- Toggle tag on focused client.
++    -- bind mod-ctrl-shift-[1-9]: toggle client on tag
 +    awful.key({ modkey, "Control", "Shift" }, "#" .. i + 9,
 +      function ()
 +        if client.focus then
@@ -12479,13 +12800,24 @@ index 899a8b7..823d3d8 100644
 +      end,
 +      {description = "toggle focused client on tag #" .. i, group = "tag"})
 +  )
-+end
-+
+ end
+ 
+-clientbuttons = gears.table.join(
 +clientbuttons = mytable.join(
++    -- bind button1: activate client (focus)
      awful.button({ }, 1, function (c)
          c:emit_signal("request::activate", "mouse_click", {raise = true})
      end),
-@@ -730,12 +1018,33 @@ clientbuttons = gears.table.join(
++    -- bind mod-button1: move client (drag)
+     awful.button({ modkey }, 1, function (c)
+         c:emit_signal("request::activate", "mouse_click", {raise = true})
+         awful.mouse.client.move(c)
+     end),
++    -- bind mod-button3: resize client (drag)
+     awful.button({ modkey }, 3, function (c)
+         c:emit_signal("request::activate", "mouse_click", {raise = true})
+         awful.mouse.client.resize(c)
+@@ -730,12 +1098,33 @@ clientbuttons = gears.table.join(
  -- Set keys
  root.keys(globalkeys)
  
@@ -12519,7 +12851,7 @@ index 899a8b7..823d3d8 100644
                       focus = awful.client.focus.filter,
                       raise = true,
                       keys = clientkeys,
-@@ -746,92 +1055,51 @@ awful.rules.rules = {
+@@ -746,92 +1135,51 @@ awful.rules.rules = {
       }
      },
  
@@ -12654,7 +12986,7 @@ index 899a8b7..823d3d8 100644
  
  -- Signal function to execute when a new client appears.
  client.connect_signal("manage", function (c)
-@@ -839,8 +1107,8 @@ client.connect_signal("manage", function (c)
+@@ -839,8 +1187,8 @@ client.connect_signal("manage", function (c)
      -- i.e. put it at the end of others instead of setting it master.
      -- if not awesome.startup then awful.client.setslave(c) end
  
@@ -12665,7 +12997,7 @@ index 899a8b7..823d3d8 100644
        and not c.size_hints.program_position then
          -- Prevent clients from being unreachable after screen count changes.
          awful.placement.no_offscreen(c)
-@@ -857,7 +1125,7 @@ client.connect_signal("request::titlebars", function(c)
+@@ -857,7 +1205,7 @@ client.connect_signal("request::titlebars", function(c)
  
      -- Default
      -- buttons for the titlebar
@@ -12674,7 +13006,7 @@ index 899a8b7..823d3d8 100644
          awful.button({ }, 1, function()
              c:emit_signal("request::activate", "titlebar", {raise = true})
              awful.mouse.client.move(c)
-@@ -868,7 +1136,7 @@ client.connect_signal("request::titlebars", function(c)
+@@ -868,7 +1216,7 @@ client.connect_signal("request::titlebars", function(c)
          end)
      )
  
@@ -12683,7 +13015,7 @@ index 899a8b7..823d3d8 100644
          { -- Left
              awful.titlebar.widget.iconwidget(c),
              buttons = buttons,
-@@ -894,72 +1162,159 @@ client.connect_signal("request::titlebars", function(c)
+@@ -894,72 +1242,159 @@ client.connect_signal("request::titlebars", function(c)
      }
  end)
  
@@ -12707,6 +13039,24 @@ index 899a8b7..823d3d8 100644
 +        c:raise()
 +    end
 +end
++
++-- attach to minimized state
++client.connect_signal("property::minimized", backham)
++-- attach to closed state
++client.connect_signal("unmanage", backham)
++-- ensure there is always a selected client during tag switching or logins
++tag.connect_signal("property::selected", backham)
++
++-- }}}
++
++-- Multiple monitor taglist setup
++-- See: {code_root_dir}/Code2/Lua/my_lua/testing/awsm_tag_testing.lua
++
++local function setup_tags_for_monitors()
++  local num_screens = screen.count()
++
++  for s in screen do
++    s.tags = {}
  
 --- No border for maximized clients
 ---function border_adjust(c)
@@ -12752,24 +13102,6 @@ index 899a8b7..823d3d8 100644
 ---            end
 ---        end
 ---    end
-+-- attach to minimized state
-+client.connect_signal("property::minimized", backham)
-+-- attach to closed state
-+client.connect_signal("unmanage", backham)
-+-- ensure there is always a selected client during tag switching or logins
-+tag.connect_signal("property::selected", backham)
-+
-+-- }}}
-+
-+-- Multiple monitor taglist setup
-+-- See: {code_root_dir}/Code2/Lua/my_lua/testing/awsm_tag_testing.lua
-+
-+local function setup_tags_for_monitors()
-+  local num_screens = screen.count()
-+
-+  for s in screen do
-+    s.tags = {}
-+
 +    if num_screens == 2 then
 +      for i = 1, 9 do
 +        if s.index == 1 and is_odd_with_mask(i) then

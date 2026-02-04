@@ -918,6 +918,8 @@ local function switch_to_tag_move(tag_index)
     local client_is_odd = is_odd_with_mask(tag_index)
     local focused_client = client.focus
 
+    if not focused_client then return end
+
     if current_screen == primary_screen and not client_is_odd then
       -- Currently on primary screen, but tag is even -> Switch to secondary screen
       awful.screen.focus(secondary_screen)
@@ -926,7 +928,6 @@ local function switch_to_tag_move(tag_index)
       if target_tag then
         focused_client:move_to_tag(target_tag)
       end
-      local target_tag = secondary_screen.tags[tag_index]
       target_tag:view_only()
       client.focus = focused_client
       focused_client:raise()
@@ -939,7 +940,6 @@ local function switch_to_tag_move(tag_index)
       if target_tag then
         focused_client:move_to_tag(target_tag)
       end
-      local target_tag = primary_screen.tags[tag_index]
       target_tag:view_only()
       client.focus = focused_client
       focused_client:raise()

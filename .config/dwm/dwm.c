@@ -72,6 +72,7 @@
 #define SPTAGMASK   			(((1 << LENGTH(scratchpads))-1) << LENGTH(tags))
 #define TEXTW(X)                (drw_fontset_getwidth(drw, (X)) + lrpad)
 #define TRUNC(X,A,B)            (MAX((A), MIN((X), (B))))
+#define SCREEN_MASK 341
 
 /* enums */
 enum { CurNormal, CurResize, CurMove, CurLast }; /* cursor */
@@ -2372,12 +2373,12 @@ stackpos(const Arg *arg) {
 //    if (selmon->sel && arg->ui & TAGMASK) {
 //        if (mons && mons->next) {
 //            // Moving to even tag, selected mon != first mon
-//            if ((arg->ui & 341) == 0 && selmon != mons) {
+//            if ((arg->ui & SCREEN_MASK) == 0 && selmon != mons) {
 //                selmon->sel->tags = arg->ui & TAGMASK;
 //                focus(NULL);
 //                arrange(selmon);
 //                // Moving to odd tag, selected mon == first mon
-//            } else if ((arg->ui & 341) > 0 && selmon == mons) {
+//            } else if ((arg->ui & SCREEN_MASK) > 0 && selmon == mons) {
 //                selmon->sel->tags = arg->ui & TAGMASK;
 //                focus(NULL);
 //                arrange(selmon);
@@ -2402,11 +2403,11 @@ tag(const Arg *arg)
 
     if (mons && mons->next) {
         // Moving to even tag, selected mon != first mon
-        if ((arg->ui & 341) == 0 && selmon != mons) {
+        if ((arg->ui & SCREEN_MASK) == 0 && selmon != mons) {
             selmon->sel->tags = arg->ui & TAGMASK;
         }
         // Moving to odd tag, selected mon == first mon
-        else if ((arg->ui & 341) > 0 && selmon == mons) {
+        else if ((arg->ui & SCREEN_MASK) > 0 && selmon == mons) {
             selmon->sel->tags = arg->ui & TAGMASK;
         } else {
             tagnextmon(arg);
@@ -2426,11 +2427,11 @@ tagview(const Arg *arg)
     if (selmon->sel && arg->ui & TAGMASK) {
         if (mons && mons->next) {
             // If first monitor and moving to even tag (second mon)
-            if ((arg->ui & 341) == 0 && selmon == mons) {
+            if ((arg->ui & SCREEN_MASK) == 0 && selmon == mons) {
                 tagnthmonview(&((Arg) { .i = 1 }));
                 tagnewmon(arg);
                 return;
-            } else if ((arg->ui & 341) > 0 && selmon != mons) {
+            } else if ((arg->ui & SCREEN_MASK) > 0 && selmon != mons) {
                 tagnthmonview(&((Arg) { .i = 0 }));
                 tagnewmon(arg);
                 return;
@@ -2989,7 +2990,7 @@ view(const Arg *arg)
             return;
 
         // GENIUS 101010101
-        if ((arg->ui & 341) == 0)
+        if ((arg->ui & SCREEN_MASK) == 0)
             focusnthmon(&((Arg) { .i = 1 }));
         else
             focusnthmon(&((Arg) { .i = 0 }));
