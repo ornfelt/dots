@@ -49,10 +49,10 @@ useScale="true"
 
 if [ "$useScale" = "true" ]; then
     echo "Running command: npx @mermaid-js/mermaid-cli@latest --scale 2 -i \"$InputFile\" -o \"$outputFile\""
-    npx @mermaid-js/mermaid-cli@latest --scale 2 -i "$InputFile" -o "$outputFile"
+    npx @mermaid-js/mermaid-cli@latest --scale 2 -i "$InputFile" -o "$outputFile" -b transparent
 else
     echo "Running command: npx @mermaid-js/mermaid-cli@latest -i \"$InputFile\" -o \"$outputFile\""
-    npx @mermaid-js/mermaid-cli@latest -i "$InputFile" -o "$outputFile"
+    npx @mermaid-js/mermaid-cli@latest -i "$InputFile" -o "$outputFile" -b transparent
 fi
 
 if [ -f "$outputFile" ] || [ -f "$outputFileAlt" ]; then
