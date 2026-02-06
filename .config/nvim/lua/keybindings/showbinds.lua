@@ -61,82 +61,139 @@ local function choose(prompt, options, callback)
   end
 end
 
--- Keymap: hierarchical pick from headers and subsequent lines -> copy to clipboard on select
--- bind leader-?: hierarchical keymap picker (n)
-vim.keymap.set('n', '<leader>?', function()
-  --local file_path = myconfig.my_notes_path .. "/scripts/files/nvim_keys.txt"
-  local file_path = myconfig.my_notes_path .. ".vim/binds.txt"
-  local lines = myconfig.read_lines_from_file(file_path)
+local USE_NEW_KEYBIND_DOCS = true
 
-  -- Parse categories and their items
-  local categories = {}
-  local items      = {}
-  local current
+if not USE_NEW_KEYBIND_DOCS then
+  -- bind leader-?: hierarchical keymap picker (n)
+  vim.keymap.set('n', '<leader>?', function()
+    --local file_path = myconfig.my_notes_path .. "/scripts/files/nvim_keys.txt"
+    local file_path = myconfig.my_notes_path .. ".vim/binds.txt"
+    local lines = myconfig.read_lines_from_file(file_path)
 
-  --for _, line in ipairs(lines) do
-  --  local header = line:match("^#%s*(.+)")
-  --  if header then
-  --    current = header
-  --    table.insert(categories, header)
-  --    items[header] = {}
-  --  elseif current then
-  --    local is_content = not(line:match("^%s*$") or line:match("^%-%-") or line:match("^%*%*") or line:match("^[-]+$"))
-  --    local is_mapcmd = line:match("^%s*map:%s+") or line:match("^%s*cmd:%s+") or line:match("^%s*autocmd:%s+")
-  --    if is_content and is_mapcmd then
-  --      table.insert(items[current], line)
-  --    end
-  --  end
-  --end
+    -- Parse categories and their items
+    local categories = {}
+    local items      = {}
+    local current
 
-  local i = 1
-  while i <= #lines do
-    local line = lines[i]
+    --for _, line in ipairs(lines) do
+    --  local header = line:match("^#%s*(.+)")
+    --  if header then
+    --    current = header
+    --    table.insert(categories, header)
+    --    items[header] = {}
+    --  elseif current then
+    --    local is_content = not(line:match("^%s*$") or line:match("^%-%-") or line:match("^%*%*") or line:match("^[-]+$"))
+    --    local is_mapcmd = line:match("^%s*map:%s+") or line:match("^%s*cmd:%s+") or line:match("^%s*autocmd:%s+")
+    --    if is_content and is_mapcmd then
+    --      table.insert(items[current], line)
+    --    end
+    --  end
+    --end
 
-    -- new category header
-    local header = line:match("^#%s*(.+)")
-    if header then
-      current = header
-      categories[#categories+1] = header
-      items[header] = {}
-      i = i + 1
+    local i = 1
+    while i <= #lines do
+      local line = lines[i]
 
-    -- if inside a category...
-    elseif current then
-      -- get map/cmd/autocmd key
-      local key = line:match("^%s*map:%s*(.+)")
-               or line:match("^%s*cmd:%s*(.+)")
-               --or line:match("^%s*autocmd:%s*(.+)")
+      -- new category header
+      local header = line:match("^#%s*(.+)")
+      if header then
+        current = header
+        categories[#categories+1] = header
+        items[header] = {}
+        i = i + 1
 
-      if key then
-        -- look ahead one line for desc:
-        local desc_line = lines[i+1] or ""
-        local desc = desc_line:match("^%s*desc:%s*(.+)") or ""
+      -- if inside a category...
+      elseif current then
+        -- get map/cmd/autocmd key
+        local key = line:match("^%s*map:%s*(.+)")
+                or line:match("^%s*cmd:%s*(.+)")
+                --or line:match("^%s*autocmd:%s*(.+)")
 
-        -- merge "key -> desc"
-        local merged = key .. " -> " .. desc
-        items[current][#items[current]+1] = merged
+        if key then
+          -- look ahead one line for desc:
+          local desc_line = lines[i+1] or ""
+          local desc = desc_line:match("^%s*desc:%s*(.+)") or ""
 
-        -- skip lines
-        i = i + 2
+          -- merge "key -> desc"
+          local merged = key .. " -> " .. desc
+          items[current][#items[current]+1] = merged
+
+          -- skip lines
+          i = i + 2
+        else
+          -- not a key+desc pair, just skip
+          i = i + 1
+        end
+
       else
-        -- not a key+desc pair, just skip
+        -- outside of any category, just skip
         i = i + 1
       end
-
-    else
-      -- outside of any category, just skip
-      i = i + 1
     end
-  end
 
-  -- Pick a category
-  choose('Category', categories, function(cat)
-    -- Pick a line in that category
-    choose(cat, items[cat] or {}, function(line)
-      -- Copy to clipboard and notify
-      vim.fn.setreg('+', line)
-      print('Copied to clipboard: ' .. line)
+    -- Pick a category
+    choose('Category', categories, function(cat)
+      -- Pick a line in that category
+      choose(cat, items[cat] or {}, function(line)
+        -- Copy to clipboard and notify
+        vim.fn.setreg('+', line)
+        print('Copied to clipboard: ' .. line)
+      end)
     end)
-  end)
-end, { noremap = true, silent = true })
+  end, { noremap = true, silent = true })
+else
+  -- bind leader-?: hierarchical keymap picker (n)
+  vim.keymap.set('n', '<leader>?', function()
+    -- Get code_root_dir from environment variable
+    local code_root_dir = myconfig.code_root_dir
+    if code_root_dir == vim.NIL or code_root_dir == '' then
+      print('Error: code_root_dir environment variable not set')
+      return
+    end
+
+    local file_path = code_root_dir .. "/Code2/Javascript/my_js/keybinds/keybinds/public/keybinds/editors/nvim.txt"
+    local lines = myconfig.read_lines_from_file(file_path)
+
+    -- Parse categories and their items
+    local categories = {}
+    local items      = {}
+    local current    = nil
+    local started    = false  -- flag to track if we've seen the first ##
+
+    for _, line in ipairs(lines) do
+      -- Check for category header (## Category)
+      local header = line:match("^##%s*(.+)")
+
+      if header then
+        started = true
+        current = header
+        table.insert(categories, header)
+        items[header] = {}
+      elseif started and current then
+        -- Process lines in the current category
+        -- Skip empty lines and comment lines (starting with #)
+        if not line:match("^%s*$") and not line:match("^#") then
+          local trimmed = line:gsub("^%s*(.-)%s*$", "%1")  -- trim whitespace
+          if trimmed ~= "" then
+            -- Truncate to 160 characters if longer
+            if #trimmed > 160 then
+              trimmed = trimmed:sub(1, 160) .. "..."
+            end
+            table.insert(items[current], trimmed)
+          end
+        end
+      end
+    end
+
+    -- Pick a category
+    choose('Category', categories, function(cat)
+      -- Pick a line in that category
+      choose(cat, items[cat] or {}, function(line)
+        -- Copy to clipboard and notify
+        vim.fn.setreg('+', line)
+        print('Copied to clipboard: ' .. line)
+      end)
+    end)
+  end, { noremap = true, silent = true })
+end
 
