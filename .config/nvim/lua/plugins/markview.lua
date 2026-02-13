@@ -1,3 +1,5 @@
+require('dbg_log').log_file(debug.getinfo(1, 'S').source)
+
 return {
   "OXY2DEV/markview.nvim",
   dependencies = {

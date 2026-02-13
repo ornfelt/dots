@@ -1,3 +1,5 @@
+require('dbg_log').log_file(debug.getinfo(1, 'S').source)
+
 local last_closed_tab = nil
 
 local function save_and_close_tab()

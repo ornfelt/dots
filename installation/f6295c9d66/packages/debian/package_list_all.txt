@@ -49,6 +49,7 @@ bind9-libs
 binutils
 binutils-common
 binutils-x86-64-linux-gnu
+bison
 blt
 bluetooth
 bluez
@@ -166,6 +167,7 @@ firmware-realtek
 firmware-sof-signed
 fish
 fish-common
+flex
 fontconfig
 fontconfig-config
 fonts-dejavu-core
@@ -196,6 +198,7 @@ g++-14-x86-64-linux-gnu
 g++-x86-64-linux-gnu
 gawk
 gcc
+gcc-12-base
 gcc-14
 gcc-14-base
 gcc-14-base
@@ -809,6 +812,8 @@ libfile-fcntllock-perl
 libfile-listing-perl
 libfile-mimeinfo-perl
 libfile-stripnondeterminism-perl
+libfl-dev
+libfl2
 libflac-dev
 libflac14
 libflac14
@@ -855,6 +860,8 @@ libgc1
 libgcc-14-dev
 libgcc-s1
 libgcc-s1
+libgccjit-12-dev
+libgccjit0
 libgck-1-0
 libgck-2-2
 libgcr-4-4

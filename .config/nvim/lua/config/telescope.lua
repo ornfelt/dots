@@ -1,3 +1,5 @@
+require('dbg_log').log_file(debug.getinfo(1, 'S').source)
+
 require('telescope').setup({})
 
 local pickers = require("telescope.pickers")

@@ -1,3 +1,5 @@
+require('dbg_log').log_file(debug.getinfo(1, 'S').source)
+
 return {
   "jiaoshijie/undotree",
   dependencies = "nvim-lua/plenary.nvim",

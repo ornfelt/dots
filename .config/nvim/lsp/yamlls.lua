@@ -1,3 +1,5 @@
+require('dbg_log').log_file(debug.getinfo(1, 'S').source)
+
 return {
   cmd = { 'yaml-language-server', '--stdio' },
   filetypes = { 'yaml', 'yml' },

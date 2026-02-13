@@ -1,3 +1,5 @@
+require('dbg_log').log_file(debug.getinfo(1, 'S').source)
+
 return {
   -- lspconfig renamed tsserver -> ts_ls; cmd is still the Typescript LSP
   cmd = { 'typescript-language-server', '--stdio' },

@@ -22,6 +22,7 @@ bash-completion
 bash
 bind9-dnsutils
 bind9-host
+bison
 bluez
 bsdutils
 btop
@@ -77,6 +78,7 @@ firmware-amd-graphics
 firmware-realtek
 firmware-sof-signed
 fish
+flex
 fonts-font-awesome
 fonts-jetbrains-mono
 fonts-wine
@@ -172,4 +174,3 @@ libcurl4-openssl-dev
 libdb5.3t64
 libdebconfclient0
 libdrm-dev
-libedit2

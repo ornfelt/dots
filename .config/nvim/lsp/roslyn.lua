@@ -1,3 +1,5 @@
+require('dbg_log').log_file(debug.getinfo(1, 'S').source)
+
 local uv = vim.uv or vim.loop
 local function is_str(s) return type(s)=="string" and s~="" end
 local function file_exists(p) return is_str(p) and vim.fn.filereadable(p)==1 end

@@ -1,3 +1,5 @@
+require('dbg_log').log_file(debug.getinfo(1, 'S').source)
+
 -- Replace / substitution keybinds
 function VisualSubstituteCommand()
   -- local mode = vim.fn.mode() -- Check mode if needed?

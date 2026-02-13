@@ -22,6 +22,7 @@ bash-completion
 bash
 bind9-dnsutils
 bind9-host
+bison
 bluez
 bsdutils
 btop
@@ -77,6 +78,7 @@ firmware-amd-graphics
 firmware-realtek
 firmware-sof-signed
 fish
+flex
 fonts-font-awesome
 fonts-jetbrains-mono
 fonts-wine
@@ -185,6 +187,7 @@ libfontconfig1-dev
 libfreetype-dev
 libfuse-dev
 libgcc-s1
+libgccjit-12-dev
 libgdk-pixbuf-2.0-dev
 libgl1-mesa-dev
 libgl1-mesa-dri

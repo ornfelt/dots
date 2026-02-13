@@ -1,3 +1,5 @@
+require('dbg_log').log_file(debug.getinfo(1, 'S').source)
+
 local is_win = vim.fn.has('win32') == 1
 if is_win and vim.fn.executable('wsl') == 1 then
   return {

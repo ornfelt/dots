@@ -1,4 +1,5 @@
----@type vim.lsp.Config
+require('dbg_log').log_file(debug.getinfo(1, 'S').source)
+
 return {
   cmd = { 'gopls' },
   filetypes = { 'go', 'gomod', 'gosum' },

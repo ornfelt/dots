@@ -1,3 +1,5 @@
+require('dbg_log').log_file(debug.getinfo(1, 'S').source)
+
 require("config.lazy")
 require("lazy_plugins")
 require('options')

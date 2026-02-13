@@ -1,3 +1,5 @@
+require('dbg_log').log_file(debug.getinfo(1, 'S').source)
+
 -- TODO: these binds are not realistically sane... But they work for testing purposes :)
 
 -- movement

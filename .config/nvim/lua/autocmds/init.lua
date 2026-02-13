@@ -1,3 +1,5 @@
+require('dbg_log').log_file(debug.getinfo(1, 'S').source)
+
 require("autocmds.hellow")
 require("autocmds.code_autocmds")
 require("autocmds.sql_autocmds")

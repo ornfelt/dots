@@ -1,3 +1,5 @@
+require('dbg_log').log_file(debug.getinfo(1, 'S').source)
+
 vim.o.completeopt = 'menu,menuone,noinsert,popup,fuzzy'
 
 -- Keymaps (TODO: update)

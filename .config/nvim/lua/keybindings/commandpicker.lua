@@ -1,3 +1,5 @@
+require('dbg_log').log_file(debug.getinfo(1, 'S').source)
+
 local commands = {
   -- Packer
   { label = "PackerUpdate", cmd = "PackerUpdate" },

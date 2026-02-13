@@ -1,3 +1,4 @@
+libedit2
 libegl1
 libelf1t64
 libenet-dev
@@ -10,6 +11,7 @@ libfontconfig1-dev
 libfreetype-dev
 libfuse-dev
 libgcc-s1
+libgccjit-12-dev
 libgdk-pixbuf-2.0-dev
 libgl1-mesa-dev
 libgl1-mesa-dri
@@ -172,4 +174,3 @@ login.defs
 login
 logrotate
 logsave
-lsb-release

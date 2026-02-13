@@ -1,3 +1,5 @@
+require('dbg_log').log_file(debug.getinfo(1, 'S').source)
+
 local myconfig = require("myconfig")
 
 -- Unified picker using fzf, fzf-lua, telescope or vim.ui.select

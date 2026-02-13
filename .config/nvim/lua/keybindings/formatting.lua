@@ -1,3 +1,5 @@
+require('dbg_log').log_file(debug.getinfo(1, 'S').source)
+
 local myconfig = require("myconfig")
 
 -- bind leader-ws: show extra whitespace (n)

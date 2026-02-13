@@ -1,3 +1,5 @@
+require('dbg_log').log_file(debug.getinfo(1, 'S').source)
+
 local M = {}
 
 local function get_language_tree_for_cursor_location()

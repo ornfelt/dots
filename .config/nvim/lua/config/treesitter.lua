@@ -1,3 +1,5 @@
+require('dbg_log').log_file(debug.getinfo(1, 'S').source)
+
 local check_file_size = function(_, bufnr)
   return vim.api.nvim_buf_line_count(bufnr) > 100000
 end

@@ -1,3 +1,5 @@
+require('dbg_log').log_file(debug.getinfo(1, 'S').source)
+
 -- Helper function to create key mappings for given filetypes
 local function create_mappings(ft, mappings)
   vim.api.nvim_create_autocmd("FileType", {

@@ -1,3 +1,5 @@
+require('dbg_log').log_file(debug.getinfo(1, 'S').source)
+
 require("trouble").setup({})
 
 -- https://github.com/folke/trouble.nvim

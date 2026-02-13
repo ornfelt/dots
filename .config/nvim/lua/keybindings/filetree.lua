@@ -1,3 +1,5 @@
+require('dbg_log').log_file(debug.getinfo(1, 'S').source)
+
 local myconfig = require("myconfig")
 
 local has_oil = myconfig.is_plugin_installed('oil')

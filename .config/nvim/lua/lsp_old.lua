@@ -1,3 +1,5 @@
+require('dbg_log').log_file(debug.getinfo(1, 'S').source)
+
 local lspconfig = require'lspconfig'
 
 local function go_to_definition_twice()

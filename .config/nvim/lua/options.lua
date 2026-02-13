@@ -1,3 +1,5 @@
+require('dbg_log').log_file(debug.getinfo(1, 'S').source)
+
 local o   = vim.o
 local opt = vim.opt
 local g   = vim.g

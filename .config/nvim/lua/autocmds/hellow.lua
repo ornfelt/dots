@@ -1,3 +1,5 @@
+require('dbg_log').log_file(debug.getinfo(1, 'S').source)
+
 local myconfig = require("myconfig")
 
 local code_root_dir = myconfig.code_root_dir

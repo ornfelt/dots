@@ -1,3 +1,5 @@
+require('dbg_log').log_file(debug.getinfo(1, 'S').source)
+
 if vim.fn.has('win32') == 1 then
   -- you might need to run this:
   -- Get-ChildItem "$env:USERPROFILE\Downloads\PowerShellEditorServices" -Recurse -File | Unblock-File

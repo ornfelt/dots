@@ -1,3 +1,5 @@
+require('dbg_log').log_file(debug.getinfo(1, 'S').source)
+
 local treesitter_utils = require("treesitter_utils")
 
 -- Add async to function if using await inside function
