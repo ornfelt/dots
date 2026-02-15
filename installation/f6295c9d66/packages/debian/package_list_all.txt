@@ -1184,6 +1184,7 @@ libldap-dev
 libldap2
 libldap2
 libldb2
+libleptonica6
 liblerc-dev
 liblerc4
 liblerc4
@@ -1774,6 +1775,7 @@ libtcl8.6
 libtdb1
 libteamdctl0
 libteckit0
+libtesseract5
 libtevent0t64
 libtexlua53-5
 libtext-charwidth-perl
@@ -2966,6 +2968,9 @@ task-ssh-server
 tasksel
 tasksel-data
 terser
+tesseract-ocr
+tesseract-ocr-eng
+tesseract-ocr-osd
 tex-common
 tex-gyre
 texlive

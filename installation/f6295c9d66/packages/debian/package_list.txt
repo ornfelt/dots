@@ -469,6 +469,7 @@ task-english
 task-laptop
 task-ssh-server
 tasksel
+tesseract-ocr
 texlive
 thunar
 tmux

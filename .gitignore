@@ -64,4 +64,5 @@ installation/packages/log.txt
 installation/packages/debian/log.txt
 
 .config/hypr/component/waybar/config_is_detailed
+bin/my_scripts/ocr.txt
 

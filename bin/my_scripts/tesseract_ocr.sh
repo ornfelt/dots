@@ -1,6 +1,8 @@
 #! /bin/bash
 export TESSDATA_PREFIX=/usr/local/share/tessdata
 # For debian:
+# sudo apt-get install tesseract-ocr
+# old (might not be needed?):
 #export TESSDATA_PREFIX=/home/jonas/.local/share/tessdata
 # Also change env to /usr/bin/bash and might need: /usr/bin/python3
 
