@@ -567,6 +567,8 @@ show_csharp_help() {
   write_code_line "dotnet --list-sdks"
   write_code_line "dotnet build"
   write_code_line "dotnet build -c Release"
+  write_code_line "# Errors only, no warnings/analyzers"
+  write_code_line "dotnet build -consoleLoggerParameters:ErrorsOnly -p:WarningLevel=0 -p:RunAnalyzersDuringBuild=false"
   write_code_line "dotnet run -c Release"
   write_code_line "dotnet run --framework net9.0"
   write_code_line "dotnet run -f net7.0"
