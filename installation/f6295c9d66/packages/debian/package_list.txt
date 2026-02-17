@@ -359,6 +359,7 @@ lua5.4
 luajit
 luarocks
 lxappearance
+lynkeos.app
 m4
 maim
 make

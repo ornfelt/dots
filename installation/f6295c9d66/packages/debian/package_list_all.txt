@@ -20,6 +20,8 @@ apt
 apt-listchanges
 apt-transport-https
 apt-utils
+aspell
+aspell-en
 aspnetcore-runtime-10.0
 aspnetcore-runtime-9.0
 aspnetcore-targeting-pack-10.0
@@ -97,6 +99,7 @@ dbus-system-bus-common
 dbus-user-session
 dconf-gsettings-backend
 dconf-service
+dcraw
 dctrl-tools
 debconf
 debconf-i18n
@@ -257,6 +260,16 @@ gnupg-utils
 gnuplot
 gnuplot-data
 gnuplot-qt
+gnustep-back-common
+gnustep-back0.32
+gnustep-back0.32-cairo
+gnustep-base-common
+gnustep-base-runtime
+gnustep-common
+gnustep-gui-common
+gnustep-gui-runtime
+gnustep-multiarch
+gnutls-bin
 golang
 golang-1.24
 golang-1.24-doc
@@ -382,6 +395,8 @@ libamdhip64-5
 libann0
 libanyevent-i3-perl
 libanyevent-perl
+libao-common
+libao4
 libaom3
 libaom3
 libaopalliance-java
@@ -407,6 +422,7 @@ libasound2-plugins
 libasound2-plugins
 libasound2t64
 libasound2t64
+libaspell15
 libass9
 libassimp-dev
 libassimp5
@@ -936,6 +952,8 @@ libgmp-dev
 libgmp10
 libgmp10
 libgmpxx4ldbl
+libgnustep-base1.31
+libgnustep-gui0.32
 libgnutls-dane0t64
 libgnutls-openssl27t64
 libgnutls28-dev
@@ -1062,6 +1080,7 @@ libibverbs-dev
 libibverbs1
 libice-dev
 libice6
+libicns1
 libicu-dev
 libicu76
 libid3tag0
@@ -2175,6 +2194,8 @@ lxappearance
 lxde-icon-theme
 lxde-settings-daemon
 lxmenu-data
+lynkeos.app
+lynkeos.app-common
 m4
 maim
 make
@@ -2991,6 +3012,7 @@ tree-sitter-cli
 tumbler
 tumbler-common
 tzdata
+tzdata-legacy
 ucf
 udev
 udisks2
