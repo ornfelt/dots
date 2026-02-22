@@ -265,7 +265,7 @@ elif [[ "$lc" == *wc_clean_mcnk* ]]; then
 
     main="cmake .. -DCMAKE_BUILD_TYPE=$BuildType -DGFX_DLL=OFF -DLIBWOW_DLL=OFF"
     alts=(
-        "cmake .. -DCMAKE_BUILD_TYPE=$BuildType -DGFX_DLL=OFF -DLIBWOW_DLL=OFF"
+        "cmake .. -DCMAKE_BUILD_TYPE=$BuildType -DGFX_DLL=ON -DLIBWOW_DLL=ON"
     )
 
     run_or_print "$main"
