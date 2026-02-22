@@ -125,40 +125,87 @@ function toggle_filetree(jump_to_current)
     vim.cmd("Oil " .. filepath)
 
     -- Jump cursor to current file (by basename.ext) if possible
+    --if jump_to_current and target_name then
+    --  vim.schedule(function()
+    --    -- small sleep so Oil has time to populate the buffer
+    --    vim.defer_fn(function()
+    --      local ok, oil = pcall(require, "oil")
+    --      if not ok then return end
+    --
+    --      local bufnr = vim.api.nvim_get_current_buf()
+    --      if vim.bo[bufnr].filetype ~= "oil" then return end
+    --
+    --      local target_lc = target_name:lower()
+    --      local line_count = vim.api.nvim_buf_line_count(bufnr)
+    --
+    --      local function find_lnum(match_fn)
+    --        for lnum = 1, line_count do
+    --          local entry = oil.get_entry_on_line(bufnr, lnum)
+    --          if entry and entry.name and match_fn(entry.name) then
+    --            return lnum
+    --          end
+    --        end
+    --      end
+    --
+    --      -- exact match first
+    --      local lnum = find_lnum(function(name) return name == target_name end)
+    --
+    --      -- fallback: case-insensitive match
+    --      if not lnum then
+    --        lnum = find_lnum(function(name) return name:lower() == target_lc end)
+    --      end
+    --
+    --      if lnum then
+    --        vim.api.nvim_win_set_cursor(0, { lnum, 0 })
+    --      end
+    --    end, 50)
+    --  end)
+    --end
+    -- Same as above but done two times for safety (second attempt considers min_distance)
     if jump_to_current and target_name then
-      vim.schedule(function()
-        -- small sleep so Oil has time to populate the buffer
-        vim.defer_fn(function()
-          local ok, oil = pcall(require, "oil")
-          if not ok then return end
+      local function try_jump_to_current(min_distance)
+        local ok, oil = pcall(require, "oil")
+        if not ok then return end
 
-          local bufnr = vim.api.nvim_get_current_buf()
-          if vim.bo[bufnr].filetype ~= "oil" then return end
+        local bufnr = vim.api.nvim_get_current_buf()
+        if vim.bo[bufnr].filetype ~= "oil" then return end
 
-          local target_lc = target_name:lower()
-          local line_count = vim.api.nvim_buf_line_count(bufnr)
+        local target_lc = target_name:lower()
+        local line_count = vim.api.nvim_buf_line_count(bufnr)
 
-          local function find_lnum(match_fn)
-            for lnum = 1, line_count do
-              local entry = oil.get_entry_on_line(bufnr, lnum)
-              if entry and entry.name and match_fn(entry.name) then
-                return lnum
-              end
+        local function find_lnum(match_fn)
+          for lnum = 1, line_count do
+            local entry = oil.get_entry_on_line(bufnr, lnum)
+            if entry and entry.name and match_fn(entry.name) then
+              return lnum
             end
           end
+        end
 
-          -- exact match first
-          local lnum = find_lnum(function(name) return name == target_name end)
+        -- exact match first
+        local lnum = find_lnum(function(name) return name == target_name end)
+        -- fallback: case-insensitive match
+        if not lnum then
+          lnum = find_lnum(function(name) return name:lower() == target_lc end)
+        end
+        if not lnum then return end
 
-          -- fallback: case-insensitive match
-          if not lnum then
-            lnum = find_lnum(function(name) return name:lower() == target_lc end)
+        -- Only move if we're at least min_distance lines away (second attempt)
+        if min_distance and min_distance > 0 then
+          local cur = vim.api.nvim_win_get_cursor(0)[1] -- current line (1-based)
+          if math.abs(cur - lnum) < min_distance then
+            return
           end
+        end
 
-          if lnum then
-            vim.api.nvim_win_set_cursor(0, { lnum, 0 })
-          end
-        end, 50)
+        vim.api.nvim_win_set_cursor(0, { lnum, 0 })
+      end
+
+      vim.schedule(function()
+        -- attempt 1: always jump
+        vim.defer_fn(function() try_jump_to_current(nil) end, 50)
+        -- attempt 2: only jump if we're >= 3 lines away from target
+        vim.defer_fn(function() try_jump_to_current(3) end, 200)
       end)
     end
 

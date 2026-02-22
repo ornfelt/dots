@@ -14,6 +14,8 @@ local commands = {
   { label = "Diffg", cmd = "Diffg" },
   { label = "Diffgf", cmd = "Diffgf" },
   { label = "DiffCp", cmd = "DiffCp" },
+  { label = "GitTab", cmd = "GitTab" },
+  { label = "GitTabC", cmd = "GitTabC" },
   { label = "MakefileTargets", cmd = "MakefileTargets" },
   { label = "GoLangTestFiles", cmd = "GoLangTestFiles" },
   { label = "Config - CyclePythonExecCommand", cmd = "CyclePythonExecCommand" },

@@ -654,3 +654,341 @@ vim.api.nvim_create_user_command('Diffgf', diffgf_command, {})
 -- bind leader-di: diff_buffers_or_file (n)
 vim.api.nvim_set_keymap("n", "<leader>di", ":lua diff_buffers_or_file()<CR>", { noremap = true, silent = true })
 
+-- Open file in selected branch / commit
+local function get_repo_dir_for_current_buffer()
+  local buf_dir = vim.fn.expand('%:p:h')
+  if buf_dir == "" then
+    buf_dir = vim.fn.getcwd()
+  end
+  local git_root = vim.fn.system('git -C "' .. buf_dir .. '" rev-parse --show-toplevel')
+  git_root = vim.trim(git_root)
+  if vim.v.shell_error ~= 0 or git_root == "" then
+    return nil
+  end
+  return myconfig.normalize_path(git_root)
+end
+
+local function git_show_to_temp(git_root, ref, relative_path, use_debug_print)
+  local temp_dir
+  if vim.loop.os_uname().sysname == "Windows_NT" then
+    temp_dir = "C:/local/git_tab_temp"
+  else
+    temp_dir = os.getenv("HOME") .. "/.cache/nvim/git_tab_temp"
+  end
+  vim.fn.mkdir(temp_dir, "p")
+
+  -- Create a safe filename: ref--relative_path (replace slashes)
+  local safe_name = (ref .. "--" .. relative_path):gsub("[/\\:%%]", "_")
+  local target = myconfig.normalize_path(temp_dir .. "/" .. safe_name)
+
+  local cmd
+  if vim.loop.os_uname().sysname == "Windows_NT" then
+    -- Use powershell redirection to handle encoding properly
+    local git_ref = ref .. ":" .. relative_path:gsub("\\", "/")
+    cmd = string.format('git -C "%s" show "%s" > "%s"', git_root, git_ref, target)
+  else
+    local git_ref = ref .. ":" .. relative_path
+    cmd = string.format("git -C %s show %s > %s",
+      vim.fn.shellescape(git_root),
+      vim.fn.shellescape(git_ref),
+      vim.fn.shellescape(target))
+  end
+
+  if use_debug_print then
+    print("[git_show_to_temp] cmd: " .. cmd)
+  end
+
+  vim.fn.system(cmd)
+  if vim.v.shell_error ~= 0 then
+    print("Failed to retrieve " .. relative_path .. " from " .. ref)
+    return nil
+  end
+
+  return target
+end
+
+local function get_all_branches(git_root, use_debug_print)
+  local cmd = string.format("git -C %s branch -a --sort=-committerdate --format='%%(refname:short)'",
+    vim.fn.shellescape(git_root))
+  if vim.loop.os_uname().sysname == "Windows_NT" then
+    cmd = string.format('git -C "%s" branch -a --sort=-committerdate --format="%%(refname:short)"', git_root)
+  end
+
+  if use_debug_print then
+    print("[get_all_branches] cmd: " .. cmd)
+  end
+
+  local output = vim.fn.system(cmd)
+  if vim.v.shell_error ~= 0 then
+    print("Failed to list branches.")
+    return {}
+  end
+
+  local branches = {}
+  for line in output:gmatch("[^\r\n]+") do
+    local branch = vim.trim(line):gsub("^'", ""):gsub("'$", "")
+    if branch ~= "" and not branch:find("HEAD") then
+      table.insert(branches, branch)
+    end
+  end
+
+  if use_debug_print then
+    print("[get_all_branches] Found " .. #branches .. " branches")
+  end
+
+  return branches
+end
+
+local function get_files_in_ref(git_root, ref, use_debug_print)
+  local cmd
+  if vim.loop.os_uname().sysname == "Windows_NT" then
+    cmd = string.format('git -C "%s" ls-tree -r --name-only "%s"', git_root, ref)
+  else
+    cmd = string.format("git -C %s ls-tree -r --name-only %s",
+      vim.fn.shellescape(git_root), vim.fn.shellescape(ref))
+  end
+
+  if use_debug_print then
+    print("[get_files_in_ref] cmd: " .. cmd)
+  end
+
+  local output = vim.fn.system(cmd)
+  if vim.v.shell_error ~= 0 then
+    print("Failed to list files for ref: " .. ref)
+    return {}
+  end
+
+  local files = {}
+  for line in output:gmatch("[^\r\n]+") do
+    local f = vim.trim(line)
+    if f ~= "" then
+      table.insert(files, f)
+    end
+  end
+
+  if use_debug_print then
+    print("[get_files_in_ref] Found " .. #files .. " files")
+  end
+
+  return files
+end
+
+local function get_commits(git_root, limit, use_debug_print)
+  local fmt = "%H|||%ai|||%s"
+  local cmd
+  if vim.loop.os_uname().sysname == "Windows_NT" then
+    cmd = string.format('git -C "%s" log --all -n %s --format="%s"', git_root, limit, fmt)
+  else
+    cmd = string.format("git -C %s log --all -n %s --format='%s'",
+      vim.fn.shellescape(git_root), limit, fmt)
+  end
+
+  if use_debug_print then
+    print("[get_commits] cmd: " .. cmd)
+  end
+
+  local output = vim.fn.system(cmd)
+  if vim.v.shell_error ~= 0 then
+    print("Failed to list commits.")
+    return {}, {}
+  end
+
+  local labels = {}
+  local hashes = {}
+  for line in output:gmatch("[^\r\n]+") do
+    line = vim.trim(line):gsub("^'", ""):gsub("'$", "")
+    local hash, date, subject = line:match("^(%S+)|||(.-)|||(.*)$")
+    if hash then
+      local short_hash = hash:sub(1, 10)
+      local label = string.format("%s  %s  %s", short_hash, date, subject)
+      table.insert(labels, label)
+      table.insert(hashes, hash)
+    end
+  end
+
+  if use_debug_print then
+    print("[get_commits] Found " .. #labels .. " commits")
+  end
+
+  return labels, hashes
+end
+
+local function pick_item(items, prompt_title, callback)
+  local picker_type = myconfig.get_file_picker()
+  local use_fzf = picker_type == myconfig.FilePicker.FZF
+  local use_fzf_lua = picker_type == myconfig.FilePicker.FZF_LUA
+  local use_picker = myconfig.use_file_picker_for_commands()
+
+  if use_picker then
+    if use_fzf then
+      vim.fn["fzf#run"]({
+        source  = items,
+        sink    = function(selected) callback(selected) end,
+        options = "--prompt '" .. prompt_title .. "> ' --reverse",
+      })
+    elseif use_fzf_lua then
+      require("fzf-lua").fzf_exec(items, {
+        prompt  = prompt_title .. "> ",
+        actions = {
+          ["default"] = function(selected)
+            callback(selected[1])
+          end,
+        },
+      })
+    else
+      local actions = require("telescope.actions")
+      local action_state = require("telescope.actions.state")
+      local pickers = require("telescope.pickers")
+      local finders = require("telescope.finders")
+      local conf = require("telescope.config").values
+
+      pickers.new({}, {
+        prompt_title = prompt_title,
+        finder = finders.new_table({ results = items }),
+        sorter = conf.generic_sorter({}),
+        attach_mappings = function(prompt_bufnr)
+          actions.select_default:replace(function()
+            local sel = action_state.get_selected_entry()
+            actions.close(prompt_bufnr)
+            callback(sel[1])
+          end)
+          return true
+        end,
+      }):find()
+    end
+  else
+    vim.ui.select(items, { prompt = prompt_title .. ":" }, function(choice)
+      if choice then callback(choice) end
+    end)
+  end
+end
+
+local function git_open_file_from_branch()
+  local use_debug_print = myconfig.should_debug_print()
+  local git_root = get_repo_dir_for_current_buffer()
+  if not git_root then
+    print("Not inside a Git repository.")
+    return
+  end
+
+  if use_debug_print then
+    print("[git_open_file_from_branch] git_root: " .. git_root)
+  end
+
+  local branches = get_all_branches(git_root, use_debug_print)
+  if #branches == 0 then
+    print("No branches found.")
+    return
+  end
+
+  pick_item(branches, "Select Branch", function(branch)
+    if not branch or branch == "" then return end
+    branch = vim.trim(branch)
+
+    if use_debug_print then
+      print("[git_open_file_from_branch] Selected branch: " .. branch)
+    end
+
+    local files = get_files_in_ref(git_root, branch, use_debug_print)
+    if #files == 0 then
+      print("No files found in branch: " .. branch)
+      return
+    end
+
+    pick_item(files, "Select File (" .. branch .. ")", function(file)
+      if not file or file == "" then return end
+      file = vim.trim(file)
+
+      if use_debug_print then
+        print("[git_open_file_from_branch] Selected file: " .. file)
+      end
+
+      local temp_path = git_show_to_temp(git_root, branch, file, use_debug_print)
+      if temp_path then
+        vim.cmd("tabnew " .. vim.fn.fnameescape(temp_path))
+        -- Set a useful buffer name
+        vim.api.nvim_buf_set_name(0, branch .. ":" .. file)
+        vim.bo.buftype = "nofile"
+        vim.bo.bufhidden = "wipe"
+        vim.bo.swapfile = false
+      end
+    end)
+  end)
+end
+
+local function git_open_file_from_commit(limit)
+  limit = limit or "300"
+  local use_debug_print = myconfig.should_debug_print()
+  local git_root = get_repo_dir_for_current_buffer()
+  if not git_root then
+    print("Not inside a Git repository.")
+    return
+  end
+
+  if use_debug_print then
+    print("[git_open_file_from_commit] git_root: " .. git_root)
+    print("[git_open_file_from_commit] limit: " .. limit)
+  end
+
+  local labels, hashes = get_commits(git_root, limit, use_debug_print)
+  if #labels == 0 then
+    print("No commits found.")
+    return
+  end
+
+  pick_item(labels, "Select Commit", function(selected_label)
+    if not selected_label or selected_label == "" then return end
+
+    -- Find matching hash
+    local commit_hash
+    for i, label in ipairs(labels) do
+      if label == selected_label then
+        commit_hash = hashes[i]
+        break
+      end
+    end
+
+    if not commit_hash then
+      print("Could not resolve commit.")
+      return
+    end
+
+    if use_debug_print then
+      print("[git_open_file_from_commit] Selected commit: " .. commit_hash)
+    end
+
+    local files = get_files_in_ref(git_root, commit_hash, use_debug_print)
+    if #files == 0 then
+      print("No files found in commit: " .. commit_hash)
+      return
+    end
+
+    pick_item(files, "Select File (" .. commit_hash:sub(1, 10) .. ")", function(file)
+      if not file or file == "" then return end
+      file = vim.trim(file)
+
+      if use_debug_print then
+        print("[git_open_file_from_commit] Selected file: " .. file)
+      end
+
+      local temp_path = git_show_to_temp(git_root, commit_hash, file, use_debug_print)
+      if temp_path then
+        vim.cmd("tabnew " .. vim.fn.fnameescape(temp_path))
+        vim.api.nvim_buf_set_name(0, commit_hash:sub(1, 10) .. ":" .. file)
+        vim.bo.buftype = "nofile"
+        vim.bo.bufhidden = "wipe"
+        vim.bo.swapfile = false
+      end
+    end)
+  end)
+end
+
+-- cmd GitTab: git_open_file_from_branch
+vim.api.nvim_create_user_command("GitTab", git_open_file_from_branch, {})
+
+-- cmd GitTabC: git_open_file_from_commit
+vim.api.nvim_create_user_command("GitTabC", function(opts)
+  local limit = opts.args ~= "" and opts.args or "300"
+  git_open_file_from_commit(limit)
+end, { nargs = "?" })
+

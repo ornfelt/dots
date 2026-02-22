@@ -260,6 +260,17 @@ elif [[ "$lc" == *llama.cpp* ]]; then
         echo "cmake -B build && cmake --build build --config $BuildType"
     fi
 
+elif [[ "$lc" == *wc_clean_mcnk* ]]; then
+    test_cmakelists parent "wc_clean_mcnk (expecting CMakeLists.txt one level up)"
+
+    main="cmake .. -DCMAKE_BUILD_TYPE=$BuildType -DGFX_DLL=OFF -DLIBWOW_DLL=OFF"
+    alts=(
+        "cmake .. -DCMAKE_BUILD_TYPE=$BuildType -DGFX_DLL=OFF -DLIBWOW_DLL=OFF"
+    )
+
+    run_or_print "$main"
+    print_alternatives "${alts[@]}"
+
 else
     #test_cmakelists parent
     test_cmakelists parent "$(basename "$cwd")"
