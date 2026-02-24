@@ -11,7 +11,7 @@ words="$(cat | tr -d '\n' |
 
 [ -z "$words" ] && exit 1
 
-chosen="$(echo "$words" | rofi -theme 'gruvbox-dark.rasi' -p 'Copy which word?' -dmenu -i -l 10)"
+chosen="$(echo "$words" | rofi -theme 'gruvbox-dark.rasi' -p 'Copy which word?' -dmenu -i -l 20)"
 # chosen="$(echo "$words" | dmenu -i -p 'Copy which word?' -l 10)"
 
 [ -z "$chosen" ] && exit 1

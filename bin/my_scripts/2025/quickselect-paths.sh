@@ -21,7 +21,7 @@ paths="$(printf '%s' "$paths" | sort -u)"
 
 [ -z "$paths" ] && exit 1
 
-chosen="$(printf '%s' "$paths" | rofi -theme 'gruvbox-dark.rasi' -p 'Copy which path?' -dmenu -i -l 10)"
+chosen="$(printf '%s' "$paths" | rofi -theme 'gruvbox-dark.rasi' -p 'Copy which path?' -dmenu -i -l 20)"
 # chosen="$(printf '%s' "$paths" | dmenu -i -p 'Copy which path?' -l 10)"
 
 [ -z "$chosen" ] && exit 1
