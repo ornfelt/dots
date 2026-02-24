@@ -9,6 +9,15 @@ options=(
     "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
     "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua oaskdoaskdoasdkasodkasodkasdoaksdoadkasdjoasjdoasdjosadasjidjasodjasodajsdoasjdoasjdaosdjaosdoasdoajsdoajsdoajdjjjs"
     "Long string with spaces                     and tabs		for testing alignment and formatting"
+    "Short"
+    "Short"
+    "Short"
+    "Short"
+    "Short"
+    "Short"
+    "Short"
+    "Short"
+    "Short"
 )
 
 input=$(printf "%s\n" "${options[@]}")

@@ -1,72 +1,43 @@
 #!/bin/sh
 
-# expanded version of:
-# $HOME/.local/bin/my_scripts/2025/st-quickselect-words.sh
+# Quick-select "words" from terminal output and copy to clipboard.
+# Read from stdin for compatability with st externalpipe scripts or via tmux
+# capture-pane.
 
-# Quick-select "words" based on WezTerm-like PCRE and either copy (-c, default)
-# or xdg-open (-o) the chosen item.
+# Usage:
+# hook into st:
+# { MODKEY|ShiftMask, XK_w, externalpipe, { .v = (const char*[]){ "st-quickselect-words", NULL } } },
+# or use tmux scrollback:
+# tmux capture-pane -J -p | ./st-quickselect-words.sh
 
-MODE="copy"  # default
-
-while getopts "hoc" opt; do
-  case "$opt" in
-    h)
-      cat <<EOF
-Usage: st-quickselect-words [-c|-o]
-
-Reads from stdin, extracts "words" using a WezTerm-like PCRE pattern,
-shows them in a menu (dmenu/rofi), and then:
-
-  -c   Copy the chosen word to the clipboard (default)
-  -o   xdg-open the chosen word (useful if it's a URL/file)
-  -h   Show this help
-
-Menu selection is controlled via env vars:
-  ST_MENU       = dmenu (default) or rofi
-EOF
-      exit 0
-      ;;
-    c) MODE="copy" ;;
-    o) MODE="open" ;;
-    *) exit 1 ;;
-  esac
-done
-shift $((OPTIND - 1))
-
+# Read all stdin into a temp file (so we can run multiple passes if needed)
 tmpfile=$(mktemp /tmp/st-quick-words.XXXXXX)
 trap 'rm -f "$tmpfile"' 0 1 15
 
 cat > "$tmpfile"
 
-# strip st sidebars:
+# strip st sidebars
 sed -i 's/.*│//g' "$tmpfile"
 
-# WezTerm-like PCRE pattern for words:
-pattern="([^│\\s]\\S*?(?=:\\d|[>\"']|\$))|([^│\\s]\\S{2,}?(?=[>\"']|\$| ))"
+# Grep "word-like" things:
+# - Start with a non-space, not the │ bar
+# - At least 3 non-space characters total (like my wezterm quickselect pattern)
+matches=$(grep -aEo '[^[:space:]│][^[:space:]│]{2,}' "$tmpfile" \
+  | sort -u)
 
-matches=$(grep -aPo "$pattern" "$tmpfile" | sort -u)
+# with punctuation trimming
+#matches=$(grep -aEo '[^[:space:]│][^[:space:]│]+' "$tmpfile" \
+#  | sed 's/[,:;.!?"]$//' \
+#  | sort -u)
 
 [ -z "$matches" ] && exit 1
 
-menu="${ST_MENU:-dmenu}"
-prompt="Copy/open which word?"
-
-# pick menu program dynamically
-if [ "$menu" = "rofi" ]; then
-  choice=$(printf '%s\n' "$matches" | rofi -theme "gruvbox-dark.rasi" -p "$prompt" -dmenu -i -l 10)
-else
-  # default: dmenu
-  choice=$(printf '%s\n' "$matches" | dmenu -p "$prompt" -i -l 10)
-fi
+# rofi
+#choice=$(printf '%s\n' "$matches" | rofi -theme 'gruvbox-dark.rasi' -p 'Copy which word?' -dmenu -i -l 10)
+# dmenu
+choice=$(printf '%s\n' "$matches" | dmenu -p "Copy which word?" -i -l 10)
 
 [ -z "$choice" ] && exit 1
 
-case "$MODE" in
-  copy)
-    printf '%s' "$choice" | tr -d '\n' | xclip -selection clipboard
-    ;;
-  open)
-    setsid xdg-open "$choice" >/dev/null 2>&1 &
-    ;;
-esac
+printf '%s' "$choice" | tr -d '\n' | xclip -selection clipboard
 
