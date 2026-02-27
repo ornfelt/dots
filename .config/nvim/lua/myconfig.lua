@@ -162,6 +162,11 @@ function M.use_file_picker_for_commands()
   return use_file_picker:lower() == "true"
 end
 
+function M.should_use_custom_statusline()
+  local use_custom = read_config("UseCustomStatusline", "true")
+  return use_custom:lower() == "true"
+end
+
 -- Cache for UseCustomLspForSql (nil means not yet read)
 local _use_custom_lsp_for_sql_cache = nil
 
@@ -348,6 +353,10 @@ function ToggleUseFilePickerForCommands()
   ToggleBooleanSetting("UseFilePickerForCommands")
 end
 
+function ToggleUseCustomStatusline()
+  ToggleBooleanSetting("UseCustomStatusline")
+end
+
 function ToggleUseCustomLspForSql()
   ToggleBooleanSetting("UseCustomLspForSql")
 end
@@ -358,6 +367,8 @@ vim.api.nvim_create_user_command('TogglePrioritizeBuildScript', TogglePrioritize
 vim.api.nvim_create_user_command('ToggleDebugPrint', ToggleDebugPrint, {})
 -- cmd ToggleUseFilePickerForCommands: ToggleUseFilePickerForCommands
 vim.api.nvim_create_user_command('ToggleUseFilePickerForCommands', ToggleUseFilePickerForCommands, {})
+-- cmd ToggleUseCustomStatusline: ToggleUseCustomStatusline
+vim.api.nvim_create_user_command('ToggleUseCustomStatusline', ToggleUseCustomStatusline, {})
 -- cmd ToggleUseCustomLspForSql: ToggleUseCustomLspForSql
 vim.api.nvim_create_user_command('ToggleUseCustomLspForSql', ToggleUseCustomLspForSql, {})
 

@@ -24,6 +24,7 @@ local commands = {
   { label = "Config - TogglePrioritizeBuildScript", cmd = "TogglePrioritizeBuildScript" },
   { label = "Config - ToggleDebugPrint", cmd = "ToggleDebugPrint" },
   { label = "Config - ToggleUseFilePickerForCommands", cmd = "ToggleUseFilePickerForCommands" },
+  { label = "Config - ToggleUseCustomStatusline", cmd = "ToggleUseCustomStatusline" },
   { label = "Config - ToggleUseCustomLspForSql", cmd = "ToggleUseCustomLspForSql" },
   { label = "Config - PrintConfig", cmd = "PrintConfig" },
   { label = "Llama", cmd = "Llm" },

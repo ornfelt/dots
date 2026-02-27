@@ -1,5 +1,34 @@
 require('dbg_log').log_file(debug.getinfo(1, 'S').source)
 
+--local show_tab_buffer_info = false
+local show_tab_buffer_info = true
+
+local show_buffer_info = false
+--local show_buffer_info = true
+
+local function getTabBufferInfo()
+  if not show_tab_buffer_info then
+    return ''
+  end
+
+  local tab_num = vim.fn.tabpagenr()
+  local tab_count = vim.fn.tabpagenr('$')
+  local result = string.format('%d/%d', tab_num, tab_count)
+
+  if show_buffer_info then
+    local buf_num = vim.api.nvim_get_current_buf()
+    local buf_count = 0
+    for _, buf in ipairs(vim.api.nvim_list_bufs()) do
+      if vim.fn.buflisted(buf) == 1 then
+        buf_count = buf_count + 1
+      end
+    end
+    result = string.format('%s (%d/%d)', result, buf_num, buf_count)
+  end
+
+  return result
+end
+
 local function getWords()
   if vim.bo.filetype == "md" or vim.bo.filetype == "text" or vim.bo.filetype == "txt" or vim.bo.filetype == "vtxt" or vim.bo.filetype == "markdown" then
     return tostring(vim.fn.wordcount().words)
@@ -58,6 +87,7 @@ require('lualine').setup {
     lualine_x = {
       lsp_clients,
       getWords,
+      getTabBufferInfo,
       'encoding',
       {
         'fileformat',

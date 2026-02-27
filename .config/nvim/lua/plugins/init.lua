@@ -1,9 +1,11 @@
 require('dbg_log').log_file(debug.getinfo(1, 'S').source)
 
+local myconfig = require('myconfig')
+
 return {
   -- General
   require("plugins.gruvbox"),
-  require("plugins.lualine"),
+  myconfig.should_use_custom_statusline() and {} or require("plugins.lualine"),
   require("plugins.fzf"),
   require("plugins.fzf-lua"),
   require("plugins.telescope"),
