@@ -11,12 +11,33 @@ return (function()
     end
   end
 
-  local exe
-  if vim.fn.has("win32") == 1 then
-    exe = base_dir .. [[\Code2\C#\my_csharp\SqlMiniLsp\bin\Debug\net8.0\SqlMiniLsp.exe]]
-  else
-    exe = base_dir .. "/Code2/C#/my_csharp/SqlMiniLsp/bin/Debug/net9.0/SqlMiniLsp"
+  --local exe
+  --if vim.fn.has("win32") == 1 then
+  --  exe = base_dir .. [[\Code2\C#\my_csharp\SqlMiniLsp\bin\Debug\net8.0\SqlMiniLsp.exe]]
+  --else
+  --  exe = base_dir .. "/Code2/C#/my_csharp/SqlMiniLsp/bin/Debug/net9.0/SqlMiniLsp"
+  --end
+
+  -- build dynamically and support net* dir
+  local is_win = vim.fn.has("win32") == 1
+  local sep = is_win and "\\" or "/"
+  local project_dir = base_dir .. sep .. table.concat({
+    "Code2", "C#", "my_csharp", "SqlMiniLsp"
+  }, sep)
+  local bin_debug = project_dir .. sep .. "bin" .. sep .. "Debug"
+
+  -- find candidate TFM dirs: bin/Debug/net*/
+  local tfm_dirs = vim.fn.glob(bin_debug .. sep .. "net*", true, true) -- list
+  table.sort(tfm_dirs) -- lexicographic; net10.0 sorts after net9.0, etc.
+
+  -- pick the last one
+  local tfm_dir = tfm_dirs[#tfm_dirs]
+  if not tfm_dir or tfm_dir == "" then
+    error("No net* folder found under: " .. bin_debug)
   end
+
+  local exe_name = is_win and "SqlMiniLsp.exe" or "SqlMiniLsp"
+  local exe = tfm_dir .. sep .. exe_name
 
   --print("using sqlminilsp exe: " .. exe)
 
