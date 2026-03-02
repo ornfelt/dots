@@ -22,6 +22,8 @@ config.enable_wayland = false -- Required for hyprland?
 -- config.font = wezterm.font('Hack')
 --config.font = wezterm.font('Monaspace Neon')
 
+config.audible_bell = "Disabled"
+
 local user_domain = os.getenv("USERDOMAIN") or ""
 if string.lower(user_domain):find("lenovo2") then
   config.font_size = 10.0

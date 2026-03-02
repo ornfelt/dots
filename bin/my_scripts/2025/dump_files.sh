@@ -4,10 +4,10 @@
 # ./dump_files.sh <input_dir> [output_file] [recursive: true/false] [use_full_paths: true/false]
 #
 # Examples:
-# ./dump_files.sh $code_root_dir/Code2/C++/space/cs/BlackholeGfxV2/shaders/gl
-# ./dump_files.sh $code_root_dir/Code2/C++/space/cs/BlackholeGfxV2/shaders/gl /tmp/shader_dump.txt
-# ./dump_files.sh $code_root_dir/Code2/C++/space/cs/BlackholeGfxV2/shaders /tmp/shader_dump.txt true
-# ./dump_files.sh $code_root_dir/Code2/C++/space/cs/BlackholeGfxV2/shaders /tmp/shader_dump.txt true true
+# ./dump_files.sh $code_root_dir/Code2/C++/space/cs/BlackholeGfx/shaders/gl
+# ./dump_files.sh $code_root_dir/Code2/C++/space/cs/BlackholeGfx/shaders/gl /tmp/shader_dump.txt
+# ./dump_files.sh $code_root_dir/Code2/C++/space/cs/BlackholeGfx/shaders /tmp/shader_dump.txt true
+# ./dump_files.sh $code_root_dir/Code2/C++/space/cs/BlackholeGfx/shaders /tmp/shader_dump.txt true true
 
 # Hard-coded toggle: when true, prints metadata header at top of dump file
 INCLUDE_METADATA_HEADER=false
