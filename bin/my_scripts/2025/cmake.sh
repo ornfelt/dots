@@ -41,6 +41,37 @@ CYAN='\033[36m'
 DARKGRAY='\033[90m'
 DARKYELLOW='\033[93m'
 
+# Help check (case-insensitive)
+help_tokens=("h" "help" "-h" "--help")
+for token in "${help_tokens[@]}"; do
+    if [[ "${1,,}" == "$token" || "${2,,}" == "$token" ]]; then
+        cat <<'EOF'
+cmake.sh - context-aware cmake helper
+
+Usage:
+  ./cmake.sh
+      Detect path and RUN the chosen cmake command.
+
+  ./cmake.sh onlyprint
+      Detect path and PRINT commands (no execution).
+
+  ./cmake.sh r | release
+      Run in Release mode.
+
+  ./cmake.sh r foo
+      Release mode + PRINT-ONLY (because a second arg exists).
+
+  ./cmake.sh h | help | -h | --help
+      Show this help.
+
+Notes:
+  - BuildType defaults to Debug unless you pass r/release.
+  - The script chooses a cmake command based on your current working directory.
+EOF
+        exit 0
+    fi
+done
+
 # Debug print (PowerShell-style)
 if [[ -n "$OnlyPrint" ]]; then
     printf "%b[OnlyPrint]=ON  [BuildType]=%s%b\n" "$MAGENTA" "$BuildType" "$RESET"
@@ -87,7 +118,7 @@ test_cmakelists() {
         return 0
     fi
 
-    printf "%bCMakeLists.txt not found at: %s (%s)%b\n" "$DARKYELLOW" "$cmake_path" "$context" "$RESET"
+    printf "%bCMakeLists.txt not found at: %s - %s%b\n" "$DARKYELLOW" "$cmake_path" "$context" "$RESET"
 
     if [[ "$where" == "parent" ]]; then
         printf "%bMaybe try:%b\n" "$DARKYELLOW" "$RESET"
@@ -260,8 +291,16 @@ elif [[ "$lc" == *llama.cpp* ]]; then
         echo "cmake -B build && cmake --build build --config $BuildType"
     fi
 
-elif [[ "$lc" == *wc_clean_mcnk* ]]; then
-    test_cmakelists parent "wc_clean_mcnk (expecting CMakeLists.txt one level up)"
+# wildcard match:
+elif [[ "$lc" == *wc_clean_mcnk* || "$lc" == *wc_clean_m2* ]]; then
+# Regex match alternative:
+#elif [[ "$lc" =~ wc_clean_(mcnk|m2) ]]; then
+
+    # Determine which project we matched
+    proj="wc_clean_mcnk"
+    [[ "$lc" == *wc_clean_m2* ]] && proj="wc_clean_m2"
+
+    test_cmakelists parent "$proj (expecting CMakeLists.txt one level up)"
 
     main="cmake .. -DCMAKE_BUILD_TYPE=$BuildType -DGFX_DLL=OFF -DLIBWOW_DLL=OFF"
     alts=(
