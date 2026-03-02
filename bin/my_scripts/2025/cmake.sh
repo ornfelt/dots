@@ -291,6 +291,17 @@ elif [[ "$lc" == *llama.cpp* ]]; then
         echo "cmake -B build && cmake --build build --config $BuildType"
     fi
 
+elif [[ "$lc" == *wc_simple* ]]; then
+    test_cmakelists parent "wc_simple (expecting CMakeLists.txt one level up)"
+
+    main="cmake .. -DCMAKE_BUILD_TYPE=$BuildType -DGFX_DLL=OFF"
+    alts=(
+        "cmake .. -DCMAKE_BUILD_TYPE=$BuildType -DGFX_DLL=ON"
+    )
+
+    run_or_print "$main"
+    print_alternatives "${alts[@]}"
+
 # wildcard match:
 elif [[ "$lc" == *wc_clean_mcnk* || "$lc" == *wc_clean_m2* ]]; then
 # Regex match alternative:
