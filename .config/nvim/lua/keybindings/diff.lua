@@ -1105,10 +1105,11 @@ local function diff_current_file_with_open_buffer()
     end
 
     vim.cmd("tabnew " .. vim.fn.fnameescape(diff_path))
-    vim.bo.buftype = "nofile"
-    vim.bo.bufhidden = "wipe"
-    vim.bo.swapfile = false
-    vim.bo.filetype = "diff"
+    -- make new tab into scatch-like buffer
+    --vim.bo.buftype = "nofile"
+    --vim.bo.bufhidden = "wipe"
+    --vim.bo.swapfile = false
+    --vim.bo.filetype = "diff"
     --vim.api.nvim_buf_set_name(0,
     --  "diff_"
     --  .. vim.fn.fnamemodify(current_file, ":t")
