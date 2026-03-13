@@ -992,3 +992,131 @@ vim.api.nvim_create_user_command("GitTabC", function(opts)
   git_open_file_from_commit(limit)
 end, { nargs = "?" })
 
+local function get_other_open_buffer_files()
+  local current_buf = vim.api.nvim_get_current_buf()
+  local windows = vim.api.nvim_list_wins()
+  local seen = {}
+  local files = {}
+
+  for _, win in ipairs(windows) do
+    local buf = vim.api.nvim_win_get_buf(win)
+    if buf ~= current_buf and vim.api.nvim_buf_is_loaded(buf) then
+      local name = vim.api.nvim_buf_get_name(buf)
+      if name ~= "" and vim.fn.filereadable(name) == 1 then
+        local normalized = myconfig.normalize_path(name)
+        if not seen[normalized] then
+          seen[normalized] = true
+          table.insert(files, normalized)
+        end
+      end
+    end
+  end
+
+  table.sort(files)
+  return files
+end
+
+local function create_noindex_diff_file(file1, file2, use_debug_print)
+  local temp_dir
+  if vim.loop.os_uname().sysname == "Windows_NT" then
+    temp_dir = "C:/local/git_noindex_diff"
+  else
+    temp_dir = os.getenv("HOME") .. "/.cache/nvim/git_noindex_diff"
+  end
+  vim.fn.mkdir(temp_dir, "p")
+
+  local safe_name = (
+    vim.fn.fnamemodify(file1, ":t:r")
+    .. "_VS_" ..
+    vim.fn.fnamemodify(file2, ":t:r")
+  ):gsub("[^%w%._-]", "_")
+
+  local target = myconfig.normalize_path(temp_dir .. "/" .. safe_name .. ".diff")
+
+  local cmd
+  if vim.loop.os_uname().sysname == "Windows_NT" then
+    cmd = string.format(
+      'git diff --no-index "%s" "%s" > "%s"',
+      file1, file2, target
+    )
+  else
+    cmd = string.format(
+      "git diff --no-index %s %s > %s",
+      vim.fn.shellescape(file1),
+      vim.fn.shellescape(file2),
+      vim.fn.shellescape(target)
+    )
+  end
+
+  if use_debug_print then
+    print("[create_noindex_diff_file] cmd: " .. cmd)
+  end
+
+  vim.fn.system(cmd)
+
+  -- git diff --no-index returns 1 when differences exist, so only fail on > 1
+  if vim.v.shell_error > 1 then
+    print("Failed to create no-index diff.")
+    return nil
+  end
+
+  return target
+end
+
+local function diff_current_file_with_open_buffer()
+  local use_debug_print = myconfig.should_debug_print()
+  local current_file = myconfig.normalize_path(vim.fn.expand("%:p"))
+
+  if current_file == "" or vim.fn.filereadable(current_file) ~= 1 then
+    print("Current buffer is not a readable file.")
+    return
+  end
+
+  local files = get_other_open_buffer_files()
+  if #files == 0 then
+    print("No other open file buffers found.")
+    return
+  end
+
+  if use_debug_print then
+    print("[diff_current_file_with_open_buffer] current_file: " .. current_file)
+    print("[diff_current_file_with_open_buffer] candidates: " .. vim.inspect(files))
+  end
+
+  pick_item(files, "Select file to diff", function(selected_file)
+    if not selected_file or selected_file == "" then
+      return
+    end
+
+    selected_file = myconfig.normalize_path(vim.trim(selected_file))
+
+    if selected_file == current_file then
+      print("Cannot diff the file with itself.")
+      return
+    end
+
+    if use_debug_print then
+      print("[diff_current_file_with_open_buffer] selected_file: " .. selected_file)
+    end
+
+    local diff_path = create_noindex_diff_file(current_file, selected_file, use_debug_print)
+    if not diff_path then
+      return
+    end
+
+    vim.cmd("tabnew " .. vim.fn.fnameescape(diff_path))
+    vim.bo.buftype = "nofile"
+    vim.bo.bufhidden = "wipe"
+    vim.bo.swapfile = false
+    vim.bo.filetype = "diff"
+    --vim.api.nvim_buf_set_name(0,
+    --  "diff_"
+    --  .. vim.fn.fnamemodify(current_file, ":t")
+    --  .. "_VS_"
+    --  .. vim.fn.fnamemodify(selected_file, ":t"))
+  end)
+end
+
+-- cmd DiffTab: diff_current_file_with_open_buffer
+vim.api.nvim_create_user_command("DiffTab", diff_current_file_with_open_buffer, {})
+

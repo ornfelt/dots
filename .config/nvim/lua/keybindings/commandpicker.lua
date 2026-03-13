@@ -14,6 +14,7 @@ local commands = {
   { label = "Diffg", cmd = "Diffg" },
   { label = "Diffgf", cmd = "Diffgf" },
   { label = "DiffCp", cmd = "DiffCp" },
+  { label = "DiffTab", cmd = "DiffTab" },
   { label = "GitTab", cmd = "GitTab" },
   { label = "GitTabC", cmd = "GitTabC" },
   { label = "MakefileTargets", cmd = "MakefileTargets" },
