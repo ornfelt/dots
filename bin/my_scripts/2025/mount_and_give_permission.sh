@@ -22,6 +22,13 @@ sudo umount /media2
 #sudo mount -t ntfs-3g /dev/sdb1 /media -o uid=$(id -u $USER),gid=$(id -g $USER),umask=000
 #sudo mount -t ntfs-3g /dev/sda1 /media2 -o uid=$(id -u $USER),gid=$(id -g $USER),umask=000
 
+# Note: hdd might be in ntfs format... Check via:
+# lsblk -f
+# or:
+# sudo blkid /dev/sdb1
+# do this:
+# sudo mount -t ntfs3 /dev/sdb1 /media2
+
 # exfat:
 sudo mount -t exfat -o uid=$(id -u $USER),gid=$(id -g $USER),umask=000 /dev/sdb1 /media
 sudo mount -t exfat -o uid=$(id -u $USER),gid=$(id -g $USER),umask=000 /dev/sda1 /media2

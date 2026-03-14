@@ -1,11 +1,15 @@
 #!/bin/bash
 
 set -e
+# enable Bash’s dotglob so * also matches hidden entries.
+shopt -s dotglob nullglob
 
-SRC_ROOT="/media2"
-DEST_ROOT="/media"
+SRC_ROOT="/media"
+DEST_ROOT="/media2"
 
-# Exit if /media/Movies already exists
+# Note: Run this for Movies and run sync_hdds_2.sh for 2024/2025/my_files
+
+# Exit if Movies already exists in DEST_ROOT
 #if [ -d "$DEST_ROOT/Movies" ]; then
 #    echo "Directory $DEST_ROOT/Movies already exists. Exiting."
 #    exit 0
@@ -43,13 +47,11 @@ copy_with_wait() {
     fi
 }
 
-# Copy from /media2/Movies/Movies to /media/Movies/Movies
 echo "Copying from $SRC_ROOT/Movies/Movies to $DEST_ROOT/Movies/Movies..."
 for entry in "$SRC_ROOT/Movies/Movies"/*; do
     copy_with_wait "$entry" "$DEST_ROOT/Movies/Movies"
 done
 
-# Copy from /media2/Movies/Series to /media/Movies/Series (except Anime)
 echo "Copying from $SRC_ROOT/Movies/Series to $DEST_ROOT/Movies/Series..."
 for entry in "$SRC_ROOT/Movies/Series"/*; do
     name=$(basename "$entry")

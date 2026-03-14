@@ -1,14 +1,15 @@
 #!/bin/bash
 
 set -e
+# enable Bash’s dotglob so * also matches hidden entries.
+shopt -s dotglob nullglob
 
-SRC_ROOT="/media2"
-DEST_ROOT="/media"
+SRC_ROOT="/media"
+DEST_ROOT="/media2"
 
-# Copy Work2 and 2025 dirs manually or replace paths in this script...
-# OBS: beware that below doesn't copy dotfiles like .bash_profile...
+# Note: Run this for 2024/2025/my_files and run sync_hdds.sh for Movies
 
-# Exit if /media/2024 already exists
+# Exit if 2024 already exists in DEST_ROOT
 #if [ -d "$DEST_ROOT/2024" ]; then
 #    echo "Directory $DEST_ROOT/2024 already exists. Exiting."
 #    exit 0
@@ -18,7 +19,7 @@ DEST_ROOT="/media"
 echo "Creating directories under $DEST_ROOT..."
 mkdir -p "$DEST_ROOT/my_files"
 mkdir -p "$DEST_ROOT/2024"
-#mkdir -p "$DEST_ROOT/2025"
+mkdir -p "$DEST_ROOT/2025"
 
 copy_with_wait() {
     local src_path="$1"
@@ -47,13 +48,16 @@ copy_with_wait() {
     fi
 }
 
-# Copy from /media2/2024 to /media/2024
 echo "Copying from $SRC_ROOT/2024 to $DEST_ROOT/2024..."
 for entry in "$SRC_ROOT/2024"/*; do
     copy_with_wait "$entry" "$DEST_ROOT/2024"
 done
 
-# Copy from /media2/my_files to /media/my_files
+echo "Copying from $SRC_ROOT/2025 to $DEST_ROOT/2025..."
+for entry in "$SRC_ROOT/2025"/*; do
+    copy_with_wait "$entry" "$DEST_ROOT/2025"
+done
+
 echo "Copying from $SRC_ROOT/my_files to $DEST_ROOT/my_files..."
 for entry in "$SRC_ROOT/my_files"/*; do
     copy_with_wait "$entry" "$DEST_ROOT/my_files"
