@@ -665,3 +665,286 @@ end, {
   desc = "Copy buffer skeleton (replace bodies with '...'); use ! to drop comment‐only lines",
 })
 
+-- cmd FindCustomTypes: find all custom type declarations and their usages
+vim.api.nvim_create_user_command("FindCustomTypes", function(opts)
+  local bufnr = vim.api.nvim_get_current_buf()
+  local ft    = vim.bo.filetype
+
+  local lang_map = {
+    c          = "c",
+    cpp        = "cpp",
+    h          = "c",
+    cs         = "c_sharp",
+    python     = "python",
+    go         = "go",
+    rust       = "rust",
+    lua        = "lua",
+    java       = "java",
+    js         = "javascript",
+    javascript = "javascript",
+    jsx        = "javascript",
+    ts         = "typescript",
+    typescript = "typescript",
+    tsx        = "tsx",
+  }
+  local ts_lang = lang_map[ft]
+  if not ts_lang then
+    vim.notify("FindCustomTypes: unsupported filetype '" .. ft .. "'", vim.log.levels.WARN)
+    return
+  end
+
+  -- per-language declaration node types and the field that holds the name
+  local decl_kinds = {
+    c_sharp = {
+      { node = "enum_declaration",          field = "name" },
+      { node = "struct_declaration",        field = "name" },
+      { node = "class_declaration",         field = "name" },
+      { node = "interface_declaration",     field = "name" },
+      { node = "delegate_declaration",      field = "name" },
+      { node = "record_declaration",        field = "name" },
+    },
+    java = {
+      { node = "class_declaration",         field = "name" },
+      { node = "interface_declaration",     field = "name" },
+      { node = "enum_declaration",          field = "name" },
+      { node = "record_declaration",        field = "name" },
+    },
+    cpp = {
+      { node = "class_specifier",           field = "name" },
+      { node = "struct_specifier",          field = "name" },
+      { node = "enum_specifier",            field = "name" },
+      { node = "type_alias_declaration",    field = "name" },
+    },
+    c = {
+      { node = "struct_specifier",          field = "name" },
+      { node = "enum_specifier",            field = "name" },
+      { node = "type_alias_declaration",    field = "name" },
+    },
+    rust = {
+      { node = "struct_item",               field = "name" },
+      { node = "enum_item",                 field = "name" },
+      { node = "type_item",                 field = "name" },
+      { node = "trait_item",                field = "name" },
+    },
+    go = {
+      { node = "type_spec",                 field = "name" },
+    },
+    python = {
+      { node = "class_definition",          field = "name" },
+    },
+    typescript = {
+      { node = "class_declaration",         field = "name" },
+      { node = "interface_declaration",     field = "name" },
+      { node = "type_alias_declaration",    field = "name" },
+      { node = "enum_declaration",          field = "name" },
+    },
+    javascript = {
+      { node = "class_declaration",         field = "name" },
+    },
+    tsx = {
+      { node = "class_declaration",         field = "name" },
+      { node = "interface_declaration",     field = "name" },
+      { node = "type_alias_declaration",    field = "name" },
+    },
+    lua = {
+      -- Lua has no formal type declarations; nothing to collect
+    },
+  }
+
+  local kinds = decl_kinds[ts_lang] or {}
+
+  -- parse
+  local ok, parser = pcall(vim.treesitter.get_parser, bufnr, ts_lang)
+  if not ok or not parser then
+    vim.notify("FindCustomTypes: could not get parser for '" .. ts_lang .. "'", vim.log.levels.ERROR)
+    return
+  end
+  local tree = parser:parse()[1]
+  local root = tree:root()
+  local lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
+
+  -- walk helper
+  local function walk(node, cb)
+    cb(node)
+    for i = 0, node:child_count() - 1 do
+      walk(node:child(i), cb)
+    end
+  end
+
+  -- classify context from parent node type
+  local function classify(node)
+    local p = node:parent()
+    if not p then return "unknown" end
+    local t = p:type()
+    local map = {
+      parameter                    = "parameter",
+      variable_declarator          = "variable",
+      local_variable_type          = "local var type",
+      base_list                    = "base type",
+      attribute                    = "attribute",
+      object_creation_expression   = "new expression",
+      cast_expression              = "cast",
+      type_of_expression           = "typeof",
+      is_expression                = "is-check",
+      is_pattern_expression        = "is-check",
+      as_expression                = "as-cast",
+      argument                     = "argument",
+      member_access_expression     = "member access",
+      invocation_expression        = "invocation",
+      field_declaration            = "field/property type",
+      property_declaration         = "field/property type",
+      method_declaration           = "return type",
+      function_declaration         = "return type",
+      array_type                   = "array element type",
+      nullable_type                = "nullable type",
+      -- declaration parents
+      enum_declaration             = "DECLARATION",
+      struct_declaration           = "DECLARATION",
+      class_declaration            = "DECLARATION",
+      interface_declaration        = "DECLARATION",
+      delegate_declaration         = "DECLARATION",
+      record_declaration           = "DECLARATION",
+      class_specifier              = "DECLARATION",
+      struct_specifier             = "DECLARATION",
+      struct_item                  = "DECLARATION",
+      enum_item                    = "DECLARATION",
+      type_item                    = "DECLARATION",
+      trait_item                   = "DECLARATION",
+      type_spec                    = "DECLARATION",
+      class_definition             = "DECLARATION",
+      type_alias_declaration       = "DECLARATION",
+    }
+    return map[t] or t:gsub("_", " ")
+  end
+
+  -- Pass 1: collect declarations
+  local kind_set = {}
+  for _, k in ipairs(kinds) do kind_set[k.node] = k.field end
+
+  ---@type table<string, {name:string, kind:string, row:integer, col:integer}>
+  local declarations = {}
+
+  walk(root, function(node)
+    local field = kind_set[node:type()]
+    if not field then return end
+    local name_node = node:field(field)[1]
+    if not name_node then return end
+    local name = vim.treesitter.get_node_text(name_node, bufnr)
+    if name and name ~= "" then
+      local row, col = name_node:range()
+      declarations[name] = {
+        name = name,
+        kind = node:type():gsub("_declaration", ""):gsub("_specifier", ""):gsub("_item", ""):gsub("_definition", ""),
+        row  = row,
+        col  = col,
+      }
+    end
+  end)
+
+  if vim.tbl_isempty(declarations) then
+    vim.notify("FindCustomTypes: no custom type declarations found.", vim.log.levels.INFO)
+    return
+  end
+
+  -- Pass 2: collect usages
+  ---@type table<string, {row:integer, col:integer, context:string}[]>
+  local usages = {}
+  for name in pairs(declarations) do usages[name] = {} end
+
+  walk(root, function(node)
+    if node:type() ~= "identifier" and node:type() ~= "type_identifier" then return end
+    local name = vim.treesitter.get_node_text(node, bufnr)
+    if not declarations[name] then return end
+    local row, col = node:range()
+    table.insert(usages[name], {
+      row     = row,
+      col     = col,
+      context = classify(node),
+    })
+  end)
+
+  -- Output
+  local use_qf = opts.bang  -- :FindCustomTypes! -> send to quickfix instead
+  local qf_items = {}
+  local out = {}
+
+  local function add(line) table.insert(out, line) end
+
+  local fname = vim.api.nvim_buf_get_name(bufnr)
+  add("")
+  add("File: " .. (fname ~= "" and fname or "[No Name]"))
+  add("")
+
+  -- declarations sorted by line
+  local decl_list = vim.tbl_values(declarations)
+  table.sort(decl_list, function(a, b) return a.row < b.row end)
+
+  add((">> Custom Type Declarations (%d)"):format(#decl_list))
+  add(("-"):rep(70))
+  for _, d in ipairs(decl_list) do
+    local line_text = (lines[d.row + 1] or ""):match("^%s*(.-)%s*$")
+    add(("  %-38s [%s]  line %d, col %d"):format(d.name, d.kind, d.row + 1, d.col + 1))
+    add(("    %s"):format(line_text))
+    if use_qf then
+      table.insert(qf_items, {
+        filename = fname,
+        lnum     = d.row + 1,
+        col      = d.col + 1,
+        text     = ("[DECL:" .. d.kind .. "] " .. d.name),
+      })
+    end
+  end
+
+  -- usages sorted alphabetically, then by line within each type
+  local usage_names = vim.tbl_keys(usages)
+  table.sort(usage_names)
+
+  local total = 0
+  for _, name in ipairs(usage_names) do total = total + #usages[name] end
+
+  add("")
+  add((">> Usages by Type (%d total)"):format(total))
+  add(("-"):rep(70))
+
+  for _, name in ipairs(usage_names) do
+    local group = usages[name]
+    table.sort(group, function(a, b) return a.row < b.row end)
+    add((""):format())
+    add(("  %s  (%d occurrence%s)"):format(name, #group, #group ~= 1 and "s" or ""))
+    for _, u in ipairs(group) do
+      local line_text = (lines[u.row + 1] or ""):match("^%s*(.-)%s*$")
+      local decl_tag  = u.context == "DECLARATION" and "[declaration]" or ("[" .. u.context .. "]")
+      add(("    %5d: col %-4d  %-24s  %s"):format(u.row + 1, u.col + 1, decl_tag, line_text))
+      if use_qf then
+        table.insert(qf_items, {
+          filename = fname,
+          lnum     = u.row + 1,
+          col      = u.col + 1,
+          text     = ("[" .. name .. "] " .. u.context .. " — " .. line_text),
+        })
+      end
+    end
+  end
+
+  add("")
+
+  if use_qf then
+    vim.fn.setqflist(qf_items, "r")
+    vim.cmd("copen")
+    vim.notify(("FindCustomTypes: %d entries in quickfix"):format(#qf_items), vim.log.levels.INFO)
+  else
+    -- print to a scratch buffer in a vertical split
+    local out_buf = vim.api.nvim_create_buf(false, true)
+    vim.api.nvim_buf_set_lines(out_buf, 0, -1, false, out)
+    vim.bo[out_buf].filetype     = "text"
+    vim.bo[out_buf].modifiable   = false
+    vim.bo[out_buf].bufhidden    = "wipe"
+    vim.cmd("vsplit")
+    vim.api.nvim_win_set_buf(0, out_buf)
+    vim.api.nvim_buf_set_name(out_buf, "[CustomTypes]")
+  end
+end, {
+  bang = true,
+  desc = "Find custom type declarations and usages via treesitter. Use ! to send to quickfix.",
+})
+

@@ -31,6 +31,8 @@ local commands = {
   { label = "Llama", cmd = "Llm" },
   { label = "SkeletonCopy", cmd = "SkeletonCopy" },
   { label = "SkeletonCopy with comments", cmd = "SkeletonCopy!" },
+  { label = "FindCustomTypes", cmd = "FindCustomTypes" },
+  { label = "FindCustomTypes via quickfix", cmd = "FindCustomTypes!" },
   { label = "RemoveSession", cmd = "RemoveSession" },
   { label = "ToSnake", cmd = "ToSnake" },
   { label = "ToKebab", cmd = "ToKebab" },
