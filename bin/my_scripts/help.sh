@@ -40,6 +40,7 @@ declare -A ARG_MAP=(
   [ggrep]="gitgrep"
   [ripgrep]="ripgrep"
   [rgrep]="ripgrep"
+  [env]="env"
   [sh]="other"
   [x]="other"
   [other]="other"
@@ -101,6 +102,7 @@ show_usage() {
     "grep"
     "gitgrep / ggrep"
     "ripgrep / rgrep"
+    "env"
     "sh / x / other"
     "scripts / script"
   )
@@ -232,6 +234,76 @@ show_scripts_help() {
   write_command_with_description ".clean_shada"    "clean neovim shada data"
   write_command_with_description ".wow_wtf_update" "copy WoW WTF files into wow_addons repo"
   write_command_with_description ".wow_wtf_fix"    "copy WoW WTF files from wow_addons repo to local WoW dir"
+}
+
+show_env_help() {
+  printf "%bUseful environment variables:%b\n\n" "$YELLOW" "$RESET"
+
+  printf "%bSystem / machine:%b\n" "$DARKGRAY" "$RESET"
+  write_command_with_description '$HOSTNAME'        "machine hostname"
+  write_command_with_description '$OSTYPE'          "OS type string (e.g. linux-gnu, darwin)"
+  write_command_with_description '$MACHTYPE'        "machine type (e.g. x86_64-pc-linux-gnu)"
+  write_command_with_description '$HOSTTYPE'        "CPU arch (e.g. x86_64)"
+
+  printf "\n"
+  printf "%bUser / profile:%b\n" "$DARKGRAY" "$RESET"
+  write_command_with_description '$USER'            "current user name"
+  write_command_with_description '$HOME'            "user home dir"
+  write_command_with_description '$SHELL'           "current shell path"
+  write_command_with_description '$LANG'            "locale/language setting"
+  write_command_with_description '$TERM'            "terminal type"
+  write_command_with_description '$DISPLAY'         "X display (e.g. :0)"
+
+  printf "\n"
+  printf "%bShell / process:%b\n" "$DARKGRAY" "$RESET"
+  write_command_with_description '$PATH'            "executable search paths"
+  write_command_with_description '$PWD'             "current working directory"
+  write_command_with_description '$OLDPWD'          "previous working directory"
+  write_command_with_description '$IFS'             "internal field separator"
+  write_command_with_description '$PS1'             "primary shell prompt string"
+  write_command_with_description '$EDITOR'          "default text editor"
+  write_command_with_description '$VISUAL'          "default visual editor"
+  write_command_with_description '$PAGER'           "default pager (e.g. less)"
+  write_command_with_description '$MANPATH'         "man page search paths"
+  write_command_with_description '$TMPDIR / $TMP'   "temp directory"
+  write_command_with_description '$$'               "PID of current shell"
+  write_command_with_description '$?'               "exit code of last command"
+  write_command_with_description '$!'               "PID of last background command"
+  write_command_with_description '$0'               "name of current script/shell"
+
+  printf "\n"
+  printf "%bSystem info commands:%b\n" "$DARKGRAY" "$RESET"
+  write_code_line "nproc                              # CPU thread count"
+  write_code_line "nproc --all                        # total logical CPUs (incl. offline)"
+  write_code_line "uname -a                           # full system info"
+  write_code_line "uname -r                           # kernel version"
+  write_code_line "uname -m                           # machine hardware (e.g. x86_64)"
+  write_code_line "uname -s                           # OS name (e.g. Linux)"
+  write_code_line "uname -n                           # network hostname"
+  write_code_line "lscpu                              # detailed CPU info"
+  write_code_line "lscpu | grep 'CPU(s)'              # CPU count lines"
+  write_code_line "lsmem                              # memory info"
+  write_code_line "free -h                            # RAM usage (human-readable)"
+  write_code_line "df -h                              # disk usage (human-readable)"
+  write_code_line "lsblk                              # block devices"
+  write_code_line "lspci                              # PCI devices (GPU, etc.)"
+  write_code_line "lsusb                              # USB devices"
+  write_code_line "cat /etc/os-release                # distro info"
+  write_code_line "cat /proc/cpuinfo                  # raw CPU info"
+  write_code_line "cat /proc/meminfo                  # raw memory info"
+  write_code_line "uptime                             # system uptime and load"
+  write_code_line "who                                # logged in users"
+  write_code_line "id                                 # current user/group IDs"
+
+  printf "\n"
+  printf "%bPrint / inspect variables:%b\n" "$DARKGRAY" "$RESET"
+  write_code_line 'echo "$HOME"                       # print a variable'
+  write_code_line 'printenv                           # list all env vars'
+  write_code_line 'printenv HOME                      # print specific var'
+  write_code_line 'printenv | sort                    # sorted list'
+  write_code_line 'printenv | grep -i path            # filter by keyword'
+  write_code_line 'env                                # same as printenv'
+  write_code_line 'declare -p                         # all shell vars + attrs'
 }
 
 show_other_help() {
@@ -574,6 +646,15 @@ show_csharp_help() {
   write_code_line "dotnet run -f net7.0"
   write_code_line "dotnet run &> test.txt           # Run and capture output to test.txt"
   write_code_line "dotnet test                      # Run tests (from solution dir)"
+
+  printf "\n"
+  printf "%bAdd NuGet packages:%b\n" "$YELLOW" "$RESET"
+  write_code_line "dotnet add package Newtonsoft.Json                   # Add latest"
+  write_code_line "dotnet add package Newtonsoft.Json --version 13.0.3  # Add specific version"
+  write_code_line "dotnet add package Dapper                        # Example: Dapper (latest)"
+  write_code_line "dotnet add package Serilog --version 3.1.1       # Example: Serilog (pinned)"
+  write_code_line "dotnet list package                              # List installed packages"
+  write_code_line "dotnet remove package Newtonsoft.Json            # Remove a package"
 }
 
 show_cpp_help() {
@@ -630,6 +711,15 @@ show_rust_help() {
 
   printf "\n"
   write_code_line 'export RUSTFLAGS="-Awarnings"         # Allow/suppress all Rust compiler warnings'
+
+  printf "\n"
+  printf "%bAdd / remove packages (crates):%b\n" "$YELLOW" "$RESET"
+  write_code_line "cargo add serde                                 # Add latest"
+  write_code_line "cargo add serde@1.0.197                         # Add specific version"
+  write_code_line "cargo add serde --features derive               # Add with features"
+  write_code_line "cargo add tokio --features full                 # Example: tokio (latest, all features)"
+  write_code_line "cargo add anyhow@1.0.86                         # Example: anyhow (pinned)"
+  write_code_line "cargo remove serde                              # Remove a crate"
 }
 
 show_java_help() {
@@ -649,6 +739,24 @@ show_java_help() {
   printf "\n"
   write_code_line "javac -d out src/Main.java          # Compile into 'out' directory"
   write_code_line "java -cp out Main                   # Run with explicit classpath"
+
+  printf "\n"
+  printf "%bAdd packages (Maven):%b\n" "$YELLOW" "$RESET"
+  write_code_line "mvn dependency:get -Dartifact=com.google.gson:gson:LATEST  # Fetch latest"
+  write_code_line "mvn dependency:get -Dartifact=com.google.gson:gson:2.10.1  # Fetch specific version"
+  printf "%b  Or add directly to pom.xml <dependencies>:%b\n" "$DARKGRAY" "$RESET"
+  write_code_line "  <dependency>"
+  write_code_line "    <groupId>com.google.gson</groupId>"
+  write_code_line "    <artifactId>gson</artifactId>"
+  write_code_line "    <version>2.10.1</version>"
+  write_code_line "  </dependency>"
+  printf "\n"
+  printf "%bAdd packages (Gradle):%b\n" "$YELLOW" "$RESET"
+  printf "%b  Add to build.gradle dependencies {}:%b\n" "$DARKGRAY" "$RESET"
+  write_code_line "  implementation 'com.google.gson:gson:+'        # Latest"
+  write_code_line "  implementation 'com.google.gson:gson:2.10.1'   # Specific version"
+  write_code_line "mvn install                                      # Resolve + build (Maven)"
+  write_code_line "gradle build                                     # Resolve + build (Gradle)"
 }
 
 show_python_help() {
@@ -669,6 +777,16 @@ show_python_help() {
   printf "\n"
   write_code_line "python -m pip install -r requirements.txt  # Install dependencies"
   write_code_line "python ./main.py &> test.txt        # Run and capture output to test.txt"
+
+  printf "\n"
+  printf "%bAdd / remove packages:%b\n" "$YELLOW" "$RESET"
+  write_code_line "pip install requests                            # Add latest"
+  write_code_line "pip install requests==2.31.0                    # Add specific version"
+  write_code_line "pip install 'requests>=2.28,<3.0'               # Add with version range"
+  write_code_line "pip install flask numpy pandas                  # Install multiple at once"
+  write_code_line "pip install --upgrade requests                  # Upgrade a package"
+  write_code_line "pip uninstall requests                          # Remove a package"
+  write_code_line "pip freeze > requirements.txt                   # Save installed packages"
 }
 
 show_go_help() {
@@ -692,6 +810,15 @@ show_go_help() {
   printf "%bWith output redirected to test.txt:%b\n" "$YELLOW" "$RESET"
   write_code_line "go build; ./my_wow &> test.txt"
   write_code_line "go build; ./my_wow &> test.txt; vim ./test.txt"
+
+  printf "\n"
+  printf "%bAdd / remove packages:%b\n" "$YELLOW" "$RESET"
+  write_code_line "go get github.com/some/package@latest          # Add latest version"
+  write_code_line "go get github.com/some/package@v1.2.3          # Add specific version"
+  write_code_line "go get github.com/ebitengine/purego@latest"
+  write_code_line "go get github.com/ebitengine/purego@v0.8.2"
+  write_code_line "go get github.com/some/package@none            # Remove a package"
+  write_code_line "go mod tidy                                    # Clean up go.mod / go.sum (removes unused deps)"
 }
 
 show_js_help() {
@@ -708,13 +835,23 @@ show_js_help() {
   printf "\n"
   printf "%bDo this:%b\n" "$YELLOW" "$RESET"
   write_code_line "node main.js"
-  printf "\n"
   printf "%bOr:%b\n" "$YELLOW" "$RESET"
   write_code_line "npm init -y"
   printf "%b# fix package.json (add \"start\" script, etc.)%b\n" "$DARKGRAY" "$RESET"
   printf "%bThen:%b\n" "$YELLOW" "$RESET"
   write_code_line "npm run start"
   write_code_line "npm start"
+
+  printf "\n"
+  printf "%bAdd / remove packages:%b\n" "$YELLOW" "$RESET"
+  write_code_line "npm install some-package                       # Add latest"
+  write_code_line "npm install some-package@1.2.3                 # Add specific version"
+  write_code_line "npm install --save-dev some-package            # Add as dev dependency"
+  write_code_line "npm install --save-dev some-package@1.2.3      # Dev dep, specific version"
+  write_code_line "npm install axios                              # Example: axios (latest)"
+  write_code_line "npm install axios@1.6.0                        # Example: axios (pinned)"
+  write_code_line "npm uninstall some-package                     # Remove a package"
+  write_code_line "npm uninstall --save-dev some-package          # Remove a dev dependency"
 }
 
 show_ts_help() {
@@ -737,6 +874,17 @@ show_ts_help() {
   write_code_line "npm start      # runs node dist/main.js (via package.json script)"
   printf "%b# Dev mode (no separate build step):%b\n" "$DARKGRAY" "$RESET"
   write_code_line "npm run dev"
+
+  printf "\n"
+  printf "%bAdd / remove packages:%b\n" "$YELLOW" "$RESET"
+  write_code_line "npm install some-package                          # Add latest"
+  write_code_line "npm install some-package@1.2.3                    # Add specific version"
+  write_code_line "npm install --save-dev @types/some-package        # Add type definitions"
+  write_code_line "npm install --save-dev @types/some-package@1.2.3  # Pinned type definitions"
+  write_code_line "npm install axios                                 # Example: axios (latest)"
+  write_code_line "npm install --save-dev @types/node@20.0.0         # Example: pinned @types/node"
+  write_code_line "npm uninstall some-package                        # Remove a package"
+  write_code_line "npm uninstall --save-dev @types/some-package      # Remove type definitions"
 }
 
 # Main
@@ -774,6 +922,7 @@ case "$mode" in
   gitgrep)     show_gitgrep_help ;;
   ripgrep)     show_ripgrep_help ;;
   scripts)     show_scripts_help ;;
+  env)         show_env_help ;;
   other)       show_other_help ;;
 esac
 
