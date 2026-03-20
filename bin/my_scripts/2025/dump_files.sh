@@ -13,11 +13,30 @@
 INCLUDE_METADATA_HEADER=false
 #INCLUDE_METADATA_HEADER=true
 
-# --- Args ---
+# Args
 INPUT_DIR="${1}"
 OUTPUT_FILE="${2:-$(pwd)/dumped_files.txt}"
 RECURSIVE="${3:-false}"
 USE_FULL_PATHS="${4:-false}"
+
+# Help/usage if first arg looks like help
+if [[ "$INPUT_DIR" =~ ^([Hh][Ee][Ll][Pp])$ ]] || [[ "$INPUT_DIR" == "-" || "$INPUT_DIR" == "-h" || "$INPUT_DIR" == "--help" || "$INPUT_DIR" == "-help" ]]; then
+    echo "Usage: $0 <input_dir> [output_file] [recursive: true/false] [use_full_paths: true/false]"
+    echo
+    echo "Example usage:"
+    echo "  Only required arg (non-recursive, file names only, output to dumped_files.txt in current dir)"
+    echo "    $0 \"\$code_root_dir/Code2/C++/space/cs/BlackholeGfx/shaders/gl\""
+    echo
+    echo "  Specify output file:"
+    echo "    $0 \"\$code_root_dir/Code2/C++/space/cs/BlackholeGfx/shaders/gl\" \"/tmp/shader_dump.txt\""
+    echo
+    echo "  Recursive:"
+    echo "    $0 \"\$code_root_dir/Code2/C++/space/cs/BlackholeGfx/shaders\" \"/tmp/shader_dump.txt\" true"
+    echo
+    echo "  Recursive + full paths in headers:"
+    echo "    $0 \"\$code_root_dir/Code2/C++/space/cs/BlackholeGfx/shaders\" \"/tmp/shader_dump.txt\" true true"
+    exit 0
+fi
 
 # Normalize booleans (accept true/1/yes)
 to_bool() {
@@ -29,7 +48,7 @@ to_bool() {
 RECURSIVE=$(to_bool "$RECURSIVE")
 USE_FULL_PATHS=$(to_bool "$USE_FULL_PATHS")
 
-# --- Validate input dir ---
+# Validate input dir
 if [[ -z "$INPUT_DIR" ]]; then
     echo "Usage: $0 <input_dir> [output_file] [recursive: true/false] [use_full_paths: true/false]" >&2
     exit 1
@@ -43,7 +62,7 @@ fi
 # Resolve to absolute path
 RESOLVED_INPUT_DIR="$(cd "$INPUT_DIR" && pwd)"
 
-# --- Ensure output directory exists ---
+# Ensure output directory exists
 OUTPUT_PARENT="$(dirname "$OUTPUT_FILE")"
 if [[ -z "$OUTPUT_PARENT" || "$OUTPUT_PARENT" == "." ]]; then
     OUTPUT_PARENT="$(pwd)"
@@ -52,14 +71,14 @@ elif [[ ! -d "$OUTPUT_PARENT" ]]; then
     mkdir -p "$OUTPUT_PARENT"
 fi
 
-# --- Collect files ---
+# Collect files
 if [[ "$RECURSIVE" == true ]]; then
     mapfile -d '' files < <(find "$RESOLVED_INPUT_DIR" -type f -print0 | sort -z)
 else
     mapfile -d '' files < <(find "$RESOLVED_INPUT_DIR" -maxdepth 1 -type f -print0 | sort -z)
 fi
 
-# --- Build output ---
+# Build output
 {
     # Optional metadata header
     if [[ "$INCLUDE_METADATA_HEADER" == true ]]; then
@@ -102,3 +121,4 @@ fi
 } > "$OUTPUT_FILE"
 
 echo "Dumped ${#files[@]} file(s) to: $OUTPUT_FILE"
+
