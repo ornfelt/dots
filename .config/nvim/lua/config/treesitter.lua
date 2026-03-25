@@ -453,7 +453,7 @@ vim.api.nvim_set_keymap("n", "vic", ":lua select_class_node(true)<CR>", { norema
 -- bind vac: select_class_node(false) (n)
 vim.api.nvim_set_keymap("n", "vac", ":lua select_class_node(false)<CR>", { noremap = true, silent = true })
 
--- WIP: copy current buffer but replace every function body with "..."
+-- copy current buffer but replace every function body with "..."
 -- cmd SkeletonCopy: skeleton copy with function bodies replaced
 vim.api.nvim_create_user_command("SkeletonCopy", function(opts)
   local bufnr = vim.api.nvim_get_current_buf()
@@ -493,8 +493,11 @@ vim.api.nvim_create_user_command("SkeletonCopy", function(opts)
     cpp       = [[ (function_definition) @func ]],
     h         = [[ (function_definition) @func ]],
     c_sharp   = [[
-      (method_declaration)      @func
-      (constructor_declaration) @func
+      (method_declaration)                @func
+      (constructor_declaration)           @func
+      (destructor_declaration)            @func
+      (operator_declaration)              @func
+      (conversion_operator_declaration)   @func
     ]],
     python    = [[ (function_definition) @func ]],
     go = [[
@@ -702,6 +705,7 @@ vim.api.nvim_create_user_command("FindCustomTypes", function(opts)
       { node = "interface_declaration",     field = "name" },
       { node = "delegate_declaration",      field = "name" },
       { node = "record_declaration",        field = "name" },
+      { node = "record_struct_declaration", field = "name" },
     },
     java = {
       { node = "class_declaration",         field = "name" },
