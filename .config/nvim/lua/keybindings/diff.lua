@@ -151,6 +151,8 @@ local function get_default_branch()
 end
 
 local function get_branches_sorted()
+  local skip_current_branch = false -- include current branch in list
+  --local skip_current_branch = true -- Don't include current branch in list
   local use_debug_print = myconfig.should_debug_print()
   local cmd = "git branch --sort=-committerdate -v"
 
@@ -187,15 +189,11 @@ local function get_branches_sorted()
       -- Extract just the branch name (first word)
       local branch_name = branch_info:match("^(%S+)")
       if branch_name then
-        -- Skip current branch
-        if not is_current and branch_name ~= current_branch then
-          -- Track if we found master or main
-          if branch_name == "master" then
-            found_master = true
-          elseif branch_name == "main" then
-            found_main = true
-          end
+        -- Track if we found master or main
+        if branch_name == "master" then found_master = true end
+        if branch_name == "main" then found_main = true end
 
+        if not skip_current_branch or (not is_current and branch_name ~= current_branch) then
           table.insert(branches, branch_name)
         end
       end
