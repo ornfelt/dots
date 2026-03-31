@@ -10,7 +10,11 @@ local g   = vim.g
 
 o.termguicolors = true
 o.background = 'dark'
-require'colorizer'.setup()
+
+local ok, colorizer = pcall(require, "colorizer")
+if ok then
+  colorizer.setup()
+end
 
 -- Do not save when switching buffers
 -- o.hidden = true

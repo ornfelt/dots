@@ -3,107 +3,189 @@ require('dbg_log').log_file(debug.getinfo(1, 'S').source)
 local myconfig = require("myconfig")
 
 -- GPT binds
+--if myconfig.is_plugin_installed('chatgpt') then
+--  local chatgpt_config = {
+--    openai_api_key = os.getenv("OPENAI_API_KEY"),
+--  }
+--
+--  -- Model can be changed in actions for this plugin
+--  require("chatgpt").setup(chatgpt_config)
+--
+--  -- bind leader-e: ChatGPTEditWithInstructions (n, v)
+--  myconfig.map('n', '<leader>e', ':ChatGPTEditWithInstructions<CR>')
+--  myconfig.map('v', '<leader>e', ':ChatGPTEditWithInstructions<CR>')
+--  -- bind leader-x: ChatGPTRun explain_code (n, v)
+--  myconfig.map('n', '<leader>x', ':ChatGPTRun explain_code<CR>')
+--  myconfig.map('v', '<leader>x', ':ChatGPTRun explain_code<CR>')
+--  -- bind leader-cc: ChatGPTRun complete_code (n, v)
+--  myconfig.map('n', '<leader>cc', ':ChatGPTRun complete_code<CR>')
+--  myconfig.map('v', '<leader>cc', ':ChatGPTRun complete_code<CR>')
+--  -- bind leader-v: ChatGPTRun summarize (n, v)
+--  myconfig.map('n', '<leader>v', ':ChatGPTRun summarize<CR>')
+--  myconfig.map('v', '<leader>v', ':ChatGPTRun summarize<CR>')
+--  -- bind leader-g: ChatGPTRun grammar_correction (n, v)
+--  myconfig.map('n', '<leader>g', ':ChatGPTRun grammar_correction<CR>')
+--  myconfig.map('v', '<leader>g', ':ChatGPTRun grammar_correction<CR>')
+--  -- bind leader-6: ChatGPTRun docstring (n, v)
+--  myconfig.map('n', '<leader>6', ':ChatGPTRun docstring<CR>')
+--  myconfig.map('v', '<leader>6', ':ChatGPTRun docstring<CR>')
+--  -- bind leader-7: ChatGPTRun add_tests (n, v)
+--  myconfig.map('n', '<leader>7', ':ChatGPTRun add_tests<CR>')
+--  myconfig.map('v', '<leader>7', ':ChatGPTRun add_tests<CR>')
+--  -- bind leader-8: ChatGPTRun optimize_code (n, v)
+--  myconfig.map('n', '<leader>8', ':ChatGPTRun optimize_code<CR>')
+--  myconfig.map('v', '<leader>8', ':ChatGPTRun optimize_code<CR>')
+--  -- bind leader-9: ChatGPTRun code_readability_analysis (n, v)
+--  myconfig.map('n', '<leader>9', ':ChatGPTRun code_readability_analysis<CR>')
+--  myconfig.map('v', '<leader>9', ':ChatGPTRun code_readability_analysis<CR>')
+--  -- bind leader-0: ChatGPT (n, v)
+--  myconfig.map('n', '<leader>0', ':ChatGPT<CR>')
+--  myconfig.map('v', '<leader>0', ':ChatGPT<CR>')
+--  -- bind leader-c: ChatGPTRun send_request (n, v, i)
+--  myconfig.map('n', '<leader>c', ':ChatGPTRun send_request<CR>')
+--  myconfig.map('v', '<leader>c', ':ChatGPTRun send_request<CR>')
+--  myconfig.map('i', '<leader>c', ':ChatGPTRun send_request<CR>')
+--end
+--
+--if myconfig.is_plugin_installed('gp') then
+--  local gp_config = {
+--    openai_api_key = os.getenv("OPENAI_API_KEY"),
+--    providers = {
+--      ollama = {
+--        disable = false,
+--        endpoint = "http://localhost:11434/v1/chat/completions",
+--        -- secret = "dummy_secret",
+--      },
+--    }
+--  }
+--
+--  --require("gp").setup({openai_api_key: os.getenv("OPENAI_API_KEY")})
+--  require("gp").setup(gp_config)
+--
+--  -- bind leader-e: GpAppend (n, v)
+--  myconfig.map('n', '<leader>e', ':GpAppend<CR>')
+--  myconfig.map('v', '<leader>e', ':GpAppend<CR>')
+--  -- bind leader-x: GpTabnew (n, v)
+--  myconfig.map('n', '<leader>x', ':GpTabnew<CR>')
+--  myconfig.map('v', '<leader>x', ':GpTabnew<CR>')
+--  -- bind leader-c: GpNew (n, v)
+--  myconfig.map('n', '<leader>c', ':GpNew<CR>')
+--  myconfig.map('v', '<leader>c', ':GpNew<CR>')
+--  -- bind leader-v: GpVnew (n, v)
+--  myconfig.map('n', '<leader>v', ':GpVnew<CR>')
+--  myconfig.map('v', '<leader>v', ':GpVnew<CR>')
+--  -- bind leader-g: GpRewrite (n, v)
+--  myconfig.map('n', '<leader>g', ':GpRewrite<CR>')
+--  myconfig.map('v', '<leader>g', ':GpRewrite<CR>')
+--  -- bind leader-6: GpImplement (n, v)
+--  myconfig.map('n', '<leader>6', ':GpImplement<CR>')
+--  myconfig.map('v', '<leader>6', ':GpImplement<CR>')
+--  -- bind leader-7: GpChatRespond (n, v)
+--  myconfig.map('n', '<leader>7', ':GpChatRespond<CR>')
+--  myconfig.map('v', '<leader>7', ':GpChatRespond<CR>')
+--  -- bind leader-8: GpNextAgent (n, v)
+--  -- myconfig.map('n', '<leader>8', ':GpChatFinder<CR>')
+--  -- myconfig.map('v', '<leader>8', ':GpChatFinder<CR>')
+--  -- myconfig.map('n', '<leader>8', ':GpContext<CR>')
+--  -- myconfig.map('v', '<leader>8', ':GpContext<CR>')
+--  myconfig.map('n', '<leader>8', ':GpNextAgent<CR>')
+--  myconfig.map('v', '<leader>8', ':GpNextAgent<CR>')
+--  -- bind leader-9: GpChatNew (n, v)
+--  myconfig.map('n', '<leader>9', ':GpChatNew<CR>')
+--  myconfig.map('v', '<leader>9', ':GpChatNew<CR>')
+--  -- bind leader-0: GpChatToggle (n, v)
+--  myconfig.map('n', '<leader>0', ':GpChatToggle<CR>')
+--  myconfig.map('v', '<leader>0', ':GpChatToggle<CR>')
+--  -- There's also:
+--  -- :GpAgent (for info)
+--  -- :GpWhisper
+--  -- :GpImage
+--  -- :GpStop
+--  -- etc.
+--end
+
 if myconfig.is_plugin_installed('chatgpt') then
-  local chatgpt_config = {
+  require("chatgpt").setup({
     openai_api_key = os.getenv("OPENAI_API_KEY"),
-  }
+  })
 
-  -- Model can be changed in actions for this plugin
-  require("chatgpt").setup(chatgpt_config)
-
-  -- bind leader-e: ChatGPTEditWithInstructions (n, v)
-  myconfig.map('n', '<leader>e', ':ChatGPTEditWithInstructions<CR>')
-  myconfig.map('v', '<leader>e', ':ChatGPTEditWithInstructions<CR>')
-  -- bind leader-x: ChatGPTRun explain_code (n, v)
-  myconfig.map('n', '<leader>x', ':ChatGPTRun explain_code<CR>')
-  myconfig.map('v', '<leader>x', ':ChatGPTRun explain_code<CR>')
-  -- bind leader-c: ChatGPTRun complete_code (n, v)
-  myconfig.map('n', '<leader>c', ':ChatGPTRun complete_code<CR>')
-  myconfig.map('v', '<leader>c', ':ChatGPTRun complete_code<CR>')
-  -- bind leader-v: ChatGPTRun summarize (n, v)
-  myconfig.map('n', '<leader>v', ':ChatGPTRun summarize<CR>')
-  myconfig.map('v', '<leader>v', ':ChatGPTRun summarize<CR>')
-  -- bind leader-g: ChatGPTRun grammar_correction (n, v)
-  myconfig.map('n', '<leader>g', ':ChatGPTRun grammar_correction<CR>')
-  myconfig.map('v', '<leader>g', ':ChatGPTRun grammar_correction<CR>')
-  -- bind leader-6: ChatGPTRun docstring (n, v)
-  myconfig.map('n', '<leader>6', ':ChatGPTRun docstring<CR>')
-  myconfig.map('v', '<leader>6', ':ChatGPTRun docstring<CR>')
-  -- bind leader-7: ChatGPTRun add_tests (n, v)
-  myconfig.map('n', '<leader>7', ':ChatGPTRun add_tests<CR>')
-  myconfig.map('v', '<leader>7', ':ChatGPTRun add_tests<CR>')
-  -- bind leader-8: ChatGPTRun optimize_code (n, v)
-  myconfig.map('n', '<leader>8', ':ChatGPTRun optimize_code<CR>')
-  myconfig.map('v', '<leader>8', ':ChatGPTRun optimize_code<CR>')
-  -- bind leader-9: ChatGPTRun code_readability_analysis (n, v)
-  myconfig.map('n', '<leader>9', ':ChatGPTRun code_readability_analysis<CR>')
-  myconfig.map('v', '<leader>9', ':ChatGPTRun code_readability_analysis<CR>')
-  -- bind leader-0: ChatGPT (n, v)
-  myconfig.map('n', '<leader>0', ':ChatGPT<CR>')
-  myconfig.map('v', '<leader>0', ':ChatGPT<CR>')
-  -- bind m-c: ChatGPTRun send_request (n, v, i)
-  myconfig.map('n', '<M-c>', ':ChatGPTRun send_request<CR>')
-  myconfig.map('v', '<M-c>', ':ChatGPTRun send_request<CR>')
-  myconfig.map('i', '<M-c>', ':ChatGPTRun send_request<CR>')
+  -- Monkey patch fix: Guard vim.fn.bufwinid against nil.
+  -- The error originates deep in nui's _open_window where it calls
+  -- vim.fn.bufwinid(component.bufnr) with a nil bufnr. Since vim.fn is a Lua table,
+  -- we can shadow bufwinid with this guarded version:
+  local _orig_bufwinid = vim.fn.bufwinid
+  ---@diagnostic disable-next-line: duplicate-set-field
+  vim.fn.bufwinid = function(bufnr)
+    if type(bufnr) ~= "number" and type(bufnr) ~= "string" then
+      vim.notify("[nui] bufwinid got nil bufnr, returning -1", vim.log.levels.DEBUG)
+      return -1
+    end
+    return _orig_bufwinid(bufnr)
+  end
 end
 
 if myconfig.is_plugin_installed('gp') then
-  local gp_config = {
+  require("gp").setup({
     openai_api_key = os.getenv("OPENAI_API_KEY"),
     providers = {
       ollama = {
         disable = false,
         endpoint = "http://localhost:11434/v1/chat/completions",
-        -- secret = "dummy_secret",
       },
-    }
-  }
-
-  --require("gp").setup({openai_api_key: os.getenv("OPENAI_API_KEY")})
-  require("gp").setup(gp_config)
-
-  -- bind leader-e: GpAppend (n, v)
-  myconfig.map('n', '<leader>e', ':GpAppend<CR>')
-  myconfig.map('v', '<leader>e', ':GpAppend<CR>')
-  -- bind leader-x: GpTabnew (n, v)
-  myconfig.map('n', '<leader>x', ':GpTabnew<CR>')
-  myconfig.map('v', '<leader>x', ':GpTabnew<CR>')
-  -- bind leader-c: GpNew (n, v)
-  myconfig.map('n', '<leader>c', ':GpNew<CR>')
-  myconfig.map('v', '<leader>c', ':GpNew<CR>')
-  -- bind leader-v: GpVnew (n, v)
-  myconfig.map('n', '<leader>v', ':GpVnew<CR>')
-  myconfig.map('v', '<leader>v', ':GpVnew<CR>')
-  -- bind leader-g: GpRewrite (n, v)
-  myconfig.map('n', '<leader>g', ':GpRewrite<CR>')
-  myconfig.map('v', '<leader>g', ':GpRewrite<CR>')
-  -- bind leader-6: GpImplement (n, v)
-  myconfig.map('n', '<leader>6', ':GpImplement<CR>')
-  myconfig.map('v', '<leader>6', ':GpImplement<CR>')
-  -- bind leader-7: GpChatRespond (n, v)
-  myconfig.map('n', '<leader>7', ':GpChatRespond<CR>')
-  myconfig.map('v', '<leader>7', ':GpChatRespond<CR>')
-  -- bind leader-8: GpNextAgent (n, v)
-  -- myconfig.map('n', '<leader>8', ':GpChatFinder<CR>')
-  -- myconfig.map('v', '<leader>8', ':GpChatFinder<CR>')
-  -- myconfig.map('n', '<leader>8', ':GpContext<CR>')
-  -- myconfig.map('v', '<leader>8', ':GpContext<CR>')
-  myconfig.map('n', '<leader>8', ':GpNextAgent<CR>')
-  myconfig.map('v', '<leader>8', ':GpNextAgent<CR>')
-  -- bind leader-9: GpChatNew (n, v)
-  myconfig.map('n', '<leader>9', ':GpChatNew<CR>')
-  myconfig.map('v', '<leader>9', ':GpChatNew<CR>')
-  -- bind leader-0: GpChatToggle (n, v)
-  myconfig.map('n', '<leader>0', ':GpChatToggle<CR>')
-  myconfig.map('v', '<leader>0', ':GpChatToggle<CR>')
-  -- There's also:
-  -- :GpAgent (for info)
-  -- :GpWhisper
-  -- :GpImage
-  -- :GpStop
-  -- etc.
+    },
+  })
 end
 
+-- ai dispatcher: Checks mode at call time
+local function ai(chatgpt_cmd, gp_cmd)
+  return function()
+    local mode = myconfig.get_ai_mode()
+    if mode == "chatgpt" and myconfig.is_plugin_installed('chatgpt') then
+      vim.cmd(chatgpt_cmd)
+    elseif myconfig.is_plugin_installed('gp') then
+      vim.cmd(gp_cmd)
+    else
+      vim.notify("No AI plugin available for mode: " .. mode, vim.log.levels.WARN)
+    end
+  end
+end
+
+-- Unified ai binds
+local binds = {
+  -- { lhs,          chatgpt_cmd,                           gp_cmd,          modes }
+  -- bind leader-e: ChatGPTEditWithInstructions / GpAppend (n, v)
+  { '<leader>e',  'ChatGPTEditWithInstructions',          'GpAppend',        {'n','v'} },
+  -- bind leader-x: ChatGPTRun explain_code / GpTabnew (n, v)
+  { '<leader>x',  'ChatGPTRun explain_code',              'GpTabnew',        {'n','v'} },
+  -- bind leader-cc: ChatGPTRun complete_code / GpChatNew (n, v)
+  { '<leader>cc', 'ChatGPTRun complete_code',             'GpChatNew',       {'n','v'} },
+  -- bind leader-v: ChatGPTRun summarize / GpVnew (n, v)
+  { '<leader>v',  'ChatGPTRun summarize',                 'GpVnew',          {'n','v'} },
+  -- bind leader-g: ChatGPTRun grammar_correction / GpRewrite (n, v)
+  { '<leader>g',  'ChatGPTRun grammar_correction',        'GpRewrite',       {'n','v'} },
+  -- bind leader-6: ChatGPTRun docstring / GpImplement (n, v)
+  { '<leader>6',  'ChatGPTRun docstring',                 'GpImplement',     {'n','v'} },
+  -- bind leader-7: ChatGPTRun add_tests / GpChatRespond (n, v)
+  { '<leader>7',  'ChatGPTRun add_tests',                 'GpChatRespond',   {'n','v'} },
+  -- bind leader-8: ChatGPTRun optimize_code / GpNextAgent (n, v)
+  { '<leader>8',  'ChatGPTRun optimize_code',             'GpNextAgent',     {'n','v'} },
+  -- bind leader-9: ChatGPTRun code_readability_analysis / GpChatNew (n, v)
+  { '<leader>9',  'ChatGPTRun code_readability_analysis', 'GpChatNew',       {'n','v'} },
+  -- bind leader-0: ChatGPT / GpChatToggle (n, v)
+  { '<leader>0',  'ChatGPT',                              'GpChatToggle',    {'n','v'} },
+  -- bind leader-c: ChatGPTRun send_request / GpNew (n, v, i)
+  { '<leader>c',  'ChatGPTRun send_request',              'GpNew',           {'n','v'} },
+}
+
+for _, b in ipairs(binds) do
+  local lhs, cgpt, gp_cmd, modes = b[1], b[2], b[3], b[4]
+  local fn = ai(cgpt, gp_cmd)
+  for _, mode in ipairs(modes) do
+    vim.keymap.set(mode, lhs, fn, { silent = true })
+  end
+end
+
+-- ip helpers (used for local ai)
 local function is_ipv4(s)
   return s and s:match("^%d+%.%d+%.%d+%.%d+$") ~= nil
 end

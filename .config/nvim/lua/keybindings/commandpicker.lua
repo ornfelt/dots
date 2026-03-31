@@ -19,6 +19,7 @@ local commands = {
   { label = "GitTabC", cmd = "GitTabC" },
   { label = "MakefileTargets", cmd = "MakefileTargets" },
   { label = "GoLangTestFiles", cmd = "GoLangTestFiles" },
+  { label = "Config - CycleAiMode", cmd = "CycleAiMode" },
   { label = "Config - CyclePythonExecCommand", cmd = "CyclePythonExecCommand" },
   { label = "Config - CycleFilePicker", cmd = "CycleFilePicker" },
   { label = "Config - CycleSqlExecLang", cmd = "CycleSqlExecLang" },
@@ -217,6 +218,7 @@ local commands = {
 
 local selections_to_print = {
   ["messages"] = true,
+  ["CycleAiMode"] = true,
   ["CyclePythonExecCommand"] = true,
   ["CycleFilePicker"] = true,
   ["CycleSqlExecLang"] = true,
