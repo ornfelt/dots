@@ -164,13 +164,22 @@ elif [[ "$lc" == *trinitycore* ]]; then
 elif [[ "$lc" == *my_web_wow* && "$lc" == *c++* ]]; then
     test_cmakelists current "my_web_wow C++ (expecting CMakeLists.txt in current directory)"
 
-    main="cmake -B build -S . -DCMAKE_BUILD_TYPE=$BuildType"
+    # Default: custom glm, custom optimization flags enabled
+    main="cmake -B build -S . -DENABLE_CUSTOM_OPT_FLAGS=ON -DUSE_ASYNC=ON -DUSE_CUSTOM_GLM=ON -DCMAKE_BUILD_TYPE=$BuildType"
     run_or_print "$main"
 
     if [[ -n "$OnlyPrint" ]]; then
         echo
-        echo "alternative cmake command without vcpkg:"
-        echo 'cmake -B build -S . -DCMAKE_BUILD_TYPE=Release'
+        echo "without compiler optimization flags:"
+        echo "cmake -B build -S . -DENABLE_CUSTOM_OPT_FLAGS=OFF -DCMAKE_BUILD_TYPE=$BuildType"
+
+        echo
+        echo "without async:"
+        echo "cmake -B build -S . -DUSE_ASYNC=OFF -DCMAKE_BUILD_TYPE=$BuildType"
+
+        echo
+        echo "without custom glm (use real installed glm):"
+        echo "cmake -B build -S . -DUSE_CUSTOM_GLM=OFF -DCMAKE_BUILD_TYPE=$BuildType"
     fi
 
 elif [[ "$lc" == *openjk* ]]; then

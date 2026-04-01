@@ -309,3 +309,7 @@ vim.keymap.set('n', '<leader>gl', function()
   end
 end, { desc = "GitGraph - Draw" })
 
+-- use built-in undotree
+--vim.cmd("packadd nvim.undotree")
+--vim.keymap.set("n", "<leader>u", require("undotree").open)
+
