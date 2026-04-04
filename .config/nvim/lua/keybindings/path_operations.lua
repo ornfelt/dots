@@ -246,6 +246,24 @@ vim.api.nvim_set_keymap('n', '<leader>-', ':lua copy_current_file_path(true)<CR>
 -- bind leader--: copy directory path (v)
 vim.api.nvim_set_keymap('v', '<leader>-', ':lua copy_current_file_path(false)<CR>', { noremap = true, silent = true })
 
+function copy_current_file_name(without_extension)
+  local file_path = vim.api.nvim_buf_get_name(0)
+  local file_name = vim.fn.fnamemodify(file_path, ':t')
+
+  if without_extension then
+    file_name = vim.fn.fnamemodify(file_path, ':t:r')
+  end
+
+  vim.fn.setreg('+', file_name)
+  print("Copied to clipboard: " .. file_name)
+end
+
+-- bind leader-_: copy file name (n)
+vim.api.nvim_set_keymap('n', '<leader>_', ':lua copy_current_file_name(false)<CR>', { noremap = true, silent = true })
+
+-- bind leader-_: copy file name without extension (v)
+vim.api.nvim_set_keymap('v', '<leader>_', ':lua copy_current_file_name(true)<CR>', { noremap = true, silent = true })
+
 -- keybind for vscode-like copying of active file path
 -- Note: Alternative path formats:
 --vim.fn.expand('%:~') -- Relative to home: ~/test/file.txt

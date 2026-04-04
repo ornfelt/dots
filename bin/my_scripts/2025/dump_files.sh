@@ -1,13 +1,18 @@
 #!/usr/bin/env bash
 
 # Usage:
-# ./dump_files.sh <input_dir> [output_file] [recursive: true/false] [use_full_paths: true/false]
+# ./dump_files.sh <input_dir> [output_file] [recursive: true/false] [use_full_paths: true/false] [extensions: ".ext1 .ext2 ..."]
 #
 # Examples:
 # ./dump_files.sh $code_root_dir/Code2/C++/space/cs/BlackholeGfx/shaders/gl
 # ./dump_files.sh $code_root_dir/Code2/C++/space/cs/BlackholeGfx/shaders/gl /tmp/shader_dump.txt
 # ./dump_files.sh $code_root_dir/Code2/C++/space/cs/BlackholeGfx/shaders /tmp/shader_dump.txt true
 # ./dump_files.sh $code_root_dir/Code2/C++/space/cs/BlackholeGfx/shaders /tmp/shader_dump.txt true true
+# ./dump_files.sh $code_root_dir/Code2/Wow/tools/my_wow/c++/my_web_wow/src /tmp/dump.txt true false ".cpp .h"
+# Use cwd and only .cs files:
+# ./dump_files.sh . "" false false ".cs"
+# cpp example:
+# ./dump_files.sh $code_root_dir/Code2/Wow/tools/my_wow/c++/my_web_wow/src "" false false ".cpp .c .h .hpp"
 
 # Hard-coded toggle: when true, prints metadata header at top of dump file
 INCLUDE_METADATA_HEADER=false
@@ -18,10 +23,11 @@ INPUT_DIR="${1}"
 OUTPUT_FILE="${2:-$(pwd)/dumped_files.txt}"
 RECURSIVE="${3:-false}"
 USE_FULL_PATHS="${4:-false}"
+EXTENSIONS="${5:-}"
 
 # Help/usage if first arg looks like help
 if [[ "$INPUT_DIR" =~ ^([Hh][Ee][Ll][Pp])$ ]] || [[ "$INPUT_DIR" == "-" || "$INPUT_DIR" == "-h" || "$INPUT_DIR" == "--help" || "$INPUT_DIR" == "-help" ]]; then
-    echo "Usage: $0 <input_dir> [output_file] [recursive: true/false] [use_full_paths: true/false]"
+    echo "Usage: $0 <input_dir> [output_file] [recursive: true/false] [use_full_paths: true/false] [extensions: \".ext1 .ext2 ...\"]"
     echo
     echo "Example usage:"
     echo "  Only required arg (non-recursive, file names only, output to dumped_files.txt in current dir)"
@@ -35,6 +41,21 @@ if [[ "$INPUT_DIR" =~ ^([Hh][Ee][Ll][Pp])$ ]] || [[ "$INPUT_DIR" == "-" || "$INP
     echo
     echo "  Recursive + full paths in headers:"
     echo "    $0 \"\$code_root_dir/Code2/C++/space/cs/BlackholeGfx/shaders\" \"/tmp/shader_dump.txt\" true true"
+    echo
+    echo "  Filter by extension:"
+    echo "    $0 \"\$code_root_dir/Code2/C++/myproject\" \"/tmp/dump.txt\" true false \".cpp .h\""
+    echo
+    echo "  Use cwd and only .cs files:"
+    echo "    $0 . \"\" false false \".cs\""
+    echo
+    echo "  C++ files:"
+    echo "    $0 \"\$code_root_dir/Code2/Wow/tools/my_wow/c++/my_web_wow/src\" \"\" false false \".cpp .c .h .hpp\""
+    echo
+    echo "  Recursive + extension filter:"
+    echo "    $0 \"\$code_root_dir/Code2/C++/myproject\" \"/tmp/dump.txt\" true false \".cpp .h\""
+    echo
+    echo "  Recursive + full paths + extension filter:"
+    echo "    $0 \"\$code_root_dir/Code2/C++/myproject\" \"/tmp/dump.txt\" true true \".cpp .h\""
     exit 0
 fi
 
@@ -50,7 +71,7 @@ USE_FULL_PATHS=$(to_bool "$USE_FULL_PATHS")
 
 # Validate input dir
 if [[ -z "$INPUT_DIR" ]]; then
-    echo "Usage: $0 <input_dir> [output_file] [recursive: true/false] [use_full_paths: true/false]" >&2
+    echo "Usage: $0 <input_dir> [output_file] [recursive: true/false] [use_full_paths: true/false] [extensions: \".ext1 .ext2 ...\"]" >&2
     exit 1
 fi
 
@@ -76,6 +97,24 @@ if [[ "$RECURSIVE" == true ]]; then
     mapfile -d '' files < <(find "$RESOLVED_INPUT_DIR" -type f -print0 | sort -z)
 else
     mapfile -d '' files < <(find "$RESOLVED_INPUT_DIR" -maxdepth 1 -type f -print0 | sort -z)
+fi
+
+# Filter by extension if specified (normalise to lowercase with leading dot)
+if [[ -n "$EXTENSIONS" ]]; then
+    filtered=()
+    for file in "${files[@]}"; do
+        ext=".${file##*.}"
+        ext="${ext,,}"
+        for wanted in $EXTENSIONS; do
+            wanted="${wanted,,}"
+            [[ "$wanted" != .* ]] && wanted=".$wanted"
+            if [[ "$ext" == "$wanted" ]]; then
+                filtered+=("$file")
+                break
+            fi
+        done
+    done
+    files=("${filtered[@]}")
 fi
 
 # Build output
