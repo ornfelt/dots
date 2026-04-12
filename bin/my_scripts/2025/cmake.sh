@@ -165,7 +165,7 @@ elif [[ "$lc" == *my_web_wow* && "$lc" == *c++* ]]; then
     test_cmakelists current "my_web_wow C++ (expecting CMakeLists.txt in current directory)"
 
     # Default: custom glm, custom optimization flags enabled
-    main="cmake -B build -S . -DENABLE_CUSTOM_OPT_FLAGS=ON -DUSE_ASYNC=ON -DUSE_CUSTOM_GLM=ON -DCMAKE_BUILD_TYPE=$BuildType"
+    main="cmake -B build -S . -DENABLE_CUSTOM_OPT_FLAGS=ON -DUSE_CUSTOM_GLM=ON -DUSE_ASYNC=ON -DCMAKE_BUILD_TYPE=$BuildType"
     run_or_print "$main"
 
     if [[ -n "$OnlyPrint" ]]; then
@@ -341,7 +341,7 @@ elif [[ "$lc" == *wc_clean_new* ]]; then
     main="cmake .. -DCMAKE_BUILD_TYPE=$BuildType -DENABLE_DEBUG_RENDERING=ON -DENABLE_PERFORMANCE=OFF -DENABLE_MEMORY=OFF -DENABLE_WANDER=ON"
     alts=(
         "cmake .. -DCMAKE_BUILD_TYPE=$BuildType -DENABLE_DEBUG_RENDERING=ON -DENABLE_PERFORMANCE=ON -DENABLE_MEMORY=OFF -DENABLE_WANDER=ON"
-        "cmake .. -DCMAKE_BUILD_TYPE=$BuildType -DENABLE_DEBUG_RENDERING=ON -DENABLE_PERFORMANCE=ON -DENABLE_MEMORY=ON -DENABLE_WANDER=ON"
+        "cmake .. -DCMAKE_BUILD_TYPE=$BuildType -DENABLE_DEBUG_RENDERING=ON -DENABLE_PERFORMANCE=ON -DENABLE_MEMORY=ON -DENABLE_WANDER=OFF"
     )
 
     run_or_print "$main"
