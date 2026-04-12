@@ -180,6 +180,10 @@ elif [[ "$lc" == *my_web_wow* && "$lc" == *c++* ]]; then
         echo
         echo "without custom glm (use real installed glm):"
         echo "cmake -B build -S . -DUSE_CUSTOM_GLM=OFF -DCMAKE_BUILD_TYPE=$BuildType"
+
+        echo
+        echo "with debug timing and custom threadpool:"
+        echo "cmake -B build -S . -DENABLE_CUSTOM_OPT_FLAGS=ON -DUSE_CUSTOM_GLM=ON -DUSE_ASYNC=ON -DWITH_DEBUG_TIMING=ON -DUSE_CUSTOM_THREADPOOL=ON -DCMAKE_BUILD_TYPE=$BuildType"
     fi
 
 elif [[ "$lc" == *openjk* ]]; then
@@ -322,9 +326,22 @@ elif [[ "$lc" == *wc_clean_mcnk* || "$lc" == *wc_clean_m2* ]]; then
 
     test_cmakelists parent "$proj (expecting CMakeLists.txt one level up)"
 
-    main="cmake .. -DCMAKE_BUILD_TYPE=$BuildType -DGFX_DLL=OFF -DLIBWOW_DLL=OFF"
+    main="cmake .. -DCMAKE_BUILD_TYPE=$BuildType -DGFX_DLL=OFF -DLIBWOW_DLL=OFF -DENABLE_DEBUG_RENDERING=ON -DENABLE_PERFORMANCE=OFF -DENABLE_MEMORY=OFF"
     alts=(
-        "cmake .. -DCMAKE_BUILD_TYPE=$BuildType -DGFX_DLL=ON -DLIBWOW_DLL=ON"
+        "cmake .. -DCMAKE_BUILD_TYPE=$BuildType -DGFX_DLL=ON -DLIBWOW_DLL=ON -DENABLE_DEBUG_RENDERING=ON -DENABLE_PERFORMANCE=OFF -DENABLE_MEMORY=OFF"
+        "cmake .. -DCMAKE_BUILD_TYPE=$BuildType -DGFX_DLL=ON -DLIBWOW_DLL=ON -DENABLE_DEBUG_RENDERING=ON -DENABLE_PERFORMANCE=ON -DENABLE_MEMORY=ON"
+    )
+
+    run_or_print "$main"
+    print_alternatives "${alts[@]}"
+
+elif [[ "$lc" == *wc_clean_new* ]]; then
+    test_cmakelists parent "wc_clean_new (expecting CMakeLists.txt one level up)"
+
+    main="cmake .. -DCMAKE_BUILD_TYPE=$BuildType -DENABLE_DEBUG_RENDERING=ON -DENABLE_PERFORMANCE=OFF -DENABLE_MEMORY=OFF -DENABLE_WANDER=ON"
+    alts=(
+        "cmake .. -DCMAKE_BUILD_TYPE=$BuildType -DENABLE_DEBUG_RENDERING=ON -DENABLE_PERFORMANCE=ON -DENABLE_MEMORY=OFF -DENABLE_WANDER=ON"
+        "cmake .. -DCMAKE_BUILD_TYPE=$BuildType -DENABLE_DEBUG_RENDERING=ON -DENABLE_PERFORMANCE=ON -DENABLE_MEMORY=ON -DENABLE_WANDER=ON"
     )
 
     run_or_print "$main"
