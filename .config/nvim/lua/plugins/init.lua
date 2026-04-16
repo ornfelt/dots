@@ -29,6 +29,7 @@ return {
 
   -- Nice to have
   require("plugins.nvim-colorizer"),
+  require("plugins.diffview"),
   require("plugins.gitgraph"),
   require("plugins.trouble"),
   require("plugins.actions-preview"),

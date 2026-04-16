@@ -214,6 +214,12 @@ local commands = {
   { label = "diffpatch", cmd = "windo diffpatch" },
   { label = "diffsplit", cmd = "windo diffsplit" },
   { label = "diffdiffupdate", cmd = "windo diffdiffupdate" },
+  -- Diffview
+  { label = "DiffviewOpen - Diff working tree against index", cmd = "DiffviewOpen" },
+  { label = "DiffviewFileHistory % - History for the current file", cmd = "DiffviewFileHistory %" },
+  { label = "DiffviewFileHistory - History for the whole repo", cmd = "DiffviewFileHistory" },
+  { label = "DiffviewDiffFiles test1.txt test2.txt - Diff two arbitrary files", cmd = "DiffviewDiffFiles test1.txt test2.txt" },
+  { label = "DiffviewClose - Close the current diffview", cmd = "DiffviewClose" },
 }
 
 local selections_to_print = {

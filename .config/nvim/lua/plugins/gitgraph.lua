@@ -3,7 +3,7 @@ require('dbg_log').log_file(debug.getinfo(1, 'S').source)
 return {
   "ornfelt/gitgraph.nvim",
   dependencies = {
-    "sindrets/diffview.nvim",
+    "dlyongemallo/diffview.nvim",
   },
   config = function()
     require("gitgraph").setup({

@@ -165,7 +165,7 @@ elif [[ "$lc" == *my_web_wow* && "$lc" == *c++* ]]; then
     test_cmakelists current "my_web_wow C++ (expecting CMakeLists.txt in current directory)"
 
     # Default: custom glm, custom optimization flags enabled
-    main="cmake -B build -S . -DENABLE_CUSTOM_OPT_FLAGS=ON -DUSE_CUSTOM_GLM=ON -DUSE_ASYNC=ON -DCMAKE_BUILD_TYPE=$BuildType"
+    main="cmake -B build -S . -DENABLE_CUSTOM_OPT_FLAGS=ON -DUSE_CUSTOM_GLM=ON -DUSE_ASYNC=ON -DENABLE_WANDER=ON -DCMAKE_BUILD_TYPE=$BuildType"
     run_or_print "$main"
 
     if [[ -n "$OnlyPrint" ]]; then
@@ -176,6 +176,10 @@ elif [[ "$lc" == *my_web_wow* && "$lc" == *c++* ]]; then
         echo
         echo "without async:"
         echo "cmake -B build -S . -DUSE_ASYNC=OFF -DCMAKE_BUILD_TYPE=$BuildType"
+
+        echo
+        echo "without wandering/navigation:"
+        echo "cmake -B build -S . -DENABLE_WANDER=OFF -DCMAKE_BUILD_TYPE=$BuildType"
 
         echo
         echo "without custom glm (use real installed glm):"
