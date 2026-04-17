@@ -598,6 +598,9 @@ vim.api.nvim_create_user_command("SkeletonCopy", function(opts)
 
       -- Last line: keep from ec+1 onward
       local last_line = out[er + 1]
+      if not last_line then
+        goto continue
+      end
       local suffix = last_line:sub(ec + 2)
 
       -- Remove all the “middle” lines (and the original last line),
@@ -613,6 +616,7 @@ vim.api.nvim_create_user_command("SkeletonCopy", function(opts)
         table.insert(out, sr + 2, suffix)
       end
     end
+    ::continue::
   end
 
   if remove_comments then
