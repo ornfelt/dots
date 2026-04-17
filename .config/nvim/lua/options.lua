@@ -213,3 +213,15 @@ vim.diagnostic.config({ virtual_text = true })
 g.mapleader = ' '
 g.maplocalleader = ' '
 
+-- nvim-rooter equivalent:
+--local directory = vim.fs.root(0, '.git') or '.'
+--vim.cmd.cd(directory)
+-- better:
+vim.api.nvim_create_autocmd('VimEnter', {
+  once = true,
+  callback = function()
+    local directory = vim.fs.root(0, '.git') or '.'
+    vim.cmd.cd(directory)
+  end,
+})
+
