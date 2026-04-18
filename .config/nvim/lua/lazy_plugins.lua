@@ -31,6 +31,3 @@ require("lazy").setup(plugins, {
   },
 })
 
--- if on main branch...
---require("config.treesitter")
-
