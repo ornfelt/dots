@@ -56,9 +56,16 @@ if path_contains_in_order code2 go my_web_wow; then
     write_header "Go (my_web_wow)"
     write_label  "use this:"
     write_cmd    "go build -tags async"
-    echo ""
+    write_label  "or:"
+    write_cmd    'go build -tags "async cimgui"'
+    write_label  "or:"
     write_cmd    "go build"
+    write_label  "or:"
     write_alt    "go run ."
+    write_label  "or:"
+    write_alt    "./build.sh"
+    write_label  "or:"
+    write_cmd    "rm my_web_wow; go build -tags async; ./my_web_wow"
     matched=1
 
 # code2 -> my_web_wow -> rust

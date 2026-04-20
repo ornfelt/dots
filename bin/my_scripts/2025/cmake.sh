@@ -5,6 +5,8 @@
 # ./cmake.sh onlyprint  # detect path and PRINT commands (no execution)
 # ./cmake.sh r/release  # RUN in Release mode
 # ./cmake.sh r foo      # RUN in Release mode and PRINT commands (no execution)
+# ./cmake.sh rd         # RUN in RelWithDebInfo mode
+# ./cmake.sh rwdi foo   # RUN in RelWithDebInfo mode and PRINT commands
 
 # Use OnlyPrint if any arg is provided
 #OnlyPrint="${1:-}"
@@ -16,10 +18,14 @@ arg_lc="${Arg,,}"
 # Print-only unless argument is "r" or "release" (case-insensitive)
 OnlyPrint=""
 Release=""
+RelWithDebInfo=""
 if [[ -n "$Arg" ]]; then
     if [[ "$arg_lc" == "r" || "$arg_lc" == "release" ]]; then
         Release=1
         # If there's also another arg, enable print-only too
+        [[ -n "${2:-}" ]] && OnlyPrint=1
+    elif [[ "$arg_lc" == "rwdi" || "$arg_lc" == "rd" || "$arg_lc" == "relwithdebinfo" ]]; then
+        RelWithDebInfo=1
         [[ -n "${2:-}" ]] && OnlyPrint=1
     else
         OnlyPrint=1
@@ -29,6 +35,7 @@ fi
 # build type helper
 BuildType="Debug"
 [[ -n "$Release" ]] && BuildType="Release"
+[[ -n "$RelWithDebInfo" ]] && BuildType="RelWithDebInfo"
 
 # Colors (ANSI escape codes)
 RESET='\033[0m'
@@ -60,6 +67,9 @@ Usage:
 
   ./cmake.sh r foo
       Release mode + PRINT-ONLY (because a second arg exists).
+
+  ./cmake.sh rd | rwdi | relwithdebinfo
+      Run in RelWithDebInfo mode.
 
   ./cmake.sh h | help | -h | --help
       Show this help.
@@ -165,7 +175,7 @@ elif [[ "$lc" == *my_web_wow* && "$lc" == *c++* ]]; then
     test_cmakelists current "my_web_wow C++ (expecting CMakeLists.txt in current directory)"
 
     # Default: custom glm, custom optimization flags enabled
-    main="cmake -B build -S . -DENABLE_CUSTOM_OPT_FLAGS=ON -DUSE_CUSTOM_GLM=ON -DUSE_ASYNC=ON -DENABLE_WANDER=ON -DCMAKE_BUILD_TYPE=$BuildType"
+    main="cmake -B build -S . -DENABLE_CUSTOM_OPT_FLAGS=ON -DUSE_CUSTOM_GLM=ON -DUSE_SDL2=OFF -DUSE_IMGUI=ON -DUSE_ASYNC=ON -DENABLE_WANDER=ON -DCMAKE_BUILD_TYPE=$BuildType"
     run_or_print "$main"
 
     if [[ -n "$OnlyPrint" ]]; then
@@ -184,6 +194,14 @@ elif [[ "$lc" == *my_web_wow* && "$lc" == *c++* ]]; then
         echo
         echo "without custom glm (use real installed glm):"
         echo "cmake -B build -S . -DUSE_CUSTOM_GLM=OFF -DCMAKE_BUILD_TYPE=$BuildType"
+
+        echo
+        echo "with sdl2:"
+        echo "cmake -B build -S . -DUSE_SDL2=ON -DCMAKE_BUILD_TYPE=$BuildType"
+
+        echo
+        echo "without imgui:"
+        echo "cmake -B build -S . -DUSE_IMGUI=OFF -DCMAKE_BUILD_TYPE=$BuildType"
 
         echo
         echo "with debug timing and custom threadpool:"
