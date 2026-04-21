@@ -1,7 +1,7 @@
 require('dbg_log').log_file(debug.getinfo(1, 'S').source)
 
 return {
-  "numToStr/Comment.nvim",
+  "ornfelt/Comment.nvim",
   lazy = false,
   opts = {
     ---Add a space b/w comment and the line
