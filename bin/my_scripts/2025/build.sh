@@ -59,6 +59,12 @@ if path_contains_in_order code2 go my_web_wow; then
     write_label  "or:"
     write_cmd    'go build -tags "async cimgui"'
     write_label  "or:"
+    write_cmd    "go build -tags with_performance"
+    write_label  "or:"
+    write_cmd    'go build -tags "async with_performance"'
+    write_label  "or:"
+    write_cmd    'go build -tags "async cimgui with_performance"'
+    write_label  "or:"
     write_cmd    "go build"
     write_label  "or:"
     write_alt    "go run ."
@@ -83,12 +89,15 @@ elif path_contains_in_order code2 go tbc; then
 elif path_contains_in_order code2 rust my_web_wow; then
     write_header "Rust (my_web_wow)"
     write_cmd    "cargo build --features use_async"
+    write_cmd    "cargo build --features with_performance"
     write_cmd    "cargo build"
     echo ""
     write_cmd    "cargo run"
     write_cmd    "cargo run --features use_async"
     write_cmd    "cargo run --features with_imgui"
+    write_cmd    "cargo run --features with_performance"
     write_cmd    'cargo run --features "with_imgui use_async"'
+    write_cmd    'cargo run --features "with_imgui use_async with_performance"'
     write_alt    "cargo run --release"
     write_extra  'cargo run --release *> test.txt'
     echo ""
