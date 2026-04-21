@@ -46,6 +46,9 @@ declare -A ARG_MAP=(
   [other]="other"
   [scripts]="scripts"
   [script]="scripts"
+  [paths]="paths"
+  [path]="paths"
+  [p]="paths"
 )
 
 # Helper: command + description
@@ -105,6 +108,7 @@ show_usage() {
     "env"
     "sh / x / other"
     "scripts / script"
+    "paths / path / p"
   )
 
   for a in "${args[@]}"; do
@@ -349,6 +353,43 @@ show_other_help() {
   write_code_line "find . -type f | wc -l              # count all files recursively"
   write_code_line "find . -type d | wc -l              # count all directories recursively"
   write_code_line "find . | wc -l                      # count everything recursively"
+}
+
+show_paths_help() {
+  printf "%bCommon config paths:%b\n\n" "$YELLOW" "$RESET"
+
+  printf "%bnvim config path:%b\n" "$DARKGRAY" "$RESET"
+  printf "%b~/.config/nvim/init.lua%b\n\n" "$GREEN" "$RESET"
+
+  printf "%bnvim data dir (stdpath(\"data\")):%b\n" "$DARKGRAY" "$RESET"
+  printf "%b~/.local/share/nvim%b\n\n" "$GREEN" "$RESET"
+
+  printf "%blazy.nvim plugin location:%b\n" "$DARKGRAY" "$RESET"
+  printf "%b~/.local/share/nvim/lazy%b\n\n" "$GREEN" "$RESET"
+
+  printf "%bnvim built-in package manager path (0.12+):%b\n" "$DARKGRAY" "$RESET"
+  printf "%b~/.local/share/nvim/site/pack%b\n\n" "$GREEN" "$RESET"
+
+  printf "%bwezterm config path:%b\n" "$DARKGRAY" "$RESET"
+  printf "%b~/.wezterm.lua%b\n\n" "$GREEN" "$RESET"
+
+  printf "%bwezterm session manager path:%b\n" "$DARKGRAY" "$RESET"
+  printf "%b~/.config/wezterm/wezterm-session-manager/session-manager.lua%b\n\n" "$GREEN" "$RESET"
+
+  printf "%balacritty config path:%b\n" "$DARKGRAY" "$RESET"
+  printf "%b~/.config/alacritty/alacritty.toml%b\n\n" "$GREEN" "$RESET"
+
+  printf "%blf config path:%b\n" "$DARKGRAY" "$RESET"
+  printf "%b~/.config/lf/lfrc%b\n\n" "$GREEN" "$RESET"
+
+  printf "%byazi config path:%b\n" "$DARKGRAY" "$RESET"
+  printf "%b~/.config/yazi/keymap.toml%b\n\n" "$GREEN" "$RESET"
+
+  printf "%bvs code config path:%b\n" "$DARKGRAY" "$RESET"
+  printf "%b~/.config/Code/User/keybindings.json%b\n\n" "$GREEN" "$RESET"
+
+  printf "%bvimrc path:%b\n" "$DARKGRAY" "$RESET"
+  printf "%b~/.vimrc%b\n" "$GREEN" "$RESET"
 }
 
 show_grep_help() {
@@ -904,6 +945,8 @@ fi
 
 mode="${ARG_MAP[$key]}"
 
+printf "%bSelected: %s%b\n\n" "$MAGENTA" "$mode" "$RESET"
+
 case "$mode" in
   # Languages
   c)           show_c_help ;;
@@ -924,5 +967,6 @@ case "$mode" in
   scripts)     show_scripts_help ;;
   env)         show_env_help ;;
   other)       show_other_help ;;
+  paths)       show_paths_help ;;
 esac
 

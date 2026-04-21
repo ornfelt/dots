@@ -15,28 +15,6 @@
 Arg="${1:-}"
 arg_lc="${Arg,,}"
 
-# Print-only unless argument is "r" or "release" (case-insensitive)
-OnlyPrint=""
-Release=""
-RelWithDebInfo=""
-if [[ -n "$Arg" ]]; then
-    if [[ "$arg_lc" == "r" || "$arg_lc" == "release" ]]; then
-        Release=1
-        # If there's also another arg, enable print-only too
-        [[ -n "${2:-}" ]] && OnlyPrint=1
-    elif [[ "$arg_lc" == "rwdi" || "$arg_lc" == "rd" || "$arg_lc" == "relwithdebinfo" ]]; then
-        RelWithDebInfo=1
-        [[ -n "${2:-}" ]] && OnlyPrint=1
-    else
-        OnlyPrint=1
-    fi
-fi
-
-# build type helper
-BuildType="Debug"
-[[ -n "$Release" ]] && BuildType="Release"
-[[ -n "$RelWithDebInfo" ]] && BuildType="RelWithDebInfo"
-
 # Colors (ANSI escape codes)
 RESET='\033[0m'
 RED='\033[31m'
@@ -82,6 +60,31 @@ EOF
     fi
 done
 
+# Print-only unless argument is "r" or "release" (case-insensitive)
+OnlyPrint=""
+Release=""
+RelWithDebInfo=""
+if [[ -n "$Arg" ]]; then
+    if [[ "$arg_lc" == "r" || "$arg_lc" == "release" ]]; then
+        Release=1
+        [[ -n "${2:-}" ]] && OnlyPrint=1
+    elif [[ "$arg_lc" == "rwdi" || "$arg_lc" == "rd" || "$arg_lc" == "relwithdebinfo" ]]; then
+        RelWithDebInfo=1
+        [[ -n "${2:-}" ]] && OnlyPrint=1
+    else
+        OnlyPrint=1
+    fi
+
+    printf "%bIf needed, run:%b\n" "$BLUE" "$RESET"
+    printf "%bmake -j\$(nproc)%b\n" "$BLUE" "$RESET"
+    echo
+fi
+
+# build type helper
+BuildType="Debug"
+[[ -n "$Release" ]] && BuildType="Release"
+[[ -n "$RelWithDebInfo" ]] && BuildType="RelWithDebInfo"
+
 # Debug print (PowerShell-style)
 if [[ -n "$OnlyPrint" ]]; then
     printf "%b[OnlyPrint]=ON  [BuildType]=%s%b\n" "$MAGENTA" "$BuildType" "$RESET"
@@ -96,14 +99,11 @@ lc="${cwd,,}" # lowercase for case-insensitive checks
 run_or_print() {
     local cmd="$1"
     if [[ -n "$OnlyPrint" ]]; then
-        printf '%s\n' "$cmd"
+        printf "%b%s%b\n" "$CYAN" "$cmd" "$RESET"
     else
         printf "%bExecuting: %s%b\n" "$CYAN" "$cmd" "$RESET"
         eval "$cmd"
     fi
-
-    printf "%bIf needed, run:%b\n" "$BLUE" "$RESET"
-    printf "%bmake -j\$(nproc)%b\n" "$BLUE" "$RESET"
 }
 
 print_alternatives() {
@@ -174,38 +174,54 @@ elif [[ "$lc" == *trinitycore* ]]; then
 elif [[ "$lc" == *my_web_wow* && "$lc" == *c++* ]]; then
     test_cmakelists current "my_web_wow C++ (expecting CMakeLists.txt in current directory)"
 
-    # Default: custom glm, custom optimization flags enabled
-    main="cmake -B build -S . -DENABLE_CUSTOM_OPT_FLAGS=ON -DUSE_CUSTOM_GLM=ON -DUSE_SDL2=OFF -DUSE_IMGUI=ON -DUSE_ASYNC=ON -DENABLE_WANDER=ON -DCMAKE_BUILD_TYPE=$BuildType"
+    # Base flags shared by all configurations
+    base="-DENABLE_CUSTOM_OPT_FLAGS=ON -DUSE_ASYNC=ON -DWITH_DEBUG_TIMING=OFF -DUSE_CUSTOM_THREADPOOL=OFF -DENABLE_WANDER=ON -DUSE_CUSTOM_GLM=ON -DUSE_SDL2=OFF -DUSE_IMGUI=ON -DWITH_PERFORMANCE=OFF -DCMAKE_BUILD_TYPE=$BuildType"
+
+    # vcpkg is Windows-specific; just note it
+    echo
+    printf "%balternative cmake with vcpkg (uses real GLM): (vcpkg paths are Windows-specific, skipped on Linux)%b\n" "$BLUE" "$RESET"
+    echo
+
+    main="cmake -B build -S . -DUSE_VCPKG=OFF $base"
     run_or_print "$main"
 
     if [[ -n "$OnlyPrint" ]]; then
-        echo
-        echo "without compiler optimization flags:"
-        echo "cmake -B build -S . -DENABLE_CUSTOM_OPT_FLAGS=OFF -DCMAKE_BUILD_TYPE=$BuildType"
+        v_no_opt="${base/ENABLE_CUSTOM_OPT_FLAGS=ON/ENABLE_CUSTOM_OPT_FLAGS=OFF}"
+        v_no_async="${base/USE_ASYNC=ON/USE_ASYNC=OFF}"
+        v_no_wander="${base/ENABLE_WANDER=ON/ENABLE_WANDER=OFF}"
+        v_no_glm="${base/USE_CUSTOM_GLM=ON/USE_CUSTOM_GLM=OFF}"
+        v_sdl2="${base/USE_SDL2=OFF/USE_SDL2=ON}"
+        v_no_imgui="${base/USE_IMGUI=ON/USE_IMGUI=OFF}"
+        v_perf="${base/WITH_PERFORMANCE=OFF/WITH_PERFORMANCE=ON}"
+        v_dt="${base/WITH_DEBUG_TIMING=OFF/WITH_DEBUG_TIMING=ON}"
+        v_dt="${v_dt/USE_CUSTOM_THREADPOOL=OFF/USE_CUSTOM_THREADPOOL=ON}"
 
-        echo
-        echo "without async:"
-        echo "cmake -B build -S . -DUSE_ASYNC=OFF -DCMAKE_BUILD_TYPE=$BuildType"
+        declare -a labels=(
+            "without compiler optimization flags"
+            "without async"
+            "without wandering/navigation"
+            "without custom glm"
+            "with sdl2"
+            "without imgui"
+            "with performance profiling"
+            "with debug timing and custom threadpool"
+        )
+        declare -a variants=(
+            "cmake -B build -S . -DUSE_VCPKG=OFF $v_no_opt"
+            "cmake -B build -S . -DUSE_VCPKG=OFF $v_no_async"
+            "cmake -B build -S . -DUSE_VCPKG=OFF $v_no_wander"
+            "cmake -B build -S . -DUSE_VCPKG=OFF $v_no_glm"
+            "cmake -B build -S . -DUSE_VCPKG=OFF $v_sdl2"
+            "cmake -B build -S . -DUSE_VCPKG=OFF $v_no_imgui"
+            "cmake -B build -S . -DUSE_VCPKG=OFF $v_perf"
+            "cmake -B build -S . -DUSE_VCPKG=OFF $v_dt"
+        )
 
-        echo
-        echo "without wandering/navigation:"
-        echo "cmake -B build -S . -DENABLE_WANDER=OFF -DCMAKE_BUILD_TYPE=$BuildType"
-
-        echo
-        echo "without custom glm (use real installed glm):"
-        echo "cmake -B build -S . -DUSE_CUSTOM_GLM=OFF -DCMAKE_BUILD_TYPE=$BuildType"
-
-        echo
-        echo "with sdl2:"
-        echo "cmake -B build -S . -DUSE_SDL2=ON -DCMAKE_BUILD_TYPE=$BuildType"
-
-        echo
-        echo "without imgui:"
-        echo "cmake -B build -S . -DUSE_IMGUI=OFF -DCMAKE_BUILD_TYPE=$BuildType"
-
-        echo
-        echo "with debug timing and custom threadpool:"
-        echo "cmake -B build -S . -DENABLE_CUSTOM_OPT_FLAGS=ON -DUSE_CUSTOM_GLM=ON -DUSE_ASYNC=ON -DWITH_DEBUG_TIMING=ON -DUSE_CUSTOM_THREADPOOL=ON -DCMAKE_BUILD_TYPE=$BuildType"
+        for i in "${!labels[@]}"; do
+            echo
+            echo "${labels[$i]}:"
+            echo "${variants[$i]}"
+        done
     fi
 
 elif [[ "$lc" == *openjk* ]]; then

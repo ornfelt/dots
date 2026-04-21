@@ -51,7 +51,7 @@ path_contains_in_order() {
 # Match rules
 matched=0
 
-# code2 -> my_web_wow -> go
+# code2 -> go -> my_web_wow
 if path_contains_in_order code2 go my_web_wow; then
     write_header "Go (my_web_wow)"
     write_label  "use this:"
@@ -68,16 +68,74 @@ if path_contains_in_order code2 go my_web_wow; then
     write_cmd    "rm my_web_wow; go build -tags async; ./my_web_wow"
     matched=1
 
-# code2 -> my_web_wow -> rust
+# code2 -> go -> tbc
+elif path_contains_in_order code2 go tbc; then
+    write_header "Go (tbc)"
+    write_label  "use this:"
+    write_cmd    "go build"
+    write_label  "or:"
+    write_cmd    'go build; ./my_wow *> test.txt'
+    write_label  "or:"
+    write_alt    "go run ."
+    matched=1
+
+# code2 -> rust -> my_web_wow
 elif path_contains_in_order code2 rust my_web_wow; then
     write_header "Rust (my_web_wow)"
-    write_label  "use this:"
     write_cmd    "cargo build --features use_async"
-    echo ""
     write_cmd    "cargo build"
-    write_alt    "cargo run"
+    echo ""
+    write_cmd    "cargo run"
+    write_cmd    "cargo run --features use_async"
+    write_cmd    "cargo run --features with_imgui"
+    write_cmd    'cargo run --features "with_imgui use_async"'
     write_alt    "cargo run --release"
-    write_extra  'cargo run --release &> test.txt'
+    write_extra  'cargo run --release *> test.txt'
+    echo ""
+    write_label  "override expansion (default from server/env):"
+    write_cmd    "cargo run --features with_imgui -- --expansion tbc"
+    echo ""
+    write_label  "specific map key (default expansion):"
+    write_cmd    "cargo run -- --map orgrimmar"
+    write_cmd    "cargo run -- --map ragnaros"
+    echo ""
+    write_label  "both map and expansion:"
+    write_cmd    "cargo run -- --map dragonblight --expansion wotlk"
+    write_cmd    "cargo run -- --map darkshire --expansion classic"
+    write_cmd    "cargo run -- --map ragnaros --expansion classic"
+    matched=1
+
+# code2 -> rust -> tbc
+elif path_contains_in_order code2 rust tbc; then
+    write_header "Rust (tbc)"
+    write_cmd    "cargo build --features use_sound"
+    write_cmd    'cargo build --features "use_sound threadsafe"'
+    write_label  "or without features:"
+    write_cmd    "cargo build"
+    write_label  "disable all defaults, enable explicitly:"
+    write_cmd    "cargo build --no-default-features --features threadsafe"
+    echo ""
+    write_label  "redirect output:"
+    write_extra  'cargo build *> test.txt'
+    write_extra  'cargo run *> test.txt'
+    write_extra  'cargo run --release *> test.txt'
+    echo ""
+    write_label  "backtrace:"
+    write_alt    "RUST_BACKTRACE=1 cargo run"
+    write_alt    "RUST_BACKTRACE=full cargo run"
+    echo ""
+    write_label  "dt flag (default ON):"
+    write_cmd    "cargo run --"
+    write_cmd    "cargo run -- --use-dt"
+    write_cmd    "cargo run -- --no-use-dt"
+    write_cmd    "cargo run -- --use-dt=false"
+    echo ""
+    write_label  "with map:"
+    write_cmd    "cargo run av"
+    write_cmd    "cargo run help"
+    write_cmd    "cargo run -- --map wsg"
+    write_cmd    "cargo run -- nagrandarena --use-dt=false"
+    write_cmd    "cargo run -- --map ab --no-use-dt"
     matched=1
 
 # code2 -> webwowviewer
