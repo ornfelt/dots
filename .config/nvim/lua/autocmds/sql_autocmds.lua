@@ -807,7 +807,7 @@ local function sqlmini_switch(idx)
     return
   end
 
-  client.request('workspace/executeCommand', {
+  client:request('workspace/executeCommand', {
     command = 'sqlmini.switch',
     arguments = { { index = tonumber(idx) } }, -- 1=mssql, 2=mysql, 3=sqlite
   }, function(err, _)
@@ -833,7 +833,8 @@ local function sqlmini_dump()
     return
   end
 
-  client.request('workspace/executeCommand', {
+  --client.request('workspace/executeCommand', {
+  client:request('workspace/executeCommand', {
     command = 'sqlmini.dump',
     arguments = {},  -- none needed
   }, function(err, result)
@@ -860,7 +861,8 @@ local function sqlmini_dump()
         table.insert(lines, s)
       end
       vim.api.nvim_buf_set_lines(buf, 0, -1, false, lines)
-      vim.api.nvim_buf_set_option(buf, "modifiable", false)
+      --vim.api.nvim_buf_set_option(buf, "modifiable", false) -- deprecated
+      vim.bo[buf].modifiable = false
     end)
 end
 
