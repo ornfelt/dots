@@ -473,8 +473,8 @@ elif path_contains_in_order code2 webwowviewer; then
         write_warn "  [!] Environment variable '\$code_root_dir' is not set."
     else
         root="${root%/}"
-        ts_path="${root}/Code2/Wow/tools/WebWowViewer/js/application/angular/app_wow.ts"
-        js_path="${root}/Code2/Wow/tools/WebWowViewer/js/application/angular/app_wowjs.js"
+        ts_path="${root}/Code2/Wow/tools/WebWoWViewer/js/application/angular/app_wow.ts"
+        js_path="${root}/Code2/Wow/tools/WebWoWViewer/js/application/angular/app_wowjs.js"
         if [[ -f "$ts_path" ]]; then
             render_usage_from_file "$ts_path"
         elif [[ -f "$js_path" ]]; then
