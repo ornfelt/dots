@@ -689,6 +689,13 @@ show_csharp_help() {
   write_code_line "dotnet test                      # Run tests (from solution dir)"
 
   printf "\n"
+  printf "%bEF Core tools:%b\n" "$YELLOW" "$RESET"
+  write_code_line "dotnet ef --version                     # Check installed dotnet-ef version"
+  write_code_line "dotnet tool uninstall -g dotnet-ef      # Uninstall global dotnet-ef tool"
+  write_code_line "dotnet tool install -g dotnet-ef --version 8.*   # Install EF tool for .NET 8"
+  write_code_line "dotnet tool install -g dotnet-ef --version 9.*   # Install EF tool for .NET 9"
+
+  printf "\n"
   printf "%bAdd NuGet packages:%b\n" "$YELLOW" "$RESET"
   write_code_line "dotnet add package Newtonsoft.Json                   # Add latest"
   write_code_line "dotnet add package Newtonsoft.Json --version 13.0.3  # Add specific version"
