@@ -506,12 +506,24 @@ elif path_contains_in_order code2 gfx wc_testing; then
 
 # my_notes -> scripts -> live_plotext / live_termplot (same file set)
 elif path_contains_in_order my_notes scripts live_plotext \
-  || path_contains_in_order my_notes scripts live_termplot; then
+  || path_contains_in_order my_notes scripts live_termplot \
+  || path_contains_in_order downloads live_plotext \
+  || path_contains_in_order downloads live_termplot; then
 
-    if path_contains_in_order my_notes scripts live_plotext; then
+    # Which subfolder?
+    if path_contains_in_order live_plotext; then
         folder="live_plotext"
     else
         folder="live_termplot"
+    fi
+
+    # Which root?
+    if path_contains_in_order my_notes scripts; then
+        env_name="my_notes_path"
+        prefix="notes/svea/scripts/stats/${folder}"
+    else
+        env_name="HOME"
+        prefix="Downloads/${folder}"
     fi
 
     live_files=(
@@ -526,10 +538,10 @@ elif path_contains_in_order my_notes scripts live_plotext \
 
     rel_paths=()
     for f in "${live_files[@]}"; do
-        rel_paths+=("notes/svea/scripts/stats/${folder}/${f}")
+        rel_paths+=("${prefix}/${f}")
     done
 
-    show_project_multi "$folder" my_notes_path "${rel_paths[@]}"
+    show_project_multi "$folder" "$env_name" "${rel_paths[@]}"
     matched=1
 
 # code2 -> webwowviewer   (prefer .ts, fall back to .js)
