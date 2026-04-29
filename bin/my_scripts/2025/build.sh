@@ -57,6 +57,16 @@ write_subheader() {
     printf '  %b--- %s ---%b\n' "$WHITE" "$1" "$RESET"
 }
 
+# Collect filter args: comma- or whitespace-separated, lowercased.
+FILTERS=()
+for _arg in "$@"; do
+    # Replace commas with spaces, then rely on word splitting.
+    for _p in ${_arg//,/ }; do
+        [[ -n "$_p" ]] && FILTERS+=("${_p,,}")
+    done
+done
+unset _arg _p
+
 # Path matching helpers
 
 # Check that keywords appear in the path in the given order (case-insensitive).
@@ -92,7 +102,7 @@ get_comment_syntax() {
         .go|.rs|.js|.ts|.jsx|.tsx|.mjs|.cjs|.c|.cpp|.cc|.h|.hpp|.cs|.java|.kt|.swift|.php)
             CS_SINGLE="//"; CS_MSTART="/*"; CS_MEND="*/" ;;
         .py)
-            CS_SINGLE="#" ;;
+            CS_SINGLE="#"; CS_MSTART='"""'; CS_MEND='"""' ;;
         .rb)
             CS_SINGLE="#"; CS_MSTART="=begin"; CS_MEND="=end" ;;
         .sh)
@@ -352,6 +362,8 @@ show_project() {
 }
 
 # Render multiple files under a single header, each preceded by a sub-header.
+# Honors $FILTERS (global): if non-empty, only files whose leaf name contains
+# at least one filter substring are rendered.
 # $1 = header, $2 = env var, remaining args = relative paths
 show_project_multi() {
     local header="$1" env_name="$2"
@@ -366,8 +378,35 @@ show_project_multi() {
     fi
     root="${root%/}"
 
-    local rel full leaf
-    for rel in "$@"; do
+    local -a all_paths=("$@")
+    local -a selected=()
+    local rel leaf leaf_lower f
+
+    if (( ${#FILTERS[@]} > 0 )); then
+        for rel in "${all_paths[@]}"; do
+            leaf="${rel##*/}"
+            leaf_lower="${leaf,,}"
+            for f in "${FILTERS[@]}"; do
+                if [[ "$leaf_lower" == *"$f"* ]]; then
+                    selected+=("$rel")
+                    break
+                fi
+            done
+        done
+        if (( ${#selected[@]} == 0 )); then
+            write_warn "  [!] No files matched filter(s): ${FILTERS[*]}"
+            write_label "Available:"
+            for rel in "${all_paths[@]}"; do
+                echo -e "      ${DARKYELLOW}${rel##*/}${RESET}"
+            done
+            return 0
+        fi
+    else
+        selected=("${all_paths[@]}")
+    fi
+
+    local full
+    for rel in "${selected[@]}"; do
         rel="${rel//\\//}"
         rel="${rel#/}"
         full="${root}/${rel}"
@@ -463,6 +502,34 @@ elif path_contains_in_order code2 gfx wc_testing; then
         "Code2/General/gfx/wc_testing/M2App.cs" \
         "Code2/General/gfx/wc_testing/WdlApp.cs" \
         "Code2/General/gfx/wc_testing/WmoApp.cs"
+    matched=1
+
+# my_notes -> scripts -> live_plotext / live_termplot (same file set)
+elif path_contains_in_order my_notes scripts live_plotext \
+  || path_contains_in_order my_notes scripts live_termplot; then
+
+    if path_contains_in_order my_notes scripts live_plotext; then
+        folder="live_plotext"
+    else
+        folder="live_termplot"
+    fi
+
+    live_files=(
+        "live_address.py"
+        "live_audit.py"
+        "live_filejobs.py"
+        "live_general.py"
+        "live_orders.py"
+        "live_pending.py"
+        "live_useractionlog.py"
+    )
+
+    rel_paths=()
+    for f in "${live_files[@]}"; do
+        rel_paths+=("notes/svea/scripts/stats/${folder}/${f}")
+    done
+
+    show_project_multi "$folder" my_notes_path "${rel_paths[@]}"
     matched=1
 
 # code2 -> webwowviewer   (prefer .ts, fall back to .js)

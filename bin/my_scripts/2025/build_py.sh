@@ -5,4 +5,6 @@ if [ -z "$my_notes_path" ]; then
     exit 1
 fi
 
-python "$my_notes_path/scripts/build.py"
+#python "$my_notes_path/scripts/build.py"
+# Forward all script arguments to python
+python "$my_notes_path/scripts/build.py" "$@"
