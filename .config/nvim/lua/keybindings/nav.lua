@@ -106,6 +106,18 @@ end, { desc = "Toggle Zoom for Current Split" })
 
 -- Tab keybinds
 
+-- bind leader-t: open test file in new tab (n)
+vim.keymap.set("n", "<leader>t", function()
+  local file_path
+  if vim.fn.has("win32") == 1 then
+    file_path = "C:/local/testing_files/test1.txt"
+  else
+    file_path = vim.fn.expand("$HOME/Documents/local/testing_files/test1.txt")
+  end
+
+  vim.cmd("tabe " .. vim.fn.fnameescape(file_path))
+end, { noremap = true, silent = true, desc = "Open test file in new tab" })
+
 -- bind m-t: new tab (n)
 myconfig.map('n', '<M-t>', ':tabe<CR>')
 --myconfig.map('n', '<M-s>', ':split<CR>')

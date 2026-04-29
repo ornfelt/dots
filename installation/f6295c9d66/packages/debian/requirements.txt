@@ -55,6 +55,7 @@ idna==3.10
 imgui-bundle==1.92.5
 importlib_metadata==8.7.0
 inflect==7.3.1
+iniconfig==2.3.0
 ipykernel==6.29.5
 ipython==8.35.0
 ipython_genutils==0.2.0
@@ -127,6 +128,7 @@ patch-ng==1.18.1
 pexpect==4.9.0
 pillow==11.1.0
 platformdirs==4.3.7
+pluggy==1.6.0
 pooch==1.8.2
 prometheus_client==0.21.1
 prompt_toolkit==3.0.51
@@ -155,6 +157,7 @@ pysdl2-dll==2.32.0
 PySDL2==0.9.17
 pysmbc==1.0.25.1
 pytesseract==0.3.13
+pytest==9.0.3
 python-apt==3.0.0
 python-dateutil==2.9.0
 python-debian==1.0.1

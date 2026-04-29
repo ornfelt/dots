@@ -28,9 +28,8 @@ local action_state = require("telescope.actions.state")
 -- bind leader-tg: Telescope live_grep (n)
 vim.api.nvim_set_keymap('n', '<leader>tg', '<cmd>Telescope live_grep<CR>', { noremap = true, silent = true })
 
---vim.api.nvim_set_keymap('n', '<leader>tb', '<cmd>Telescope buffers<CR>', { noremap = true, silent = true })
--- bind leader-t: Telescope buffers (n)
-vim.api.nvim_set_keymap('n', '<leader>t', '<cmd>Telescope buffers<CR>', { noremap = true, silent = true })
+-- bind leader-tb: Telescope buffers (n)
+vim.api.nvim_set_keymap('n', '<leader>tb', '<cmd>Telescope buffers<CR>', { noremap = true, silent = true })
 
 -- bind leader-th: Telescope help_tags (n)
 vim.api.nvim_set_keymap('n', '<leader>th', '<cmd>Telescope help_tags<CR>', { noremap = true, silent = true })
