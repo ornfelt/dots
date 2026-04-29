@@ -1,5 +1,7 @@
 require('dbg_log').log_file(debug.getinfo(1, 'S').source)
 
+local USE_NVIM_ROOTER = false
+
 local o   = vim.o
 local opt = vim.opt
 local g   = vim.g
@@ -138,7 +140,8 @@ vim.cmd('set nocompatible')
 opt.shiftround = true
 opt.hlsearch = true
 opt.incsearch = true
-opt.autochdir = true
+
+opt.autochdir = not USE_NVIM_ROOTER
 
 -- Completion settings
 opt.complete:append('kspell')
@@ -214,14 +217,14 @@ g.mapleader = ' '
 g.maplocalleader = ' '
 
 -- nvim-rooter equivalent:
-local directory = vim.fs.root(0, '.git') or '.'
-vim.cmd.cd(vim.fn.fnameescape(directory))
--- optional:
---vim.api.nvim_create_autocmd('VimEnter', {
---  once = true,
---  callback = function()
---    local directory = vim.fs.root(0, '.git') or '.'
---    vim.cmd.cd(vim.fn.fnameescape(directory))
---  end,
---})
+-- note: disable autochdir first!
+if USE_NVIM_ROOTER then
+  vim.api.nvim_create_autocmd('VimEnter', {
+    once = true,
+    callback = function()
+      local directory = vim.fs.root(0, '.git') or '.'
+      vim.cmd.cd(vim.fn.fnameescape(directory))
+    end,
+  })
+end
 

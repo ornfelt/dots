@@ -861,7 +861,28 @@ local function pick_item(items, prompt_title, callback)
   end
 end
 
-local function git_open_file_from_branch()
+local function get_current_relative_path(git_root)
+  local abs = vim.fn.expand('%:p')
+  if abs == "" then return nil end
+  local norm = myconfig.normalize_path(abs)
+  local root  = git_root:gsub("/*$", "") .. "/"   -- ensure trailing slash
+  if not norm:find(root, 1, true) then return nil end
+  return norm:sub(#root + 1)   -- strip prefix -> relative path
+end
+
+local function open_file_in_ref(git_root, ref, file, use_debug_print)
+  local temp_path = git_show_to_temp(git_root, ref, file, use_debug_print)
+  if temp_path then
+    vim.cmd("tabnew " .. vim.fn.fnameescape(temp_path))
+    vim.b.git_tab_temp_path = temp_path
+    vim.api.nvim_buf_set_name(0, ref .. ":" .. file)
+    vim.bo.buftype  = "nofile"
+    vim.bo.bufhidden = "wipe"
+    vim.bo.swapfile = false
+  end
+end
+
+local function git_open_file_from_branch(use_current_file)
   local use_debug_print = myconfig.should_debug_print()
   local git_root = get_repo_dir_for_current_buffer()
   if not git_root then
@@ -887,6 +908,16 @@ local function git_open_file_from_branch()
       print("[git_open_file_from_branch] Selected branch: " .. branch)
     end
 
+    if use_current_file then
+      local rel = get_current_relative_path(git_root)
+      if rel then
+        if use_debug_print then print("[git_open_file_from_branch] Using current file: " .. rel) end
+        open_file_in_ref(git_root, branch, rel, use_debug_print)
+        return
+      end
+      print("[git_open_file_from_branch] Current file not in repo, falling back to picker.")
+    end
+
     local files = get_files_in_ref(git_root, branch, use_debug_print)
     if #files == 0 then
       print("No files found in branch: " .. branch)
@@ -904,6 +935,7 @@ local function git_open_file_from_branch()
       local temp_path = git_show_to_temp(git_root, branch, file, use_debug_print)
       if temp_path then
         vim.cmd("tabnew " .. vim.fn.fnameescape(temp_path))
+        vim.b.git_tab_temp_path = temp_path
         -- Set a useful buffer name
         vim.api.nvim_buf_set_name(0, branch .. ":" .. file)
         vim.bo.buftype = "nofile"
@@ -914,7 +946,7 @@ local function git_open_file_from_branch()
   end)
 end
 
-local function git_open_file_from_commit(limit)
+local function git_open_file_from_commit(limit, use_current_file)
   limit = limit or "300"
   local use_debug_print = myconfig.should_debug_print()
   local git_root = get_repo_dir_for_current_buffer()
@@ -955,6 +987,16 @@ local function git_open_file_from_commit(limit)
       print("[git_open_file_from_commit] Selected commit: " .. commit_hash)
     end
 
+    if use_current_file then
+      local rel = get_current_relative_path(git_root)
+      if rel then
+        if use_debug_print then print("[git_open_file_from_commit] Using current file: " .. rel) end
+        open_file_in_ref(git_root, commit_hash, rel, use_debug_print)
+        return
+      end
+      print("[git_open_file_from_commit] Current file not in repo, falling back to picker.")
+    end
+
     local files = get_files_in_ref(git_root, commit_hash, use_debug_print)
     if #files == 0 then
       print("No files found in commit: " .. commit_hash)
@@ -972,6 +1014,7 @@ local function git_open_file_from_commit(limit)
       local temp_path = git_show_to_temp(git_root, commit_hash, file, use_debug_print)
       if temp_path then
         vim.cmd("tabnew " .. vim.fn.fnameescape(temp_path))
+        vim.b.git_tab_temp_path = temp_path
         vim.api.nvim_buf_set_name(0, commit_hash:sub(1, 10) .. ":" .. file)
         vim.bo.buftype = "nofile"
         vim.bo.bufhidden = "wipe"
@@ -982,12 +1025,25 @@ local function git_open_file_from_commit(limit)
 end
 
 -- cmd GitTab: git_open_file_from_branch
-vim.api.nvim_create_user_command("GitTab", git_open_file_from_branch, {})
+vim.api.nvim_create_user_command("GitTab", function()
+  git_open_file_from_branch(false)
+end, {})
 
 -- cmd GitTabC: git_open_file_from_commit
 vim.api.nvim_create_user_command("GitTabC", function(opts)
   local limit = opts.args ~= "" and opts.args or "300"
-  git_open_file_from_commit(limit)
+  git_open_file_from_commit(limit, false)
+end, { nargs = "?" })
+
+-- cmd GitTabHere: git_open_file_from_branch and use current buffer's file
+vim.api.nvim_create_user_command("GitTabHere", function()
+  git_open_file_from_branch(true)
+end, {})
+
+-- cmd GitTabCHere: git_open_file_from_commit and use current buffer's file
+vim.api.nvim_create_user_command("GitTabCHere", function(opts)
+  local limit = opts.args ~= "" and opts.args or "300"
+  git_open_file_from_commit(limit, true)
 end, { nargs = "?" })
 
 local function get_other_open_buffer_files()
@@ -999,8 +1055,10 @@ local function get_other_open_buffer_files()
   for _, win in ipairs(windows) do
     local buf = vim.api.nvim_win_get_buf(win)
     if buf ~= current_buf and vim.api.nvim_buf_is_loaded(buf) then
-      local name = vim.api.nvim_buf_get_name(buf)
-      if name ~= "" and vim.fn.filereadable(name) == 1 then
+      -- Prefer the real temp path for GitTab/GitTabC buffers
+      local ok, temp_path = pcall(vim.api.nvim_buf_get_var, buf, 'git_tab_temp_path')
+      local name = (ok and temp_path) or vim.api.nvim_buf_get_name(buf)
+      if name ~= "" then
         local normalized = myconfig.normalize_path(name)
         if not seen[normalized] then
           seen[normalized] = true
@@ -1065,8 +1123,8 @@ local function diff_current_file_with_open_buffer()
   local use_debug_print = myconfig.should_debug_print()
   local current_file = myconfig.normalize_path(vim.fn.expand("%:p"))
 
-  if current_file == "" or vim.fn.filereadable(current_file) ~= 1 then
-    print("Current buffer is not a readable file.")
+  if current_file == "" then
+    print("Current buffer is not a file.")
     return
   end
 
@@ -1118,4 +1176,83 @@ end
 
 -- cmd DiffTab: diff_current_file_with_open_buffer
 vim.api.nvim_create_user_command("DiffTab", diff_current_file_with_open_buffer, {})
+
+local function diff_here()
+  local open_in_new_tab = false
+  --local open_in_new_tab = true
+
+  local use_debug_print = myconfig.should_debug_print()
+  local tabpage = vim.api.nvim_get_current_tabpage()
+  local windows = vim.api.nvim_tabpage_list_wins(tabpage)
+
+  if #windows >= 2 then
+    -- Two splits in current tab: diff them in place
+    vim.cmd("windo diffthis")
+    print("Diff mode enabled for the two open splits.")
+    return
+  end
+
+  -- Single split: use current file + file in next tab
+  local file1 = vim.fn.expand("%:p")
+  if file1 == "" or vim.fn.filereadable(file1) ~= 1 then
+    -- Check for stashed temp path on current buf
+    local ok, tp = pcall(vim.api.nvim_buf_get_var, 0, 'git_tab_temp_path')
+    if ok and tp and vim.fn.filereadable(tp) == 1 then
+      file1 = tp
+    else
+      print("Current buffer is not a readable file.")
+      return
+    end
+  end
+
+  local all_tabs = vim.api.nvim_list_tabpages()
+  local current_tab_index = nil
+  for i, tab in ipairs(all_tabs) do
+    if tab == tabpage then current_tab_index = i; break end
+  end
+
+  local next_tab = all_tabs[current_tab_index + 1]
+  if not next_tab then
+    print("No next tab found.")
+    return
+  end
+
+  local file2 = nil
+  for _, win in ipairs(vim.api.nvim_tabpage_list_wins(next_tab)) do
+    local buf = vim.api.nvim_win_get_buf(win)
+    local ok, tp = pcall(vim.api.nvim_buf_get_var, buf, 'git_tab_temp_path')
+    if ok and tp and vim.fn.filereadable(tp) == 1 then
+      file2 = tp
+      break
+    end
+    local name = vim.api.nvim_buf_get_name(buf)
+    if name ~= "" and vim.fn.filereadable(name) == 1 then
+      file2 = name
+      break
+    end
+  end
+
+  if not file2 then
+    print("No readable file found in next tab.")
+    return
+  end
+
+  if use_debug_print then
+    print("[diff_here] file1: " .. file1)
+    print("[diff_here] file2: " .. file2)
+  end
+
+  if open_in_new_tab then
+    vim.cmd("tabnew " .. vim.fn.fnameescape(file1))
+    vim.cmd("diffthis")
+    vim.cmd("vert diffsplit " .. vim.fn.fnameescape(file2))
+  else
+    vim.cmd("edit " .. vim.fn.fnameescape(file1))
+    vim.cmd("diffthis")
+    vim.cmd("vert diffsplit " .. vim.fn.fnameescape(file2))
+  end
+end
+
+-- cmd DiffHere: diff_here
+vim.api.nvim_create_user_command("DiffHere", diff_here, {})
 
