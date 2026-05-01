@@ -42,10 +42,25 @@ BOLD='\033[1m'
 # ->
 # vim .    est.txt
 write_label() { printf '  %b%s%b\n' "$DARKGRAY" "$1" "$RESET"; }
-write_cmd()   { printf '  %b%s%b\n' "$CYAN" "$1" "$RESET"; }
+#write_cmd()   { printf '  %b%s%b\n' "$CYAN" "$1" "$RESET"; }
 write_alt()   { printf '  %b%s%b\n' "$MAGENTA" "$1" "$RESET"; }
 write_extra() { printf '  %b%s%b\n' "$BLUE" "$1" "$RESET"; }
 write_warn()  { printf '%b%s%b\n' "$DARKYELLOW" "$1" "$RESET"; }
+
+# Fix env vars for linux
+fix_cmd_text() {
+    local text="$1"
+    # Bash script = always Linux-style output.
+    # Replace $Env:foo / $env:foo / $ENV:foo with $foo
+    text="$(printf '%s' "$text" | sed -E 's/\$[Ee][Nn][Vv]:/\$/g')"
+    printf '%s' "$text"
+}
+
+write_cmd() {
+    local text
+    text="$(fix_cmd_text "$1")"
+    printf '  %b%s%b\n' "$CYAN" "$text" "$RESET"
+}
 
 write_header() {
     printf '\n'
@@ -660,6 +675,66 @@ elif path_contains_in_order my_notes orders_ts; then
 elif path_contains_in_order my_notes latest-orders-ts; then
     show_project "latest-orders-ts" my_notes_path \
         "notes/svea/scripts/stats/latest-orders-ts/app/src/server.ts"
+    matched=1
+
+# code2 -> gfx -> render_exported_m2_gfx_go
+elif path_contains_in_order code2 gfx render_exported_m2_gfx_go; then
+    show_project "Render Exported M2 GFX (Go)" code_root_dir \
+        "Code2/General/gfx/render_exported_m2_gfx_go/main.go"
+    matched=1
+
+# code2 -> gfx -> render_exported_m2_gfx_py
+elif path_contains_in_order code2 gfx render_exported_m2_gfx_py; then
+    show_project "Render Exported M2 GFX (Python)" code_root_dir \
+        "Code2/General/gfx/render_exported_m2_gfx_py/main.py"
+    matched=1
+
+# code2 -> gfx -> render_exported_m2_gfx_rs
+elif path_contains_in_order code2 gfx render_exported_m2_gfx_rs; then
+    show_project "Render Exported M2 GFX (Rust)" code_root_dir \
+        "Code2/General/gfx/render_exported_m2_gfx_rs/src/main.rs"
+    matched=1
+
+# code2 -> gfx -> render_exported_m2_gfx
+elif path_contains_in_order code2 gfx render_exported_m2_gfx; then
+    show_project "Render Exported M2 GFX (C#)" code_root_dir \
+        "Code2/General/gfx/render_exported_m2_gfx/Program.cs"
+    matched=1
+
+# code2 -> gfx -> render_exported_m2
+elif path_contains_in_order code2 gfx render_exported_m2; then
+    show_project "Render Exported M2 (C#)" code_root_dir \
+        "Code2/General/gfx/render_exported_m2/Program.cs"
+    matched=1
+
+# code2 -> gfx -> render_exported_wmo_gfx_go
+elif path_contains_in_order code2 gfx render_exported_wmo_gfx_go; then
+    show_project "Render Exported WMO GFX (Go)" code_root_dir \
+        "Code2/General/gfx/render_exported_wmo_gfx_go/main.go"
+    matched=1
+
+# code2 -> gfx -> render_exported_wmo_gfx_py
+elif path_contains_in_order code2 gfx render_exported_wmo_gfx_py; then
+    show_project "Render Exported WMO GFX (Python)" code_root_dir \
+        "Code2/General/gfx/render_exported_wmo_gfx_py/main.py"
+    matched=1
+
+# code2 -> gfx -> render_exported_wmo_gfx_rs
+elif path_contains_in_order code2 gfx render_exported_wmo_gfx_rs; then
+    show_project "Render Exported WMO GFX (Rust)" code_root_dir \
+        "Code2/General/gfx/render_exported_wmo_gfx_rs/src/main.rs"
+    matched=1
+
+# code2 -> gfx -> render_exported_wmo_gfx
+elif path_contains_in_order code2 gfx render_exported_wmo_gfx; then
+    show_project "Render Exported WMO GFX (C#)" code_root_dir \
+        "Code2/General/gfx/render_exported_wmo_gfx/Program.cs"
+    matched=1
+
+# code2 -> gfx -> render_exported_wmo
+elif path_contains_in_order code2 gfx render_exported_wmo; then
+    show_project "Render Exported WMO (C#)" code_root_dir \
+        "Code2/General/gfx/render_exported_wmo/Program.cs"
     matched=1
 
 # Fallback: check files in current directory
