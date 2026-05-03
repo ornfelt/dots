@@ -11,6 +11,7 @@ BLUE='\033[34m'
 MAGENTA='\033[35m'
 CYAN='\033[36m'
 DARKGRAY='\033[90m'
+DARKYELLOW='\033[93m'
 
 # Unified argument alias map (languages + tools)
 declare -A ARG_MAP=(
@@ -83,6 +84,10 @@ write_code_line() {
   else
     printf "%b%s%b\n" "$command_color" "$text" "$RESET"
   fi
+}
+
+write_clean_warning() {
+  printf "%bBe careful: below command(s) hard-delete generated files/folders from the current directory.%b\n" "$DARKYELLOW" "$RESET"
 }
 
 # Usage / main help
@@ -162,9 +167,10 @@ show_scripts_help() {
   write_command_with_description ".wcell"      "cd into wcell dir"
   write_command_with_description ".playermap"  "cd into playermap dir and run"
   write_command_with_description ".cmangos"    "cd into cmangos dir"
-  write_command_with_description ".cmangos_tbc"   "cd into cmangos tbc dir"
+  write_command_with_description ".cmangos_tbc" "cd into cmangos tbc dir"
   write_command_with_description ".vmangos"    "cd into vmangos dir"
   write_command_with_description ".mangoszero" "cd into mangoszero dir"
+  write_command_with_description ".mwd"        "my_wow_docs: cd_and_print"
 
   printf "\n"
   printf "%bRun / launcher helpers:%b\n" "$DARKGRAY" "$RESET"
@@ -218,11 +224,20 @@ show_scripts_help() {
   write_command_with_description ".network_devices_ping" "ping common network devices"
 
   printf "\n"
+  printf "%bSearch / inspect / dump helpers:%b\n" "$DARKGRAY" "$RESET"
+  write_command_with_description ".search_conf" "search local config"
+  write_command_with_description ".dump_files"  "dump files"
+
+  printf "\n"
   printf "%bBuild / tools / maintenance:%b\n" "$DARKGRAY" "$RESET"
   write_command_with_description ".cmake"          "helper script for cmake"
+  write_command_with_description ".build"          "helper script for building"
+  write_command_with_description ".build_py"       "helper script for building"
   write_command_with_description ".git_push"       "helper script for git push"
   write_command_with_description ".git_pull"       "helper script for git pull"
   write_command_with_description ".git_ignore"     "helper script for git ignore"
+  write_command_with_description ".copy_git_msg"   "copy N-latest commit msg"
+  write_command_with_description ".diff_shader_git" "run diff_shader_git py script"
   write_command_with_description ".health_check"   "health check script"
   write_command_with_description ".gen_plant"      "generate PlantUML image"
   write_command_with_description ".gen_merm"       "generate Mermaid image"
@@ -656,6 +671,12 @@ show_c_help() {
   write_code_line "./main  # Run binary"
   printf "\n"
   write_code_line "gcc -g -O0 -Wall -Wextra -std=c17 -o main_debug main.c  # Debug build"
+
+  printf "\n"
+  printf "%bClean project / generated files:%b\n" "$YELLOW" "$RESET"
+  write_clean_warning
+  write_code_line "rm -f main main.exe main_debug main_debug.exe *.o *.obj *.pdb *.ilk *.exp *.lib  # Remove common local C outputs"
+  write_code_line "rm -rf build bin obj out  # Remove common generated dirs"
 }
 
 show_csharp_help() {
@@ -703,6 +724,14 @@ show_csharp_help() {
   write_code_line "dotnet add package Serilog --version 3.1.1       # Example: Serilog (pinned)"
   write_code_line "dotnet list package                              # List installed packages"
   write_code_line "dotnet remove package Newtonsoft.Json            # Remove a package"
+
+  printf "\n"
+  printf "%bClean project / generated files:%b\n" "$YELLOW" "$RESET"
+  write_code_line "dotnet clean                                      # Clean build outputs known to MSBuild"
+  write_code_line "dotnet clean -c Release                           # Clean Release outputs"
+  write_code_line "dotnet clean MySolution.sln                       # Clean solution"
+  write_clean_warning
+  write_code_line "find . -type d \( -name bin -o -name obj \) -prune -exec rm -rf {} +  # Hard-delete all bin/obj dirs"
 }
 
 show_cpp_help() {
@@ -720,6 +749,15 @@ show_cpp_help() {
   write_code_line "./main  # Run binary"
   printf "\n"
   write_code_line "g++ -g -O0 -Wall -Wextra -std=c++20 -o main_debug main.cpp  # Debug build"
+
+  printf "\n"
+  printf "%bClean project / generated files:%b\n" "$YELLOW" "$RESET"
+  write_code_line "cmake --build build --target clean    # Clean CMake build dir, if supported by generator"
+  write_code_line "ninja -C build clean                  # Clean Ninja build dir"
+  write_code_line "make clean                            # Clean Makefile project, if target exists"
+  write_clean_warning
+  write_code_line "rm -f main main.exe main_debug main_debug.exe *.o *.obj *.pdb *.ilk *.exp *.lib  # Remove common local C++ outputs"
+  write_code_line "rm -rf build bin obj out cmake-build-debug cmake-build-release  # Remove common generated dirs"
 }
 
 show_rust_help() {
@@ -768,6 +806,14 @@ show_rust_help() {
   write_code_line "cargo add tokio --features full                 # Example: tokio (latest, all features)"
   write_code_line "cargo add anyhow@1.0.86                         # Example: anyhow (pinned)"
   write_code_line "cargo remove serde                              # Remove a crate"
+
+  printf "\n"
+  printf "%bClean project / generated files:%b\n" "$YELLOW" "$RESET"
+  write_code_line "cargo clean                         # Remove Cargo build artifacts, usually target/"
+  write_code_line "cargo clean --release               # Clean release artifacts"
+  write_code_line "cargo clean -p my_crate             # Clean one package in a workspace"
+  write_clean_warning
+  write_code_line "rm -rf target                       # Hard-delete target/"
 }
 
 show_java_help() {
@@ -805,6 +851,15 @@ show_java_help() {
   write_code_line "  implementation 'com.google.gson:gson:2.10.1'   # Specific version"
   write_code_line "mvn install                                      # Resolve + build (Maven)"
   write_code_line "gradle build                                     # Resolve + build (Gradle)"
+
+  printf "\n"
+  printf "%bClean project / generated files:%b\n" "$YELLOW" "$RESET"
+  write_code_line "mvn clean                            # Maven: remove target/"
+  write_code_line "mvn clean install                    # Maven: clean then build/install"
+  write_code_line "gradle clean                         # Gradle: remove build/"
+  write_code_line "./gradlew clean                      # Gradle wrapper on Linux/macOS"
+  write_clean_warning
+  write_code_line "rm -rf target build out              # Hard-delete common Java output dirs"
 }
 
 show_python_help() {
@@ -835,6 +890,13 @@ show_python_help() {
   write_code_line "pip install --upgrade requests                  # Upgrade a package"
   write_code_line "pip uninstall requests                          # Remove a package"
   write_code_line "pip freeze > requirements.txt                   # Save installed packages"
+
+  printf "\n"
+  printf "%bClean project / generated files:%b\n" "$YELLOW" "$RESET"
+  write_clean_warning
+  write_code_line "find . -type d \( -name __pycache__ -o -name .pytest_cache -o -name .mypy_cache -o -name .ruff_cache -o -name build -o -name dist \) -prune -exec rm -rf {} +"
+  write_code_line "find . -type d -name '*.egg-info' -prune -exec rm -rf {} +"
+  write_code_line "find . -type f \( -name '*.pyc' -o -name '*.pyo' \) -delete"
 }
 
 show_go_help() {
@@ -867,6 +929,17 @@ show_go_help() {
   write_code_line "go get github.com/ebitengine/purego@v0.8.2"
   write_code_line "go get github.com/some/package@none            # Remove a package"
   write_code_line "go mod tidy                                    # Clean up go.mod / go.sum (removes unused deps)"
+
+  printf "\n"
+  printf "%bClean project / generated files:%b\n" "$YELLOW" "$RESET"
+  write_code_line "go clean ./...                       # Clean package build artifacts"
+  write_code_line "go clean -cache                      # Remove Go build cache"
+  write_code_line "go clean -testcache                  # Expire Go test cache"
+  write_code_line "go clean -modcache                   # Remove downloaded module cache"
+  write_code_line "go clean -cache -testcache ./...     # Common local clean"
+  write_clean_warning
+  write_code_line "rm -f ./*.exe                        # Remove local Windows binaries"
+  write_code_line "rm -f ./my_wow ./main                # Remove common local Linux/macOS binaries"
 }
 
 show_js_help() {
@@ -900,6 +973,14 @@ show_js_help() {
   write_code_line "npm install axios@1.6.0                        # Example: axios (pinned)"
   write_code_line "npm uninstall some-package                     # Remove a package"
   write_code_line "npm uninstall --save-dev some-package          # Remove a dev dependency"
+
+  printf "\n"
+  printf "%bClean project / generated files:%b\n" "$YELLOW" "$RESET"
+  write_code_line "npm ci                              # Clean install from package-lock.json; removes node_modules first"
+  write_code_line "npm run clean                       # Project-specific clean script, if package.json has one"
+  write_code_line "npx rimraf dist build coverage .next .nuxt .vite .turbo .cache  # Remove common generated dirs"
+  write_clean_warning
+  write_code_line "rm -rf node_modules dist build coverage .next .nuxt .vite .turbo .cache"
 }
 
 show_ts_help() {
@@ -933,6 +1014,16 @@ show_ts_help() {
   write_code_line "npm install --save-dev @types/node@20.0.0         # Example: pinned @types/node"
   write_code_line "npm uninstall some-package                        # Remove a package"
   write_code_line "npm uninstall --save-dev @types/some-package      # Remove type definitions"
+
+  printf "\n"
+  printf "%bClean project / generated files:%b\n" "$YELLOW" "$RESET"
+  write_code_line "npm ci                              # Clean install from package-lock.json; removes node_modules first"
+  write_code_line "npm run clean                       # Project-specific clean script, if package.json has one"
+  write_code_line "npx tsc --build --clean             # Clean TypeScript project references / incremental build info"
+  write_code_line "npx rimraf dist build coverage .tsbuildinfo .next .nuxt .vite .turbo .cache"
+  write_clean_warning
+  write_code_line "rm -rf node_modules dist build coverage .next .nuxt .vite .turbo .cache"
+  write_code_line "rm -f ./*.tsbuildinfo"
 }
 
 # Main
