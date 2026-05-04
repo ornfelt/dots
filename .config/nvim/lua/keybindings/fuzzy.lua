@@ -562,6 +562,46 @@ local function git_changed_files(path_filters)
   return out, root
 end
 
+local function open_diff_in_tab(root, rel)
+  if not root or not rel or rel == "" then return end
+
+  local working = root .. "/" .. rel
+
+  -- Temp file for HEAD version
+  local temp_dir = (vim.loop.os_uname().sysname == "Windows_NT")
+    and "C:/local/git_changed_diff"
+    or (os.getenv("HOME") .. "/.cache/nvim/git_changed_diff")
+  vim.fn.mkdir(temp_dir, "p")
+
+  local safe = rel:gsub("[/\\:%%]", "_")
+  local temp_path = myconfig.normalize_path(temp_dir .. "/HEAD__" .. safe)
+
+  local cmd
+  if vim.loop.os_uname().sysname == "Windows_NT" then
+    cmd = string.format('git -C "%s" show "HEAD:%s" > "%s"', root, rel:gsub("\\", "/"), temp_path)
+  else
+    cmd = string.format("git -C %s show %s > %s",
+      vim.fn.shellescape(root),
+      vim.fn.shellescape("HEAD:" .. rel),
+      vim.fn.shellescape(temp_path))
+  end
+
+  vim.fn.system(cmd)
+  if vim.v.shell_error ~= 0 then
+    vim.notify("Could not retrieve HEAD version of " .. rel, vim.log.levels.WARN)
+    return
+  end
+
+  -- Open HEAD version (left) vs working file (right) in a new tab
+  vim.cmd("tabnew " .. vim.fn.fnameescape(temp_path))
+  vim.api.nvim_buf_set_name(0, "HEAD:" .. rel)
+  vim.bo.buftype  = "nofile"
+  vim.bo.bufhidden = "wipe"
+  vim.bo.swapfile = false
+  vim.cmd("diffthis")
+  vim.cmd("vert diffsplit " .. vim.fn.fnameescape(working))
+end
+
 -- Picker entrypoint for changed files
 function _G.list_changed_files()
   local items, root = git_changed_files({})
@@ -584,7 +624,7 @@ function _G.list_changed_files()
 
     vim.fn["fzf#run"]({
       source = src,
-      options = "--prompt 'Changed> ' --reverse --multi --expect=ctrl-t",
+      options = "--prompt 'Changed> ' --reverse --multi --expect=ctrl-t,ctrl-d",
       sinklist = function(selected)
         if not selected or #selected == 0 then return end
         local key = selected[1]
@@ -594,6 +634,8 @@ function _G.list_changed_files()
             local abs = root .. "/" .. rel
             if key == "ctrl-t" then
               open_abs(abs, "tabedit")
+            elseif key == "ctrl-d" then
+              open_diff_in_tab(root, rel)
             else
               open_abs(abs, "edit")
             end
@@ -625,6 +667,15 @@ function _G.list_changed_files()
             local rel = line:match("^%d+:%s+(.-)%s+|%s+")
             if rel and rel ~= "" then
               open_abs(root .. "/" .. rel, "tabedit")
+            end
+          end
+        end,
+        ["ctrl-d"] = function(sel)
+          if not sel then return end
+          for _, line in ipairs(sel) do
+            local rel = line:match("^%d+:%s+(.-)%s+|%s+")
+            if rel and rel ~= "" then
+              open_diff_in_tab(root, rel)
             end
           end
         end,
@@ -661,8 +712,15 @@ function _G.list_changed_files()
             vim.notify("Cannot open '" .. entry.path .. "': file no longer exists on disk.", vim.log.levels.WARN)
           end
         end
+        local function diff_tab()
+          local entry = action_state.get_selected_entry()
+          actions.close(prompt_bufnr)
+          if not entry then return end
+          open_diff_in_tab(root, entry.value)   -- entry.value is the repo-relative path
+        end
         map("i", "<CR>", function() open_with("edit") end); map("n", "<CR>", function() open_with("edit") end)
         map("i", "<C-t>", function() open_with("tabedit") end); map("n", "<C-t>", function() open_with("tabedit") end)
+        map("i", "<C-d>", diff_tab); map("n", "<C-d>", diff_tab)
         return true
       end,
     }):find()

@@ -10,7 +10,9 @@ local UNIQUE_PER_PATH = true
 -- Max number of lines to keep in the log file (used only when not in UNIQUE_PER_PATH mode)
 local MAX_LINES = 300
 
--- Where to log:
+-- Where to log, see:
+-- lua print(vim.fn.stdpath('cache') .. '/lua_file_usage.log')
+-- $Env:LOCALAPPDATA/Temp/nvim/lua_file_usage.log
 local log_path = vim.fn.stdpath('cache') .. '/lua_file_usage.log'
 
 -- Append a line, with two possible behaviors:

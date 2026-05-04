@@ -385,11 +385,44 @@ show_paths_help() {
   printf "%bnvim built-in package manager path (0.12+):%b\n" "$DARKGRAY" "$RESET"
   printf "%b~/.local/share/nvim/site/pack%b\n\n" "$GREEN" "$RESET"
 
+  printf "%bnvim built-in package manager opt path (0.12+):%b\n" "$DARKGRAY" "$RESET"
+  printf "%b~/.local/share/nvim/site/pack/core/opt%b\n\n" "$GREEN" "$RESET"
+
+  printf "%bnvim pack lockfile:%b\n" "$DARKGRAY" "$RESET"
+  printf "%b~/.config/nvim/nvim-pack-lock.json%b\n\n" "$GREEN" "$RESET"
+
+  printf "%blazy.nvim lockfile:%b\n" "$DARKGRAY" "$RESET"
+  printf "%b~/.config/nvim/lazy-lock.json%b\n\n" "$GREEN" "$RESET"
+
+  printf "%bnvim debug lua usage log:%b\n" "$DARKGRAY" "$RESET"
+  printf "%b~/.cache/nvim/lua_file_usage.log%b\n\n" "$GREEN" "$RESET"
+
+  printf "%bnvim lsp servers log:%b\n" "$DARKGRAY" "$RESET"
+  printf "%b~/lsp_servers.txt%b\n\n" "$GREEN" "$RESET"
+
+  printf "%bnvim custom config file:%b\n" "$DARKGRAY" "$RESET"
+  printf "%b~/.local/share/nvim/nvim_config.txt%b\n\n" "$GREEN" "$RESET"
+
+  printf "%bnvim custom config backup/source from my_notes_path:%b\n" "$DARKGRAY" "$RESET"
+  printf "%b\$my_notes_path/scripts/files/nvim_config.txt%b\n\n" "$GREEN" "$RESET"
+
+  printf "%bnvim py_exec scripts dir:%b\n" "$DARKGRAY" "$RESET"
+  printf "%b\$code_root_dir/Code2/Python/my_py/scripts/%b\n\n" "$GREEN" "$RESET"
+
+  printf "%bnvim sessions dir:%b\n" "$DARKGRAY" "$RESET"
+  printf "%b~/.vim/sessions/%b\n\n" "$GREEN" "$RESET"
+
   printf "%bwezterm config path:%b\n" "$DARKGRAY" "$RESET"
   printf "%b~/.wezterm.lua%b\n\n" "$GREEN" "$RESET"
 
   printf "%bwezterm session manager path:%b\n" "$DARKGRAY" "$RESET"
   printf "%b~/.config/wezterm/wezterm-session-manager/session-manager.lua%b\n\n" "$GREEN" "$RESET"
+
+  printf "%bwezterm session file:%b\n" "$DARKGRAY" "$RESET"
+  printf "%b~/.config/wezterm/wezterm-session-manager/wezterm_state_coding.json%b\n\n" "$GREEN" "$RESET"
+
+  printf "%bwezterm debug log file:%b\n" "$DARKGRAY" "$RESET"
+  printf "%b~/wez_test.txt%b\n\n" "$GREEN" "$RESET"
 
   printf "%balacritty config path:%b\n" "$DARKGRAY" "$RESET"
   printf "%b~/.config/alacritty/alacritty.toml%b\n\n" "$GREEN" "$RESET"
