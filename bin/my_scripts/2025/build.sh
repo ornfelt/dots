@@ -737,6 +737,54 @@ elif path_contains_in_order code2 gfx render_exported_wmo; then
         "Code2/General/gfx/render_exported_wmo/Program.cs"
     matched=1
 
+# code2 -> gfx -> wc_clean_new_go
+elif path_contains_in_order code2 gfx wc_clean_new_go; then
+    show_project "WC Clean New (Go)" code_root_dir \
+        "Code2/General/gfx/wc_clean_new_go/main.go"
+    matched=1
+
+# code2 -> gfx -> wc_clean_new_cs
+elif path_contains_in_order code2 gfx wc_clean_new_cs; then
+    show_project "WC Clean New (C#)" code_root_dir \
+        "Code2/General/gfx/wc_clean_new_cs/Program.cs"
+    matched=1
+
+# code2 -> space -> BlackholeGfx
+elif path_contains_in_order code2 space blackholegfx; then
+    show_project "Blackhole GFX" code_root_dir \
+        "Code2/C++/space/cs/BlackholeGfx/Program.cs"
+    matched=1
+
+# code2 -> space -> SolarSystemGfx
+elif path_contains_in_order code2 space solarsystemgfx; then
+    show_project "Solar System GFX" code_root_dir \
+        "Code2/C++/space/cs/SolarSystemGfx/Program.cs"
+    matched=1
+
+# code2 -> gfx -> wow-rs-gfx
+elif path_contains_in_order code2 gfx wow-rs-gfx; then
+    show_project "wow-rs-gfx" code_root_dir \
+        "Code2/General/gfx/wow-rs-gfx/src/main.rs"
+    matched=1
+
+# code2 -> gfx -> wow-rs
+elif path_contains_in_order code2 gfx wow-rs; then
+    show_project "wow-rs" code_root_dir \
+        "Code2/General/gfx/wow-rs/src/main.rs"
+    matched=1
+
+# code2 -> gfx -> lrc
+elif path_contains_in_order code2 gfx lrc; then
+    show_project "LRC GFX" code_root_dir \
+        "Code2/General/gfx/lrc/gfx/lrc_gfx.py"
+    matched=1
+
+# code2 -> gfx -> double_slit
+elif path_contains_in_order code2 gfx double_slit; then
+    show_project "Double Slit" code_root_dir \
+        "Code2/General/gfx/double_slit/Program.cs"
+    matched=1
+
 # Fallback: check files in current directory
 else
     if [[ -f "worldserver.exe" && -f "authserver.exe" ]]; then
