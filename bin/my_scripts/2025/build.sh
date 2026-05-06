@@ -785,6 +785,18 @@ elif path_contains_in_order code2 gfx double_slit; then
         "Code2/General/gfx/double_slit/Program.cs"
     matched=1
 
+# code2 -> general -> find-all-custom-types
+elif path_contains_in_order code2 general find-all-custom-types; then
+    show_project "Find All Custom Types" code_root_dir \
+        "Code2/General/utils/treesitter/find-all-custom-types/analyze-csharp.ts"
+    matched=1
+
+# code2 -> general -> find-custom-types
+elif path_contains_in_order code2 general find-custom-types; then
+    show_project "Find Custom Types" code_root_dir \
+        "Code2/General/utils/treesitter/find-custom-types/find-custom-types.ts"
+    matched=1
+
 # Fallback: check files in current directory
 else
     if [[ -f "worldserver.exe" && -f "authserver.exe" ]]; then
