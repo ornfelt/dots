@@ -291,7 +291,7 @@ function list_tabs()
             value = entry,
             display = entry,
             ordinal = entry,
-            index = tonumber(entry:match("Tab (%d+):")),
+            index = tonumber(entry:match("^(%d+):")),
           }
         end,
       }),
