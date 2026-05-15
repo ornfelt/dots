@@ -2,8 +2,39 @@ require('dbg_log').log_file(debug.getinfo(1, 'S').source)
 
 local last_closed_tab = nil
 
+local function buf_is_modified(buf)
+  return vim.api.nvim_buf_is_valid(buf)
+    and vim.api.nvim_get_option_value("modified", { buf = buf })
+end
+
+local function any_buffer_is_modified()
+  for _, buf in ipairs(vim.api.nvim_list_bufs()) do
+    if buf_is_modified(buf) then
+      return true, buf
+    end
+  end
+
+  return false, nil
+end
+
 local function save_and_close_tab()
   local tab_count = vim.fn.tabpagenr('$')
+
+  local has_modified, modified_buf = any_buffer_is_modified()
+
+  if has_modified and modified_buf ~= nil and tab_count <= 1 then
+    local name = vim.api.nvim_buf_get_name(modified_buf)
+    if name == "" then
+      name = "[No Name]"
+    end
+
+    vim.notify(
+      "There are unsaved changes in: " .. name .. ". Save first or use :q! manually.",
+      vim.log.levels.WARN
+    )
+    return
+  end
+
   if tab_count <= 1 then
     --print("Cannot save tab state: only one tab open.")
     vim.cmd("q")
@@ -48,7 +79,7 @@ local function restore_tab()
 
   for _, buf_data in ipairs(last_closed_tab) do
     if buf_data.name ~= "" then
-      vim.cmd("edit " .. buf_data.name)
+      vim.cmd.edit(vim.fn.fnameescape(buf_data.name))
       vim.api.nvim_win_set_cursor(0, buf_data.position)
     end
   end
@@ -60,4 +91,3 @@ end
 vim.keymap.set("n", "<M-q>", save_and_close_tab, { noremap = true, silent = true })
 -- bind m-s-t: restore_tab (n)
 vim.keymap.set("n", "<M-S-T>", restore_tab, { noremap = true, silent = true })
-
