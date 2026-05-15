@@ -538,16 +538,20 @@ local function ollama_stream(model_override)
   vim.fn.chanclose(job_id, "stdin")
 end
 
+-- cmd Llm: send basic llama.cpp request
 vim.api.nvim_create_user_command('Llm', llm, {})
+-- cmd LlmStream: send basic llama.cpp request using streaming
 vim.api.nvim_create_user_command('LlmStream', llm_stream, {})
+-- cmd Ollama: send basic ollama request
 vim.api.nvim_create_user_command('Ollama', function(opts)
   ollama(opts.args)
 end, { nargs = '?' })
+-- cmd OllamaStream: send basic ollama request using streaming
 vim.api.nvim_create_user_command('OllamaStream', function(opts)
   ollama_stream(opts.args)
 end, { nargs = '?' })
 
--- Debug commad for trying to get local ip
+-- cmd LocalIP: debug commad for trying to get local ip
 vim.api.nvim_create_user_command("LocalIP", function()
   local ip = get_local_ipv4(true)
   --vim.notify("Local IPv4: " .. ip, vim.log.levels.INFO)
@@ -596,7 +600,7 @@ end
 
 local my_notes_path = myconfig.my_notes_path
 
--- cmd PrintAiModels: print all AI models from python script
+-- cmd PrintAiModels: print all AI models via python script
 vim.api.nvim_create_user_command('PrintAiModels', function()
   local script_path = my_notes_path .. "/scripts/gpt/gpt/print_all_models.py"
 
@@ -627,7 +631,6 @@ local function normalize_provider(provider)
   end
 end
 
--- Fetch models via request
 -- cmd PrintAiModelsByRequest: fetch and print AI models by API request
 vim.api.nvim_create_user_command('PrintAiModelsByRequest', function(opts)
   local should_debug_print = myconfig.should_debug_print()

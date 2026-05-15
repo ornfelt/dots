@@ -97,7 +97,7 @@ function toggle_filetree(jump_to_current)
   -- Silly fix for making oil work with domain-based user dirs
   if filepath:find("%.corp") then
     filepath = filepath:gsub(".*se%-[^\\]+%-01\\", "H:/")
-    filepath = filepath:gsub(" ", "\\ ")
+    --filepath = filepath:gsub(" ", "\\ ")
   else
     if not filepath:lower():find("h:") then
       filepath = "./"

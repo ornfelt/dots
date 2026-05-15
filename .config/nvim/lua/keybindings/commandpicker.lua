@@ -5,6 +5,8 @@ local commands = {
   { label = "PackerUpdate", cmd = "PackerUpdate" },
   { label = "PackerLoad", cmd = "PackerLoad" },
   { label = "PackerSync", cmd = "PackerSync" },
+  -- Built-in vim.pack
+  { label = "VimPackUpdate", cmd = "lua vim.pack.update()" },
   -- Lazy
   { label = "Lazy", cmd = "Lazy" },
   -- Markview
