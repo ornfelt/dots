@@ -271,9 +271,10 @@ end
 
 -- Basic llama.cpp example request (no streaming)
 local function llm()
+  local should_debug_print = myconfig.should_debug_print()
+
   --local url = "http://127.0.0.1:8080/completion"
   --local url = "http://localhost:8080/completion"
-  local should_debug_print = myconfig.should_debug_print()
   local ip = get_local_ipv4()
   if should_debug_print then
     print("local ip: " .. ip)
@@ -313,7 +314,238 @@ local function llm()
   vim.api.nvim_buf_set_lines(0, line_num, line_num, false, vim.list_slice(split_newlines, 2))
 end
 
+-- Default Ollama model (can be overridden by passing an argument to :Ollama / :OllamaStream)
+local ollama_model = "llama3.2"
+
+-- Basic Ollama request (no streaming). Mirrors llm() but talks to /api/generate.
+local function ollama(model_override)
+  local should_debug_print = myconfig.should_debug_print()
+
+  --local url = "http://127.0.0.1:11434/api/generate"
+  local url = "http://localhost:11434/api/generate"
+  --local ip = get_local_ipv4()
+  --if should_debug_print then
+  --  print("local ip: " .. ip)
+  --end
+  --local url = ("http://%s:11434/api/generate"):format(ip)
+
+  local buffer_content = table.concat(vim.api.nvim_buf_get_lines(0, 0, -1, false), "\n")
+
+  local json_payload = {
+    model = (model_override and model_override ~= "") and model_override or ollama_model,
+    prompt = buffer_content,
+    stream = false,
+  }
+
+  local curl_command = 'curl -k -s -X POST -H "Content-Type: application/json" -d @- ' .. url
+  local response = vim.fn.system(curl_command, vim.fn.json_encode(json_payload))
+  local success, decoded_response = pcall(vim.fn.json_decode, response)
+  if not success then
+    decoded_response = nil
+  end
+
+  local default_msg = "ollama is sleeping"
+  -- Ollama puts generated text in `.response` (unlike llama.cpp's `.content`)
+  local content = (decoded_response and decoded_response.response) or default_msg
+
+  local split_newlines = vim.split(content, '\n', true)
+  local line_num = vim.api.nvim_win_get_cursor(0)[1]
+  local lines = vim.api.nvim_buf_get_lines(0, line_num - 1, line_num, false)
+  lines[1] = lines[1] .. split_newlines[1]
+  vim.api.nvim_buf_set_lines(0, line_num - 1, line_num, false, lines)
+  vim.api.nvim_buf_set_lines(0, line_num, line_num, false, vim.list_slice(split_newlines, 2))
+end
+
+-- Streaming helpers --------------------------------------------------------
+
+-- Create a streaming inserter that appends chunks to the buffer at the
+-- cursor line. Each call appends `text` (which may contain newlines) right
+-- after whatever has been inserted so far. Mirrors the insertion behaviour
+-- of the non-streaming llm() function.
+local function make_stream_inserter()
+  local current_line = vim.api.nvim_win_get_cursor(0)[1]
+  return function(text)
+    if not text or text == "" then return end
+    local parts = vim.split(text, '\n', true)
+    local existing = vim.api.nvim_buf_get_lines(0, current_line - 1, current_line, false)
+    if #existing == 0 then existing = {""} end
+    existing[1] = existing[1] .. parts[1]
+    vim.api.nvim_buf_set_lines(0, current_line - 1, current_line, false, existing)
+    if #parts > 1 then
+      local new_lines = vim.list_slice(parts, 2)
+      vim.api.nvim_buf_set_lines(0, current_line, current_line, false, new_lines)
+      current_line = current_line + #new_lines
+    end
+  end
+end
+
+-- jobstart's on_stdout splits bytes by \n but a single logical line can be
+-- split across multiple callbacks. Per :h channel-lines, the first chunk
+-- continues whatever was pending and the last chunk is the new pending.
+-- Returns (on_stdout_handler, flush_pending) where flush_pending should be
+-- called from on_exit to emit any unterminated trailing line.
+local function make_line_handler(process_line)
+  local pending = ""
+  local function on_stdout(_, data, _)
+    if not data or #data == 0 then return end
+    pending = pending .. data[1]
+    for i = 2, #data do
+      if pending ~= "" then
+        process_line(pending)
+      end
+      pending = data[i]
+    end
+  end
+  local function flush()
+    if pending ~= "" then
+      process_line(pending)
+      pending = ""
+    end
+  end
+  return on_stdout, flush
+end
+
+-- Streaming llama.cpp request. llama.cpp uses Server-Sent Events: each event
+-- arrives as a line "data: {json}" with `content` carrying the next token.
+local function llm_stream()
+  local should_debug_print = myconfig.should_debug_print()
+  local ip = get_local_ipv4()
+  if should_debug_print then
+    print("local ip: " .. ip)
+  end
+  local url = ("http://%s:8080/completion"):format(ip)
+
+  local buffer_content = table.concat(vim.api.nvim_buf_get_lines(0, 0, -1, false), "\n")
+
+  local json_payload = vim.fn.json_encode({
+    temp = 0.72,
+    top_k = 100,
+    top_p = 0.73,
+    repeat_penalty = 1.100000023841858,
+    n_predict = 256,
+    stop = {"\n\n\n"},
+    stream = true,
+    prompt = buffer_content,
+  })
+
+  local insert_chunk = make_stream_inserter()
+
+  local process_line = function(line)
+    local json_str = line:match("^data:%s*(.+)$")
+    if not json_str then return end
+    local ok, parsed = pcall(vim.fn.json_decode, json_str)
+    if ok and parsed and parsed.content then
+      insert_chunk(parsed.content)
+    end
+  end
+
+  local on_stdout, flush = make_line_handler(process_line)
+
+  -- -N disables curl's output buffering so we get tokens as they arrive
+  local cmd = { "curl", "-k", "-s", "-N", "-X", "POST",
+                "-H", "Content-Type: application/json",
+                "-d", "@-", url }
+
+  local job_id = vim.fn.jobstart(cmd, {
+    on_stdout = on_stdout,
+    on_stderr = function(_, data, _)
+      if not data then return end
+      for _, line in ipairs(data) do
+        if line and line ~= "" and should_debug_print then
+          print("llm_stream stderr: " .. line)
+        end
+      end
+    end,
+    on_exit = function(_, code, _)
+      flush()
+      if code ~= 0 and should_debug_print then
+        print("llm_stream: curl exited with code " .. code)
+      end
+    end,
+  })
+
+  if job_id <= 0 then
+    print("llm_stream: failed to start curl job")
+    return
+  end
+
+  vim.fn.chansend(job_id, json_payload)
+  vim.fn.chanclose(job_id, "stdin")
+end
+
+-- Streaming Ollama request. Ollama uses JSONL: one JSON object per line,
+-- with the generated text in `.response` and a final object having
+-- `done = true`.
+local function ollama_stream(model_override)
+  local should_debug_print = myconfig.should_debug_print()
+
+  --local url = "http://127.0.0.1:11434/api/generate"
+  local url = "http://localhost:11434/api/generate"
+  --local ip = get_local_ipv4()
+  --if should_debug_print then
+  --  print("local ip: " .. ip)
+  --end
+  --local url = ("http://%s:11434/api/generate"):format(ip)
+
+  local buffer_content = table.concat(vim.api.nvim_buf_get_lines(0, 0, -1, false), "\n")
+
+  local json_payload = vim.fn.json_encode({
+    model = (model_override and model_override ~= "") and model_override or ollama_model,
+    prompt = buffer_content,
+    stream = true,
+  })
+
+  local insert_chunk = make_stream_inserter()
+
+  local process_line = function(line)
+    if not line or line == "" then return end
+    local ok, parsed = pcall(vim.fn.json_decode, line)
+    if ok and parsed and parsed.response then
+      insert_chunk(parsed.response)
+    end
+  end
+
+  local on_stdout, flush = make_line_handler(process_line)
+
+  local cmd = { "curl", "-k", "-s", "-N", "-X", "POST",
+                "-H", "Content-Type: application/json",
+                "-d", "@-", url }
+
+  local job_id = vim.fn.jobstart(cmd, {
+    on_stdout = on_stdout,
+    on_stderr = function(_, data, _)
+      if not data then return end
+      for _, line in ipairs(data) do
+        if line and line ~= "" and should_debug_print then
+          print("ollama_stream stderr: " .. line)
+        end
+      end
+    end,
+    on_exit = function(_, code, _)
+      flush()
+      if code ~= 0 and should_debug_print then
+        print("ollama_stream: curl exited with code " .. code)
+      end
+    end,
+  })
+
+  if job_id <= 0 then
+    print("ollama_stream: failed to start curl job")
+    return
+  end
+
+  vim.fn.chansend(job_id, json_payload)
+  vim.fn.chanclose(job_id, "stdin")
+end
+
 vim.api.nvim_create_user_command('Llm', llm, {})
+vim.api.nvim_create_user_command('LlmStream', llm_stream, {})
+vim.api.nvim_create_user_command('Ollama', function(opts)
+  ollama(opts.args)
+end, { nargs = '?' })
+vim.api.nvim_create_user_command('OllamaStream', function(opts)
+  ollama_stream(opts.args)
+end, { nargs = '?' })
 
 -- Debug commad for trying to get local ip
 vim.api.nvim_create_user_command("LocalIP", function()
@@ -486,4 +718,3 @@ end, {
     return { 'openai', 'anthropic', 'googleai' }
   end
 })
-
