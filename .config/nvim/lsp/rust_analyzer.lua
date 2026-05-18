@@ -6,7 +6,16 @@ return {
   root_markers = { 'Cargo.toml', '.git' },
   settings = {
     ['rust-analyzer'] = {
-      cargo = { allFeatures = true },
+      cargo = {
+        --features = { "async", "cimgui", "with_performance" },
+        allFeatures = true,
+        --noDefaultFeatures = true,
+      },
+
+      --check = {
+      --  features = { "async", "cimgui", "with_performance" },
+      --  --command = "clippy",
+      --},
       --checkOnSave = { command = 'clippy' },
       diagnostics = { disabled = { 'inactive-code' } }, -- optional
     },

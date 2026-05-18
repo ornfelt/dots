@@ -27,7 +27,9 @@ return {
       gofumpt = true,
       semanticTokens = true,
       --buildFlags = { "-tags=appconfig" },
+      --buildFlags = { "-tags=appconfig tests" },
       --buildFlags = { "-tags=with_debug_rendering async_loader", },
+      --buildFlags = { "-tags=async cimgui with_performance", },
     },
   },
 }
