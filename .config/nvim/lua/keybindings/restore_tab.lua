@@ -19,10 +19,12 @@ end
 
 local function save_and_close_tab()
   local tab_count = vim.fn.tabpagenr('$')
+  local tabpage = vim.api.nvim_get_current_tabpage()
+  local windows = vim.api.nvim_tabpage_list_wins(tabpage)
 
   local has_modified, modified_buf = any_buffer_is_modified()
 
-  if has_modified and modified_buf ~= nil and tab_count <= 1 then
+  if has_modified and modified_buf ~= nil and tab_count <= 1 and #windows == 1 then
     local name = vim.api.nvim_buf_get_name(modified_buf)
     if name == "" then
       name = "[No Name]"

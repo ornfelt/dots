@@ -385,6 +385,30 @@ elif [[ "$lc" == *wc_clean_new* ]]; then
     run_or_print "$main"
     print_alternatives "${alts[@]}"
 
+elif [[ "$lc" == *gptgen* && "$lc" == *cpp* ]]; then
+    test_cmakelists parent "GptGen cpp (expecting CMakeLists.txt one level up)"
+
+    main="cmake .. -DCMAKE_BUILD_TYPE=$BuildType -DUSE_APPCONFIG=ON -DUSE_VCPKG=OFF -DBUILD_TESTS=ON"
+
+    run_or_print "$main"
+
+    if [[ -n "$OnlyPrint" ]]; then
+        echo
+        echo "alternative cmake commands:"
+
+        echo
+        echo "AppConfig disabled:"
+        echo "cmake .. -DCMAKE_BUILD_TYPE=$BuildType -DUSE_APPCONFIG=OFF -DUSE_VCPKG=OFF -DBUILD_TESTS=ON"
+
+        echo
+        echo "from project dir instead of build dir:"
+        echo "cmake -B build -S . -DCMAKE_BUILD_TYPE=$BuildType -DUSE_APPCONFIG=ON -DUSE_VCPKG=OFF -DBUILD_TESTS=ON"
+
+        echo
+        echo "from project dir with AppConfig disabled:"
+        echo "cmake -B build -S . -DCMAKE_BUILD_TYPE=$BuildType -DUSE_APPCONFIG=OFF -DUSE_VCPKG=OFF -DBUILD_TESTS=ON"
+    fi
+
 else
     #test_cmakelists parent
     test_cmakelists parent "$(basename "$cwd")"

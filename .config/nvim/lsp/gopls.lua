@@ -26,6 +26,8 @@ return {
       staticcheck = true,
       gofumpt = true,
       semanticTokens = true,
+      --buildFlags = { "-tags=appconfig" },
+      --buildFlags = { "-tags=with_debug_rendering async_loader", },
     },
   },
 }
