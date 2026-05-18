@@ -3,6 +3,10 @@
 # This script prints relevant build commands based on cwd
 # see:
 # {my_notes_path}/scripts/build_script_desc.txt
+#
+# Simple pattern -> source-file mappings are loaded from:
+#   $my_notes_path/scripts/build_patterns.ini
+# Only patterns that need custom logic remain hard-coded below.
 
 cwd_full="$(pwd)"
 cwd="${cwd_full,,}"   # lowercase for case-insensitive matching
@@ -431,96 +435,182 @@ show_project_multi() {
     done
 }
 
+
+# Patterns config (data-driven)
+#
+# Minimal INI parser. Each section's key/value pairs are collected into
+# parallel global arrays:
+#
+#   PE_HEADERS[i]   section name (becomes the project header)
+#   PE_PATTERNS[i]  patterns joined by PE_DELIM
+#   PE_ENVS[i]      env var name
+#   PE_MULTI[i]     0 = single file, 1 = multi
+#   PE_PATHS[i]     single path (multi=0) or paths joined by PE_DELIM (multi=1)
+#
+# Values that span multiple lines (where continuation lines are indented
+# under the key, like:
+#
+#     files =
+#         path/a
+#         path/b
+#
+# ) are joined with newlines and split back into a list by the flush step.
+# Lines starting with '#' or ';' (after trim) are comments; section names
+# can contain '#' (e.g. [C# (my_web_wow)]) because comment detection only
+# triggers at start-of-line.
+
+PATTERNS_CONFIG_REL="scripts/build_patterns.ini"
+PE_DELIM=$'\x1f'   # ASCII Unit Separator — safe join delimiter
+
+PE_HEADERS=()
+PE_PATTERNS=()
+PE_ENVS=()
+PE_MULTI=()
+PE_PATHS=()
+
+# Join args with $PE_DELIM. Uses local IFS in a function scope.
+_pe_join() {
+    local IFS="$PE_DELIM"
+    printf '%s' "$*"
+}
+
+# Append a finished section into the PE_* arrays. Reads section state from
+# $_sec_name / $_sec_patterns / $_sec_env / $_sec_file / $_sec_files in the
+# caller's scope (bash dynamic scoping). Sections missing required fields
+# are silently skipped.
+_pe_flush_section() {
+    [[ -z "$_sec_name" ]] && return 0
+
+    local patterns_raw="$_sec_patterns" env_name="$_sec_env"
+    local file_single="$_sec_file" files_block="$_sec_files"
+
+    [[ -z "$patterns_raw" || -z "$env_name" ]] && return 0
+
+    # Split patterns on commas/whitespace, drop empties.
+    local -a patterns=()
+    local p
+    for p in ${patterns_raw//,/ }; do
+        [[ -n "$p" ]] && patterns+=("$p")
+    done
+    (( ${#patterns[@]} == 0 )) && return 0
+
+    if [[ -n "$files_block" ]]; then
+        local -a files=()
+        local fline ftrim
+        while IFS= read -r fline; do
+            ftrim="$(trim "$fline")"
+            [[ -n "$ftrim" ]] && files+=("$ftrim")
+        done <<< "$files_block"
+        (( ${#files[@]} == 0 )) && return 0
+
+        PE_HEADERS+=("$_sec_name")
+        PE_PATTERNS+=("$(_pe_join "${patterns[@]}")")
+        PE_ENVS+=("$env_name")
+        PE_MULTI+=(1)
+        PE_PATHS+=("$(_pe_join "${files[@]}")")
+    elif [[ -n "$file_single" ]]; then
+        PE_HEADERS+=("$_sec_name")
+        PE_PATTERNS+=("$(_pe_join "${patterns[@]}")")
+        PE_ENVS+=("$env_name")
+        PE_MULTI+=(0)
+        PE_PATHS+=("$file_single")
+    fi
+}
+
+load_patterns_config() {
+    PE_HEADERS=(); PE_PATTERNS=(); PE_ENVS=(); PE_MULTI=(); PE_PATHS=()
+
+    [[ -z "${my_notes_path:-}" ]] && return 0
+    local config_path="${my_notes_path%/}/$PATTERNS_CONFIG_REL"
+    [[ -f "$config_path" ]] || return 0
+
+    local _sec_name=""
+    local _sec_patterns="" _sec_env="" _sec_file="" _sec_files=""
+    local current_key=""
+
+    local raw trimmed key val
+    while IFS= read -r raw || [[ -n "$raw" ]]; do
+        raw="${raw%$'\r'}"
+        trimmed="$(trim "$raw")"
+
+        # Blank or comment line: reset continuation, skip.
+        if [[ -z "$trimmed" ]] || [[ "$trimmed" == \#* ]] || [[ "$trimmed" == ';'* ]]; then
+            current_key=""
+            continue
+        fi
+
+        # Section header [name]
+        if [[ "$trimmed" == '['*']' ]]; then
+            _pe_flush_section
+            _sec_name="${trimmed#[}"; _sec_name="${_sec_name%]}"
+            _sec_patterns=""; _sec_env=""; _sec_file=""; _sec_files=""
+            current_key=""
+            continue
+        fi
+
+        # Continuation: raw starts with whitespace AND we have an active key.
+        if [[ -n "$current_key" ]] && [[ "$raw" == [[:space:]]* ]]; then
+            case "$current_key" in
+                patterns) [[ -z "$_sec_patterns" ]] && _sec_patterns="$trimmed" || _sec_patterns="${_sec_patterns}"$'\n'"$trimmed" ;;
+                env)      [[ -z "$_sec_env" ]]      && _sec_env="$trimmed"      || _sec_env="${_sec_env}"$'\n'"$trimmed" ;;
+                file)     [[ -z "$_sec_file" ]]     && _sec_file="$trimmed"     || _sec_file="${_sec_file}"$'\n'"$trimmed" ;;
+                files)    [[ -z "$_sec_files" ]]    && _sec_files="$trimmed"    || _sec_files="${_sec_files}"$'\n'"$trimmed" ;;
+            esac
+            continue
+        fi
+
+        # key = value
+        if [[ "$trimmed" == *"="* ]]; then
+            key="$(trim "${trimmed%%=*}")"; key="${key,,}"
+            val="$(trim "${trimmed#*=}")"
+            case "$key" in
+                patterns) _sec_patterns="$val"; current_key="patterns" ;;
+                env)      _sec_env="$val";      current_key="env" ;;
+                file)     _sec_file="$val";     current_key="file" ;;
+                files)    _sec_files="$val";    current_key="files" ;;
+                *)        current_key="" ;;
+            esac
+        else
+            current_key=""
+        fi
+    done < "$config_path"
+
+    # Flush last section.
+    _pe_flush_section
+}
+
+
 # Match rules
 
 matched=0
 
-# code2 -> go -> my_web_wow
-if path_contains_in_order code2 go my_web_wow; then
-    show_project "Go (my_web_wow)" code_root_dir \
-        "Code2/Wow/tools/my_wow/go/my_web_wow/main.go"
-    matched=1
+# ----------------------------------------------------------------------
+# Data-driven entries from $my_notes_path/scripts/build_patterns.ini
+# (covers all simple show_project / show_project_multi cases)
+# ----------------------------------------------------------------------
+load_patterns_config
+for (( _pe_i=0; _pe_i<${#PE_HEADERS[@]}; _pe_i++ )); do
+    IFS=$'\x1f' read -ra _pe_pats <<< "${PE_PATTERNS[$_pe_i]}"
+    if path_contains_in_order "${_pe_pats[@]}"; then
+        if (( ${PE_MULTI[$_pe_i]} == 1 )); then
+            IFS=$'\x1f' read -ra _pe_files <<< "${PE_PATHS[$_pe_i]}"
+            show_project_multi "${PE_HEADERS[$_pe_i]}" "${PE_ENVS[$_pe_i]}" "${_pe_files[@]}"
+        else
+            show_project "${PE_HEADERS[$_pe_i]}" "${PE_ENVS[$_pe_i]}" "${PE_PATHS[$_pe_i]}"
+        fi
+        matched=1
+        break
+    fi
+done
+unset _pe_i _pe_pats _pe_files
 
-# code2 -> go -> tbc
-elif path_contains_in_order code2 go tbc; then
-    show_project "Go (tbc)" code_root_dir \
-        "Code2/Wow/tools/my_wow/go/tbc/main.go"
-    matched=1
-
-# code2 -> rust -> my_web_wow
-elif path_contains_in_order code2 rust my_web_wow; then
-    show_project "Rust (my_web_wow)" code_root_dir \
-        "Code2/Wow/tools/my_wow/rust/my_web_wow/src/main.rs"
-    matched=1
-
-# code2 -> rust -> tbc
-elif path_contains_in_order code2 rust tbc; then
-    show_project "Rust (tbc)" code_root_dir \
-        "Code2/Wow/tools/my_wow/rust/tbc/src/main.rs"
-    matched=1
-
-# code2 -> py -> my_web_wow
-elif path_contains_in_order code2 py my_web_wow; then
-    show_project "Python (my_web_wow)" code_root_dir \
-        "Code2/Wow/tools/my_wow/python/my_web_wow/main.py"
-    matched=1
-
-# code2 -> py -> tbc
-elif path_contains_in_order code2 py tbc; then
-    show_project "Python (tbc)" code_root_dir \
-        "Code2/Wow/tools/my_wow/python/tbc/main.py"
-    matched=1
-
-# code2 -> c# -> my_web_wow
-elif path_contains_in_order code2 "c#" my_web_wow; then
-    show_project "C# (my_web_wow)" code_root_dir \
-        "Code2/Wow/tools/my_wow/c#/my_web_wow/my_web_wow/Program.cs"
-    matched=1
-
-# code2 -> c# -> tbc
-elif path_contains_in_order code2 "c#" tbc; then
-    show_project "C# (tbc)" code_root_dir \
-        "Code2/Wow/tools/my_wow/c#/tbc/tbc/Program.cs"
-    matched=1
-
-# code2 -> gfx -> wc_testing_go   (must come before wc_testing)
-elif path_contains_in_order code2 gfx wc_testing_go; then
-    show_project_multi "WC Testing (Go)" code_root_dir \
-        "Code2/General/gfx/wc_testing_go/adt_app.go" \
-        "Code2/General/gfx/wc_testing_go/m2_app.go" \
-        "Code2/General/gfx/wc_testing_go/wdl_app.go" \
-        "Code2/General/gfx/wc_testing_go/wmo_app.go"
-    matched=1
-
-# code2 -> gfx -> wc_testing_py   (must come before wc_testing)
-elif path_contains_in_order code2 gfx wc_testing_py; then
-    show_project_multi "WC Testing (Python)" code_root_dir \
-        "Code2/General/gfx/wc_testing_py/adt_app.py" \
-        "Code2/General/gfx/wc_testing_py/m2_app.py" \
-        "Code2/General/gfx/wc_testing_py/wdl_app.py" \
-        "Code2/General/gfx/wc_testing_py/wmo_app.py"
-    matched=1
-
-# code2 -> gfx -> wc_testing_rs   (must come before wc_testing)
-elif path_contains_in_order code2 gfx wc_testing_rs; then
-    show_project_multi "WC Testing (Rust)" code_root_dir \
-        "Code2/General/gfx/wc_testing_rs/src/adt_app.rs" \
-        "Code2/General/gfx/wc_testing_rs/src/m2_app.rs" \
-        "Code2/General/gfx/wc_testing_rs/src/wdl_app.rs" \
-        "Code2/General/gfx/wc_testing_rs/src/wmo_app.rs"
-    matched=1
-
-# code2 -> gfx -> wc_testing   (C# variant, plain name)
-elif path_contains_in_order code2 gfx wc_testing; then
-    show_project_multi "WC Testing (C#)" code_root_dir \
-        "Code2/General/gfx/wc_testing/AdtApp.cs" \
-        "Code2/General/gfx/wc_testing/M2App.cs" \
-        "Code2/General/gfx/wc_testing/WdlApp.cs" \
-        "Code2/General/gfx/wc_testing/WmoApp.cs"
-    matched=1
+# ----------------------------------------------------------------------
+# Custom-logic patterns (can't be expressed as simple file mappings)
+# ----------------------------------------------------------------------
+if (( matched == 0 )); then
 
 # my_notes -> scripts -> live_plotext / live_termplot (same file set)
-elif path_contains_in_order my_notes scripts live_plotext \
+if path_contains_in_order my_notes scripts live_plotext \
   || path_contains_in_order my_notes scripts live_termplot \
   || path_contains_in_order downloads live_plotext \
   || path_contains_in_order downloads live_termplot; then
@@ -638,24 +728,6 @@ elif path_contains_in_order code2 wowser; then
     write_cmd   "npm run web-dev"
     matched=1
 
-# code2 -> my_js -> mysql
-elif path_contains_in_order code2 my_js mysql; then
-    show_project "my_js / MySQL" code_root_dir \
-        "Code2/Javascript/my_js/Testing/mysql/main.js"
-    matched=1
-
-# code2 -> my_js -> navigation -> ffi-napi   (must come before plain navigation)
-elif path_contains_in_order code2 my_js navigation ffi-napi; then
-    show_project "my_js / Navigation (ffi-napi)" code_root_dir \
-        "Code2/Javascript/my_js/Testing/navigation/ffi-napi/main.js"
-    matched=1
-
-# code2 -> my_js -> navigation
-elif path_contains_in_order code2 my_js navigation; then
-    show_project "my_js / Navigation" code_root_dir \
-        "Code2/Javascript/my_js/Testing/navigation/main.js"
-    matched=1
-
 # code2 -> my_js -> keybinds
 elif path_contains_in_order code2 my_js keybinds; then
     write_header "my_js / Keybinds"
@@ -663,138 +735,6 @@ elif path_contains_in_order code2 my_js keybinds; then
     write_cmd   "npm run dev"
     echo ""
     write_alt   "npm run start"
-    matched=1
-
-# my_notes -> orders_ts
-elif path_contains_in_order my_notes orders_ts; then
-    show_project "orders_ts" my_notes_path \
-        "notes/svea/scripts/orders_ts/src/orders.ts"
-    matched=1
-
-# my_notes -> latest-orders-ts
-elif path_contains_in_order my_notes latest-orders-ts; then
-    show_project "latest-orders-ts" my_notes_path \
-        "notes/svea/scripts/stats/latest-orders-ts/app/src/server.ts"
-    matched=1
-
-# code2 -> gfx -> render_exported_m2_gfx_go
-elif path_contains_in_order code2 gfx render_exported_m2_gfx_go; then
-    show_project "Render Exported M2 GFX (Go)" code_root_dir \
-        "Code2/General/gfx/render_exported_m2_gfx_go/main.go"
-    matched=1
-
-# code2 -> gfx -> render_exported_m2_gfx_py
-elif path_contains_in_order code2 gfx render_exported_m2_gfx_py; then
-    show_project "Render Exported M2 GFX (Python)" code_root_dir \
-        "Code2/General/gfx/render_exported_m2_gfx_py/main.py"
-    matched=1
-
-# code2 -> gfx -> render_exported_m2_gfx_rs
-elif path_contains_in_order code2 gfx render_exported_m2_gfx_rs; then
-    show_project "Render Exported M2 GFX (Rust)" code_root_dir \
-        "Code2/General/gfx/render_exported_m2_gfx_rs/src/main.rs"
-    matched=1
-
-# code2 -> gfx -> render_exported_m2_gfx
-elif path_contains_in_order code2 gfx render_exported_m2_gfx; then
-    show_project "Render Exported M2 GFX (C#)" code_root_dir \
-        "Code2/General/gfx/render_exported_m2_gfx/Program.cs"
-    matched=1
-
-# code2 -> gfx -> render_exported_m2
-elif path_contains_in_order code2 gfx render_exported_m2; then
-    show_project "Render Exported M2 (C#)" code_root_dir \
-        "Code2/General/gfx/render_exported_m2/Program.cs"
-    matched=1
-
-# code2 -> gfx -> render_exported_wmo_gfx_go
-elif path_contains_in_order code2 gfx render_exported_wmo_gfx_go; then
-    show_project "Render Exported WMO GFX (Go)" code_root_dir \
-        "Code2/General/gfx/render_exported_wmo_gfx_go/main.go"
-    matched=1
-
-# code2 -> gfx -> render_exported_wmo_gfx_py
-elif path_contains_in_order code2 gfx render_exported_wmo_gfx_py; then
-    show_project "Render Exported WMO GFX (Python)" code_root_dir \
-        "Code2/General/gfx/render_exported_wmo_gfx_py/main.py"
-    matched=1
-
-# code2 -> gfx -> render_exported_wmo_gfx_rs
-elif path_contains_in_order code2 gfx render_exported_wmo_gfx_rs; then
-    show_project "Render Exported WMO GFX (Rust)" code_root_dir \
-        "Code2/General/gfx/render_exported_wmo_gfx_rs/src/main.rs"
-    matched=1
-
-# code2 -> gfx -> render_exported_wmo_gfx
-elif path_contains_in_order code2 gfx render_exported_wmo_gfx; then
-    show_project "Render Exported WMO GFX (C#)" code_root_dir \
-        "Code2/General/gfx/render_exported_wmo_gfx/Program.cs"
-    matched=1
-
-# code2 -> gfx -> render_exported_wmo
-elif path_contains_in_order code2 gfx render_exported_wmo; then
-    show_project "Render Exported WMO (C#)" code_root_dir \
-        "Code2/General/gfx/render_exported_wmo/Program.cs"
-    matched=1
-
-# code2 -> gfx -> wc_clean_new_go
-elif path_contains_in_order code2 gfx wc_clean_new_go; then
-    show_project "WC Clean New (Go)" code_root_dir \
-        "Code2/General/gfx/wc_clean_new_go/main.go"
-    matched=1
-
-# code2 -> gfx -> wc_clean_new_cs
-elif path_contains_in_order code2 gfx wc_clean_new_cs; then
-    show_project "WC Clean New (C#)" code_root_dir \
-        "Code2/General/gfx/wc_clean_new_cs/Program.cs"
-    matched=1
-
-# code2 -> space -> BlackholeGfx
-elif path_contains_in_order code2 space blackholegfx; then
-    show_project "Blackhole GFX" code_root_dir \
-        "Code2/C++/space/cs/BlackholeGfx/Program.cs"
-    matched=1
-
-# code2 -> space -> SolarSystemGfx
-elif path_contains_in_order code2 space solarsystemgfx; then
-    show_project "Solar System GFX" code_root_dir \
-        "Code2/C++/space/cs/SolarSystemGfx/Program.cs"
-    matched=1
-
-# code2 -> gfx -> wow-rs-gfx
-elif path_contains_in_order code2 gfx wow-rs-gfx; then
-    show_project "wow-rs-gfx" code_root_dir \
-        "Code2/General/gfx/wow-rs-gfx/src/main.rs"
-    matched=1
-
-# code2 -> gfx -> wow-rs
-elif path_contains_in_order code2 gfx wow-rs; then
-    show_project "wow-rs" code_root_dir \
-        "Code2/General/gfx/wow-rs/src/main.rs"
-    matched=1
-
-# code2 -> gfx -> lrc
-elif path_contains_in_order code2 gfx lrc; then
-    show_project "LRC GFX" code_root_dir \
-        "Code2/General/gfx/lrc/gfx/lrc_gfx.py"
-    matched=1
-
-# code2 -> gfx -> double_slit
-elif path_contains_in_order code2 gfx double_slit; then
-    show_project "Double Slit" code_root_dir \
-        "Code2/General/gfx/double_slit/Program.cs"
-    matched=1
-
-# code2 -> general -> find-all-custom-types
-elif path_contains_in_order code2 general find-all-custom-types; then
-    show_project "Find All Custom Types" code_root_dir \
-        "Code2/General/utils/treesitter/find-all-custom-types/analyze-csharp.ts"
-    matched=1
-
-# code2 -> general -> find-custom-types
-elif path_contains_in_order code2 general find-custom-types; then
-    show_project "Find Custom Types" code_root_dir \
-        "Code2/General/utils/treesitter/find-custom-types/find-custom-types.ts"
     matched=1
 
 # Fallback: check files in current directory
@@ -814,6 +754,8 @@ else
         matched=1
     fi
 fi
+
+fi  # end: if matched == 0 (custom-logic block)
 
 # No match
 if [[ $matched -eq 0 ]]; then
