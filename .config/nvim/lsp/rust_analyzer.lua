@@ -7,13 +7,16 @@ return {
   settings = {
     ['rust-analyzer'] = {
       cargo = {
-        --features = { "async", "cimgui", "with_performance" },
+        --features = { "use_async", "with_imgui", "with_performance" },
+        --features = { "use_sound", "threadsafe" },
+        --features = { "winit29" },
+        --features = { "gfxs" },
         allFeatures = true,
         --noDefaultFeatures = true,
       },
 
       --check = {
-      --  features = { "async", "cimgui", "with_performance" },
+      --  features = { "use_async", "with_imgui", "with_performance" },
       --  --command = "clippy",
       --},
       --checkOnSave = { command = 'clippy' },
