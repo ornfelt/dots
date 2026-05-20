@@ -276,7 +276,9 @@ myconfig.map('n', '<leader>(', [[:/\v(^\s*$\n){2,}<CR>]])
 --myconfig.map('n', '<leader>)', [[:/diff --<CR>]])
 -- markdown code section search
 -- bind leader-): search for markdown code block (n)
-myconfig.map('n', '<leader>)', [[:/\`\`\`<CR>]])
+myconfig.map('n', '<leader>)', '/```<CR>') -- alt 1: plain search
+--myconfig.map('n', '<leader>)', [[/```<CR>]]) -- alt 2: avoids thinking about Lua escaping
+--myconfig.map('n', '<leader>)', [[:/\`\`\`<CR>]]) -- alt 3: run an Ex command to perform the search with escaping
 
 -- bind s-q: disable Ex mode (n)
 myconfig.map("n", "Q", "<nop>") -- Remove Ex Mode
