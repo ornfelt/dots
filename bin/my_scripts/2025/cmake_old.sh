@@ -87,9 +87,9 @@ BuildType="Debug"
 
 # Debug print (PowerShell-style)
 if [[ -n "$OnlyPrint" ]]; then
-    printf "%b[OnlyPrint]=ON  [BuildType]=%s%b\n" "$MAGENTA" "$BuildType" "$RESET"
+    printf "%b[OnlyPrint]=ON  [BuildType]=%s%b\n\n" "$MAGENTA" "$BuildType" "$RESET"
 else
-    printf "%b[OnlyPrint]=OFF  [BuildType]=%s%b\n" "$MAGENTA" "$BuildType" "$RESET"
+    printf "%b[OnlyPrint]=OFF  [BuildType]=%s%b\n\n" "$MAGENTA" "$BuildType" "$RESET"
 fi
 
 # get current working dir
