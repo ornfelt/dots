@@ -269,12 +269,44 @@ local function get_local_ipv4(debug)
   return "127.0.0.1"
 end
 
+local function get_llm_text(decoded_response)
+  if not decoded_response then
+    return nil
+  end
+
+  -- old llama.cpp style:
+  -- { content = "..." }
+  if decoded_response.content then
+    return decoded_response.content
+  end
+
+  -- OpenAI-ish completion style:
+  -- { choices = { { text = "..." } } }
+  if decoded_response.choices
+      and decoded_response.choices[1]
+      and decoded_response.choices[1].text then
+    return decoded_response.choices[1].text
+  end
+
+  -- chat-completion style:
+  -- { choices = { { message = { content = "..." } } } }
+  if decoded_response.choices
+      and decoded_response.choices[1]
+      and decoded_response.choices[1].message
+      and decoded_response.choices[1].message.content then
+    return decoded_response.choices[1].message.content
+  end
+
+  return nil
+end
+
 -- Basic llama.cpp example request (no streaming)
 local function llm()
   local should_debug_print = myconfig.should_debug_print()
 
   --local url = "http://127.0.0.1:8080/completion"
   --local url = "http://localhost:8080/completion"
+  --local url = ("http://localhost:8080/v1/completions") -- for my custom local llamacpp-like API
   local ip = get_local_ipv4()
   if should_debug_print then
     print("local ip: " .. ip)
@@ -304,7 +336,8 @@ local function llm()
   end
 
   local default_msg = "llama is sleeping"
-  local content = (decoded_response and decoded_response.content) or default_msg
+  --local content = (decoded_response and decoded_response.content) or default_msg
+  local content = get_llm_text(decoded_response) or default_msg
 
   local split_newlines = vim.split(content, '\n', true)
   local line_num = vim.api.nvim_win_get_cursor(0)[1]
@@ -409,6 +442,8 @@ end
 -- arrives as a line "data: {json}" with `content` carrying the next token.
 local function llm_stream()
   local should_debug_print = myconfig.should_debug_print()
+
+  --local url = ("http://localhost:8080/v1/completions") -- for my custom local llamacpp-like API
   local ip = get_local_ipv4()
   if should_debug_print then
     print("local ip: " .. ip)
@@ -432,10 +467,14 @@ local function llm_stream()
 
   local process_line = function(line)
     local json_str = line:match("^data:%s*(.+)$")
-    if not json_str then return end
+    if not json_str or json_str == "[DONE]" then return end
+
     local ok, parsed = pcall(vim.fn.json_decode, json_str)
-    if ok and parsed and parsed.content then
-      insert_chunk(parsed.content)
+    if not ok or not parsed then return end
+
+    local text = get_llm_text(parsed)
+    if text and text ~= "" then
+      insert_chunk(text)
     end
   end
 
@@ -634,6 +673,7 @@ end
 -- cmd PrintAiModelsByRequest: fetch and print AI models by API request
 vim.api.nvim_create_user_command('PrintAiModelsByRequest', function(opts)
   local should_debug_print = myconfig.should_debug_print()
+
   local api_key, url, curl_cmd
 
   local provider = opts.args:lower() == "" and "openai" or opts.args:lower()
