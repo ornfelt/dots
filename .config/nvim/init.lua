@@ -1,9 +1,15 @@
 require('dbg_log').log_file(debug.getinfo(1, 'S').source)
 
+local nvim_supports_vim_pack = vim.fn.has("nvim-0.12") == 1 and vim.pack ~= nil
+
 --require("config.lazy")
 --require("lazy_plugins")
 --local USE_LAZY = true
 local USE_LAZY = false
+
+if not nvim_supports_vim_pack then
+  USE_LAZY = true
+end
 
 vim.g.my_use_lazy = USE_LAZY
 

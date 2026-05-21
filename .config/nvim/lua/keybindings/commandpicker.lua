@@ -6,7 +6,9 @@ local commands = {
   { label = "PackerLoad", cmd = "PackerLoad" },
   { label = "PackerSync", cmd = "PackerSync" },
   -- Built-in vim.pack
+  { label = "VimPackGet", cmd = "lua print(vim.inspect(vim.pack.get()))" },
   { label = "VimPackUpdate", cmd = "lua vim.pack.update()" },
+  { label = "VimPackStatus", cmd = "VimPackStatus" },
   -- Lazy
   { label = "Lazy", cmd = "Lazy" },
   -- Markview
@@ -33,6 +35,8 @@ local commands = {
   { label = "Config - ToggleUseFilePickerForCommands", cmd = "ToggleUseFilePickerForCommands" },
   { label = "Config - ToggleUseCustomStatusline", cmd = "ToggleUseCustomStatusline" },
   { label = "Config - ToggleUseCustomLspForSql", cmd = "ToggleUseCustomLspForSql" },
+  { label = "Config - SetLlamaUrl", cmd = "SetLlamaUrl" },
+  { label = "Config - SetOllamaUrl", cmd = "SetOllamaUrl" },
   { label = "Config - PrintConfig", cmd = "PrintConfig" },
   { label = "Llama", cmd = "Llm" },
   { label = "LlamaStream", cmd = "LlmStream" },
@@ -246,6 +250,8 @@ local selections_to_print = {
   ["PrintConfig"] = true,
   ["FileInfo"] = true,
   ["LocalIP"] = true,
+  ["VimPackStatus"] = true,
+  ["VimPackGet"] = true,
 }
 
 local myconfig = require("myconfig")

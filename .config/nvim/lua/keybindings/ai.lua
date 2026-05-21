@@ -269,6 +269,30 @@ local function get_local_ipv4(debug)
   return "127.0.0.1"
 end
 
+-- Resolve an endpoint URL from a user override.
+-- nil/empty/whitespace/"local" (case-insensitive) -> use get_local_ipv4() + default port/path
+-- contains '/' -> use as-is (full url)
+-- otherwise -> treat as host/ip, combine with default port/path
+local function resolve_url(override, default_port, default_path, debug)
+  if type(override) == "string" then
+    override = override:match("^%s*(.-)%s*$")
+  end
+
+  if not override or override == "" or override:lower() == "local" then
+    local ip = get_local_ipv4()
+    if debug then
+      print("resolve_url local ip: " .. ip)
+    end
+    return ("http://%s:%d%s"):format(ip, default_port, default_path)
+  end
+
+  if override:find("/", 1, true) then
+    return override
+  end
+
+  return ("http://%s:%d%s"):format(override, default_port, default_path)
+end
+
 local function get_llm_text(decoded_response)
   if not decoded_response then
     return nil
@@ -306,12 +330,13 @@ local function llm()
 
   --local url = "http://127.0.0.1:8080/completion"
   --local url = "http://localhost:8080/completion"
-  --local url = ("http://localhost:8080/v1/completions") -- for my custom local llamacpp-like API
-  local ip = get_local_ipv4()
+  --local url = "http://localhost:8080/v1/completions" -- for my custom local llamacpp-like API
+  --local ip = get_local_ipv4()
+  --local url = ("http://%s:8080/completion"):format(ip)
+  local url = resolve_url(myconfig.get_llama_url_override(), 8080, "/completion", should_debug_print)
   if should_debug_print then
-    print("local ip: " .. ip)
+    print("llm url: " .. url)
   end
-  local url = ("http://%s:8080/completion"):format(ip)
 
   local buffer_content = table.concat(vim.api.nvim_buf_get_lines(0, 0, -1, false), "\n")
 
@@ -335,7 +360,7 @@ local function llm()
     decoded_response = nil
   end
 
-  local default_msg = "llama is sleeping"
+  local default_msg = "llama is sleeping... " .. url
   --local content = (decoded_response and decoded_response.content) or default_msg
   local content = get_llm_text(decoded_response) or default_msg
 
@@ -355,12 +380,13 @@ local function ollama(model_override)
   local should_debug_print = myconfig.should_debug_print()
 
   --local url = "http://127.0.0.1:11434/api/generate"
-  local url = "http://localhost:11434/api/generate"
+  --local url = "http://localhost:11434/api/generate"
   --local ip = get_local_ipv4()
-  --if should_debug_print then
-  --  print("local ip: " .. ip)
-  --end
   --local url = ("http://%s:11434/api/generate"):format(ip)
+  local url = resolve_url(myconfig.get_ollama_url_override(), 11434, "/api/generate", should_debug_print)
+  if should_debug_print then
+    print("ollama url: " .. url)
+  end
 
   local buffer_content = table.concat(vim.api.nvim_buf_get_lines(0, 0, -1, false), "\n")
 
@@ -377,7 +403,7 @@ local function ollama(model_override)
     decoded_response = nil
   end
 
-  local default_msg = "ollama is sleeping"
+  local default_msg = "ollama is sleeping... " .. url
   -- Ollama puts generated text in `.response` (unlike llama.cpp's `.content`)
   local content = (decoded_response and decoded_response.response) or default_msg
 
@@ -443,12 +469,13 @@ end
 local function llm_stream()
   local should_debug_print = myconfig.should_debug_print()
 
-  --local url = ("http://localhost:8080/v1/completions") -- for my custom local llamacpp-like API
-  local ip = get_local_ipv4()
+  --local url = "http://localhost:8080/v1/completions" -- for my custom local llamacpp-like API
+  --local ip = get_local_ipv4()
+  --local url = ("http://%s:8080/completion"):format(ip)
+  local url = resolve_url(myconfig.get_llama_url_override(), 8080, "/completion", should_debug_print)
   if should_debug_print then
-    print("local ip: " .. ip)
+    print("llm_stream url: " .. url)
   end
-  local url = ("http://%s:8080/completion"):format(ip)
 
   local buffer_content = table.concat(vim.api.nvim_buf_get_lines(0, 0, -1, false), "\n")
 
@@ -464,9 +491,18 @@ local function llm_stream()
   })
 
   local insert_chunk = make_stream_inserter()
+  local got_output = false
 
   local process_line = function(line)
+    if not line or line == "" then return end
+
     local json_str = line:match("^data:%s*(.+)$")
+
+    -- Some servers may return plain JSON instead of SSE "data: ..."
+    if not json_str and line:match("^%s*{") then
+      json_str = line
+    end
+
     if not json_str or json_str == "[DONE]" then return end
 
     local ok, parsed = pcall(vim.fn.json_decode, json_str)
@@ -474,6 +510,7 @@ local function llm_stream()
 
     local text = get_llm_text(parsed)
     if text and text ~= "" then
+      got_output = true
       insert_chunk(text)
     end
   end
@@ -481,7 +518,7 @@ local function llm_stream()
   local on_stdout, flush = make_line_handler(process_line)
 
   -- -N disables curl's output buffering so we get tokens as they arrive
-  local cmd = { "curl", "-k", "-s", "-N", "-X", "POST",
+  local cmd = { "curl", "-k", "-sS", "-N", "-X", "POST",
                 "-H", "Content-Type: application/json",
                 "-d", "@-", url }
 
@@ -497,8 +534,13 @@ local function llm_stream()
     end,
     on_exit = function(_, code, _)
       flush()
-      if code ~= 0 and should_debug_print then
-        print("llm_stream: curl exited with code " .. code)
+
+      if not got_output then
+        insert_chunk("llama is sleeping... " .. url)
+      end
+
+      if code ~= 0 then
+        vim.notify("llm_stream: curl exited with code " .. code, vim.log.levels.WARN)
       end
     end,
   })
@@ -519,12 +561,13 @@ local function ollama_stream(model_override)
   local should_debug_print = myconfig.should_debug_print()
 
   --local url = "http://127.0.0.1:11434/api/generate"
-  local url = "http://localhost:11434/api/generate"
+  --local url = "http://localhost:11434/api/generate"
   --local ip = get_local_ipv4()
-  --if should_debug_print then
-  --  print("local ip: " .. ip)
-  --end
   --local url = ("http://%s:11434/api/generate"):format(ip)
+  local url = resolve_url(myconfig.get_ollama_url_override(), 11434, "/api/generate", should_debug_print)
+  if should_debug_print then
+    print("ollama_stream url: " .. url)
+  end
 
   local buffer_content = table.concat(vim.api.nvim_buf_get_lines(0, 0, -1, false), "\n")
 
@@ -535,18 +578,28 @@ local function ollama_stream(model_override)
   })
 
   local insert_chunk = make_stream_inserter()
+  local got_output = false
 
   local process_line = function(line)
     if not line or line == "" then return end
+
     local ok, parsed = pcall(vim.fn.json_decode, line)
-    if ok and parsed and parsed.response then
+    if not ok or not parsed then return end
+
+    if parsed.response and parsed.response ~= "" then
+      got_output = true
       insert_chunk(parsed.response)
+    end
+
+    if parsed.error and parsed.error ~= "" then
+      got_output = true
+      insert_chunk("ollama error: " .. parsed.error)
     end
   end
 
   local on_stdout, flush = make_line_handler(process_line)
 
-  local cmd = { "curl", "-k", "-s", "-N", "-X", "POST",
+  local cmd = { "curl", "-k", "-sS", "-N", "-X", "POST",
                 "-H", "Content-Type: application/json",
                 "-d", "@-", url }
 
@@ -562,8 +615,13 @@ local function ollama_stream(model_override)
     end,
     on_exit = function(_, code, _)
       flush()
-      if code ~= 0 and should_debug_print then
-        print("ollama_stream: curl exited with code " .. code)
+
+      if not got_output then
+        insert_chunk("ollama is sleeping... " .. url)
+      end
+
+      if code ~= 0 then
+        vim.notify("ollama_stream: curl exited with code " .. code, vim.log.levels.WARN)
       end
     end,
   })

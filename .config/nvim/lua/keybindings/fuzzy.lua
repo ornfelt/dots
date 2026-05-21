@@ -307,6 +307,8 @@ function list_tabs()
 
         map("i", "<CR>", on_select)
         map("n", "<CR>", on_select)
+        map("i", "<C-t>", on_select)
+        map("n", "<C-t>", on_select)
 
         return true
       end,

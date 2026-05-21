@@ -60,3 +60,32 @@ for _, plugin in ipairs(plugins) do
     end
   end
 end
+
+-- cmd VimPackStatus: simple health check for vimpack
+vim.api.nvim_create_user_command("VimPackStatus", function()
+  local installed = vim.pack.get()
+  local function norm(p) return (p or ""):gsub("\\", "/"):gsub("/$", "") end
+  local rtp_set = {}
+  for _, p in ipairs(vim.api.nvim_list_runtime_paths()) do
+    rtp_set[norm(p)] = true
+  end
+  local missing = {}
+  print(("vim.pack manages %d plugins"):format(#installed))
+  print(string.rep("-", 70))
+  for _, p in ipairs(installed) do
+    local on_rtp   = rtp_set[norm(p.path)] == true
+    local has_plug = vim.fn.isdirectory(p.path .. "/plugin") == 1
+    local has_lua  = vim.fn.isdirectory(p.path .. "/lua") == 1
+    print(string.format("  %-32s  rtp=%s  plugin=%s  lua=%s",
+      p.spec.name,
+      on_rtp and "Y" or "N",
+      has_plug and "Y" or "-",
+      has_lua and "Y" or "-"))
+    if not on_rtp then table.insert(missing, p.spec.name) end
+  end
+  if #missing > 0 then
+    print(string.rep("-", 70))
+    print("Not on rtp: " .. table.concat(missing, ", "))
+    print("Try: :packadd <name>")
+  end
+end, {})

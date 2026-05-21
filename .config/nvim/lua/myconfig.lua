@@ -501,5 +501,60 @@ end
 -- cmd CycleFilePicker: CycleFilePicker
 vim.api.nvim_create_user_command('CycleFilePicker', CycleFilePicker, {})
 
+-- Generic setter for string config values. Creates or replaces the line for `key`.
+function M.set_config(key, value)
+  value = value or ""
+  -- Trim whitespace
+  value = value:match("^%s*(.-)%s*$")
+
+  -- Ensure the config file exists; create empty if missing
+  if not file_exists(config_file_path) then
+    local f = io.open(config_file_path, "w")
+    if not f then
+      vim.notify("Could not create config file: " .. config_file_path, vim.log.levels.ERROR)
+      return
+    end
+    f:close()
+  end
+
+  local lines = {}
+  local updated = false
+  for line in io.lines(config_file_path) do
+    if line:match("^" .. key .. ":") then
+      table.insert(lines, key .. ": " .. value)
+      updated = true
+    else
+      table.insert(lines, line)
+    end
+  end
+  if not updated then
+    table.insert(lines, key .. ": " .. value)
+  end
+
+  local file = io.open(config_file_path, "w")
+  for _, line in ipairs(lines) do file:write(line .. "\n") end
+  file:close()
+end
+
+function M.get_llama_url_override()
+  return read_config("LlamaUrl", "")
+end
+
+function M.get_ollama_url_override()
+  return read_config("OllamaUrl", "")
+end
+
+-- cmd SetLlamaUrl: override llama.cpp endpoint (ip, hostname, or full url; empty/local to reset)
+vim.api.nvim_create_user_command('SetLlamaUrl', function(opts)
+  M.set_config("LlamaUrl", opts.args)
+  print("LlamaUrl set to: '" .. (opts.args or "") .. "'")
+end, { nargs = '?' })
+
+-- cmd SetOllamaUrl: override ollama endpoint (ip, hostname, or full url; empty/local to reset)
+vim.api.nvim_create_user_command('SetOllamaUrl', function(opts)
+  M.set_config("OllamaUrl", opts.args)
+  print("OllamaUrl set to: '" .. (opts.args or "") .. "'")
+end, { nargs = '?' })
+
 return M -- Return the module table
 
