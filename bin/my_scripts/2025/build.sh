@@ -639,6 +639,7 @@ if path_contains_in_order my_notes scripts live_plotext \
         "live_orders.py"
         "live_pending.py"
         "live_useractionlog.py"
+        "live_gpt_stats.py"
     )
 
     rel_paths=()
