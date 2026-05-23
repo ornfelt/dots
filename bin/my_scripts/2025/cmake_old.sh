@@ -385,6 +385,13 @@ elif [[ "$lc" == *wc_clean_new* ]]; then
     run_or_print "$main"
     print_alternatives "${alts[@]}"
 
+elif [[ "$lc" == *gfx_dll*gfx* ]]; then
+    test_cmakelists parent "gfx_dll/gfx (expecting CMakeLists.txt one level up)"
+
+    main="cmake ../ -DCMAKE_BUILD_TYPE=$BuildType -DGFX_ENABLE_GLFW_WIN32=ON"
+
+    run_or_print "$main"
+
 elif [[ "$lc" == *gptgen* && "$lc" == *cpp* ]]; then
     test_cmakelists parent "GptGen cpp (expecting CMakeLists.txt one level up)"
 
@@ -407,6 +414,32 @@ elif [[ "$lc" == *gptgen* && "$lc" == *cpp* ]]; then
         echo
         echo "from project dir with AppConfig disabled:"
         echo "cmake -B build -S . -DCMAKE_BUILD_TYPE=$BuildType -DUSE_APPCONFIG=OFF -DUSE_VCPKG=OFF -DBUILD_TESTS=ON"
+    fi
+
+elif [[ "$lc" == *utils*llama3_api* ]]; then
+    test_cmakelists parent "utils/llama3_api (expecting CMakeLists.txt one level up)"
+
+    base="-DCMAKE_BUILD_TYPE=$BuildType -DUSE_DROGON=OFF -DUSE_VCPKG=OFF -DUSE_WIN_H=OFF -DUSE_PCRE=OFF"
+
+    main="cmake .. $base"
+
+    run_or_print "$main"
+
+    if [[ -n "$OnlyPrint" ]]; then
+        echo
+        echo "alternative cmake commands:"
+
+        echo
+        echo "with Drogon:"
+        echo "cmake .. ${base/USE_DROGON=OFF/USE_DROGON=ON}"
+
+        echo
+        echo "with win.h shim:"
+        echo "cmake .. ${base/USE_WIN_H=OFF/USE_WIN_H=ON}"
+
+        echo
+        echo "with PCRE:"
+        echo "cmake .. ${base/USE_PCRE=OFF/USE_PCRE=ON}"
     fi
 
 else

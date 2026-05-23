@@ -1,105 +1,234 @@
 #!/usr/bin/env bash
-
-# Usage:
-# ./cmake.sh            # detect path and RUN the chosen cmake
-# ./cmake.sh onlyprint  # detect path and PRINT commands (no execution)
-# ./cmake.sh r/release  # RUN in Release mode
-# ./cmake.sh r foo      # RUN in Release mode and PRINT commands (no execution)
-# ./cmake.sh rd         # RUN in RelWithDebInfo mode
-# ./cmake.sh rwdi foo   # RUN in RelWithDebInfo mode and PRINT commands
+# cmake.sh - data-driven cmake helper (Linux).
 #
-# Project definitions live in $my_notes_path/scripts/cmake-projects.json
-# (shared with cmake.ps1). Requires `jq` to be installed.
+# Reads patterns from:  $my_notes_path/scripts/cmake_patterns.json
+# (the same file used by cmake.ps1).
+#
+# Usage:
+#   ./cmake.sh                        detect path and RUN the chosen cmake
+#   ./cmake.sh onlyprint              detect path and PRINT commands only
+#   ./cmake.sh r | release            RUN in Release mode
+#   ./cmake.sh r foo                  Release + PRINT-ONLY (any 2nd arg flips)
+#   ./cmake.sh rd | rwdi              RUN in RelWithDebInfo mode
+#   ./cmake.sh h | help | -h | --help show help
+#
+# Linux-only assumption: vcpkg is always OFF, so the vcpkg alternative
+# from cmake_patterns.json is skipped entirely.
 
-# Use OnlyPrint if any arg is provided
-#OnlyPrint="${1:-}"
+set -u
 
-# Use OnlyPrint if any arg is provided EXCEPT r/release
+# ---------- args ----------
 Arg="${1:-}"
+Arg2="${2:-}"
 arg_lc="${Arg,,}"
+arg2_lc="${Arg2,,}"
 
-# Colors (ANSI escape codes)
+# ---------- colors ----------
 RESET='\033[0m'
 RED='\033[31m'
-GREEN='\033[32m'
 YELLOW='\033[33m'
 BLUE='\033[34m'
 MAGENTA='\033[35m'
 CYAN='\033[36m'
-DARKGRAY='\033[90m'
 DARKYELLOW='\033[93m'
 
-# Help check (case-insensitive)
-help_tokens=("h" "help" "-h" "--help")
-for token in "${help_tokens[@]}"; do
-    if [[ "${1,,}" == "$token" || "${2,,}" == "$token" ]]; then
-        cat <<EOF
-cmake.sh - context-aware cmake helper
+# ---------- help ----------
+for token in h help -h --help; do
+    if [[ "$arg_lc" == "$token" || "$arg2_lc" == "$token" ]]; then
+        cat <<'EOF'
+cmake.sh - data-driven cmake helper (Linux)
 
 Usage:
   ./cmake.sh
-      Detect path and RUN the chosen cmake command.
-
+      Detect path, pick a pattern, RUN cmake.
   ./cmake.sh onlyprint
-      Detect path and PRINT commands (no execution).
-
-  ./cmake.sh r | release
-      Run in Release mode.
-
-  ./cmake.sh r foo
-      Release mode + PRINT-ONLY (because a second arg exists).
-
-  ./cmake.sh rd | rwdi | relwithdebinfo
-      Run in RelWithDebInfo mode.
-
+      Detect path, pick a pattern, PRINT commands only.
+  ./cmake.sh r | release [foo]
+      Release mode (PRINT-ONLY if a 2nd arg exists).
+  ./cmake.sh rd | rwdi | relwithdebinfo [foo]
+      RelWithDebInfo mode (PRINT-ONLY if a 2nd arg exists).
   ./cmake.sh h | help | -h | --help
       Show this help.
 
 Notes:
-  - BuildType defaults to Debug unless you pass r/release.
-  - Project definitions live in:
-      \${my_notes_path:-<unset>}/scripts/cmake-projects.json
-  - Requires \`jq\`.
+  - Patterns loaded from $my_notes_path/scripts/cmake_patterns.json
+  - BuildType defaults to Debug.
+  - cmake prefix is auto-detected:
+        ./CMakeLists.txt   -> 'cmake -B build -S . ...'
+        ../CMakeLists.txt  -> 'cmake .. ...'
+        neither            -> warn + force PRINT-ONLY
+  - vcpkg is assumed OFF on Linux; vcpkg alternative is skipped.
+  - Requires: jq.
 EOF
         exit 0
     fi
 done
 
-# Print-only unless argument is "r" or "release" (case-insensitive)
+# ---------- deps ----------
+if ! command -v jq >/dev/null 2>&1; then
+    printf "%bjq is required to parse cmake_patterns.json. Install jq (e.g. 'sudo apt install jq').%b\n" "$RED" "$RESET" >&2
+    exit 1
+fi
+
+# ---------- arg parsing (mirror cmake.ps1) ----------
 OnlyPrint=""
 Release=""
 RelWithDebInfo=""
 if [[ -n "$Arg" ]]; then
     if [[ "$arg_lc" == "r" || "$arg_lc" == "release" ]]; then
         Release=1
-        [[ -n "${2:-}" ]] && OnlyPrint=1
-    elif [[ "$arg_lc" == "rwdi" || "$arg_lc" == "rd" || "$arg_lc" == "relwithdebinfo" ]]; then
+        [[ -n "$Arg2" ]] && OnlyPrint=1
+    elif [[ "$arg_lc" == "rd" || "$arg_lc" == "rwdi" || "$arg_lc" == "relwithdebinfo" ]]; then
         RelWithDebInfo=1
-        [[ -n "${2:-}" ]] && OnlyPrint=1
+        [[ -n "$Arg2" ]] && OnlyPrint=1
     else
         OnlyPrint=1
     fi
-
     printf "%bIf needed, run:%b\n" "$BLUE" "$RESET"
     printf "%bmake -j\$(nproc)%b\n" "$BLUE" "$RESET"
     echo
 fi
 
-# build type helper
 BuildType="Debug"
-[[ -n "$Release" ]] && BuildType="Release"
+[[ -n "$Release" ]]        && BuildType="Release"
 [[ -n "$RelWithDebInfo" ]] && BuildType="RelWithDebInfo"
 
-# Debug print (PowerShell-style)
 if [[ -n "$OnlyPrint" ]]; then
-    printf "%b[OnlyPrint]=ON  [BuildType]=%s%b\n\n" "$MAGENTA" "$BuildType" "$RESET"
+    printf "%b[OnlyPrint]=ON  [BuildType]=%s%b\n" "$MAGENTA" "$BuildType" "$RESET"
 else
-    printf "%b[OnlyPrint]=OFF  [BuildType]=%s%b\n\n" "$MAGENTA" "$BuildType" "$RESET"
+    printf "%b[OnlyPrint]=OFF  [BuildType]=%s%b\n" "$MAGENTA" "$BuildType" "$RESET"
 fi
 
-# get current working dir
+# ---------- locate patterns file ----------
+notes_path="${my_notes_path:-}"
+if [[ -z "$notes_path" ]]; then
+    notes_path="$(dirname "$(readlink -f "$0")")"
+    printf "%bWarning: \$my_notes_path is not set. Falling back to: %s%b\n" "$YELLOW" "$notes_path" "$RESET"
+fi
+patterns_file="$notes_path/scripts/cmake_patterns.json"
+
+if [[ ! -f "$patterns_file" ]]; then
+    printf "%bPatterns file not found: %s%b\n" "$RED" "$patterns_file" "$RESET" >&2
+    exit 1
+fi
+
+if ! jq -e . "$patterns_file" >/dev/null 2>&1; then
+    printf "%bFailed to parse JSON: %s%b\n" "$RED" "$patterns_file" "$RESET" >&2
+    exit 1
+fi
+
+# ---------- cwd & matching ----------
 cwd="$(pwd)"
-lc="${cwd,,}" # lowercase for case-insensitive checks
+cwd="${cwd,,}"  # lowercased for case-insensitive substring matching
+
+# Check that keywords appear in $cwd in the given order (case-insensitive).
+# $cwd is already lowercased, so we only lower-case the keywords.
+path_contains_in_order() {
+    local pos=0
+    local kw kw_lower sub prefix
+    for kw in "$@"; do
+        kw_lower="${kw,,}"
+        sub="${cwd:$pos}"
+        if [[ "$sub" != *"$kw_lower"* ]]; then
+            return 1
+        fi
+        prefix="${sub%%"$kw_lower"*}"
+        pos=$((pos + ${#prefix} + ${#kw_lower}))
+    done
+    return 0
+}
+
+# Match a pattern's `keywords` field against $cwd.
+# keywords is either ["a","b",...] (single group, all must match in order)
+# or [["a","b"],["c","d"]] (multi-group: any group may match).
+pattern_matches() {
+    local pattern_json="$1"
+    local kind
+    kind=$(jq -r '
+        .keywords as $k
+        | if ($k | type) != "array" or ($k | length) == 0 then "empty"
+          elif ($k[0] | type) == "string" then "single"
+          else "multi"
+          end
+    ' <<<"$pattern_json")
+    case "$kind" in
+        single)
+            local -a kws=()
+            mapfile -t kws < <(jq -r '.keywords[]' <<<"$pattern_json")
+            path_contains_in_order "${kws[@]}"
+            ;;
+        multi)
+            local groups
+            groups=$(jq -r '.keywords | length' <<<"$pattern_json")
+            local i
+            for ((i = 0; i < groups; i++)); do
+                local -a kws=()
+                mapfile -t kws < <(jq -r --argjson i "$i" '.keywords[$i][]' <<<"$pattern_json")
+                if path_contains_in_order "${kws[@]}"; then
+                    return 0
+                fi
+            done
+            return 1
+            ;;
+        *)
+            return 1
+            ;;
+    esac
+}
+
+# ---------- cmake prefix auto-detection ----------
+CMAKE_PREFIX=""
+
+ensure_cmake_detected() {
+    local ctx="${1:-this project}"
+    if [[ -f "./CMakeLists.txt" ]]; then
+        CMAKE_PREFIX="cmake -B build -S ."
+    elif [[ -f "../CMakeLists.txt" ]]; then
+        CMAKE_PREFIX="cmake .."
+    else
+        printf "%bCMakeLists.txt not found in current or parent directory - %s%b\n" "$DARKYELLOW" "$ctx" "$RESET"
+        printf "%bMaybe try:%b\n" "$DARKYELLOW" "$RESET"
+        printf "%b-> mkdir build && cd build%b\n" "$DARKYELLOW" "$RESET"
+        printf "%bThen run the command again.%b\n" "$DARKYELLOW" "$RESET"
+        printf "%bSwitching to PRINT-ONLY mode.%b\n" "$DARKYELLOW" "$RESET"
+        echo
+        OnlyPrint=1
+        CMAKE_PREFIX="cmake .."  # best-effort fallback for the printed text
+    fi
+}
+
+# ---------- substitution / formatting ----------
+# @BuildType -> $BuildType, {NPROC} -> $(nproc)
+substitute_tokens() {
+    local s="$1"
+    s="${s//@BuildType/$BuildType}"
+    s="${s//\{NPROC\}/$(nproc)}"
+    printf '%s' "$s"
+}
+
+# Build "-Dk=v -Dk=v ..." from base_flags (and optionally a variant's toggles).
+# Order: base order preserved, toggles override matching keys, new keys appended.
+flags_string() {
+    local pattern_json="$1"
+    local variant_idx="${2:-}"
+    local raw
+    if [[ -z "$variant_idx" ]]; then
+        raw=$(jq -r '
+            (.base_flags // {})
+            | to_entries
+            | map("-D\(.key)=\(.value)")
+            | join(" ")
+        ' <<<"$pattern_json")
+    else
+        raw=$(jq -r --argjson i "$variant_idx" '
+            ((.base_flags // {}) + ((.variants[$i].toggles) // {}))
+            | to_entries
+            | map("-D\(.key)=\(.value)")
+            | join(" ")
+        ' <<<"$pattern_json")
+    fi
+    substitute_tokens "$raw"
+}
 
 run_or_print() {
     local cmd="$1"
@@ -111,328 +240,120 @@ run_or_print() {
     fi
 }
 
-print_alternatives() {
-    if [[ -n "$OnlyPrint" && $# -gt 0 ]]; then
+print_only_print_extras() {
+    local pattern_json="$1"
+    [[ -z "$OnlyPrint" ]] && return
+    local count
+    count=$(jq -r '(.only_print_extras // []) | length' <<<"$pattern_json")
+    [[ "$count" -eq 0 ]] && return
+
+    local i
+    for ((i = 0; i < count; i++)); do
         echo
-        echo "alternative cmake commands:"
-        for l in "$@"; do
-            echo "$l"
+        local label cmd lcount
+        label=$(jq -r --argjson i "$i" '.only_print_extras[$i].label // ""' <<<"$pattern_json")
+        cmd=$(jq   -r --argjson i "$i" '.only_print_extras[$i].command // ""' <<<"$pattern_json")
+        lcount=$(jq -r --argjson i "$i" '(.only_print_extras[$i].lines // []) | length' <<<"$pattern_json")
+
+        [[ -n "$label" ]] && echo "$label"
+        [[ -n "$cmd"   ]] && substitute_tokens "$cmd" && echo
+        if [[ "$lcount" -gt 0 ]]; then
+            local j
+            for ((j = 0; j < lcount; j++)); do
+                local ln
+                ln=$(jq -r --argjson i "$i" --argjson j "$j" '.only_print_extras[$i].lines[$j]' <<<"$pattern_json")
+                substitute_tokens "$ln"; echo
+            done
+        fi
+    done
+}
+
+# ---------- pattern dispatch ----------
+dispatch_pattern() {
+    local pattern_json="$1"
+    local ctx
+    ctx=$(jq -r '.context_name // "pattern"' <<<"$pattern_json")
+
+    # 1) instructions-only entries (e.g. neovim)
+    local ins_count
+    ins_count=$(jq -r '(.instructions // []) | length' <<<"$pattern_json")
+    if [[ "$ins_count" -gt 0 ]]; then
+        local i
+        for ((i = 0; i < ins_count; i++)); do
+            local line
+            line=$(jq -r --argjson i "$i" '.instructions[$i]' <<<"$pattern_json")
+            substitute_tokens "$line"; echo
+        done
+        print_only_print_extras "$pattern_json"
+        return
+    fi
+
+    # 2) custom_command entries (e.g. ioq3, ollama, dhewm3, llama.cpp)
+    local custom
+    custom=$(jq -r '.custom_command // ""' <<<"$pattern_json")
+    if [[ -n "$custom" ]]; then
+        ensure_cmake_detected "$ctx"   # warns if no CMakeLists; doesn't alter command
+        run_or_print "$(substitute_tokens "$custom")"
+        print_only_print_extras "$pattern_json"
+        return
+    fi
+
+    # 3) standard base_flags + variants
+    ensure_cmake_detected "$ctx"
+
+    # vcpkg alternative: skipped on Linux per design.
+    # (cmake.ps1 always prints it; cmake.py prints it on Windows.)
+
+    local main_flags
+    main_flags=$(flags_string "$pattern_json" "")
+    local main_cmd
+    if [[ -z "$main_flags" ]]; then
+        main_cmd="$CMAKE_PREFIX"
+    else
+        main_cmd="$CMAKE_PREFIX $main_flags"
+    fi
+    run_or_print "$main_cmd"
+
+    # variants (only in OnlyPrint mode)
+    if [[ -n "$OnlyPrint" ]]; then
+        local vcount
+        vcount=$(jq -r '(.variants // []) | length' <<<"$pattern_json")
+        if [[ "$vcount" -gt 0 ]]; then
             echo
-        done
-    fi
-}
-
-test_cmakelists() {
-    local where="${1:-current}"
-    local context="${2:-this project}"
-    local base="$cwd"
-    [[ "$where" == "parent" ]] && base="$(dirname "$cwd")"
-
-    local cmake_path="$base/CMakeLists.txt"
-    if [[ -f "$cmake_path" ]]; then
-        return 0
-    fi
-
-    printf "%bCMakeLists.txt not found at: %s - %s%b\n" "$DARKYELLOW" "$cmake_path" "$context" "$RESET"
-
-    if [[ "$where" == "parent" ]]; then
-        printf "%bMaybe try:%b\n" "$DARKYELLOW" "$RESET"
-        printf "%b-> mkdir build && cd build%b\n" "$DARKYELLOW" "$RESET"
-        printf "%bThen run the command again!%b\n" "$DARKYELLOW" "$RESET"
-    fi
-
-    #echo "Switching to PRINT-ONLY mode." >&2
-    #echo >&2
-    printf "%bSwitching to PRINT-ONLY mode.%b\n" "$DARKYELLOW" "$RESET"
-    echo
-
-    OnlyPrint=1
-    return 1
-}
-
-# --- JSON-driven dispatch (parallels cmake.ps1) ---
-
-# Detect platform so the shared JSON can be filtered.
-detect_platform() {
-    case "$(uname -s 2>/dev/null)" in
-        Linux*|Darwin*)        echo "linux" ;;
-        CYGWIN*|MINGW*|MSYS*)  echo "windows" ;;
-        *)                     echo "linux" ;;
-    esac
-}
-PLATFORM="$(detect_platform)"
-
-# vcpkg path detection (Windows-relevant; on Linux these paths almost always
-# don't exist so VCPKG ends up empty -- which is fine, the JSON gates vcpkg
-# blocks with platform=windows anyway).
-get_vcpkg_path() {
-    local primary="${code_root_dir:-}/C++/diablo_devilutionX/vcpkg/scripts/buildsystems/vcpkg.cmake"
-    local secondary='C:/local/bin/vcpkg/scripts/buildsystems/vcpkg.cmake'
-    if [[ -n "${code_root_dir:-}" && -f "$primary" ]]; then
-        echo "$primary"
-    elif [[ -f "$secondary" ]]; then
-        echo "$secondary"
-    fi
-}
-
-# Substitute {BuildType}, {VCPKG}, {BASE}, {NPROC} tokens.
-expand_tokens() {
-    local out="$1"
-    out="${out//\{BuildType\}/$BuildType}"
-    out="${out//\{VCPKG\}/$VCPKG}"
-    out="${out//\{BASE\}/$BASE}"
-    out="${out//\{NPROC\}/$NPROC}"
-    printf '%s' "$out"
-}
-
-# Map PowerShell color names (as used in the JSON) to ANSI codes.
-color_for() {
-    case "$1" in
-        Black)        printf '\033[30m' ;;
-        DarkBlue)     printf '\033[34m' ;;
-        DarkGreen)    printf '\033[32m' ;;
-        DarkCyan)     printf '\033[36m' ;;
-        DarkRed)      printf '\033[31m' ;;
-        DarkMagenta)  printf '\033[35m' ;;
-        DarkYellow)   printf '\033[33m' ;;
-        Gray)         printf '\033[37m' ;;
-        DarkGray)     printf '\033[90m' ;;
-        Blue)         printf '\033[94m' ;;
-        Green)        printf '\033[92m' ;;
-        Cyan)         printf '\033[96m' ;;
-        Red)          printf '\033[91m' ;;
-        Magenta)      printf '\033[95m' ;;
-        Yellow)       printf '\033[93m' ;;
-        White)        printf '\033[97m' ;;
-        *)            ;;
-    esac
-}
-
-write_colored() {
-    local text="$1"
-    local color_name="${2:-}"
-    if [[ -n "$color_name" ]]; then
-        local code
-        code="$(color_for "$color_name")"
-        if [[ -n "$code" ]]; then
-            printf '%b%s%b\n' "$code" "$text" "$RESET"
-            return
-        fi
-    fi
-    echo "$text"
-}
-
-# Predicates referenced by instructions[].if
-check_condition() {
-    case "$1" in
-        linux_debian_or_ubuntu)
-            grep -qiE 'debian|ubuntu' /etc/os-release 2>/dev/null
-            return $?
-            ;;
-        *)
-            return 1
-            ;;
-    esac
-}
-
-# Default fallback when no project matched or the JSON isn't usable.
-run_default_fallback() {
-    test_cmakelists parent "$(basename "$cwd")"
-    printf "%bNo cmake command found for: %s%b\n" "$DARKYELLOW" "$cwd" "$RESET"
-    printf "%bUsing default cmake command...%b\n" "$DARKYELLOW" "$RESET"
-    run_or_print "cmake ../ -DCMAKE_BUILD_TYPE=$BuildType"
-}
-
-# Locate and load the JSON. Bail out to default fallback if anything is missing.
-JSON_PATH=""
-[[ -n "${my_notes_path:-}" ]] && JSON_PATH="${my_notes_path}/scripts/cmake-projects.json"
-
-if ! command -v jq >/dev/null 2>&1; then
-    printf "%bWarning: jq is required to read cmake-projects.json. Falling back.%b\n" "$YELLOW" "$RESET"
-    run_default_fallback
-    exit 0
-fi
-
-if [[ -z "$JSON_PATH" || ! -f "$JSON_PATH" ]]; then
-    printf "%bWarning: cmake-projects.json not found at: %s%b\n" "$YELLOW" "${JSON_PATH:-<\$my_notes_path unset>}" "$RESET"
-    run_default_fallback
-    exit 0
-fi
-
-JSON_CONTENT="$(cat "$JSON_PATH")"
-
-# Find the first project whose match (and optional platform) applies to $lc.
-matched_idx="$(jq -r --arg cwd "$lc" --arg plat "$PLATFORM" '
-    def project_matches($c; $p):
-        ((.platform // "any") as $pp | ($pp == "any" or $pp == $p)) and
-        (.match as $m
-         | (($m.all // []) | length > 0) as $ha
-         | (($m.any // []) | length > 0) as $hy
-         | ($ha or $hy)
-         and (if $ha then ($m.all | all(. as $n | $c | contains($n | ascii_downcase))) else true end)
-         and (if $hy then ($m.any | any(. as $n | $c | contains($n | ascii_downcase))) else true end));
-    .projects | to_entries
-    | map(select(.value | project_matches($cwd; $plat)))
-    | (.[0].key // -1)
-' <<<"$JSON_CONTENT")"
-
-if [[ -z "$matched_idx" || "$matched_idx" == "-1" ]]; then
-    run_default_fallback
-    exit 0
-fi
-
-# Tiny helper: jq query relative to the matched project.
-P=".projects[$matched_idx]"
-jp() { jq -r "$1" <<<"$JSON_CONTENT"; }
-
-# cmakelists check
-cmlc="$(jp "$P.cmakelists_check // empty")"
-ctx="$(jp "$P.context // empty")"
-case "$cmlc" in
-    parent)  test_cmakelists parent  "$ctx" ;;
-    current) test_cmakelists current "$ctx" ;;
-esac
-
-# Compute tokens
-VCPKG="$(get_vcpkg_path)"
-NPROC="$(nproc 2>/dev/null || echo 4)"
-BASE=""
-base_flags_raw="$(jp "$P.base_flags // empty")"
-[[ -n "$base_flags_raw" ]] && BASE="$(expand_tokens "$base_flags_raw")"
-
-# pre_main_vcpkg block (Windows-tagged in the JSON for projects that use it)
-if [[ "$(jp "$P | has(\"pre_main_vcpkg\")")" == "true" ]]; then
-    pre_plat="$(jp "$P.pre_main_vcpkg.platform // \"any\"")"
-    if [[ "$pre_plat" == "any" || "$pre_plat" == "$PLATFORM" ]]; then
-        echo
-        header="$(jp "$P.pre_main_vcpkg.header // empty")"
-        hcolor="$(jp "$P.pre_main_vcpkg.header_color // empty")"
-        [[ -n "$header" ]] && write_colored "$header" "$hcolor"
-        cmd_tpl="$(jp "$P.pre_main_vcpkg.command_template // empty")"
-        ccolor="$(jp "$P.pre_main_vcpkg.command_color // empty")"
-        if [[ -n "$VCPKG" ]]; then
-            write_colored "$(expand_tokens "$cmd_tpl")" "$ccolor"
-        else
-            miss="$(jp "$P.pre_main_vcpkg.missing_text // \"(no vcpkg toolchain found at expected paths)\"")"
-            write_colored "$miss" "$ccolor"
-        fi
-        echo
-    fi
-fi
-
-# pre_main_text array (simple platform-tagged colored notes)
-pmt_count="$(jp "$P.pre_main_text // [] | length")"
-for ((i=0; i<pmt_count; i++)); do
-    plat="$(jp "$P.pre_main_text[$i].platform // \"any\"")"
-    [[ "$plat" != "any" && "$plat" != "$PLATFORM" ]] && continue
-    text="$(jp "$P.pre_main_text[$i].text // empty")"
-    color="$(jp "$P.pre_main_text[$i].color // empty")"
-    echo
-    write_colored "$(expand_tokens "$text")" "$color"
-    echo
-done
-
-# instructions short-circuit main (used by neovim)
-if [[ "$(jp "$P | has(\"instructions\")")" == "true" ]]; then
-    instr_count="$(jp "$P.instructions | length")"
-    for ((i=0; i<instr_count; i++)); do
-        itype="$(jp "$P.instructions[$i] | type")"
-        if [[ "$itype" == "string" ]]; then
-            echo "$(expand_tokens "$(jp "$P.instructions[$i]")")"
-        else
-            plat="$(jp "$P.instructions[$i].platform // \"any\"")"
-            [[ "$plat" != "any" && "$plat" != "$PLATFORM" ]] && continue
-            if_cond="$(jp "$P.instructions[$i].if // empty")"
-            if [[ -n "$if_cond" ]] && ! check_condition "$if_cond"; then
-                continue
-            fi
-            txt="$(jp "$P.instructions[$i].text // empty")"
-            echo "$(expand_tokens "$txt")"
-        fi
-    done
-    exit 0
-fi
-
-# main (with platform override)
-main_for_plat="$(jp "$P.main_${PLATFORM} // empty")"
-if [[ -n "$main_for_plat" ]]; then
-    main_cmd="$main_for_plat"
-else
-    main_cmd="$(jp "$P.main // empty")"
-fi
-[[ -n "$main_cmd" ]] && run_or_print "$(expand_tokens "$main_cmd")"
-
-# alternatives (items may be strings OR {platform, command} objects)
-alts_count="$(jp "$P.alternatives // [] | length")"
-if (( alts_count > 0 )); then
-    alts_arr=()
-    for ((i=0; i<alts_count; i++)); do
-        itype="$(jp "$P.alternatives[$i] | type")"
-        if [[ "$itype" == "string" ]]; then
-            alts_arr+=( "$(expand_tokens "$(jp "$P.alternatives[$i]")")" )
-        else
-            plat="$(jp "$P.alternatives[$i].platform // \"any\"")"
-            [[ "$plat" != "any" && "$plat" != "$PLATFORM" ]] && continue
-            cmd="$(jp "$P.alternatives[$i].command // empty")"
-            alts_arr+=( "$(expand_tokens "$cmd")" )
-        fi
-    done
-    (( ${#alts_arr[@]} > 0 )) && print_alternatives "${alts_arr[@]}"
-fi
-
-# extras (OnlyPrint mode only)
-if [[ -n "$OnlyPrint" ]]; then
-    extras_count="$(jp "$P.extras // [] | length")"
-    for ((i=0; i<extras_count; i++)); do
-        plat="$(jp "$P.extras[$i].platform // \"any\"")"
-        [[ "$plat" != "any" && "$plat" != "$PLATFORM" ]] && continue
-        etype="$(jp "$P.extras[$i].type // empty")"
-        case "$etype" in
-            blank)
+            echo "alternative cmake commands:"
+            local vi
+            for ((vi = 0; vi < vcount; vi++)); do
                 echo
-                ;;
-            text)
-                t="$(jp "$P.extras[$i].text // empty")"
-                echo "$(expand_tokens "$t")"
-                ;;
-            label_then_command)
-                label="$(jp "$P.extras[$i].label // empty")"
-                cmd="$(jp "$P.extras[$i].command // empty")"
-                [[ -n "$label" ]] && echo "$label"
-                echo "$(expand_tokens "$cmd")"
-                ;;
-            label_then_vcpkg_command)
-                label="$(jp "$P.extras[$i].label // empty")"
-                cmd="$(jp "$P.extras[$i].command // empty")"
-                fb="$(jp "$P.extras[$i].fallback_command // empty")"
-                [[ -n "$label" ]] && echo "$label"
-                if [[ -n "$VCPKG" ]]; then
-                    echo "$(expand_tokens "$cmd")"
+                local vlabel
+                vlabel=$(jq -r --argjson i "$vi" '.variants[$i].label // ""' <<<"$pattern_json")
+                [[ -n "$vlabel" ]] && echo "${vlabel}:"
+                local vflags
+                vflags=$(flags_string "$pattern_json" "$vi")
+                if [[ -z "$vflags" ]]; then
+                    echo "$CMAKE_PREFIX"
                 else
-                    echo "(no vcpkg toolchain found at expected paths)"
-                    [[ -n "$fb" ]] && echo "$(expand_tokens "$fb")"
+                    echo "$CMAKE_PREFIX $vflags"
                 fi
-                ;;
-        esac
-    done
-fi
+            done
+        fi
+    fi
 
-# variants_print_only (used by my_web_wow c++)
-if [[ -n "$OnlyPrint" && -n "$BASE" ]] && [[ "$(jp "$P | has(\"variants_print_only\")")" == "true" ]]; then
-    pfx_tpl="$(jp "$P.variants_print_only.prefix // empty")"
-    vprefix="$(expand_tokens "$pfx_tpl")"
-    var_count="$(jp "$P.variants_print_only.items | length")"
-    for ((i=0; i<var_count; i++)); do
-        label="$(jp "$P.variants_print_only.items[$i].label")"
-        vbase="$BASE"
-        rep_count="$(jp "$P.variants_print_only.items[$i].replace | length")"
-        for ((j=0; j<rep_count; j++)); do
-            s="$(jp "$P.variants_print_only.items[$i].replace[$j][0]")"
-            r="$(jp "$P.variants_print_only.items[$i].replace[$j][1]")"
-            vbase="${vbase//$s/$r}"
-        done
-        echo
-        echo "${label}:"
-        echo "${vprefix}${vbase}"
-    done
+    print_only_print_extras "$pattern_json"
+}
+
+# ---------- main loop ----------
+matched=0
+while IFS= read -r pattern_json; do
+    if pattern_matches "$pattern_json"; then
+        dispatch_pattern "$pattern_json"
+        matched=1
+        break
+    fi
+done < <(jq -c '.patterns[]' "$patterns_file")
+
+if [[ "$matched" -eq 0 ]]; then
+    ensure_cmake_detected "$(basename "$(pwd)")"
+    printf "%bNo cmake pattern found for: %s%b\n" "$DARKYELLOW" "$(pwd)" "$RESET"
+    printf "%bUsing default cmake command...%b\n" "$DARKYELLOW" "$RESET"
+    run_or_print "$CMAKE_PREFIX -DCMAKE_BUILD_TYPE=$BuildType"
 fi
