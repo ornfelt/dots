@@ -51,6 +51,7 @@ debian-faq
 debianutils
 default-jdk
 default-jre
+default-libmysqlclient-dev
 dhcpcd-base
 diffutils
 dmidecode
@@ -168,12 +169,14 @@ libcap2
 libcglm-dev
 libcollada-dom-dev
 libcom-err2
+libcpp-httplib-dev
 libcpprest-dev
 libcrypt1
 libcurl4-openssl-dev
 libdb5.3t64
 libdebconfclient0
 libdrm-dev
+libdrogon-dev
 libedit2
 libegl1
 libelf1t64
@@ -206,11 +209,13 @@ libgtk-3-dev
 libgtk2.0-dev
 libharfbuzz-bin
 libharfbuzz-dev
+libhiredis-dev
 libhogweed6t64
 libidn2-0
 libinput-dev
 libjansson4
 libjpeg-dev
+libjsoncpp-dev
 libk5crypto3
 libkeyutils1
 libkmod2
@@ -238,7 +243,6 @@ libminizip-dev
 libmnl0
 libmount1
 libmygui-dev
-libmysqlclient-dev
 libncurses-dev
 libncursesw6
 libnettle8t64
@@ -262,6 +266,7 @@ libpcre2-8-0
 libpcre2-dev
 libpng-dev
 libpopt0
+libpq-dev
 libproc2-0
 libqt6charts6
 libqt6concurrent6

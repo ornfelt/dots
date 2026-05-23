@@ -111,6 +111,7 @@ default-jdk
 default-jdk-headless
 default-jre
 default-jre-headless
+default-libmysqlclient-dev
 designer-qt6
 desktop-file-utils
 dex
@@ -692,6 +693,8 @@ libcommons-parent-java
 libconfig11
 libconfuse-common
 libconfuse2
+libcpp-httplib-dev
+libcpp-httplib0.18
 libcpprest-dev
 libcpprest2.10
 libcrypt-dev
@@ -755,6 +758,8 @@ libdrm-nouveau2
 libdrm-radeon1
 libdrm2
 libdrm2
+libdrogon-dev
+libdrogon1t64
 libduktape207
 libduktape207
 libdv4t64
@@ -1049,6 +1054,7 @@ libheif-plugin-x265
 libheif-plugin-x265
 libheif1
 libheif1
+libhiredis-dev
 libhiredis1.1.0
 libhogweed6t64
 libhogweed6t64
@@ -1165,6 +1171,7 @@ libjson-c5
 libjson-glib-1.0-0
 libjson-glib-1.0-common
 libjson-xs-perl
+libjsoncpp-dev
 libjsoncpp26
 libjsoup-java
 libjsr305-java
@@ -1250,6 +1257,8 @@ libmagickcore-7.q16-10-extra
 libmagickwand-7.q16-10
 libmail-sendmail-perl
 libmailtools-perl
+libmariadb-dev
+libmariadb-dev-compat
 libmariadb3
 libmatroska7
 libmaven-parent-java
@@ -1307,7 +1316,6 @@ libmygui.opengl3platform0debian1t64
 libmygui.openglplatform0debian1t64
 libmyguiengine3debian1t64
 libmysofa1
-libmysqlclient-dev
 libmysqlclient24
 libncurses-dev
 libncurses6
@@ -1490,6 +1498,7 @@ libportaudio2
 libportaudiocpp0
 libpostproc58
 libpotrace0
+libpq-dev
 libpq5
 libproc2-0
 libproj25
@@ -1826,6 +1835,8 @@ libtirpc3t64
 libtk8.6
 libtool
 libtool-bin
+libtrantor-dev
+libtrantor1
 libtree-sitter0.22
 libtry-tiny-perl
 libts0t64

@@ -30,6 +30,7 @@ YELLOW='\033[33m'
 BLUE='\033[34m'
 MAGENTA='\033[35m'
 CYAN='\033[36m'
+DARKGRAY='\033[90m'
 DARKYELLOW='\033[93m'
 
 # ---------- help ----------
@@ -183,6 +184,7 @@ ensure_cmake_detected() {
     local ctx="${1:-this project}"
     if [[ -f "./CMakeLists.txt" ]]; then
         CMAKE_PREFIX="cmake -B build -S ."
+        printf "%bAlternative: mkdir build && cd build%b\n" "$DARKGRAY" "$RESET"
     elif [[ -f "../CMakeLists.txt" ]]; then
         CMAKE_PREFIX="cmake .."
     else

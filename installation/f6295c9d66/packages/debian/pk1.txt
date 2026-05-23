@@ -51,6 +51,7 @@ debian-faq
 debianutils
 default-jdk
 default-jre
+default-libmysqlclient-dev
 dhcpcd-base
 diffutils
 dmidecode
@@ -168,10 +169,11 @@ libcap2
 libcglm-dev
 libcollada-dom-dev
 libcom-err2
+libcpp-httplib-dev
 libcpprest-dev
 libcrypt1
 libcurl4-openssl-dev
 libdb5.3t64
 libdebconfclient0
 libdrm-dev
-libedit2
+libdrogon-dev
