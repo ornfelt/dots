@@ -94,9 +94,9 @@ BuildType="Debug"
 [[ -n "$RelWithDebInfo" ]] && BuildType="RelWithDebInfo"
 
 if [[ -n "$OnlyPrint" ]]; then
-    printf "%b[OnlyPrint]=ON  [BuildType]=%s%b\n" "$MAGENTA" "$BuildType" "$RESET"
+    printf "%b[OnlyPrint]=ON  [BuildType]=%s%b\n\n" "$MAGENTA" "$BuildType" "$RESET"
 else
-    printf "%b[OnlyPrint]=OFF  [BuildType]=%s%b\n" "$MAGENTA" "$BuildType" "$RESET"
+    printf "%b[OnlyPrint]=OFF  [BuildType]=%s%b\n\n" "$MAGENTA" "$BuildType" "$RESET"
 fi
 
 # ---------- locate patterns file ----------
