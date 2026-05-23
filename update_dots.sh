@@ -239,6 +239,9 @@ keys=(
   done
 
   echo ''
+  echo '# Raspberrypi'
+  echo '#export MESA_GL_VERSION_OVERRIDE=3.3'
+  echo ''
   echo '[[ -f ~/.bashrc ]] && . ~/.bashrc'
   echo ''
   echo '#. "$HOME/.cargo/env"'
