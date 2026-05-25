@@ -1,6 +1,7 @@
 require('dbg_log').log_file(debug.getinfo(1, 'S').source)
 
 require("autocmds.hellow")
+require("autocmds.md_sync").setup()
 require("autocmds.code_autocmds")
 require("autocmds.sql_autocmds")
 require("autocmds.treesitter_autocmds")

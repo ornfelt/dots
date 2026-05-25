@@ -196,6 +196,12 @@ function M.should_use_custom_lsp_for_sql()
   return _use_custom_lsp_for_sql_cache
 end
 
+-- Whether to use the TypeScript md viewer (true) or the Python one (false)
+function M.should_use_ts_md_viewer()
+  local use_ts = read_config("UseTsMdViewer", "false")
+  return use_ts:lower() == "true"
+end
+
 function M.get_py_command()
   return read_config("PythonExecCommand", "gpt")
 end
@@ -377,6 +383,10 @@ function ToggleUseCustomLspForSql()
   ToggleBooleanSetting("UseCustomLspForSql")
 end
 
+function ToggleUseTsMdViewer()
+  ToggleBooleanSetting("UseTsMdViewer")
+end
+
 -- cmd TogglePrioritizeBuildScript: TogglePrioritizeBuildScript
 vim.api.nvim_create_user_command('TogglePrioritizeBuildScript', TogglePrioritizeBuildScript, {})
 -- cmd ToggleDebugPrint: ToggleDebugPrint
@@ -387,6 +397,8 @@ vim.api.nvim_create_user_command('ToggleUseFilePickerForCommands', ToggleUseFile
 vim.api.nvim_create_user_command('ToggleUseCustomStatusline', ToggleUseCustomStatusline, {})
 -- cmd ToggleUseCustomLspForSql: ToggleUseCustomLspForSql
 vim.api.nvim_create_user_command('ToggleUseCustomLspForSql', ToggleUseCustomLspForSql, {})
+-- cmd ToggleUseTsMdViewer: ToggleUseTsMdViewer
+vim.api.nvim_create_user_command('ToggleUseTsMdViewer', ToggleUseTsMdViewer, {})
 
 -- Dynamic ai keybind mode
 function M.get_ai_mode()

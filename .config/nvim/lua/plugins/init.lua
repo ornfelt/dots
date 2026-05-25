@@ -37,6 +37,7 @@ return {
   require("plugins.vim-emoji"),
   require("plugins.undotree"),
   --require("plugins.markview"),
+  --require("plugins.render-markdown"),
   require("plugins.sqls"),
   require("plugins.roslyn"),
   --require("plugins.python-syntax"),
