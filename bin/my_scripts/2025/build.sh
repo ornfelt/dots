@@ -56,14 +56,13 @@ fix_cmd_text() {
     local text="$1"
     # Bash script = always Linux-style output.
     # Replace $Env:foo / $env:foo / $ENV:foo with $foo
-    text="$(printf '%s' "$text" | sed -E 's/\$[Ee][Nn][Vv]:/\$/g')"
-    printf '%s' "$text"
+    # (pure-bash substitution; avoids forking a subshell + sed per command)
+    _fix_cmd_result="${text//\$[Ee][Nn][Vv]:/\$}"
 }
 
 write_cmd() {
-    local text
-    text="$(fix_cmd_text "$1")"
-    printf '  %b%s%b\n' "$CYAN" "$text" "$RESET"
+    fix_cmd_text "$1"
+    printf '  %b%s%b\n' "$CYAN" "$_fix_cmd_result" "$RESET"
 }
 
 write_header() {
@@ -140,11 +139,11 @@ get_comment_syntax() {
 }
 
 # Helper: trim leading whitespace
-ltrim() { local s="$1"; printf '%s' "${s#"${s%%[![:space:]]*}"}"; }
+ltrim() { _trim_result="${1#"${1%%[![:space:]]*}"}"; }
 # Helper: trim trailing whitespace
-rtrim() { local s="$1"; printf '%s' "${s%"${s##*[![:space:]]}"}"; }
+rtrim() { _trim_result="${1%"${1##*[![:space:]]}"}"; }
 # Helper: trim both
-trim()  { local s; s="$(ltrim "$1")"; rtrim "$s"; }
+trim()  { local s="${1#"${1%%[![:space:]]*}"}"; _trim_result="${s%"${s##*[![:space:]]}"}"; }
 
 # Track block-comment state across a scanned line, using starts/ends.
 # Updates $IN_BLOCK global. Used while scanning for the marker.
@@ -245,7 +244,7 @@ get_usage_examples() {
         fi
 
         if (( isMulti == 0 && hasSingle == 1 )); then
-            local lt; lt="$(ltrim "$line")"
+            local lt; ltrim "$line"; lt="$_trim_result"
             [[ "$lt" == "$single"* ]] && isSingle=1
         fi
 
@@ -263,13 +262,13 @@ get_usage_examples() {
             if [[ -n "$mEnd" && "$rest" == *"$mEnd"* ]]; then
                 local beforeEnd="${rest%%"$mEnd"*}"
                 local afterEnd="${rest#*"$mEnd"}"
-                local b; b="$(trim "$beforeEnd")"
+                local b; trim "$beforeEnd"; b="$_trim_result"
                 [[ -n "$b" ]] && UE_LINES+=("$b")
-                local a; a="$(trim "$afterEnd")"
+                local a; trim "$afterEnd"; a="$_trim_result"
                 [[ -n "$a" ]] && UE_LINES+=("$a")
                 return 0
             else
-                local rt; rt="$(trim "$rest")"
+                local rt; trim "$rest"; rt="$_trim_result"
                 [[ -n "$rt" ]] && UE_LINES+=("$rt")
             fi
 
@@ -280,19 +279,19 @@ get_usage_examples() {
                     local beforeEnd="${l%%"$mEnd"*}"
                     local afterEnd="${l#*"$mEnd"}"
                     # Strip leading spaces + leading '*' characters + one space.
-                    local bclean; bclean="$(ltrim "$beforeEnd")"
+                    local bclean; ltrim "$beforeEnd"; bclean="$_trim_result"
                     while [[ "$bclean" == '*'* ]]; do bclean="${bclean#\*}"; done
                     [[ "$bclean" == ' '* ]] && bclean="${bclean# }"
-                    bclean="$(rtrim "$bclean")"
+                    rtrim "$bclean"; bclean="$_trim_result"
                     [[ -n "$bclean" ]] && UE_LINES+=("$bclean")
-                    local atrim; atrim="$(trim "$afterEnd")"
+                    local atrim; trim "$afterEnd"; atrim="$_trim_result"
                     [[ -n "$atrim" ]] && UE_LINES+=("$atrim")
                     return 0
                 else
-                    local cleaned; cleaned="$(ltrim "$l")"
+                    local cleaned; ltrim "$l"; cleaned="$_trim_result"
                     while [[ "$cleaned" == '*'* ]]; do cleaned="${cleaned#\*}"; done
                     [[ "$cleaned" == ' '* ]] && cleaned="${cleaned# }"
-                    cleaned="$(rtrim "$cleaned")"
+                    rtrim "$cleaned"; cleaned="$_trim_result"
                     UE_LINES+=("$cleaned")
                 fi
             done
@@ -301,11 +300,11 @@ get_usage_examples() {
 
         if (( isSingle == 1 )); then
             for (( j=i+1; j<n; j++ )); do
-                local lt; lt="$(ltrim "${lines[$j]}")"
+                local lt; ltrim "${lines[$j]}"; lt="$_trim_result"
                 if [[ "$lt" == "$single"* ]]; then
                     local stripped="${lt:${#single}}"
                     [[ "$stripped" == ' '* ]] && stripped="${stripped# }"
-                    stripped="$(rtrim "$stripped")"
+                    rtrim "$stripped"; stripped="$_trim_result"
                     UE_LINES+=("$stripped")
                 else
                     break
@@ -340,15 +339,17 @@ render_usage_from_file() {
         return 0
     fi
 
-    local ln trimmed
+    local ln trimmed tr_ln lt_trimmed
     for ln in "${UE_LINES[@]}"; do
-        trimmed="$(rtrim "$ln")"
+        rtrim "$ln"; trimmed="$_trim_result"
+        trim "$ln"; tr_ln="$_trim_result"
+        ltrim "$trimmed"; lt_trimmed="$_trim_result"
 
-        if [[ -z "$(trim "$ln")" ]]; then
+        if [[ -z "$tr_ln" ]]; then
             echo ""
         elif [[ "$trimmed" == *: ]]; then
             write_label "$ln"
-        elif [[ "$(ltrim "$trimmed")" =~ ^[Nn][Oo][Tt][Ee][[:space:]]*: ]]; then
+        elif [[ "$lt_trimmed" =~ ^[Nn][Oo][Tt][Ee][[:space:]]*: ]]; then
             write_label "$ln"
         elif [[ ! "$trimmed" =~ [A-Za-z] ]]; then
             # no alphabetical chars (e.g. "---", "====", "***") => treat as label
@@ -498,7 +499,7 @@ _pe_flush_section() {
         local -a files=()
         local fline ftrim
         while IFS= read -r fline; do
-            ftrim="$(trim "$fline")"
+            trim "$fline"; ftrim="$_trim_result"
             [[ -n "$ftrim" ]] && files+=("$ftrim")
         done <<< "$files_block"
         (( ${#files[@]} == 0 )) && return 0
@@ -531,7 +532,7 @@ load_patterns_config() {
     local raw trimmed key val
     while IFS= read -r raw || [[ -n "$raw" ]]; do
         raw="${raw%$'\r'}"
-        trimmed="$(trim "$raw")"
+        trim "$raw"; trimmed="$_trim_result"
 
         # Blank or comment line: reset continuation, skip.
         if [[ -z "$trimmed" ]] || [[ "$trimmed" == \#* ]] || [[ "$trimmed" == ';'* ]]; then
@@ -561,8 +562,8 @@ load_patterns_config() {
 
         # key = value
         if [[ "$trimmed" == *"="* ]]; then
-            key="$(trim "${trimmed%%=*}")"; key="${key,,}"
-            val="$(trim "${trimmed#*=}")"
+            trim "${trimmed%%=*}"; key="${_trim_result,,}"
+            trim "${trimmed#*=}"; val="$_trim_result"
             case "$key" in
                 patterns) _sec_patterns="$val"; current_key="patterns" ;;
                 env)      _sec_env="$val";      current_key="env" ;;

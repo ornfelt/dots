@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 arg="$1"
+keyword="$2"
 
 # Colors (ANSI escape codes)
 RESET='\033[0m'
@@ -133,6 +134,7 @@ show_git_help() {
   write_code_line "git show HEAD^ > latest_changes.diff          # Generate diff showing changes from second latest commit"
   write_code_line "git show c7aa908 -- '*.go' > go_fixes.diff    # Generate diff for a commit, filter on file type"
   write_code_line "git diff cbceb5a..HEAD -- '**/*.java' '*.cs' > new_java_cs_changes.diff  # Diff range, filter types"
+  write_code_line "git diff --output=changes.diff  # Generate current working tree diff to specified output file"
   write_code_line 'cd "$code_root_dir/Code2/C#/dotnet-integration" && git apply $my_notes_path/notes/svea/diffs/testshop_dev.diff --verbose  # Apply patch'
 }
 
@@ -370,74 +372,123 @@ show_other_help() {
   write_code_line "find . | wc -l                      # count everything recursively"
 }
 
+show_path_entry() {
+  local label="$1"
+  local path="$2"
+  local keyword="$3"
+
+  if [[ -n "$keyword" ]]; then
+    local k="${keyword,,}"
+    local haystack="${label} ${path}"
+    haystack="${haystack,,}"
+
+    if [[ "$haystack" != *"$k"* ]]; then
+      return
+    fi
+  fi
+
+  printf "%b%s:%b\n" "$DARKGRAY" "$label" "$RESET"
+  printf "%b%s%b\n\n" "$GREEN" "$path" "$RESET"
+}
+
 show_paths_help() {
-  printf "%bCommon config paths:%b\n\n" "$YELLOW" "$RESET"
+  local keyword="$1"
 
-  printf "%bnvim config path:%b\n" "$DARKGRAY" "$RESET"
-  printf "%b~/.config/nvim/init.lua%b\n\n" "$GREEN" "$RESET"
+  printf "%bCommon config paths:%b\n" "$YELLOW" "$RESET"
 
-  printf "%bnvim data dir (stdpath(\"data\")):%b\n" "$DARKGRAY" "$RESET"
-  printf "%b~/.local/share/nvim%b\n\n" "$GREEN" "$RESET"
+  if [[ -n "$keyword" ]]; then
+    printf "%bFiltered by keyword: %s%b\n" "$DARKGRAY" "$keyword" "$RESET"
+  fi
 
-  printf "%blazy.nvim plugin location:%b\n" "$DARKGRAY" "$RESET"
-  printf "%b~/.local/share/nvim/lazy%b\n\n" "$GREEN" "$RESET"
+  printf "\n"
 
-  printf "%bnvim built-in package manager path (0.12+):%b\n" "$DARKGRAY" "$RESET"
-  printf "%b~/.local/share/nvim/site/pack%b\n\n" "$GREEN" "$RESET"
+  show_path_entry 'nvim config path' \
+    '~/.config/nvim/init.lua' \
+    "$keyword"
 
-  printf "%bnvim built-in package manager opt path (0.12+):%b\n" "$DARKGRAY" "$RESET"
-  printf "%b~/.local/share/nvim/site/pack/core/opt%b\n\n" "$GREEN" "$RESET"
+  show_path_entry 'nvim data dir (stdpath("data"))' \
+    '~/.local/share/nvim' \
+    "$keyword"
 
-  printf "%bnvim pack lockfile:%b\n" "$DARKGRAY" "$RESET"
-  printf "%b~/.config/nvim/nvim-pack-lock.json%b\n\n" "$GREEN" "$RESET"
+  show_path_entry 'lazy.nvim plugin location' \
+    '~/.local/share/nvim/lazy' \
+    "$keyword"
 
-  printf "%blazy.nvim lockfile:%b\n" "$DARKGRAY" "$RESET"
-  printf "%b~/.config/nvim/lazy-lock.json%b\n\n" "$GREEN" "$RESET"
+  show_path_entry 'nvim built-in package manager path (0.12+)' \
+    '~/.local/share/nvim/site/pack' \
+    "$keyword"
 
-  printf "%bnvim debug lua usage log:%b\n" "$DARKGRAY" "$RESET"
-  printf "%b~/.cache/nvim/lua_file_usage.log%b\n\n" "$GREEN" "$RESET"
+  show_path_entry 'nvim built-in package manager opt path (0.12+)' \
+    '~/.local/share/nvim/site/pack/core/opt' \
+    "$keyword"
 
-  printf "%bnvim lsp servers log:%b\n" "$DARKGRAY" "$RESET"
-  printf "%b~/lsp_servers.txt%b\n\n" "$GREEN" "$RESET"
+  show_path_entry 'nvim pack lockfile' \
+    '~/.config/nvim/nvim-pack-lock.json' \
+    "$keyword"
 
-  printf "%bnvim custom config file:%b\n" "$DARKGRAY" "$RESET"
-  printf "%b~/.local/share/nvim/nvim_config.txt%b\n\n" "$GREEN" "$RESET"
+  show_path_entry 'lazy.nvim lockfile' \
+    '~/.config/nvim/lazy-lock.json' \
+    "$keyword"
 
-  printf "%bnvim custom config backup/source from my_notes_path:%b\n" "$DARKGRAY" "$RESET"
-  printf "%b\$my_notes_path/scripts/files/nvim_config.txt%b\n\n" "$GREEN" "$RESET"
+  show_path_entry 'nvim debug lua usage log' \
+    '~/.cache/nvim/lua_file_usage.log' \
+    "$keyword"
 
-  printf "%bnvim py_exec scripts dir:%b\n" "$DARKGRAY" "$RESET"
-  printf "%b\$code_root_dir/Code2/Python/my_py/scripts/%b\n\n" "$GREEN" "$RESET"
+  show_path_entry 'nvim lsp servers log' \
+    '~/lsp_servers.txt' \
+    "$keyword"
 
-  printf "%bnvim sessions dir:%b\n" "$DARKGRAY" "$RESET"
-  printf "%b~/.vim/sessions/%b\n\n" "$GREEN" "$RESET"
+  show_path_entry 'nvim custom config file' \
+    '~/.local/share/nvim/nvim_config.txt' \
+    "$keyword"
 
-  printf "%bwezterm config path:%b\n" "$DARKGRAY" "$RESET"
-  printf "%b~/.wezterm.lua%b\n\n" "$GREEN" "$RESET"
+  show_path_entry 'nvim custom config backup/source from my_notes_path' \
+    '$my_notes_path/scripts/files/nvim_config.txt' \
+    "$keyword"
 
-  printf "%bwezterm session manager path:%b\n" "$DARKGRAY" "$RESET"
-  printf "%b~/.config/wezterm/wezterm-session-manager/session-manager.lua%b\n\n" "$GREEN" "$RESET"
+  show_path_entry 'nvim py_exec scripts dir' \
+    '$code_root_dir/Code2/Python/my_py/scripts/' \
+    "$keyword"
 
-  printf "%bwezterm session file:%b\n" "$DARKGRAY" "$RESET"
-  printf "%b~/.config/wezterm/wezterm-session-manager/wezterm_state_coding.json%b\n\n" "$GREEN" "$RESET"
+  show_path_entry 'nvim sessions dir' \
+    '~/.vim/sessions/' \
+    "$keyword"
 
-  printf "%bwezterm debug log file:%b\n" "$DARKGRAY" "$RESET"
-  printf "%b~/wez_test.txt%b\n\n" "$GREEN" "$RESET"
+  show_path_entry 'vimrc path' \
+    '~/.vimrc' \
+    "$keyword"
 
-  printf "%balacritty config path:%b\n" "$DARKGRAY" "$RESET"
-  printf "%b~/.config/alacritty/alacritty.toml%b\n\n" "$GREEN" "$RESET"
+  show_path_entry 'wezterm config path' \
+    '~/.wezterm.lua' \
+    "$keyword"
 
-  printf "%blf config path:%b\n" "$DARKGRAY" "$RESET"
-  printf "%b~/.config/lf/lfrc%b\n\n" "$GREEN" "$RESET"
+  show_path_entry 'wezterm session manager path' \
+    '~/.config/wezterm/wezterm-session-manager/session-manager.lua' \
+    "$keyword"
 
-  printf "%byazi config path:%b\n" "$DARKGRAY" "$RESET"
-  printf "%b~/.config/yazi/keymap.toml%b\n\n" "$GREEN" "$RESET"
+  show_path_entry 'wezterm session file' \
+    '~/.config/wezterm/wezterm-session-manager/wezterm_state_coding.json' \
+    "$keyword"
 
-  printf "%bvs code config path:%b\n" "$DARKGRAY" "$RESET"
-  printf "%b~/.config/Code/User/keybindings.json%b\n\n" "$GREEN" "$RESET"
+  show_path_entry 'wezterm debug log file' \
+    '~/wez_test.txt' \
+    "$keyword"
 
-  printf "%bvimrc path:%b\n" "$DARKGRAY" "$RESET"
-  printf "%b~/.vimrc%b\n" "$GREEN" "$RESET"
+  show_path_entry 'alacritty config path' \
+    '~/.config/alacritty/alacritty.toml' \
+    "$keyword"
+
+  show_path_entry 'lf config path' \
+    '~/.config/lf/lfrc' \
+    "$keyword"
+
+  show_path_entry 'yazi config path' \
+    '~/.config/yazi/keymap.toml' \
+    "$keyword"
+
+  show_path_entry 'vs code config path' \
+    '~/.config/Code/User/keybindings.json' \
+    "$keyword"
 }
 
 show_grep_help() {
@@ -1098,6 +1149,6 @@ case "$mode" in
   scripts)     show_scripts_help ;;
   env)         show_env_help ;;
   other)       show_other_help ;;
-  paths)       show_paths_help ;;
+  paths)       show_paths_help "$keyword" ;;
 esac
 

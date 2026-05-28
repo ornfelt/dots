@@ -869,3 +869,106 @@ end
 -- cmd SqlMiniDump: sqlmini_dump
 vim.api.nvim_create_user_command("SqlMiniDump", sqlmini_dump, { nargs = 0 })
 
+-- cnfs: insert engine-specific SQL scripts from config dir
+local function read_engine_scripts_file(engine)
+  if not code_root_dir then
+    print("Environment variable 'code_root_dir' is not set.")
+    return nil
+  end
+
+  local is_windows = vim.fn.has("win32") == 1 or vim.fn.has("win64") == 1
+
+  local candidates
+  if is_windows then
+    candidates = {
+      code_root_dir .. "Code2/Sql/my_sql/config/" .. engine .. "_scripts.txt",
+    }
+  else
+    candidates = {
+      code_root_dir .. "Code2/Sql/my_sql/config/" .. engine .. "_scripts.txt",
+      code_root_dir .. "Code2/SQL/my_sql/config/" .. engine .. "_scripts.txt",
+    }
+  end
+
+  local file, used_path
+  for _, p in ipairs(candidates) do
+    file = io.open(p, "r")
+    if file then
+      used_path = p
+      break
+    end
+  end
+
+  if not file then
+    print(string.format(
+      "Scripts file not found for engine '%s'. Tried:\n  %s",
+      engine,
+      table.concat(candidates, "\n  ")
+    ))
+    return nil
+  end
+
+  local lines = {}
+  for line in file:lines() do
+    -- Strip BOM on the first line if present (mirrors parse_db_files)
+    if #lines == 0 and line:byte(1) == 0xEF and line:byte(2) == 0xBB and line:byte(3) == 0xBF then
+      line = line:sub(4)
+    end
+    table.insert(lines, line)
+  end
+  file:close()
+
+  if myconfig.should_debug_print() then
+    print("[cnfs] read " .. #lines .. " lines from " .. used_path)
+  end
+
+  return lines
+end
+
+function insert_engine_scripts()
+  local engine, _ = extract_engine_env_from_buffer()
+  if not engine or engine == "" then
+    print("No SQL engine detected. Add a '--engine: <engine>' header to the buffer.")
+    return
+  end
+
+  engine = engine:lower()
+
+  local valid_engines = {
+    sql_server = true,
+    oracle     = true,
+    sqlite     = true,
+    mysql      = true,
+    postgresql = true,
+  }
+  if not valid_engines[engine] then
+    print(string.format("Unsupported SQL engine: '%s'", engine))
+    return
+  end
+
+  local lines = read_engine_scripts_file(engine)
+  if not lines or #lines == 0 then
+    if lines and #lines == 0 then
+      print(string.format("Scripts file for engine '%s' is empty.", engine))
+    end
+    return
+  end
+
+  -- Insert at current row, then leave cursor on a trailing blank line
+  local row, _ = unpack(vim.api.nvim_win_get_cursor(0))
+  vim.api.nvim_buf_set_lines(0, row, row, false, lines)
+  vim.api.nvim_buf_set_lines(0, row + #lines, row + #lines, false, { "" })
+  vim.api.nvim_win_set_cursor(0, { row + #lines + 1, 0 })
+end
+
+-- autocmd sql: cnfs (i)
+vim.api.nvim_create_autocmd("FileType", {
+  pattern = "sql",
+  callback = function()
+    local bufnr = vim.api.nvim_get_current_buf()
+    vim.api.nvim_buf_set_keymap(bufnr, "i", "cnfs<Tab>",
+      "<cmd>lua insert_engine_scripts()<CR>",
+      { noremap = true, silent = true })
+  end,
+})
+
