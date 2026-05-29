@@ -37,6 +37,18 @@ OUT_FILE=""
 VERBOSE=0
 SIGNAL="TERM"
 
+# Chart defaults
+EXTRA_NAMES=()
+PID_ARGS=()
+CHART="pie"
+METRIC="cpu"
+BACKEND="plotext"
+THEME="dark"
+INTERVAL="2"
+DURATION="0"
+PLOT_WIDTH="100"
+PLOT_HEIGHT="25"
+
 # --- help ------------------------------------------------------------------
 
 show_help() {
@@ -48,11 +60,17 @@ Usage:
   proc.sh search <name> [-s ...] [-v]
   proc.sh kill   <name> [-a] [-f] [--signal SIG | -9] [-v]
   proc.sh kill   -i <pid> [-f] [--signal SIG | -9]
-  proc.sh info   <name> | -i <pid>
+  proc.sh info   <name>  | -i <pid>
   proc.sh top    [-n N] [-s cpu|mem] [-v]
-  proc.sh count  <name> [-v]
+  proc.sh count  <name>  [-v]
   proc.sh export -o out.csv|out.json [-N pattern]
   proc.sh help        (also: -h, --help)
+
+Chart commands (require Python 3 + a chart backend):
+  proc.sh stats [-C pie|top|tree] [-m cpu|memory|io|threads|fds] [-n N]
+  proc.sh monitor <name1> [name2 ...] [-m cpu|memory|io|threads|fds]
+  proc.sh monitor -i <pid1> [-i <pid2>] [-m cpu|memory|io|threads|fds]
+  proc.sh tree  [-m cpu|memory|io|threads|fds] [-n N]
 
 Flags:
   -h, --help            Show this help
@@ -60,15 +78,43 @@ Flags:
   -f, --force           Skip confirmation prompts
   -a, --all             When killing multiple matches, target every one
   -s, --sort FIELD      cpu | mem | name | pid  (default: mem)
-  -i, --id PID          Specific PID
-  -n, --top N           How many entries for 'top' (default: 10)
+  -i, --id PID          Specific PID (repeatable for monitor)
+  -n, --top N           How many entries for 'top' / chart (default: 10)
   -o, --output FILE     Export destination (.csv or .json — picks format)
   -N, --name PATTERN    Filter pattern for export
   --signal SIG          Signal name/number for kill (default: TERM)
   -9                    Shortcut for --signal KILL
 
+Chart flags:
+  -b, --backend BE      plotext | termplotlib | matplotlib  (default: plotext)
+  -t, --theme TH        dark | light                        (default: dark)
+  -m, --metric M        cpu|memory|io|threads|fds            (default: cpu)
+  -C, --chart CH        pie | top | tree  (for stats)        (default: pie)
+  --interval SEC        Sampling interval for monitor         (default: 2)
+  --duration SEC        Total duration for monitor            (default: 0 = indefinite)
+  --width W             Plot width in characters              (default: 100)
+  --height H            Plot height in characters             (default: 25)
+
 Pattern matching is case-insensitive substring against the process name
 (comm), mirroring the PowerShell version's contains-style match.
+
+Chart examples:
+  proc.sh stats                                        # CPU pie (plotext, gruvbox dark)
+  proc.sh stats -m memory                              # Memory pie
+  proc.sh stats -m memory -b matplotlib -t light       # Memory pie, matplotlib, light theme
+  proc.sh stats -C top -m memory -n 20                 # Top 20 by memory bar chart
+  proc.sh stats -C tree -m memory                      # Memory resource tree
+  proc.sh stats -C tree -m io                          # IO resource tree
+  proc.sh stats -C tree -m threads                     # Thread count tree
+  proc.sh stats -C tree -m fds                         # Open file descriptors tree
+  proc.sh stats -b termplotlib                         # CPU pie via termplotlib
+  proc.sh stats --width 120 --height 30                # Custom plot dimensions
+  proc.sh monitor chrome firefox                       # Monitor chrome+firefox CPU over time
+  proc.sh monitor -i 1234 -i 5678 -m memory           # Monitor PIDs by memory
+  proc.sh monitor python -m io --interval 1            # IO tracking every 1s
+  proc.sh monitor node --duration 60 -m cpu            # CPU for 60 seconds then stop
+  proc.sh monitor chrome -b termplotlib -t light       # Monitor with termplotlib, light theme
+  proc.sh tree -m memory -n 20                         # Shortcut for stats -C tree
 EOF
 }
 
@@ -84,17 +130,33 @@ parse_args() {
             -a|--all)            ALL=1 ;;
             -9)                  SIGNAL="KILL" ;;
             -s|--sort)           shift; SORT_BY="${1-}" ;;
-            -i|--id)             shift; PID_ARG="${1-}" ;;
+            -i|--id)             shift; PID_ARG="${1-}"; PID_ARGS+=("${1-}") ;;
             -n|--top)            shift; TOP_N="${1-}" ;;
             -o|--output)         shift; OUT_FILE="${1-}" ;;
             -N|--name)           shift; NAME="${1-}" ;;
             --signal)            shift; SIGNAL="${1-}" ;;
+            -m|--metric)         shift; METRIC="${1-}" ;;
+            -b|--backend)        shift; BACKEND="${1-}" ;;
+            -t|--theme)          shift; THEME="${1-}" ;;
+            -C|--chart)          shift; CHART="${1-}" ;;
+            --interval)          shift; INTERVAL="${1-}" ;;
+            --duration)          shift; DURATION="${1-}" ;;
+            --width)             shift; PLOT_WIDTH="${1-}" ;;
+            --height)            shift; PLOT_HEIGHT="${1-}" ;;
             --sort=*)            SORT_BY="${1#*=}" ;;
-            --id=*)              PID_ARG="${1#*=}" ;;
+            --id=*)              PID_ARG="${1#*=}"; PID_ARGS+=("${1#*=}") ;;
             --top=*)             TOP_N="${1#*=}" ;;
             --output=*)          OUT_FILE="${1#*=}" ;;
             --name=*)            NAME="${1#*=}" ;;
             --signal=*)          SIGNAL="${1#*=}" ;;
+            --metric=*)          METRIC="${1#*=}" ;;
+            --backend=*)         BACKEND="${1#*=}" ;;
+            --theme=*)           THEME="${1#*=}" ;;
+            --chart=*)           CHART="${1#*=}" ;;
+            --interval=*)        INTERVAL="${1#*=}" ;;
+            --duration=*)        DURATION="${1#*=}" ;;
+            --width=*)           PLOT_WIDTH="${1#*=}" ;;
+            --height=*)          PLOT_HEIGHT="${1#*=}" ;;
             --)                  shift; positional+=("$@"); break ;;
             -*)
                 write_err "Unknown option: $1"
@@ -111,6 +173,10 @@ parse_args() {
     (( ${#positional[@]} >= 1 )) && ACTION="${positional[0]}"
     if (( ${#positional[@]} >= 2 )) && [[ -z "$NAME" ]]; then
         NAME="${positional[1]}"
+    fi
+    # For monitor, collect all extra positionals as additional names.
+    if (( ${#positional[@]} >= 3 )); then
+        EXTRA_NAMES=("${positional[@]:2}")
     fi
 
     [[ -z "$ACTION" ]] && ACTION="list"
@@ -444,6 +510,110 @@ export_processes() {
     write_ok "Exported $count entries to $OUT_FILE."
 }
 
+# --- Python chart helpers --------------------------------------------------
+
+get_python_exe() {
+    local cmd
+    for cmd in python3 python py; do
+        if command -v "$cmd" &>/dev/null; then
+            echo "$cmd"
+            return 0
+        fi
+    done
+    write_err "Python not found in PATH. Install Python 3."
+    return 1
+}
+
+get_proc_stats_script() {
+    if [[ -z "${my_notes_path-}" ]]; then
+        write_err "Environment variable 'my_notes_path' is not set."
+        return 1
+    fi
+    local script="${my_notes_path}/scripts/stats/proc_stats.py"
+    #local script="${my_notes_path}/scripts/stats/proc_stats_linux.py"
+    #local script="${my_notes_path}/scripts/stats/proc_stats_linux_v2.py"
+    if [[ ! -f "$script" ]]; then
+        write_err "Python script not found: $script"
+        return 1
+    fi
+    echo "$script"
+}
+
+invoke_proc_stats() {
+    local py_exe script
+    py_exe=$(get_python_exe)        || return 1
+    script=$(get_proc_stats_script) || return 1
+
+    write_info "Running: $py_exe $script $*"
+    "$py_exe" "$script" "$@"
+}
+
+invoke_stats() {
+    local py_args=(
+        --backend "$BACKEND"
+        --theme   "$THEME"
+        --width   "$PLOT_WIDTH"
+        --height  "$PLOT_HEIGHT"
+        "$CHART"
+        --metric  "$METRIC"
+        --top     "$TOP_N"
+    )
+    invoke_proc_stats "${py_args[@]}"
+}
+
+invoke_monitor() {
+    local py_args=(
+        --backend  "$BACKEND"
+        --theme    "$THEME"
+        --width    "$PLOT_WIDTH"
+        --height   "$PLOT_HEIGHT"
+        monitor
+        --metric   "$METRIC"
+        --interval "$INTERVAL"
+        --duration "$DURATION"
+    )
+
+    if (( ${#PID_ARGS[@]} > 0 )); then
+        py_args+=(--pids)
+        for pid in "${PID_ARGS[@]}"; do
+            py_args+=("$pid")
+        done
+    fi
+
+    local all_names=()
+    [[ -n "$NAME" ]] && all_names+=("$NAME")
+    (( ${#EXTRA_NAMES[@]} > 0 )) && all_names+=("${EXTRA_NAMES[@]}")
+
+    if (( ${#all_names[@]} > 0 )); then
+        py_args+=(--names)
+        for n in "${all_names[@]}"; do
+            py_args+=("$n")
+        done
+    fi
+
+    if (( ${#PID_ARGS[@]} == 0 )) && (( ${#all_names[@]} == 0 )); then
+        write_err "Provide process name(s) or -i <pid(s)> for monitor."
+        echo "  Example: proc.sh monitor chrome firefox"
+        echo "  Example: proc.sh monitor -i 1234 -i 5678"
+        return 1
+    fi
+
+    invoke_proc_stats "${py_args[@]}"
+}
+
+invoke_tree() {
+    local py_args=(
+        --backend "$BACKEND"
+        --theme   "$THEME"
+        --width   "$PLOT_WIDTH"
+        --height  "$PLOT_HEIGHT"
+        tree
+        --metric  "$METRIC"
+        --top     "$TOP_N"
+    )
+    invoke_proc_stats "${py_args[@]}"
+}
+
 # --- main dispatch ---------------------------------------------------------
 
 parse_args "$@"
@@ -485,6 +655,9 @@ case "${ACTION,,}" in
     top)    show_top ;;
     count)  count_processes ;;
     export) export_processes ;;
+    stats)   invoke_stats ;;
+    monitor) invoke_monitor ;;
+    tree)    invoke_tree ;;
     *)
         write_err "Unknown action: '$ACTION'"
         echo
