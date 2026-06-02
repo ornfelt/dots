@@ -1,6 +1,18 @@
 #!/usr/bin/env bash
 # proc.sh — Linux process management helper.
 # Lists, searches, inspects, kills, counts and exports processes.
+# Includes chart commands (stats, monitor, live, livetop, tree) via
+# an external Python script (proc_stats_linux.py).
+#
+# Actions:
+#   list, search, kill, info, top, count, export   — process management
+#   stats, monitor, live, livetop, tree             — charts (Python + backend)
+#
+# Chart flags:  -b backend, -t theme, -m metric, -C chart, -n top,
+#               --interval, --duration, --width, --height
+# Metrics:      cpu, memory, io, threads, fds
+# Backends:     plotext (default), termplotlib, matplotlib
+# Themes:       dark (gruvbox-dark, default), light (gruvbox-light)
 
 set -o pipefail
 
@@ -71,6 +83,7 @@ Chart commands (require Python 3 + a chart backend):
   proc.sh monitor <name1> [name2 ...] [-m cpu|memory|io|threads|fds]
   proc.sh monitor -i <pid1> [-i <pid2>] [-m cpu|memory|io|threads|fds]
   proc.sh tree  [-m cpu|memory|io|threads|fds] [-n N]
+  proc.sh live  [-n N] [-m cpu|memory|io|threads|fds] [--interval S] [--duration S]
   proc.sh livetop [-n N] [-m cpu|memory|io|threads|fds] [--interval S] [--duration S]
 
 Flags:
@@ -89,10 +102,10 @@ Flags:
 Chart flags:
   -b, --backend BE      plotext | termplotlib | matplotlib  (default: plotext)
   -t, --theme TH        dark | light                        (default: dark)
-  -m, --metric M        cpu|memory|io|threads|fds            (default: cpu)
-  -C, --chart CH        pie | top | tree  (for stats)        (default: pie)
-  --interval SEC        Sampling interval for monitor/livetop (default: 2)
-  --duration SEC        Total duration for monitor/livetop    (default: 0 = indefinite)
+  -m, --metric M        cpu|memory|io|threads|fds           (default: cpu)
+  -C, --chart CH        pie | top | tree  (for stats)       (default: pie)
+  --interval SEC        Sampling interval for monitor/live/livetop  (default: 2)
+  --duration SEC        Total duration for monitor/live/livetop     (default: 0 = indefinite)
   --width W             Plot width in characters              (default: 100)
   --height H            Plot height in characters             (default: 25)
 
@@ -111,11 +124,17 @@ Chart examples:
   proc.sh stats -b termplotlib                         # CPU pie via termplotlib
   proc.sh stats --width 120 --height 30                # Custom plot dimensions
   proc.sh monitor chrome firefox                       # Monitor chrome+firefox CPU over time
-  proc.sh monitor -i 1234 -i 5678 -m memory           # Monitor PIDs by memory
+  proc.sh monitor -i 1234 -i 5678 -m memory            # Monitor PIDs by memory
   proc.sh monitor python -m io --interval 1            # IO tracking every 1s
   proc.sh monitor node --duration 60 -m cpu            # CPU for 60 seconds then stop
   proc.sh monitor chrome -b termplotlib -t light       # Monitor with termplotlib, light theme
   proc.sh tree -m memory -n 20                         # Shortcut for stats -C tree
+  proc.sh live                                         # Live top-10 CPU bar chart
+  proc.sh live -m memory -n 20                         # Live top-20 by memory
+  proc.sh live -m io --interval 1                      # Live IO chart, 1s refresh
+  proc.sh live -m threads -n 15                        # Live thread count, top 15
+  proc.sh live --duration 60                           # Live CPU for 60s then stop
+  proc.sh live -b termplotlib -t light                 # Live chart with termplotlib, light
   proc.sh livetop                                      # Live CPU timeline of top 10
   proc.sh livetop -m memory -n 15 --interval 3         # Memory timeline, top 15
   proc.sh livetop -n 5 --duration 60                   # 60s CPU timeline of top 5
@@ -618,6 +637,21 @@ invoke_tree() {
     invoke_proc_stats "${py_args[@]}"
 }
 
+invoke_live() {
+    local py_args=(
+        --backend  "$BACKEND"
+        --theme    "$THEME"
+        --width    "$PLOT_WIDTH"
+        --height   "$PLOT_HEIGHT"
+        live
+        --metric   "$METRIC"
+        --top      "$TOP_N"
+        --interval "$INTERVAL"
+        --duration "$DURATION"
+    )
+    invoke_proc_stats "${py_args[@]}"
+}
+
 invoke_livetop() {
     local py_args=(
         --backend  "$BACKEND"
@@ -677,6 +711,7 @@ case "${ACTION,,}" in
     stats)    invoke_stats ;;
     monitor)  invoke_monitor ;;
     tree)     invoke_tree ;;
+    live)     invoke_live ;;
     livetop)  invoke_livetop ;;
     *)
         write_err "Unknown action: '$ACTION'"
