@@ -57,6 +57,7 @@ local commands = {
   { label = "PrintAiModels", cmd = "PrintAiModels" },
   { label = "PrintAiModelsByRequest openai/anthropic/googleai", cmd = "PrintAiModelsByRequest" },
   { label = "LocalIP", cmd = "LocalIP" },
+  { label = "ExpandPaths", cmd = "ExpandPaths" },
   -- Custom SQL LSP
   { label = "SqlMiniDump", cmd = "SqlMiniDump" },
   { label = "SqlMiniSwitch idx", cmd = "SqlMiniSwitch 2" },

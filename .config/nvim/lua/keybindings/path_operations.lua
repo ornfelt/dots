@@ -419,3 +419,62 @@ end
 -- bind gx: open_in_firefox (n)
 vim.api.nvim_set_keymap('n', 'gx', ':lua open_in_firefox()<CR>', { noremap = true, silent = true })
 
+local function resolve_env_path(path)
+  -- {var_name} style
+  path = path:gsub("{(.-)}", function(var)
+    if var == "conf_dir" then
+      return myconfig.get_conf_dir()
+    end
+    return os.getenv(var) or ("{" .. var .. "}")
+  end)
+
+  -- $env:var style (PowerShell)
+  path = path:gsub("%$[eE][nN][vV]:([%w_]+)", function(var)
+    return os.getenv(var) or ("$env:" .. var)
+  end)
+
+  -- $var style (Unix)
+  path = path:gsub("%$([%w_]+)", function(var)
+    return os.getenv(var) or ("$" .. var)
+  end)
+
+  return myconfig.normalize_path(path)
+end
+
+function ExpandPathsInBuffer()
+  local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
+  local result = {}
+
+  for _, line in ipairs(lines) do
+    local trimmed = line:match("^%s*(.-)%s*$")
+    table.insert(result, line)
+
+    if trimmed ~= "" and (trimmed:match("^[A-Za-z]:[/\\]") or trimmed:match("^/") or trimmed:match("^[{$]")) then
+      local resolved = resolve_env_path(trimmed)
+      local file = io.open(resolved, "r")
+
+      if file then
+        local content = file:read("*a"):gsub("\r", "")
+        -- Strip UTF-8 BOM
+        if content:byte(1) == 0xEF and content:byte(2) == 0xBB and content:byte(3) == 0xBF then
+          content = content:sub(4)
+        end
+        file:close()
+        local content_lines = vim.split(content, "\n", { plain = true })
+        if #content_lines > 0 and content_lines[#content_lines] == "" then
+          table.remove(content_lines)
+        end
+        for _, cl in ipairs(content_lines) do
+          table.insert(result, cl)
+        end
+        table.insert(result, "") -- blank separator
+      end
+    end
+  end
+
+  vim.api.nvim_buf_set_lines(0, 0, -1, false, result)
+end
+
+-- cmd ExpandPaths: ExpandPathsInBuffer
+vim.api.nvim_create_user_command('ExpandPaths', ExpandPathsInBuffer, {})
+

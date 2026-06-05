@@ -794,6 +794,16 @@ show_csharp_help() {
   write_code_line "dotnet test                      # Run tests (from solution dir)"
 
   printf "\n"
+  printf "%bSolution files:%b\n" "$YELLOW" "$RESET"
+  write_code_line "dotnet new sln                         # Create solution file"
+  write_code_line "dotnet sln list                        # List projects in solution"
+  write_code_line "dotnet sln add ./MyProject/MyProject.csproj"
+  write_code_line "dotnet sln remove ./MyProject/MyProject.csproj"
+  write_code_line "dotnet sln migrate                     # Migrate .sln to .slnx if exactly one .sln exists"
+  write_code_line "dotnet sln MySolution.sln migrate      # Migrate specific .sln to .slnx"
+  write_code_line "dotnet build MySolution.slnx           # Build using the new .slnx file"
+
+  printf "\n"
   printf "%bEF Core tools:%b\n" "$YELLOW" "$RESET"
   write_code_line "dotnet ef --version                     # Check installed dotnet-ef version"
   write_code_line "dotnet tool uninstall -g dotnet-ef      # Uninstall global dotnet-ef tool"

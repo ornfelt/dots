@@ -386,6 +386,8 @@ alias .dump_files="$HOME/.local/bin/my_scripts/2025/dump_files.sh"
 alias .diff_shader_git="python $HOME/Code2/General/gfx/wc_compiler_test/diff_shader_git.py"
 alias .copy_git_msg="$HOME/.local/bin/my_scripts/2025/copy_git_msg.sh"
 alias .gs="$HOME/.local/bin/my_scripts/2025/gs.sh"
+alias .clean="$HOME/.local/bin/my_scripts/2025/clean.sh"
+alias .proj_summarize="$HOME/.local/bin/my_scripts/2025/proj_summarize.sh"
 
 run_edex() {
   local f="$HOME/Downloads/eDEX-UI-Linux-x86_64.AppImage"
