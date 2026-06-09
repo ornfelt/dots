@@ -615,6 +615,9 @@ bindkey '^?' backward-delete-char
 # or add this to ~/.inputrc
 #"\C-h": backward-kill-word
 
+# unbind ctrl+l
+bindkey -r '^L'
+
 #LS_COLORS+=':ow=01;33'
 #LS_COLORS+=':ow=01;34'
 # Reset LS_COLORS to default
@@ -631,4 +634,3 @@ source $HOME/.bash_profile
 #fi
 
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
-

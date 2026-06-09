@@ -45,6 +45,11 @@ export CMAKE_POLICY_VERSION_MINIMUM=3.5
 #    syndaemon -i 1.0 -t -K -R -d
 #fi
 
+# unbind ctrl+l
+if [ -n "$BASH_VERSION" ]; then
+    bind -r '\C-l'
+fi
+
 if [ -f "$HOME/.cargo/env" ]; then
     . "$HOME/.cargo/env"
 fi

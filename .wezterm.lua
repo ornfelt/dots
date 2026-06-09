@@ -153,6 +153,22 @@ wezterm.on("save_session", function(window) session_manager.save_state(window) e
 wezterm.on("load_session", function(window) session_manager.load_state(window) end)
 wezterm.on("restore_session", function(window) session_manager.restore_state(window) end)
 
+-- Git status cache
+local git_cache = {} -- { [cwd] = { branch=..., color=..., time=... } }
+-- How often to update git status (seconds):
+local git_cache_ttl = 5
+--local git_cache_ttl = 10
+local git_cache_force_next = false
+
+local function invalidate_git_cache()
+  git_cache_force_next = true
+end
+-- Note: Tab switch doesn't have a dedicated event, but pane-focused fires
+-- when you activate a different tab too, so the above covers both cases.
+-- Note 2: It seems this didn't quite work, so I added the cache invalidate
+-- inside split_nav and tab keybinds instead...
+--wezterm.on("pane-focused", function(_pane) invalidate_git_cache() end)
+
 -- Seamless vim pane integration
 -- I have a somewhat customized version of these that 
 -- enable me to navigate panes via wezterm-tmux-nvim
@@ -175,7 +191,8 @@ local resize_keys = {
 }
 
 -- Log to a simple file
-local log_file = (os.getenv("HOME") or os.getenv("USERPROFILE")) .. "/wez_test.txt"
+local log_file = (os.getenv("HOME") or os.getenv("USERPROFILE")) .. "/wez_log.txt"
+---@diagnostic disable-next-line: unused-local, unused-function
 local function log_to_file(message)
   local file = io.open(log_file, "a") -- Open in append mode
   if file then
@@ -188,6 +205,27 @@ end
 
 local is_linux = (wezterm.target_triple ~= "x86_64-pc-windows-msvc" and wezterm.target_triple ~= "x86_64-pc-windows-gnu")
 
+local function get_prompt_username()
+  if is_linux then
+    return os.getenv("USER") or "jonas"
+  end
+
+  local username = os.getenv("USERNAME") or "jonas"
+  local ud = string.lower(os.getenv("USERDOMAIN") or "")
+
+  if ud:match("^s.*corp$") then
+    local middle = username:match("^[^-]+-([^-]+)-")
+    if middle then
+      username = middle
+    end
+  end
+
+  return username
+end
+
+local prompt_user = get_prompt_username()
+
+---@diagnostic disable-next-line: unused-local, unused-function
 local function is_vim(pane)
   local process_info = pane:get_foreground_process_info()
   local process_name = process_info and process_info.name
@@ -239,8 +277,10 @@ local function split_nav(key)
       end
 
       if tab:get_pane_direction(dir) and not is_zoomed then
+        invalidate_git_cache()
         win:perform_action({ ActivatePaneDirection = dir }, pane)
       elseif tab:get_pane_direction(opposite_dir) and not is_zoomed then
+        invalidate_git_cache()
         win:perform_action({ ActivatePaneDirection = opposite_dir }, pane)
       else
         -- Send the key sequence to process, e.g., vim
@@ -320,9 +360,16 @@ wezterm.on('trigger-vim-with-scrollback', function(window, pane)
   local text = pane:get_lines_as_text(pane:get_dimensions().scrollback_rows)
 
   --local name = os.tmpname()
-  local name = (os.getenv("HOME") or os.getenv("USERPROFILE")) .. "/wez_text_debug.txt"
-  -- vim $env:USERPROFILE/wez_text_debug.txt
-  local f = io.open(name, 'w+')
+  local name = (os.getenv("HOME") or os.getenv("USERPROFILE")) .. "/wez_text_dbg.txt"
+  -- see file:
+  --vim $env:USERPROFILE/wez_text_dbg.txt
+  -- or:
+  --vim $HOME/wez_text_dbg.txt
+
+  local f, err = io.open(name, "w+")
+  if not f then
+    error("Failed to open file '" .. tostring(name) .. "': " .. tostring(err))
+  end
   f:write(text)
   f:flush()
   f:close()
@@ -349,9 +396,10 @@ end)
 
 wezterm.on('trigger-vim-with-scrollback-copy-latest', function(window, pane)
   local text = pane:get_lines_as_text(pane:get_dimensions().scrollback_rows)
-  local prompt_pattern = "^PS%s+.+>"
-  --local prompt_pattern = "^PS%s+([^\n]+)>%s*(.*)"
-  --local prompt_pattern = "^PS%s+[^>]*\\[^>]*>"
+  -- Note: The %$ escapes the dollar sign since $ means end-of-string in Lua patterns.
+  local prompt_pattern = is_linux
+    and ("^" .. prompt_user .. ":.*%$ ")
+    or  ("^" .. prompt_user .. ":.*> ")
   local inputs_outputs = {}
 
   for line in text:gmatch("[^\r\n]+") do
@@ -362,14 +410,26 @@ wezterm.on('trigger-vim-with-scrollback-copy-latest', function(window, pane)
     end
   end
 
-  local scrollback_file = (os.getenv("HOME") or os.getenv("USERPROFILE")) .. "/wez_text_debug.txt"
-  local scrollback_f = io.open(scrollback_file, 'w+')
+  -- print raw full scrollback text to wez_text_dbg.txt
+  local scrollback_file = (os.getenv("HOME") or os.getenv("USERPROFILE")) .. "/wez_text_dbg.txt"
+  local scrollback_f, scrollback_err = io.open(scrollback_file, "w+")
+
+  if not scrollback_f then
+    error("Failed to open file '" .. tostring(scrollback_file) .. "': " .. tostring(scrollback_err))
+  end
+
   scrollback_f:write(text)
   scrollback_f:flush()
   scrollback_f:close()
 
+  -- print parsed input/output block to wez_text.txt
   local wez_text_file = (os.getenv("HOME") or os.getenv("USERPROFILE")) .. "/wez_text.txt"
-  local wez_text_f = io.open(wez_text_file, 'w+')
+  local wez_text_f, wez_text_err = io.open(wez_text_file, "w+")
+
+  if not wez_text_f then
+    error("Failed to open file '" .. tostring(wez_text_file) .. "': " .. tostring(wez_text_err))
+  end
+
   for _, entry in ipairs(inputs_outputs) do
     wez_text_f:write("Input:\n" .. entry.input .. "\n")
     if entry.output then
@@ -380,15 +440,73 @@ wezterm.on('trigger-vim-with-scrollback-copy-latest', function(window, pane)
   wez_text_f:flush()
   wez_text_f:close()
 
-  local latest_entry = inputs_outputs[#inputs_outputs - 1]
+  local latest_entry = nil
+  for i = #inputs_outputs, 1, -1 do
+    if inputs_outputs[i].output and inputs_outputs[i].output:match("%S") then
+      latest_entry = inputs_outputs[i]
+      break
+    end
+  end
+
   if latest_entry then
     local latest_input = latest_entry.input
     local latest_output = latest_entry.output or ""
     local clipboard_text = "Input:\n" .. latest_input .. "\n\nOutput:\n" .. latest_output
 
-    --window:copy_to_clipboard(clipboard_text, 'Clipboard')
-    window:copy_to_clipboard(clipboard_text, 'PrimarySelection')
-    --window:toast_notification("Copied to Clipboard", "Latest input and output have been copied.", nil, 5000)
+    if is_linux then
+      window:copy_to_clipboard(clipboard_text, 'Clipboard')
+    else
+      window:copy_to_clipboard(clipboard_text, 'PrimarySelection')
+    end
+    window:toast_notification("Copied to Clipboard", "Latest input and output have been copied.", nil, 5000)
+  else
+    window:toast_notification("No Input/Output Found", "No valid input/output detected in scrollback.", nil, 5000)
+  end
+end)
+
+wezterm.on('trigger-copy-latest-n', function(window, pane)
+  local N = 5 -- how many to copy
+  local text = pane:get_lines_as_text(pane:get_dimensions().scrollback_rows)
+  -- Note: The %$ escapes the dollar sign since $ means end-of-string in Lua patterns.
+  local prompt_pattern = is_linux
+    and ("^" .. prompt_user .. ":.*%$ ")
+    or  ("^" .. prompt_user .. ":.*> ")
+  local inputs_outputs = {}
+
+  for line in text:gmatch("[^\r\n]+") do
+    if line:match(prompt_pattern) then
+      table.insert(inputs_outputs, {input = line, output = nil})
+    elseif #inputs_outputs > 0 then
+      inputs_outputs[#inputs_outputs].output = (inputs_outputs[#inputs_outputs].output or "") .. line .. "\n"
+    end
+  end
+
+  -- Collect entries with non-empty output, walking backward
+  local entries = {}
+  for i = #inputs_outputs, 1, -1 do
+    if inputs_outputs[i].output and inputs_outputs[i].output:match("%S") then
+      table.insert(entries, 1, inputs_outputs[i]) -- insert at front to preserve order
+      if #entries >= N then break end
+    end
+  end
+
+  if #entries > 0 then
+    local parts = {}
+    for _, entry in ipairs(entries) do
+      table.insert(parts, "Input:\n" .. entry.input .. "\n\nOutput:\n" .. (entry.output or ""))
+    end
+    local clipboard_text = table.concat(parts, "\n---\n\n")
+    if is_linux then
+      window:copy_to_clipboard(clipboard_text, 'Clipboard')
+    else
+      window:copy_to_clipboard(clipboard_text, 'PrimarySelection')
+    end
+    window:toast_notification(
+      "Copied to Clipboard",
+      "Latest " .. #entries .. " input/output entr" .. (#entries == 1 and "y" or "ies") .. " copied.",
+      nil,
+      5000
+    )
   else
     window:toast_notification("No Input/Output Found", "No valid input/output detected in scrollback.", nil, 5000)
   end
@@ -761,6 +879,7 @@ config.keys = {
           wezterm.log_error("Failed to switch tmux window: " .. (stderr or "unknown error"))
         end
       else
+        invalidate_git_cache()
         window:perform_action(act.ActivateTabRelative(1), pane)
       end
     end),
@@ -786,6 +905,7 @@ config.keys = {
           wezterm.log_error("Failed to switch tmux window: " .. (stderr or "unknown error"))
         end
       else
+        invalidate_git_cache()
         window:perform_action(act.ActivateTabRelative(-1), pane)
         --window:perform_action(act.SendKey({ key = "Tab", mods = "CTRL|SHIFT" }), pane)
       end
@@ -804,12 +924,32 @@ config.keys = {
   -- wezterm cli can also be used, for example:
   -- wezterm cli get-text --start-line -10000 > wez_text.txt
   -- https://wezfurlong.org/wezterm/cli/cli/get-text.html
-  -- bind alt-ctrl-l: act.EmitEvent trigger-vim-with-scrollback-copy-latest
+  -- bind alt-ctrl-l: copy latest input/output (wezterm or tmux)
   {
     key = 'L',
     mods = 'ALT|CTRL',
     --action = act.EmitEvent 'trigger-vim-with-scrollback',
-    action = act.EmitEvent 'trigger-vim-with-scrollback-copy-latest',
+    --action = act.EmitEvent 'trigger-vim-with-scrollback-copy-latest',
+    action = wezterm.action_callback(function(win, pane)
+      if is_tmux(pane) then
+        win:perform_action({ SendKey = { key = 'l', mods = 'ALT|CTRL' } }, pane)
+      else
+        wezterm.emit('trigger-vim-with-scrollback-copy-latest', win, pane)
+      end
+    end),
+  },
+  -- bind alt-ctrl-k: copy latest N input/output (wezterm or tmux)
+  {
+    key = 'K',
+    mods = 'ALT|CTRL',
+    --action = act.EmitEvent 'trigger-copy-latest-n',
+    action = wezterm.action_callback(function(win, pane)
+      if is_tmux(pane) then
+        win:perform_action({ SendKey = { key = 'k', mods = 'ALT|CTRL' } }, pane)
+      else
+        wezterm.emit('trigger-copy-latest-n', win, pane)
+      end
+    end),
   },
 }
 
@@ -899,8 +1039,10 @@ local function open_github_repo(win, pane)
 
   -- Debug
   --log_to_file(cwd)
-  -- See file logs via:
-  -- vim $env:USERPROFILE/wez_test.txt
+  -- see file:
+  --vim $env:USERPROFILE/wez_log.txt
+  -- or:
+  --vim $HOME/wez_log.txt
 
   local is_windows = wezterm.target_triple:find("windows") ~= nil
   local git_remote_cmd, git_branch_cmd
@@ -1154,64 +1296,75 @@ wezterm.on("update-right-status", function(window, pane)
   local is_windows = wezterm.target_triple:find("windows") ~= nil
 
   local git_branch = nil
-  local branch_color = "green"
+  -- Base color: in sync
+  --local branch_color = "green"
+  --local branch_color = "#689d6a"
+  --local branch_color = "#8ec07c"
+  local branch_color = "#98971a"
 
   if cwd and #cwd > 0 then
-    local git_cmd
+    local cached = git_cache[cwd]
+    local now = os.time()
 
-    if is_windows then
-      git_cmd = string.format(
-        'cd "%s"; git status --porcelain -b 2>$null',
-        cwd:gsub("\\", "/")
-      )
+    if cached and not git_cache_force_next and (now - cached.time) < git_cache_ttl then
+      git_branch = cached.branch
+      branch_color = cached.color
+      -- For debugging (add c suffix if the branch comes from cached):
+      --git_branch = git_branch and (git_branch .. " c") or nil
     else
-      git_cmd = string.format(
-        "cd '%s' && git status --porcelain -b 2>/dev/null",
-        cwd
-      )
-    end
+      git_cache_force_next = false
+      local git_cmd
 
-    local success, stdout, stderr = wezterm.run_child_process({
-      is_windows and "powershell" or "bash",
-      is_windows and "-Command" or "-c",
-      git_cmd,
-    })
-
-    if success and stdout and stdout:match("%S") then
-      local first_line, rest = stdout:match("([^\n]*)\n?(.*)")
-      first_line = first_line or ""
-      rest = rest or ""
-
-      local branch = first_line:gsub("^## ", "")
-      branch = branch:gsub("%.%.%..*$", "") -- strip remote "...origin/main"
-      branch = branch:gsub(" .*$", "") -- strip " [ahead 1]" etc
-      git_branch = branch ~= "" and branch or nil
-
-      local has_changes = rest:match("%S") ~= nil
-
-      -- Base color: in sync
-      --branch_color = "green"
-      --branch_color = "#689d6a"
-      --branch_color = "#8ec07c"
-      branch_color = "#98971a"
-
-      -- Remote state overrides base color
-      if first_line:find("diverged") then
-        --branch_color = "magenta"
-        branch_color = "#b16286"
-      elseif first_line:find("behind") then
-        --branch_color = "red"
-        branch_color = "#cc241d"
-      elseif first_line:find("ahead") then
-        --branch_color = "cyan"
-      --branch_color = "#83a598"
-        branch_color = "#458588"
+      if is_windows then
+        git_cmd = string.format(
+          'cd "%s"; git status --porcelain -b 2>$null',
+          cwd:gsub("\\", "/")
+        )
+      else
+        git_cmd = string.format(
+          "cd '%s' && git status --porcelain -b 2>/dev/null",
+          cwd
+        )
       end
 
-      if has_changes then
-        --branch_color = "yellow"
-        branch_color = "#fabd2f"
+      local success, stdout, stderr = wezterm.run_child_process({
+        is_windows and "powershell" or "bash",
+        is_windows and "-Command" or "-c",
+        git_cmd,
+      })
+
+      if success and stdout and stdout:match("%S") then
+        local first_line, rest = stdout:match("([^\n]*)\n?(.*)")
+        first_line = first_line or ""
+        rest = rest or ""
+
+        local branch = first_line:gsub("^## ", "")
+        branch = branch:gsub("%.%.%..*$", "") -- strip remote "...origin/main"
+        branch = branch:gsub(" .*$", "") -- strip " [ahead 1]" etc
+        git_branch = branch ~= "" and branch or nil
+
+        local has_changes = rest:match("%S") ~= nil
+
+        -- Remote state overrides base color
+        if first_line:find("diverged") then
+          --branch_color = "magenta"
+          branch_color = "#b16286"
+        elseif first_line:find("behind") then
+          --branch_color = "red"
+          branch_color = "#cc241d"
+        elseif first_line:find("ahead") then
+          --branch_color = "cyan"
+        --branch_color = "#83a598"
+          branch_color = "#458588"
+        end
+
+        if has_changes then
+          --branch_color = "yellow"
+          branch_color = "#fabd2f"
+        end
       end
+
+      git_cache[cwd] = { branch = git_branch, color = branch_color, time = now }
     end
   end
 

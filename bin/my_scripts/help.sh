@@ -470,8 +470,16 @@ show_paths_help() {
     '~/.config/wezterm/wezterm-session-manager/wezterm_state_coding.json' \
     "$keyword"
 
-  show_path_entry 'wezterm debug log file' \
-    '~/wez_test.txt' \
+  show_path_entry 'wezterm lua log file' \
+    '~/wez_log.txt' \
+    "$keyword"
+  
+  show_path_entry 'wezterm parsed io file' \
+    '~/wez_text.txt' \
+    "$keyword"
+  
+  show_path_entry 'wezterm scrollback debug file' \
+    '~/wez_text_dbg.txt' \
     "$keyword"
 
   show_path_entry 'alacritty config path' \
