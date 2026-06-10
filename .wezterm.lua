@@ -204,6 +204,7 @@ local function log_to_file(message)
 end
 
 local is_linux = (wezterm.target_triple ~= "x86_64-pc-windows-msvc" and wezterm.target_triple ~= "x86_64-pc-windows-gnu")
+local TOAST_TIMEOUT_MS = is_linux and 3000 or 2000
 
 local function get_prompt_username()
   if is_linux then
@@ -458,9 +459,9 @@ wezterm.on('trigger-vim-with-scrollback-copy-latest', function(window, pane)
     else
       window:copy_to_clipboard(clipboard_text, 'PrimarySelection')
     end
-    window:toast_notification("Copied to Clipboard", "Latest input and output have been copied.", nil, 5000)
+    --window:toast_notification("Copied to Clipboard", "Latest input and output have been copied.", nil, TOAST_TIMEOUT_MS)
   else
-    window:toast_notification("No Input/Output Found", "No valid input/output detected in scrollback.", nil, 5000)
+    window:toast_notification("No Input/Output Found", "No valid input/output detected in scrollback.", nil, TOAST_TIMEOUT_MS)
   end
 end)
 
@@ -505,10 +506,10 @@ wezterm.on('trigger-copy-latest-n', function(window, pane)
       "Copied to Clipboard",
       "Latest " .. #entries .. " input/output entr" .. (#entries == 1 and "y" or "ies") .. " copied.",
       nil,
-      5000
+      TOAST_TIMEOUT_MS
     )
   else
-    window:toast_notification("No Input/Output Found", "No valid input/output detected in scrollback.", nil, 5000)
+    window:toast_notification("No Input/Output Found", "No valid input/output detected in scrollback.", nil, TOAST_TIMEOUT_MS)
   end
 end)
 
@@ -918,7 +919,7 @@ config.keys = {
   --  action = wezterm.action_callback(function(window, pane)
   --    local scrollback = pane:get_lines_as_text()
   --    window:copy_to_clipboard(scrollback)
-  --    window:toast_notification("WezTerm", "Copied all scrollback and output", nil, 3000)
+  --    window:toast_notification("WezTerm", "Copied all scrollback and output", nil, TOAST_TIMEOUT_MS)
   --  end),
   --},
   -- wezterm cli can also be used, for example:
@@ -969,13 +970,13 @@ local function split_to_directory_with_delay(win, pane)
   local userprofile = os.getenv("HOME") or os.getenv("USERPROFILE")
   local file_path = userprofile .. "/new_wez_dir.txt"
 
-  -- print("file_path:" .. file_path)
-  -- win:toast_notification("WezTerm Notification", "file_path: " .. file_path, nil, 4000)
+  --print("file_path:" .. file_path)
+  --win:toast_notification("WezTerm Notification", "file_path: " .. file_path, nil, TOAST_TIMEOUT_MS)
 
   local file = io.open(file_path, "r")
   if not file then
-    -- wezterm.log_info("File not found: " .. file_path)
-    win:toast_notification("WezTerm Notification", "File not found: " .. file_path, nil, 4000)
+    --wezterm.log_info("File not found: " .. file_path)
+    win:toast_notification("WezTerm Notification", "File not found: " .. file_path, nil, TOAST_TIMEOUT_MS)
     return
   end
 
@@ -987,8 +988,8 @@ local function split_to_directory_with_delay(win, pane)
   -- Might be in: %TEMP%\wezterm.log or /tmp/wezterm.log
   -- https://wezfurlong.org/wezterm/troubleshooting.html
   if directory and directory ~= "" then --and wezterm.path.exists(directory) then
-    -- wezterm.log_info("Splitting to directory: " .. directory)
-    -- win:toast_notification("WezTerm Notification", "Splitting to dir: " .. directory, nil, 4000)
+    --wezterm.log_info("Splitting to directory: " .. directory)
+    --win:toast_notification("WezTerm Notification", "Splitting to dir: " .. directory, nil, TOAST_TIMEOUT_MS)
 
     local command = {
       cwd = directory
@@ -1004,8 +1005,8 @@ local function split_to_directory_with_delay(win, pane)
       pane
     )
     --else
-    --    wezterm.log_info("Invalid directory path: " .. (directory or "nil"))
-    --    win:toast_notification("WezTerm Notification", "Invalid directory path: " .. (directory or "nil"), nil, 4000)
+    --  wezterm.log_info("Invalid directory path: " .. (directory or "nil"))
+    --  win:toast_notification("WezTerm Notification", "Invalid directory path: " .. (directory or "nil"), nil, TOAST_TIMEOUT_MS)
   end
 end
 
@@ -1021,7 +1022,7 @@ local function open_github_repo(win, pane)
   local cwd_uri = tostring(pane:get_current_working_dir())
   if not cwd_uri then
     --wezterm.log_error("Failed to determine current working directory.")
-    win:toast_notification("WezTerm Notification", "Failed to determine current working directory.", nil, 4000)
+    win:toast_notification("WezTerm Notification", "Failed to determine current working directory.", nil, TOAST_TIMEOUT_MS)
     return
   end
 
@@ -1094,7 +1095,7 @@ local function open_github_repo(win, pane)
 
   if not remote or not branch or remote == "" or branch == "" then
     --wezterm.log_error("Failed to determine Git repository or branch.")
-    win:toast_notification("WezTerm Notification", "Failed to determine Git repository or branch.", nil, 4000)
+    win:toast_notification("WezTerm Notification", "Failed to determine Git repository or branch.", nil, TOAST_TIMEOUT_MS)
     return
   end
 
@@ -1383,4 +1384,3 @@ end)
 
 -- Return config to wezterm
 return config
-

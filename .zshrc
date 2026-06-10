@@ -388,6 +388,7 @@ alias .copy_git_msg="$HOME/.local/bin/my_scripts/2025/copy_git_msg.sh"
 alias .gs="$HOME/.local/bin/my_scripts/2025/gs.sh"
 alias .clean="$HOME/.local/bin/my_scripts/2025/clean.sh"
 alias .proj_summarize="$HOME/.local/bin/my_scripts/2025/proj_summarize.sh"
+alias .mediainfo="$HOME/Documents/my_notes/scripts/files/mediainfo.sh"
 
 run_edex() {
   local f="$HOME/Downloads/eDEX-UI-Linux-x86_64.AppImage"
