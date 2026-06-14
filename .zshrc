@@ -388,7 +388,6 @@ alias .copy_git_msg="$HOME/.local/bin/my_scripts/2025/copy_git_msg.sh"
 alias .gs="$HOME/.local/bin/my_scripts/2025/gs.sh"
 alias .clean="$HOME/.local/bin/my_scripts/2025/clean.sh"
 alias .proj_summarize="$HOME/.local/bin/my_scripts/2025/proj_summarize.sh"
-alias .find_video_dirs="$HOME/Documents/my_notes/scripts/files/media_scripts/find_video_dirs.sh"
 alias .find_files="$HOME/Documents/my_notes/scripts/files/find_files.sh"
 alias .dir_sizes="$HOME/Documents/my_notes/scripts/files/dir_sizes.sh"
 
