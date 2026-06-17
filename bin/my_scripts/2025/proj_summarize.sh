@@ -150,4 +150,28 @@ if [[ $# -gt 0 ]]; then
 fi
 
 bash "$script_path" "$@"
-exit $?
+#exit $?
+# prompt to see if user wants to keep report before exiting...
+exit_code=$?
+
+# --- Prompt to keep/delete summary file --------------------------------------
+
+if [[ $exit_code -eq 0 ]]; then
+    report_file="${lang_dir}-proj-summary.txt"
+    report_path="$(pwd)/${report_file}"
+
+    if [[ -f "$report_path" ]]; then
+        #write_info "Summary file produced: $report_path"
+        read -rp "Keep this summary file? Type yes/y to keep: " answer
+        if [[ "${answer,,}" =~ ^(y|yes)$ ]]; then
+            write_ok "Keeping summary file: $report_path"
+        else
+            rm -f "$report_path"
+            write_warn "Deleted summary file: $report_path"
+        fi
+    else
+        write_warn "Expected summary file was not found: $report_path"
+    fi
+fi
+
+exit $exit_code
