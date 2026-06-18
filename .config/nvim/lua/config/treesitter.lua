@@ -453,224 +453,378 @@ vim.api.nvim_set_keymap("n", "vic", ":lua select_class_node(true)<CR>", { norema
 -- bind vac: select_class_node(false) (n)
 vim.api.nvim_set_keymap("n", "vac", ":lua select_class_node(false)<CR>", { noremap = true, silent = true })
 
+--local USE_SKELETON_MODULE = false
+local USE_SKELETON_MODULE = true
 -- copy current buffer but replace every function body with "..."
 -- cmd SkeletonCopy: skeleton copy with function bodies replaced
-vim.api.nvim_create_user_command("SkeletonCopy", function(opts)
-  local bufnr = vim.api.nvim_get_current_buf()
-  local ft   = vim.bo.filetype
-  local remove_comments = not opts.bang
+if USE_SKELETON_MODULE then
+  vim.api.nvim_create_user_command("SkeletonCopy", function(opts)
+    local bufnr = vim.api.nvim_get_current_buf()
+    local ft   = vim.bo.filetype
+    local remove_comments = not opts.bang
+    local arg = (opts.args or ""):lower()
+    local include_meta = arg == "json" or arg == "meta" or arg == "metadata"
 
-  -- filetype -> treesitter language name
-  local lang_map = {
-    c           = "c",
-    cpp         = "cpp",
-    h           = "c",
-    cs          = "c_sharp",
-    python      = "python",
-    go          = "go",
-    rust        = "rust",
-    lua         = "lua",
-    java        = "java",
-    js          = "javascript",
-    javascript  = "javascript",
-    jsx         = "javascript",
-    ts          = "typescript",
-    typescript  = "typescript",
-    tsx         = "tsx",
-  }
-  local ts_lang = lang_map[ft]
-  if not ts_lang then
+    local skel = require("skeleton")
+
+    local ts_lang = skel.lang_map[ft]
+    if not ts_lang then
+      vim.notify(
+        ":SkeletonCopy only supported on C/C++/C#/Python/Go/Rust/Lua/Java/JS/TS (got '" .. ft .. "')",
+        vim.log.levels.WARN
+      )
+      return
+    end
+
+    local lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
+    local fname = vim.api.nvim_buf_get_name(bufnr)
+
+    local ok, result = pcall(skel.skeletonize, lines, ts_lang, {
+      remove_comments = remove_comments,
+      include_meta = include_meta,
+      source_path = fname ~= "" and fname or nil,
+    })
+
+    if not ok then
+      vim.notify("SkeletonCopy failed: " .. tostring(result), vim.log.levels.ERROR)
+      return
+    end
+
+    local clipboard_text
+    if include_meta then
+      clipboard_text = skel.format_combined_text(result)
+    else
+      clipboard_text = table.concat(result.lines, "\n")
+    end
+
+    vim.fn.setreg("+", clipboard_text)
     vim.notify(
-      ":SkeletonCopy only supported on C/C++/C#/Python/Go/Rust/Lua/Java/JS/TS (got '" .. ft .. "')",
-      vim.log.levels.WARN
+      ("Buffer skeleton %s%scopied to clipboard"):format(
+        remove_comments and "(no comments) " or "",
+        include_meta and "(with JSON metadata) " or ""
+      ),
+      vim.log.levels.INFO
     )
-    return
-  end
+  end, {
+    bang = true,
+    nargs = "?",
+    desc = "Copy buffer skeleton (replace bodies with '...'); comments are removed by default; use ! to keep comments; pass 'json', 'meta', or 'metadata' for metadata",
+  })
+else
+  vim.api.nvim_create_user_command("SkeletonCopy", function(opts)
+    local bufnr = vim.api.nvim_get_current_buf()
+    local ft   = vim.bo.filetype
+    local remove_comments = not opts.bang
+    local arg = (opts.args or ""):lower()
+    local include_json = arg == "json" or arg == "meta" or arg == "metadata"
 
-  -- per-language queries to capture function/method nodes
-  local queries = {
-    c         = [[ (function_definition) @func ]],
-    cpp       = [[ (function_definition) @func ]],
-    h         = [[ (function_definition) @func ]],
-    c_sharp   = [[
-      (method_declaration)                @func
-      (constructor_declaration)           @func
-      (destructor_declaration)            @func
-      (operator_declaration)              @func
-      (conversion_operator_declaration)   @func
-    ]],
-    python    = [[ (function_definition) @func ]],
-    go = [[
-      (method_declaration)   @func
-      (function_declaration) @func
-    ]],
-    rust      = [[ (function_item) @func ]],
-    lua       = [[ 
-      (function_declaration) @func 
-    ]],
-    java = [[
-      (method_declaration)      @func
-      (constructor_declaration) @func
-    ]],
-    javascript = [[
-      (function_declaration) @func
-      (method_definition)    @func
-      (arrow_function)       @func
-    ]],
-    typescript = [[
-      (function_declaration) @func
-      (method_definition)    @func
-      (arrow_function)       @func
-    ]],
-    tsx       = [[
-      (function_declaration) @func
-      (method_definition)    @func
-      (arrow_function)       @func
-    ]],
-  }
-  local qstr = queries[ts_lang]
-  if not qstr then
-    vim.notify("No query defined for TS language: " .. ts_lang, vim.log.levels.ERROR)
-    return
-  end
+    -- filetype -> treesitter language name
+    local lang_map = {
+      c           = "c",
+      cpp         = "cpp",
+      h           = "c",
+      cs          = "c_sharp",
+      python      = "python",
+      go          = "go",
+      rust        = "rust",
+      lua         = "lua",
+      java        = "java",
+      js          = "javascript",
+      javascript  = "javascript",
+      jsx         = "javascript",
+      ts          = "typescript",
+      typescript  = "typescript",
+      tsx         = "tsx",
+    }
+    local ts_lang = lang_map[ft]
+    if not ts_lang then
+      vim.notify(
+        ":SkeletonCopy only supported on C/C++/C#/Python/Go/Rust/Lua/Java/JS/TS (got '" .. ft .. "')",
+        vim.log.levels.WARN
+      )
+      return
+    end
 
-  -- grab all original lines
-  local orig = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
+    -- per-language queries to capture function/method nodes
+    local queries = {
+      c         = [[ (function_definition) @func ]],
+      cpp       = [[ (function_definition) @func ]],
+      h         = [[ (function_definition) @func ]],
+      c_sharp   = [[
+        (method_declaration)                @func
+        (constructor_declaration)           @func
+        (destructor_declaration)            @func
+        (operator_declaration)              @func
+        (conversion_operator_declaration)   @func
+      ]],
+      python    = [[ (function_definition) @func ]],
+      go = [[
+        (method_declaration)   @func
+        (function_declaration) @func
+      ]],
+      rust      = [[ (function_item) @func ]],
+      lua       = [[ 
+        (function_declaration) @func 
+      ]],
+      java = [[
+        (method_declaration)      @func
+        (constructor_declaration) @func
+      ]],
+      javascript = [[
+        (function_declaration) @func
+        (method_definition)    @func
+        (arrow_function)       @func
+      ]],
+      typescript = [[
+        (function_declaration) @func
+        (method_definition)    @func
+        (arrow_function)       @func
+      ]],
+      tsx       = [[
+        (function_declaration) @func
+        (method_definition)    @func
+        (arrow_function)       @func
+      ]],
+    }
+    local qstr = queries[ts_lang]
+    if not qstr then
+      vim.notify("No query defined for TS language: " .. ts_lang, vim.log.levels.ERROR)
+      return
+    end
 
-  -- treesitter setup
-  local ok, parser = pcall(vim.treesitter.get_parser, bufnr, ts_lang)
-  if not ok or not parser then
-    vim.notify("Could not create TS parser for “" .. ts_lang .. "”", vim.log.levels.ERROR)
-    return
-  end
-  local tree = parser:parse()[1]
-  local root = tree:root()
-  local tsq = vim.treesitter.query or vim.treesitter
-  local parse = tsq.parse_query or tsq.parse
-  if not parse then
-    vim.notify("Treesitter query parser not available", vim.log.levels.ERROR)
-    return
-  end
-  local query = parse(ts_lang, qstr)
+    -- grab all original lines
+    local orig = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
 
-  -- collect all function-body ranges
-  local ranges = {}
-  for id, node in query:iter_captures(root, bufnr, 0, -1) do
-    if query.captures[id] == "func" then
-      local body = node:field("body")[1]
-      if body then
-        -- body:range() returns (start_row, start_col, end_row, end_col), ALL zero-based
-        local sr, sc, er, ec = body:range()
-        table.insert(ranges, { sr = sr, sc = sc, er = er, ec = ec })
+    -- treesitter setup
+    local ok, parser = pcall(vim.treesitter.get_parser, bufnr, ts_lang)
+    if not ok or not parser then
+      vim.notify("Could not create TS parser for “" .. ts_lang .. "”", vim.log.levels.ERROR)
+      return
+    end
+    local tree = parser:parse()[1]
+    local root = tree:root()
+    local tsq = vim.treesitter.query or vim.treesitter
+    local parse = tsq.parse_query or tsq.parse
+    if not parse then
+      vim.notify("Treesitter query parser not available", vim.log.levels.ERROR)
+      return
+    end
+    local query = parse(ts_lang, qstr)
+
+    -- collect all function-body ranges
+    local ranges = {}
+    for id, node in query:iter_captures(root, bufnr, 0, -1) do
+      if query.captures[id] == "func" then
+        local body = node:field("body")[1]
+        if body then
+          -- body:range() returns (start_row, start_col, end_row, end_col), ALL zero-based
+          local sr, sc, er, ec = body:range()
+          table.insert(ranges, { sr = sr, sc = sc, er = er, ec = ec })
+        end
       end
     end
-  end
 
-  -- sort descending by start_row so that earlier edits don't shift later ranges
-  table.sort(ranges, function(a, b)
-    if a.sr ~= b.sr then
-      return a.sr > b.sr
-    else
-      -- if two bodies start on same line, put the one that ends later first
-      return a.ec > b.ec
+    -- sort descending by start_row so that earlier edits don't shift later ranges
+    table.sort(ranges, function(a, b)
+      if a.sr ~= b.sr then
+        return a.sr > b.sr
+      else
+        -- if two bodies start on same line, put the one that ends later first
+        return a.ec > b.ec
+      end
+    end)
+
+    -- Mark nested ranges: a range fully inside another will be consumed by
+    -- the outer replacement; processing it first would corrupt the outer
+    -- range's end index because lines get removed from `out`.
+    local nested = {}
+    for i, a in ipairs(ranges) do
+      for j, b in ipairs(ranges) do
+        if i ~= j and b.sr <= a.sr and b.er >= a.er
+          and not (b.sr == a.sr and b.er == a.er) then
+          nested[i] = true
+          break
+        end
+      end
     end
-  end)
 
-  -- Apply skeleton replacement
-  local out = vim.deepcopy(orig)
+    -- Apply skeleton replacement
+    local out = vim.deepcopy(orig)
+    local meta_entries = {}
+    local meta_idx = 0
 
-  for _, r in ipairs(ranges) do
-    local sr, sc, er, ec = r.sr, r.sc, r.er, r.ec
-    local first_line = out[sr + 1] -- Lua list is 1-based, sr is 0-based
-    if sr == er then
-      -- single-line function body (everything from col sc to ec on the same line)
-      -- prefix = chars before the opening brace/indent
-      local prefix = first_line:sub(1, sc)
-      -- suffix = chars after the closing brace on that same line
-      -- (ec is zero-based, so ec+1 is the last char in the body; the next char is ec+2 in 1-based)
-      local suffix = first_line:sub(ec + 2)
-      out[sr + 1] = prefix .. "..." .. suffix
+    for ri, r in ipairs(ranges) do
+      meta_idx = meta_idx + 1
 
-    else
-      -- multi-line function body
-      -- First line: keep up to sc, then append "..."
-      local prefix = first_line:sub(1, sc)
-
-      -- Last line: keep from ec+1 onward
-      local last_line = out[er + 1]
-      if not last_line then
+      if nested[ri] then
+        -- nested body — will be eaten by the outer replacement; just record metadata
+        table.insert(meta_entries, { original_start = r.sr + 1, original_end = r.er + 1, marker = nil })
         goto continue
       end
-      local suffix = last_line:sub(ec + 2)
 
-      -- Remove all the “middle” lines (and the original last line),
-      --    i.e. lines (sr+2) .. (er+1) in 1-based indexing. We do this in reverse:
-      for i = (er + 1), (sr + 2), -1 do
-        table.remove(out, i)
+      local sr, sc, er, ec = r.sr, r.sc, r.er, r.ec
+      local first_line = out[sr + 1] -- Lua list is 1-based, sr is 0-based
+      -- When JSON metadata is requested, embed a unique marker so we can
+      -- reliably map each replacement to its skeleton output line later.
+      local placeholder = include_json and ("...##SKEL:" .. meta_idx .. "##") or "..."
+      if sr == er then
+        -- single-line function body (everything from col sc to ec on the same line)
+        -- prefix = chars before the opening brace/indent
+        local prefix = first_line:sub(1, sc)
+        -- suffix = chars after the closing brace on that same line
+        -- (ec is zero-based, so ec+1 is the last char in the body; the next char is ec+2 in 1-based)
+        local suffix = first_line:sub(ec + 2)
+        out[sr + 1] = prefix .. placeholder .. suffix
+        table.insert(meta_entries, { original_start = sr + 1, original_end = er + 1, marker = meta_idx })
+
+      else
+        -- multi-line function body
+        -- First line: keep up to sc, then append "..."
+        local prefix = first_line:sub(1, sc)
+
+        -- Last line: keep from ec+1 onward
+        local last_line = out[er + 1]
+        if not last_line then
+          goto continue
+        end
+        local suffix = last_line:sub(ec + 2)
+
+        -- Remove all the "middle" lines (and the original last line),
+        --    i.e. lines (sr+2) .. (er+1) in 1-based indexing. We do this in reverse:
+        for i = (er + 1), (sr + 2), -1 do
+          table.remove(out, i)
+        end
+
+        out[sr + 1] = prefix .. placeholder
+
+        -- If there's a non-empty suffix on the last line, insert it right after
+        if suffix ~= "" then
+          table.insert(out, sr + 2, suffix)
+        end
+
+        table.insert(meta_entries, { original_start = sr + 1, original_end = er + 1, marker = meta_idx })
       end
-
-      out[sr + 1] = prefix .. "..."
-
-      -- If there's a non-empty suffix on the last line, insert it right after
-      if suffix ~= "" then
-        table.insert(out, sr + 2, suffix)
-      end
+      ::continue::
     end
-    ::continue::
-  end
 
-  if remove_comments then
-    local filtered = {}
-    for _, line in ipairs(out) do
-      local trimmed = line:match("^%s*(.-)%s*$")
-      local skip = false
+    if remove_comments then
+      local filtered = {}
+      for _, line in ipairs(out) do
+        local trimmed = line:match("^%s*(.-)%s*$")
+        local skip = false
 
-      -- language-specific single‐line comment prefixes
-      local single = {
-        c           = "//",
-        cpp         = "//",
-        h           = "//",
-        c_sharp     = "//",
-        java        = "//",
-        go          = "//",
-        rust        = "//",
-        javascript  = "//",
-        typescript  = "//",
-        tsx         = "//",
-        python      = "#",
-        lua         = "--",
-      }
+        -- language-specific single‐line comment prefixes
+        local single = {
+          c           = "//",
+          cpp         = "//",
+          h           = "//",
+          c_sharp     = "//",
+          java        = "//",
+          go          = "//",
+          rust        = "//",
+          javascript  = "//",
+          typescript  = "//",
+          tsx         = "//",
+          python      = "#",
+          lua         = "--",
+        }
 
-      -- skip if only a single-line comment
-      local prefix = single[ts_lang]
-      if prefix and trimmed:match("^" .. vim.pesc(prefix)) then
-        skip = true
-      end
-
-      -- also skip block‐comment lines for JS/TS
-      if not skip and (ts_lang == "javascript" or ts_lang == "typescript" or ts_lang == "tsx") then
-        if trimmed:match("^/%*") or trimmed:match("^%*") or trimmed:match("%*/$") then
+        -- skip if only a single-line comment
+        local prefix = single[ts_lang]
+        if prefix and trimmed:match("^" .. vim.pesc(prefix)) then
           skip = true
+        end
+
+        -- also skip block‐comment lines for JS/TS
+        if not skip and (ts_lang == "javascript" or ts_lang == "typescript" or ts_lang == "tsx") then
+          if trimmed:match("^/%*") or trimmed:match("^%*") or trimmed:match("%*/$") then
+            skip = true
+          end
+        end
+
+        if not skip then
+          table.insert(filtered, line)
+        end
+      end
+      out = filtered
+    end
+
+    -- build clipboard content, optionally with JSON metadata
+    local clipboard_text
+    if include_json then
+      -- resolve unique markers to skeleton line numbers, then strip them
+      local marker_to_line = {}
+      for i, line in ipairs(out) do
+        local id = line:match("%.%.%.##SKEL:(%d+)##")
+        if id then
+          marker_to_line[tonumber(id)] = i
+          out[i] = line:gsub("##SKEL:%d+##", "")
         end
       end
 
-      if not skip then
-        table.insert(filtered, line)
-      end
-    end
-    out = filtered
-  end
+      -- sort metadata ascending by original line number
+      table.sort(meta_entries, function(a, b) return a.original_start < b.original_start end)
 
-  -- yank to system clipboard
-  vim.fn.setreg("+", table.concat(out, "\n"))
-  vim.notify(
-    ("Buffer skeleton %scopied to clipboard"):format(remove_comments and "(no comments) " or ""),
-    vim.log.levels.INFO
-  )
-end, {
-  bang = true,
-  desc = "Copy buffer skeleton (replace bodies with '...'); use ! to drop comment‐only lines",
-})
+      -- assign resolved skeleton line numbers (nil for nested/eaten replacements)
+      for _, entry in ipairs(meta_entries) do
+        if entry.marker then
+          entry.skeleton_line = marker_to_line[entry.marker]
+        end
+        entry.marker = nil
+      end
+
+      -- build formatted JSON
+      local fname = vim.api.nvim_buf_get_name(bufnr)
+      local json_lines = {
+        "{",
+        ('  "file": %s,'):format(vim.fn.json_encode(fname ~= "" and fname or vim.NIL)),
+        ('  "language": "%s",'):format(ts_lang),
+        ('  "original_line_count": %d,'):format(#orig),
+        ('  "skeleton_line_count": %d,'):format(#out),
+        ('  "comments_removed": %s,'):format(remove_comments and "true" or "false"),
+        "  \"replacements\": [",
+      }
+      for i, entry in ipairs(meta_entries) do
+        local comma = i < #meta_entries and "," or ""
+        table.insert(json_lines,
+          ("    {\"original_start\": %d, \"original_end\": %d, \"skeleton_line\": %s}%s"):format(
+            entry.original_start, entry.original_end,
+            entry.skeleton_line and tostring(entry.skeleton_line) or "null",
+            comma
+          ))
+      end
+      table.insert(json_lines, "  ]")
+      table.insert(json_lines, "}")
+
+      local combined = {}
+      table.insert(combined, "--- SKELETON METADATA ---")
+      for _, jl in ipairs(json_lines) do
+        table.insert(combined, jl)
+      end
+      table.insert(combined, "--- SKELETON ---")
+      for _, line in ipairs(out) do
+        table.insert(combined, line)
+      end
+      clipboard_text = table.concat(combined, "\n")
+    else
+      clipboard_text = table.concat(out, "\n")
+    end
+
+    -- yank to system clipboard
+    vim.fn.setreg("+", clipboard_text)
+    vim.notify(
+      ("Buffer skeleton %s%scopied to clipboard"):format(
+        remove_comments and "(no comments) " or "",
+        include_json and "(with JSON metadata) " or ""
+      ),
+      vim.log.levels.INFO
+    )
+  end, {
+    bang = true,
+    nargs = "?",
+    desc = "Copy buffer skeleton (replace bodies with '...'); comments are removed by default; use ! to keep comments; pass 'json', 'meta', or 'metadata' for metadata",
+  })
+end
 
 -- cmd FindCustomTypes: find all custom type declarations and their usages
 vim.api.nvim_create_user_command("FindCustomTypes", function(opts)
