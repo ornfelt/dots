@@ -565,6 +565,7 @@ else
       rust      = [[ (function_item) @func ]],
       lua       = [[ 
         (function_declaration) @func 
+        (function_definition)  @func
       ]],
       java = [[
         (method_declaration)      @func
@@ -737,7 +738,7 @@ else
 
         -- also skip block‐comment lines for JS/TS
         if not skip and (ts_lang == "javascript" or ts_lang == "typescript" or ts_lang == "tsx") then
-          if trimmed:match("^/%*") or trimmed:match("^%*") or trimmed:match("%*/$") then
+          if trimmed:match("^/%*") or trimmed:match("^%*") then
             skip = true
           end
         end

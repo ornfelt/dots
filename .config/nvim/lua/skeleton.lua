@@ -59,6 +59,7 @@ M.queries = {
   rust      = [[ (function_item) @func ]],
   lua       = [[
     (function_declaration) @func
+    (function_definition)  @func
   ]],
   java = [[
     (method_declaration)      @func
@@ -191,7 +192,7 @@ local function remove_comment_lines(lines, ts_lang)
     end
 
     if not skip and has_block then
-      if trimmed:match("^/%*") or trimmed:match("^%*") or trimmed:match("%*/$") then
+      if trimmed:match("^/%*") or trimmed:match("^%*") then
         skip = true
       end
     end
