@@ -517,6 +517,8 @@ else
     local remove_comments = not opts.bang
     local arg = (opts.args or ""):lower()
     local include_json = arg == "json" or arg == "meta" or arg == "metadata"
+    --local skip_short_methods = false
+    local skip_short_methods = true -- skip bodies ≤3 lines
 
     -- filetype -> treesitter language name
     local lang_map = {
@@ -623,6 +625,17 @@ else
           table.insert(ranges, { sr = sr, sc = sc, er = er, ec = ec })
         end
       end
+    end
+
+    -- Optionally skip short methods (≤3 lines)
+    if skip_short_methods then
+      local kept = {}
+      for _, r in ipairs(ranges) do
+        if (r.er - r.sr + 1) > 3 then
+          table.insert(kept, r)
+        end
+      end
+      ranges = kept
     end
 
     -- sort descending by start_row so that earlier edits don't shift later ranges

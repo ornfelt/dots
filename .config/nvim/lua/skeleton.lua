@@ -215,6 +215,8 @@ function M.skeletonize(lines, ts_lang, opts)
   local do_remove_comments = opts.remove_comments ~= false
   local include_meta = opts.include_meta or false
   local source_path = opts.source_path or "[buffer]"
+  --local skip_short = opts.skip_short_methods ~= false  -- default true: skip bodies ≤3 lines
+  local skip_short = opts.skip_short_methods or false
 
   local qstr = M.queries[ts_lang]
   if not qstr then
@@ -261,6 +263,17 @@ function M.skeletonize(lines, ts_lang, opts)
   end
 
   vim.api.nvim_buf_delete(bufnr, { force = true })
+
+  -- Optionally skip short methods (≤3 lines)
+  if skip_short then
+    local kept = {}
+    for _, r in ipairs(all_ranges) do
+      if (r.er - r.sr + 1) > 3 then
+        table.insert(kept, r)
+      end
+    end
+    all_ranges = kept
+  end
 
   -- Separate outer vs nested ranges
   local outer_ranges, nested_ranges = separate_ranges(all_ranges)
