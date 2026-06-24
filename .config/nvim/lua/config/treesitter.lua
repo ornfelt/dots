@@ -453,8 +453,9 @@ vim.api.nvim_set_keymap("n", "vic", ":lua select_class_node(true)<CR>", { norema
 -- bind vac: select_class_node(false) (n)
 vim.api.nvim_set_keymap("n", "vac", ":lua select_class_node(false)<CR>", { noremap = true, silent = true })
 
---local USE_SKELETON_MODULE = false
-local USE_SKELETON_MODULE = true
+local USE_SKELETON_MODULE = false
+--local USE_SKELETON_MODULE = true
+-- Note: skeleton logic via module defaults to skip_short_methods false.
 -- copy current buffer but replace every function body with "..."
 -- cmd SkeletonCopy: skeleton copy with function bodies replaced
 if USE_SKELETON_MODULE then

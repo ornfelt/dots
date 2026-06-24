@@ -215,7 +215,7 @@ function M.skeletonize(lines, ts_lang, opts)
   local do_remove_comments = opts.remove_comments ~= false
   local include_meta = opts.include_meta or false
   local source_path = opts.source_path or "[buffer]"
-  --local skip_short = opts.skip_short_methods ~= false  -- default true: skip bodies ≤3 lines
+  --local skip_short = opts.skip_short_methods ~= false -- default true: skip bodies ≤3 lines
   local skip_short = opts.skip_short_methods or false
 
   local qstr = M.queries[ts_lang]
