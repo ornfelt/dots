@@ -512,6 +512,8 @@ if USE_SKELETON_MODULE then
     desc = "Copy buffer skeleton (replace bodies with '...'); comments are removed by default; use ! to keep comments; pass 'json', 'meta', or 'metadata' for metadata",
   })
 else
+  local myconfig = require("myconfig")
+
   vim.api.nvim_create_user_command("SkeletonCopy", function(opts)
     local bufnr = vim.api.nvim_get_current_buf()
     local ft   = vim.bo.filetype
@@ -790,6 +792,14 @@ else
 
       -- build formatted JSON
       local fname = vim.api.nvim_buf_get_name(bufnr)
+      --if fname ~= "" then
+      --  fname = myconfig.normalize_path(fname)
+      --else
+      --  fname = nil
+      --end
+      -- simplified:
+      fname = fname ~= "" and myconfig.normalize_path(fname) or nil
+
       local json_lines = {
         "{",
         ('  "file": %s,'):format(vim.fn.json_encode(fname ~= "" and fname or vim.NIL)),
