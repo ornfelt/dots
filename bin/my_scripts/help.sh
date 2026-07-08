@@ -177,6 +177,13 @@ show_scripts_help() {
   write_command_with_description ".vmangos"    "cd into vmangos dir"
   write_command_with_description ".mangoszero" "cd into mangoszero dir"
   write_command_with_description ".mwd"        "my_wow_docs: cd_and_print"
+  write_command_with_description ".gfx"        "cd into gfx dir"
+  write_command_with_description ".geo"        "cd into geo-quiz and print usage"
+  write_command_with_description ".map"        "cd into maps_data and print usage"
+  write_command_with_description ".trans"      "cd into transaction-dashboard and print usage"
+  write_command_with_description ".mov"        "cd into mov and print usage"
+  write_command_with_description ".mov_py"     "cd into mov_py and print usage"
+  write_command_with_description ".book"       "cd into bookshelf and print usage"
 
   printf "\n"
   printf "%bRun / launcher helpers:%b\n" "$DARKGRAY" "$RESET"
@@ -243,6 +250,7 @@ show_scripts_help() {
   write_command_with_description ".dir_sizes"   "show directory/file sizes"
   write_command_with_description ".search_env"  "search environment variables"
   write_command_with_description ".gs"          "git search helper script"
+  write_command_with_description ".gb"          "helper script for git branches"
 
   printf "\n"
   printf "%bBuild / tools / maintenance:%b\n" "$DARKGRAY" "$RESET"
@@ -255,6 +263,8 @@ show_scripts_help() {
   write_command_with_description ".proj_summarize"  "summarize a project"
   write_command_with_description ".build"           "helper script for building"
   write_command_with_description ".build_py"        "helper script for building"
+  write_command_with_description ".go_flags"        "helper script for Go build tags / flags"
+  write_command_with_description ".rs_flags"        "helper script for Rust feature flags"
   write_command_with_description ".git_push"        "helper script for git push"
   write_command_with_description ".git_pull"        "helper script for git pull"
   write_command_with_description ".git_ignore"      "helper script for git ignore"
@@ -918,16 +928,34 @@ show_rust_help() {
   write_code_line "cargo run -- --use-dt=false         # OFF"
 
   printf "\n"
-  write_code_line 'export RUSTFLAGS="-Awarnings"         # Allow/suppress all Rust compiler warnings'
+  printf "%bFeature flags:%b\n" "$YELLOW" "$RESET"
+  write_code_line 'cargo build --features use_async                        # Build with one feature'
+  write_code_line 'cargo run --features use_async                          # Run with one feature'
+  write_code_line 'cargo build --features "use_async,with_imgui"           # Build with multiple features'
+  write_code_line 'cargo run --features "use_async,with_imgui"             # Run with multiple features'
+  write_code_line 'cargo build --all-features                              # Build with all features'
+  write_code_line 'cargo build --no-default-features                       # Build without default features'
+  write_code_line 'cargo build --no-default-features --features use_async  # Specific features only'
+
+  printf "\n"
+  printf "%bCARGO_FEATURES env var (for rust-analyzer / neovim):%b\n" "$YELLOW" "$RESET"
+  write_code_line 'export CARGO_FEATURES="use_async,with_imgui"            # Set features for session'
+  write_code_line 'echo $CARGO_FEATURES                                    # Check current value'
+  write_code_line 'unset CARGO_FEATURES                                    # Unset / remove'
+  write_code_line 'cargo build --features $CARGO_FEATURES                  # Use inline with cargo build'
+  write_code_line 'cargo run --features $CARGO_FEATURES                    # Use inline with cargo run'
+
+  printf "\n"
+  write_code_line 'export RUSTFLAGS="-Awarnings"       # Allow/suppress all Rust compiler warnings'
 
   printf "\n"
   printf "%bAdd / remove packages (crates):%b\n" "$YELLOW" "$RESET"
-  write_code_line "cargo add serde                                 # Add latest"
-  write_code_line "cargo add serde@1.0.197                         # Add specific version"
-  write_code_line "cargo add serde --features derive               # Add with features"
-  write_code_line "cargo add tokio --features full                 # Example: tokio (latest, all features)"
-  write_code_line "cargo add anyhow@1.0.86                         # Example: anyhow (pinned)"
-  write_code_line "cargo remove serde                              # Remove a crate"
+  write_code_line "cargo add serde                     # Add latest"
+  write_code_line "cargo add serde@1.0.197             # Add specific version"
+  write_code_line "cargo add serde --features derive   # Add with features"
+  write_code_line "cargo add tokio --features full     # Example: tokio (latest, all features)"
+  write_code_line "cargo add anyhow@1.0.86             # Example: anyhow (pinned)"
+  write_code_line "cargo remove serde                  # Remove a crate"
 
   printf "\n"
   printf "%bClean project / generated files:%b\n" "$YELLOW" "$RESET"
@@ -1037,6 +1065,20 @@ show_go_help() {
   write_code_line "go run main.go                      # Run directly"
   write_code_line "go build ./...                      # Build all packages"
   write_code_line "go test ./...                       # Run tests"
+
+  printf "\n"
+  printf "%bBuild tags / feature flags:%b\n" "$YELLOW" "$RESET"
+  write_code_line "go build -tags=with_debug_rendering ./...                   # Build with one tag"
+  write_code_line "go run -tags=with_debug_rendering .                         # Run with one tag"
+  write_code_line "go build -tags=with_debug_rendering,with_performance ./...  # Build with multiple tags"
+  write_code_line "go run -tags=with_debug_rendering,with_performance .        # Run with multiple tags"
+
+  printf "\n"
+  printf "%bPersistent GOFLAGS:%b\n" "$YELLOW" "$RESET"
+  write_code_line 'go env -w GOFLAGS="-tags=with_debug_rendering"                   # Always use one tag'
+  write_code_line 'go env -w GOFLAGS="-tags=with_debug_rendering,with_performance"  # Always use multiple tags'
+  write_code_line "go env GOFLAGS                                                   # Check current GOFLAGS"
+  write_code_line "go env -u GOFLAGS                                                # Remove / unset GOFLAGS"
 
   printf "\n"
   printf "%bWith output redirected to test.txt:%b\n" "$YELLOW" "$RESET"

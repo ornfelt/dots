@@ -5,12 +5,12 @@ if [ -z "$my_notes_path" ]; then
     exit 1
 fi
 
-"$my_notes_path/scripts/git_helper/gs.sh" "$@"
+"$my_notes_path/scripts/git_branches/gb.sh" "$@"
 # only doing above should be enough, but below will also handle exit-code forwarding
 exit_code=$?
 
 if [ $exit_code -ne 0 ]; then
-    echo "gs.sh failed with exit code $exit_code."
+    echo "gb.sh failed with exit code $exit_code."
 fi
 
 exit $exit_code
