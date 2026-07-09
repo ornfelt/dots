@@ -699,9 +699,29 @@ config.keys = {
 
   -- Scroll
   -- bind alt-shift-j: wezterm.action.ScrollByLine (down)
-  { key = 'J', mods = 'ALT|SHIFT', action = wezterm.action.ScrollByLine(1), },
+  {
+    key = 'J',
+    mods = 'ALT|SHIFT',
+    action = wezterm.action_callback(function(win, pane)
+      if is_tmux(pane) then
+        win:perform_action({ SendKey = { key = 'J', mods = 'ALT|SHIFT' } }, pane)
+      else
+        win:perform_action(wezterm.action.ScrollByLine(1), pane)
+      end
+    end),
+  },
   -- bind alt-shift-k: wezterm.action.ScrollByLine (up)
-  { key = 'K', mods = 'ALT|SHIFT', action = wezterm.action.ScrollByLine(-1), },
+  {
+    key = 'K',
+    mods = 'ALT|SHIFT',
+    action = wezterm.action_callback(function(win, pane)
+      if is_tmux(pane) then
+        win:perform_action({ SendKey = { key = 'K', mods = 'ALT|SHIFT' } }, pane)
+      else
+        win:perform_action(wezterm.action.ScrollByLine(-1), pane)
+      end
+    end),
+  },
 
   -- Copying
   -- bind alt-shift-c: wezterm.action.CopyTo ClipboardAndPrimarySelection
