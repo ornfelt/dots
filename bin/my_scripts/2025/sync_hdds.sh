@@ -4,8 +4,8 @@ set -e
 # enable Bash’s dotglob so * also matches hidden entries.
 shopt -s dotglob nullglob
 
-SRC_ROOT="/media"
-DEST_ROOT="/media2"
+SRC_ROOT="/media2"
+DEST_ROOT="/media"
 
 # Note: Run this for Movies and run sync_hdds_2.sh for 2024/2025/my_files
 
