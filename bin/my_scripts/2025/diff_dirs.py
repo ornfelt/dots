@@ -59,7 +59,7 @@ IGNORE_CONTAINS = [
 
 # Paths that cause "equals" skip
 IGNORE_EQUALS = [
-    "Movies",
+    #"Movies",
     #"recordings",
     "Magician Launcher.app",
     "Magician Launcher.exe",

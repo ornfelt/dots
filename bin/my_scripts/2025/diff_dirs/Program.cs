@@ -68,7 +68,7 @@ class Program
     // Paths that cause "equals" skip
     static readonly string[] IGNORE_EQUALS = new[]
     {
-        "Movies",
+        //"Movies",
         //"recordings",
         "Magician Launcher.app",
         "Magician Launcher.exe",
