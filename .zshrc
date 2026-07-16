@@ -391,6 +391,7 @@ alias .proj_summarize="$HOME/.local/bin/my_scripts/2025/proj_summarize.sh"
 alias .find_files="$HOME/Documents/my_notes/scripts/files/find_files.sh"
 alias .dir_sizes="$HOME/Documents/my_notes/scripts/files/dir_sizes.sh"
 alias .gb="$HOME/.local/bin/my_scripts/2025/gb.sh"
+alias .git_diff="$HOME/.local/bin/my_scripts/2025/git_diff.sh"
 alias .go_flags="python $HOME/Documents/my_notes/scripts/files/go_flags/go_flags.py"
 alias .rs_flags="python $HOME/Documents/my_notes/scripts/files/rs_flags/rs_flags.py"
 alias .geo="cd $HOME/Code2/Javascript/my_js/geo-quiz && echo 'Usage examples:\nnpm run dev'"
@@ -401,6 +402,7 @@ alias .mov_py="cd $HOME/Documents/my_notes/scripts/files/mov_py && echo 'Usage e
 alias .book="cd $HOME/Code2/Python/my_py/bookshelf && echo 'Usage examples:\npython app.py'"
 alias .gfx="cd $HOME/Code2/General/gfx"
 alias .utils="cd $HOME/Code2/General/utils"
+alias .script_helper="$HOME/.local/bin/my_scripts/2025/script_helper.sh"
 alias .lsh="$HOME/.local/bin/my_scripts/2025/lsh.sh"
 
 run_edex() {
