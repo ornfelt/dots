@@ -21,6 +21,25 @@ end
 local DLL = (ENV and ENV:match("%.dll$") and ENV) or dll_path()
 local DOTNET = "dotnet"
 
+local ROOT_MARKERS = { "global.json", ".sln", ".csproj", ".vbproj", ".git" }
+
+local function root_dir(bufnr, on_dir)
+  local filepath = vim.api.nvim_buf_get_name(bufnr)
+  local normalized_filepath = vim.fs.normalize(filepath):lower()
+
+  if normalized_filepath:find("skeleton_stubs", 1, true) then
+    return
+  end
+
+  for _, marker in ipairs(ROOT_MARKERS) do
+    local root = vim.fs.root(filepath, marker)
+    if root then
+      on_dir(root)
+      return
+    end
+  end
+end
+
 -- Build cmd with verbose logs
 local logdir = (vim.fn.stdpath("cache") .. "/roslyn_logs")
 vim.fn.mkdir(logdir, "p")
@@ -34,7 +53,8 @@ if file_exists(DLL) and exe_exists(DOTNET) then
       "--extensionLogDirectory", logdir,
     },
     filetypes    = { "cs", "csx", "vb" },
-    root_markers = { "global.json", ".sln", ".csproj", ".vbproj", ".git" },
+    root_markers = ROOT_MARKERS,
+    root_dir     = root_dir,
   }
 end
 
@@ -48,4 +68,3 @@ end
 --end)
 
 return {}
-

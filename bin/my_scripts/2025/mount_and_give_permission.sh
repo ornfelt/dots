@@ -34,6 +34,8 @@ sudo mount -t exfat -o uid=$(id -u $USER),gid=$(id -g $USER),umask=000 /dev/sdb1
 sudo mount -t exfat -o uid=$(id -u $USER),gid=$(id -g $USER),umask=000 /dev/sda1 /media2
 # or:
 #sudo mount -t exfat -o uid=$(id -u $USER),gid=$(id -g $USER),umask=000 /dev/sdc1 /media2
+# or (for new 4tbb):
+#sudo mount -t ntfs3 -o uid=$(id -u),gid=$(id -g),umask=022,rw /dev/sdb1 /media
 
 # For Seagate Expansion hdd (ntfs):
 # sudo blkid /dev/sda1                                                                  [12:08:03]
