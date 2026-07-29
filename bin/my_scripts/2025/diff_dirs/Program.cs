@@ -99,6 +99,12 @@ class Program
         "Movies/Series/Anime/Re Zero - kara Hajimeru Isekai Seikatsu - Starting Life in Another World",
         "Movies/Series/Anime/Shingeki no Kyojin - Attack on Titan",
         "Movies/Series/Anime/Vinland Saga",
+        "my_files/my_docs/ai/models/llama3.2.c/data"
+        "my_files/my_docs/ai/models/llama3.2.c/out/cs"
+        "my_files/my_docs/ai/models/llama3.2.c/pcre.h"
+        "my_files/my_docs/ai/models/llama3.2.c/run.exe"
+        "my_files/my_docs/ai/models/llama3.2.c/run.obj"
+        "my_files/my_docs/ai/models/llama3.2.c/win.obj"
         "my_files/my_docs/ai/models/llama3.2.c/out/Llama3.2-3B.bin",
         "my_files/my_docs/ai/models/llama3.2.c/out/Llama3.2-3B-Instruct.bin",
         "my_files/my_docs/ai/models/torchless",
