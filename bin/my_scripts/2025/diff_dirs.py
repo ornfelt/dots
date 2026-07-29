@@ -3,6 +3,13 @@ import os
 import time
 from datetime import datetime
 
+# ANSI colors + log helpers
+C_OK    = "\033[32m"   # green
+C_ERR   = "\033[31m"   # red
+C_WARN  = "\033[33m"   # darkyellow-ish
+C_INFO  = "\033[36m"   # cyan
+C_RESET = "\033[0m"
+
 # Hard-coded dirs to compare
 
 #dir1 = "/media2/my_files/my_docs"
@@ -70,6 +77,25 @@ IGNORE_EQUALS = [
     "Samsung Portable SSD SW for Android.txt",
 ]
 
+# Whitelisted paths: these are expected differences and will be printed in a
+# non-bad color (cyan) instead of red.  Matches exact path or anything under it.
+WHITELIST_PATHS = [
+    "Install Western Digital Software for Mac.dmg",
+    "Install Western Digital Software for Windows.exe",
+    "Movies/Series/Anime/Boku No Hero Academia - My Hero Academia",
+    "Movies/Series/Anime/Kimetsu no Yaiba - Demon Slayer",
+    "Movies/Series/Anime/made_in_abyss",
+    "Movies/Series/Anime/Naruto",
+    "Movies/Series/Anime/Re Zero - kara Hajimeru Isekai Seikatsu - Starting Life in Another World",
+    "Movies/Series/Anime/Shingeki no Kyojin - Attack on Titan",
+    "Movies/Series/Anime/Vinland Saga",
+    "my_files/my_docs/ai/models/llama3.2.c/out/Llama3.2-3B.bin",
+    "my_files/my_docs/ai/models/llama3.2.c/out/Llama3.2-3B-Instruct.bin",
+    "my_files/my_docs/ai/models/torchless",
+    "p",
+    "p2",
+]
+
 
 def should_skip_path(path: str) -> bool:
     """
@@ -80,20 +106,34 @@ def should_skip_path(path: str) -> bool:
         return False
 
     # starts with prefixes
+    # If prefix ends with "/", also skip the directory name itself (without "/")
     for p in IGNORE_PREFIXES:
-        if path.startswith(p):
-            return True
+        if p.endswith("/"):
+            p_dir = p[:-1]
+            if path == p_dir or path.startswith(p):
+                return True
+        else:
+            if path.startswith(p):
+                return True
 
     # contains substrings
     for p in IGNORE_CONTAINS:
         if p in path:
             return True
 
-    # equals specific names
+    # equals specific names (and anything under them)
     for p in IGNORE_EQUALS:
-        if path == p:
+        if path == p or path.startswith(p + "/"):
             return True
 
+    return False
+
+
+def is_whitelisted(path: str) -> bool:
+    """Return True if path matches a whitelisted entry (exact or child of)."""
+    for w in WHITELIST_PATHS:
+        if path == w or path.startswith(w + "/"):
+            return True
     return False
 
 
@@ -163,13 +203,17 @@ def main() -> None:
     # Open log file (truncate)
     with open(target_log, "w", encoding="utf-8") as log_file:
 
-        def log(msg: str = "") -> None:
-            print(msg)
-            log_file.write(msg + "\n")
+        def log(msg: str = "", color: str = "") -> None:
+            if color:
+                print(f"{color}{msg}{C_RESET}")
+                log_file.write(f"{color}{msg}{C_RESET}\n")
+            else:
+                print(msg)
+                log_file.write(msg + "\n")
             log_file.flush()
 
-        log(f"Comparison started at {datetime.now().isoformat(sep=' ', timespec='seconds')}")
-        log(f"Comparing {dir1} <-> {dir2}")
+        log(f"Comparison started at {datetime.now().isoformat(sep=' ', timespec='seconds')}", C_INFO)
+        log(f"Comparing {dir1} <-> {dir2}", C_INFO)
 
         # Listing / "find" phase
         find_start = time.perf_counter()
@@ -178,9 +222,9 @@ def main() -> None:
         find_end = time.perf_counter()
 
         find_elapsed_ms = int((find_end - find_start) * 1000)
-        log("")
-        log(f"Listing phase (walk) took {format_ms(find_elapsed_ms)}")
-        log("")
+        log()
+        log(f"Listing phase (walk) took {format_ms(find_elapsed_ms)}", C_INFO)
+        log()
 
         # Compute diffs
         set1 = set(paths1)
@@ -189,26 +233,48 @@ def main() -> None:
         missing_in_2 = sorted(set1 - set2)
         missing_in_1 = sorted(set2 - set1)
 
+        # Counters for summary
+        count_unexpected = 0
+        count_whitelisted = 0
+
         if not missing_in_2 and not missing_in_1:
-            log("[ok] Both directories contain the same files and directories.")
+            log("[ok] Both directories contain the same files and directories.", C_OK)
         else:
             if missing_in_2:
-                log(f"Entries in {dir1} missing in {dir2}:")
+                log(f"Entries in {dir1} missing in {dir2}:", C_WARN)
                 for p in compress_paths(missing_in_2):
-                    log(p)
+                    if is_whitelisted(p):
+                        log(f"  {p}  (whitelisted)", C_INFO)
+                        count_whitelisted += 1
+                    else:
+                        log(f"  {p}", C_ERR)
+                        count_unexpected += 1
 
             if missing_in_1:
-                log(f"Entries in {dir2} missing in {dir1}:")
+                log(f"Entries in {dir2} missing in {dir1}:", C_WARN)
                 for p in compress_paths(missing_in_1):
-                    log(p)
+                    if is_whitelisted(p):
+                        log(f"  {p}  (whitelisted)", C_INFO)
+                        count_whitelisted += 1
+                    else:
+                        log(f"  {p}", C_ERR)
+                        count_unexpected += 1
+
+        # Print difference summary
+        log()
+        if count_unexpected == 0 and count_whitelisted == 0:
+            log("[ok] No differences found.", C_OK)
+        elif count_unexpected == 0:
+            log(f"[ok] All differences are whitelisted ({count_whitelisted} whitelisted).", C_OK)
+        else:
+            log(f"[!!] {count_unexpected} unexpected difference(s) found ({count_whitelisted} whitelisted).", C_ERR)
 
         # Total runtime
         script_end = time.perf_counter()
         total_elapsed_ms = int((script_end - script_start) * 1000)
-        log("")
-        log(f"Total runtime: {format_ms(total_elapsed_ms)}")
+        log()
+        log(f"Total runtime: {format_ms(total_elapsed_ms)}", C_INFO)
 
 
 if __name__ == "__main__":
     main()
-

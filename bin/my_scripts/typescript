@@ -1,4 +1,0 @@
-Script started on 2023-12-06 21:55:48+01:00 [COMMAND="ncal -3 " TERM="st-256color" TTY="/dev/pts/3" COLUMNS="-1" LINES="-1"]
-zsh:1: command not found: ncal
-
-Script done on 2023-12-06 21:55:48+01:00 [COMMAND_EXIT_CODE="127"]
