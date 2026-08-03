@@ -340,6 +340,7 @@ alias .vmangos='cd $HOME/vmangos/bin; pwd; ls'
 alias .vmangos_update='cd $HOME/Code2/C++/core && git pull; pwd; ls'
 alias .mangoszero='cd $HOME/mangoszero/run/bin; pwd; ls'
 alias .mangoszero_update='cd $HOME/Code2/C++/server && git pull; pwd; ls'
+alias .mangos='source "$HOME/.local/bin/my_scripts/mangos.sh"'
 alias .wow='sh $HOME/.local/bin/my_scripts/wow.sh'
 alias .wc='cd $HOME/Code2/Wow/tools/wc && echo -e "./wow -h\n./wow -p \$wow_tbc_dir -w x11 -s FrameXML\n./wow -p \$wow_tbc_dir -x vk -s GlueXML -m 0\n./wow -p \$wow_tbc_dir -x gl4"'
 alias .wc_clean='cd $HOME/Code2/Wow/tools/my_wow/c/wc_clean/build/bin && echo -e "./client -h\n./client -p \$wow_tbc_dir -w x11 -s FrameXML\n./client -p \$wow_tbc_dir -x vk -s GlueXML -m 0\n./client -p \$wow_tbc_dir -x gl4"'
@@ -404,6 +405,7 @@ alias .mov_py="cd $HOME/Documents/my_notes/scripts/files/mov_py && echo 'Usage e
 alias .book="cd $HOME/Code2/Python/my_py/bookshelf && echo 'Usage examples:\npython app.py'"
 alias .gfx="cd $HOME/Code2/General/gfx"
 alias .utils="cd $HOME/Code2/General/utils"
+alias .srclist="$HOME/.local/bin/my_scripts/2025/srclist.sh"
 alias .script_helper="$HOME/.local/bin/my_scripts/2025/script_helper.sh"
 alias .lsh="$HOME/.local/bin/my_scripts/2025/lsh.sh"
 
