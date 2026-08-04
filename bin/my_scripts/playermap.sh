@@ -10,12 +10,12 @@ if [[ -z $srv ]]; then
 fi
 
 case "$srv" in
-  acore) norm=acore ;;
-  tcore) norm=tcore ;;
-  cmangos) norm=cmangos ;;
+  acore|azerothcore) norm=acore ;;
+  tcore|trinitycore) norm=tcore ;;
+  cmangos|classic|cmangos-classic) norm=cmangos ;;
   cmangos-tbc|mangos-tbc|tbc) norm=cmangos-tbc ;;
-  vmangos) norm=vmangos ;;
-  mangoszero|mangos0) norm=mangoszero ;;
+  vmangos|vanilla) norm=vmangos ;;
+  mangoszero|mangos0|mangos-zero|zero) norm=mangoszero ;;
   *)
     echo "Error: Unknown server '$srv'"
     exit 1
@@ -59,4 +59,3 @@ else
     *) echo "Error: Unsupported language '$lang' for mangos" && exit 1 ;;
   esac
 fi
-
