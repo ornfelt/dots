@@ -84,12 +84,12 @@ vim.api.nvim_create_autocmd("TextYankPost", {
 
 -- 2 spaces for tabs in specified files
 vim.api.nvim_create_autocmd("FileType", {
-  pattern = "lua",
-  --pattern = {"lua", "javascript"},
+  pattern = { "lua", "json", "jsonc" },
+  --pattern = { "lua", "javascript", "json", "jsonc" },
   callback = function()
-    vim.bo.shiftwidth = 2  -- Number of spaces to use for each step of (auto)indent
-    vim.bo.tabstop = 2     -- Number of spaces that a <Tab> counts for
-    vim.bo.softtabstop = 2 -- Number of spaces that a <Tab> inserts
+    vim.bo.shiftwidth = 2   -- Number of spaces to use for each step of (auto)indent
+    vim.bo.tabstop = 2      -- Number of spaces that a <Tab> counts for
+    vim.bo.softtabstop = 2  -- Number of spaces that a <Tab> inserts
     vim.bo.expandtab = true -- Use spaces instead of tabs
   end,
 })
