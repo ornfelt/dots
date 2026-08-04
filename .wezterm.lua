@@ -4,6 +4,12 @@ local wezterm         = require 'wezterm'
 local act             = wezterm.action
 local mux             = wezterm.mux
 local session_manager = require 'wezterm-session-manager/session-manager'
+local status          = require 'status'
+
+-- Hard-coded switch: set to true to enable the extra debug notifications and
+-- log calls that are normally turned off. The notifications go through the
+-- status line as well (or toasts, when the status line is disabled/hidden).
+local DEBUG_MESSAGES = false
 
 local config = {}
 
@@ -17,9 +23,11 @@ config.adjust_window_size_when_changing_font_size = false
 config.automatically_reload_config = true
 config.color_scheme = 'Gruvbox Dark (Gogh)'
 config.enable_scroll_bar = true
+
 --config.enable_wayland = true
 config.enable_wayland = false -- Required for hyprland?
--- config.font = wezterm.font('Hack')
+
+--config.font = wezterm.font('Hack')
 --config.font = wezterm.font('Monaspace Neon')
 
 config.audible_bell = "Disabled"
@@ -61,6 +69,9 @@ config.quick_select_patterns = {
 }
 
 config.hide_tab_bar_if_only_one_tab = true
+-- The status line lives in the tab bar, so let status.lua know when it's hidden
+status.tab_bar_hidden_with_single_tab = config.hide_tab_bar_if_only_one_tab
+
 config.mouse_bindings = {
   -- Open URLs with Ctrl+Click
   -- bind mouse-ctrl-left-up: act.OpenLinkAtMouseCursor
@@ -85,9 +96,11 @@ config.pane_focus_follows_mouse = false
 config.scrollback_lines = 10000 -- Default is 3500
 config.use_dead_keys = false
 config.warn_about_missing_glyphs = false
+
 --config.window_decorations = 'TITLE | RESIZE'
 --config.window_decorations = 'NONE'
 config.window_decorations = 'RESIZE'
+
 if wezterm.target_triple == 'x86_64-pc-windows-msvc' or wezterm.target_triple == 'x86_64-pc-windows-gnu' then
   config.show_close_tab_button_in_tabs = false
 
@@ -205,6 +218,8 @@ end
 
 local is_linux = (wezterm.target_triple ~= "x86_64-pc-windows-msvc" and wezterm.target_triple ~= "x86_64-pc-windows-gnu")
 local TOAST_TIMEOUT_MS = is_linux and 3000 or 2000
+-- Keep the toast fallback in status.lua on the same timeout as the old toasts
+status.toast_timeout_ms = TOAST_TIMEOUT_MS
 
 local function get_prompt_username()
   if is_linux then
@@ -230,8 +245,10 @@ local prompt_user = get_prompt_username()
 local function is_vim(pane)
   local process_info = pane:get_foreground_process_info()
   local process_name = process_info and process_info.name
-  --wezterm.log_info("process_name: " .. (process_name or "nil"))
-  --log_to_file("process_name: " .. (process_name or "nil"))
+  if DEBUG_MESSAGES then
+    wezterm.log_info("process_name: " .. (process_name or "nil"))
+    log_to_file("process_name: " .. (process_name or "nil"))
+  end
 
   return process_name == "nvim" or process_name == "vim"
 end
@@ -243,8 +260,10 @@ local function is_tmux(pane)
 
   local process_info = pane:get_foreground_process_info()
   local process_name = process_info and process_info.name
-  --wezterm.log_info("process_name: " .. (process_name or "nil"))
-  --log_to_file("process_name: " .. (process_name or "nil"))
+  if DEBUG_MESSAGES then
+    wezterm.log_info("process_name: " .. (process_name or "nil"))
+    log_to_file("process_name: " .. (process_name or "nil"))
+  end
 
   return process_name and string.find(process_name, "tmux", 1, true) ~= nil
 end
@@ -459,9 +478,11 @@ wezterm.on('trigger-vim-with-scrollback-copy-latest', function(window, pane)
     else
       window:copy_to_clipboard(clipboard_text, 'PrimarySelection')
     end
-    --window:toast_notification("Copied to Clipboard", "Latest input and output have been copied.", nil, TOAST_TIMEOUT_MS)
+    if DEBUG_MESSAGES then
+      status.notify(window, "Copied to Clipboard", "Latest input and output have been copied.", true)
+    end
   else
-    window:toast_notification("No Input/Output Found", "No valid input/output detected in scrollback.", nil, TOAST_TIMEOUT_MS)
+    status.notify(window, "No Input/Output Found", "No valid input/output detected in scrollback.", false)
   end
 end)
 
@@ -502,14 +523,14 @@ wezterm.on('trigger-copy-latest-n', function(window, pane)
     else
       window:copy_to_clipboard(clipboard_text, 'PrimarySelection')
     end
-    window:toast_notification(
+    status.notify(
+      window,
       "Copied to Clipboard",
       "Latest " .. #entries .. " input/output entr" .. (#entries == 1 and "y" or "ies") .. " copied.",
-      nil,
-      TOAST_TIMEOUT_MS
+      true
     )
   else
-    window:toast_notification("No Input/Output Found", "No valid input/output detected in scrollback.", nil, TOAST_TIMEOUT_MS)
+    status.notify(window, "No Input/Output Found", "No valid input/output detected in scrollback.", false)
   end
 end)
 
@@ -939,7 +960,7 @@ config.keys = {
   --  action = wezterm.action_callback(function(window, pane)
   --    local scrollback = pane:get_lines_as_text()
   --    window:copy_to_clipboard(scrollback)
-  --    window:toast_notification("WezTerm", "Copied all scrollback and output", nil, TOAST_TIMEOUT_MS)
+  --    status.notify(window, "WezTerm", "Copied all scrollback and output", true)
   --  end),
   --},
   -- wezterm cli can also be used, for example:
@@ -990,13 +1011,17 @@ local function split_to_directory_with_delay(win, pane)
   local userprofile = os.getenv("HOME") or os.getenv("USERPROFILE")
   local file_path = userprofile .. "/new_wez_dir.txt"
 
-  --print("file_path:" .. file_path)
-  --win:toast_notification("WezTerm Notification", "file_path: " .. file_path, nil, TOAST_TIMEOUT_MS)
+  if DEBUG_MESSAGES then
+    print("file_path:" .. file_path)
+    status.notify(win, "WezTerm Notification", "file_path: " .. file_path, true)
+  end
 
   local file = io.open(file_path, "r")
   if not file then
-    --wezterm.log_info("File not found: " .. file_path)
-    win:toast_notification("WezTerm Notification", "File not found: " .. file_path, nil, TOAST_TIMEOUT_MS)
+    if DEBUG_MESSAGES then
+      wezterm.log_info("File not found: " .. file_path)
+    end
+    status.notify(win, "WezTerm Notification", "File not found: " .. file_path, false)
     return
   end
 
@@ -1008,8 +1033,10 @@ local function split_to_directory_with_delay(win, pane)
   -- Might be in: %TEMP%\wezterm.log or /tmp/wezterm.log
   -- https://wezfurlong.org/wezterm/troubleshooting.html
   if directory and directory ~= "" then --and wezterm.path.exists(directory) then
-    --wezterm.log_info("Splitting to directory: " .. directory)
-    --win:toast_notification("WezTerm Notification", "Splitting to dir: " .. directory, nil, TOAST_TIMEOUT_MS)
+    if DEBUG_MESSAGES then
+      wezterm.log_info("Splitting to directory: " .. directory)
+      status.notify(win, "WezTerm Notification", "Splitting to dir: " .. directory, true)
+    end
 
     local command = {
       cwd = directory
@@ -1024,9 +1051,9 @@ local function split_to_directory_with_delay(win, pane)
       },
       pane
     )
-    --else
-    --  wezterm.log_info("Invalid directory path: " .. (directory or "nil"))
-    --  win:toast_notification("WezTerm Notification", "Invalid directory path: " .. (directory or "nil"), nil, TOAST_TIMEOUT_MS)
+  elseif DEBUG_MESSAGES then
+    wezterm.log_info("Invalid directory path: " .. (directory or "nil"))
+    status.notify(win, "WezTerm Notification", "Invalid directory path: " .. (directory or "nil"), false)
   end
 end
 
@@ -1041,8 +1068,10 @@ table.insert(config.keys, {
 local function open_github_repo(win, pane)
   local cwd_uri = tostring(pane:get_current_working_dir())
   if not cwd_uri then
-    --wezterm.log_error("Failed to determine current working directory.")
-    win:toast_notification("WezTerm Notification", "Failed to determine current working directory.", nil, TOAST_TIMEOUT_MS)
+    if DEBUG_MESSAGES then
+      wezterm.log_error("Failed to determine current working directory.")
+    end
+    status.notify(win, "WezTerm Notification", "Failed to determine current working directory.", false)
     return
   end
 
@@ -1059,7 +1088,9 @@ local function open_github_repo(win, pane)
   end
 
   -- Debug
-  --log_to_file(cwd)
+  if DEBUG_MESSAGES then
+    log_to_file(cwd)
+  end
   -- see file:
   --vim $env:USERPROFILE/wez_log.txt
   -- or:
@@ -1081,7 +1112,9 @@ local function open_github_repo(win, pane)
   end
 
   -- Debug
-  --log_to_file("git_remote_cmd: " .. (git_remote_cmd or "nil"))
+  if DEBUG_MESSAGES then
+    log_to_file("git_remote_cmd: " .. (git_remote_cmd or "nil"))
+  end
 
   local success, stdout, stderr = wezterm.run_child_process({
     -- ps
@@ -1093,9 +1126,11 @@ local function open_github_repo(win, pane)
     git_remote_cmd,
   })
   -- Debug
-  --log_to_file("success: " .. (tostring(success) or "nil"))
-  --log_to_file("stdout: " .. (tostring(stdout) or "nil"))
-  --log_to_file("stderr: " .. (tostring(stderr) or "nil"))
+  if DEBUG_MESSAGES then
+    log_to_file("success: " .. (tostring(success) or "nil"))
+    log_to_file("stdout: " .. (tostring(stdout) or "nil"))
+    log_to_file("stderr: " .. (tostring(stderr) or "nil"))
+  end
   local remote = stdout
 
   success, stdout, stderr = wezterm.run_child_process({
@@ -1108,14 +1143,18 @@ local function open_github_repo(win, pane)
     git_branch_cmd,
   })
   -- Debug
-  --log_to_file("success: " .. (tostring(success) or "nil"))
-  --log_to_file("stdout: " .. (tostring(stdout) or "nil"))
-  --log_to_file("stderr: " .. (tostring(stderr) or "nil"))
+  if DEBUG_MESSAGES then
+    log_to_file("success: " .. (tostring(success) or "nil"))
+    log_to_file("stdout: " .. (tostring(stdout) or "nil"))
+    log_to_file("stderr: " .. (tostring(stderr) or "nil"))
+  end
   local branch = stdout
 
   if not remote or not branch or remote == "" or branch == "" then
-    --wezterm.log_error("Failed to determine Git repository or branch.")
-    win:toast_notification("WezTerm Notification", "Failed to determine Git repository or branch.", nil, TOAST_TIMEOUT_MS)
+    if DEBUG_MESSAGES then
+      wezterm.log_error("Failed to determine Git repository or branch.")
+    end
+    status.notify(win, "WezTerm Notification", "Failed to determine Git repository or branch.", false)
     return
   end
 
@@ -1125,7 +1164,9 @@ local function open_github_repo(win, pane)
   local github_url = remote .. "/tree/" .. branch
 
   -- Debug
-  --log_to_file("github_url: " .. (git_remote_cmd or "nil"))
+  if DEBUG_MESSAGES then
+    log_to_file("github_url: " .. (git_remote_cmd or "nil"))
+  end
 
   wezterm.run_child_process({ "firefox", github_url })
 end
@@ -1305,7 +1346,7 @@ end)
 wezterm.on("update-right-status", function(window, pane)
   local cwd_uri = tostring(pane:get_current_working_dir())
   if not cwd_uri then
-    window:set_right_status("")
+    status.render(window, {})
     return
   end
 
@@ -1399,7 +1440,8 @@ wezterm.on("update-right-status", function(window, pane)
     table.insert(segments, { Text = wezterm.hostname() })
   end
 
-  window:set_right_status(wezterm.format(segments))
+  -- Draw/expire status messages in front of the branch (see status.lua)
+  status.render(window, segments)
 end)
 
 -- Return config to wezterm

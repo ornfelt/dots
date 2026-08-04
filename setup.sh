@@ -65,6 +65,7 @@ cp -r .config/polybar/ $HOME/.config/
 cp -r .config/ranger/ $HOME/.config/
 cp -r .config/rofi/ $HOME/.config/
 cp -r .config/st/ $HOME/.config/
+cp -r .config/wezterm/ $HOME/.config/
 cp -r .config/zathura/ $HOME/.config/
 cp -r .config/zsh/ $HOME/.config/
 cp .config/mimeapps.list $HOME/.config/
@@ -258,13 +259,13 @@ fi
 #fi
 
 # wezterm session manager
-if [ ! -d "$HOME/.config/wezterm/wezterm-session-manager" ]; then
-    log_step "Installing wezterm-session-manager"
-    git clone https://github.com/danielcopper/wezterm-session-manager.git $HOME/.config/wezterm/wezterm-session-manager
-    log_ok "wezterm-session-manager installed!"
-else
-    log_ok "wezterm-session-manager already installed."
-fi
+#if [ ! -d "$HOME/.config/wezterm/wezterm-session-manager" ]; then
+#    log_step "Installing wezterm-session-manager"
+#    git clone https://github.com/danielcopper/wezterm-session-manager.git $HOME/.config/wezterm/wezterm-session-manager
+#    log_ok "wezterm-session-manager installed!"
+#else
+#    log_ok "wezterm-session-manager already installed."
+#fi
 
 # tmux-resurrect plugin
 if [ ! -d "$HOME/.tmux/plugins" ]; then

@@ -67,3 +67,5 @@ installation/packages/debian/log.txt
 bin/my_scripts/ocr.txt
 nvim/init_bundle.lua
 bin/my_scripts/typescript
+.config/wezterm/wezterm-session-manager/*.json
+.config/wezterm/wezterm-session-manager/README.md
