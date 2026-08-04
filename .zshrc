@@ -408,6 +408,7 @@ alias .utils="cd $HOME/Code2/General/utils"
 alias .srclist="$HOME/.local/bin/my_scripts/2025/srclist.sh"
 alias .script_helper="$HOME/.local/bin/my_scripts/2025/script_helper.sh"
 alias .lsh="$HOME/.local/bin/my_scripts/2025/lsh.sh"
+alias .audio_helper="$HOME/.local/bin/my_scripts/audio_helper.sh"
 
 run_edex() {
   local f="$HOME/Downloads/eDEX-UI-Linux-x86_64.AppImage"
