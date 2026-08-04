@@ -45,7 +45,7 @@ if [[ "$repoOwner" == "ornfelt" ]]; then
       commands+=('git diff upstream/master..HEAD -- . ":(exclude)*.diff" > diff_upstream.diff')
       commands+=('git diff origin/bkp -- . ":(exclude)*.diff" ":(exclude)config.def.h" ":(exclude).gitignore" ":(exclude)patches/**" ":(exclude)patches_git/**" > diff_bkp.diff')
       commands+=('git diff origin/new -- . ":(exclude)*.diff" ":(exclude)config.def.h" ":(exclude).gitignore" ":(exclude)patches/**" ":(exclude)patches_git/**" > diff_new.diff')
-      commands+=('git add -A')
+      commands+=('git add -- diff_upstream.diff diff_bkp.diff diff_new.diff')
       commands+=('git commit -m "update diff files"')
       ;;
     "dmenu")
@@ -53,7 +53,7 @@ if [[ "$repoOwner" == "ornfelt" ]]; then
       commands+=('git fetch --all')
       commands+=('git diff upstream/master..HEAD -- . ":(exclude)*.diff" > diff_upstream.diff')
       commands+=('git diff origin/bkp -- . ":(exclude)*.diff" ":(exclude)config.def.h" ":(exclude).gitignore" ":(exclude)patches/**" ":(exclude)patches_git/**" > diff_bkp.diff')
-      commands+=('git add -A')
+      commands+=('git add -- diff_upstream.diff diff_bkp.diff')
       commands+=('git commit -m "update diff files"')
       ;;
     "st")
@@ -61,14 +61,14 @@ if [[ "$repoOwner" == "ornfelt" ]]; then
       commands+=('git fetch --all')
       commands+=('git diff upstream/master..HEAD -- . ":(exclude)*.diff" > diff_upstream.diff')
       commands+=('git diff bkp -- . ":(exclude)*.diff" ":(exclude)config.def.h" ":(exclude).gitignore" ":(exclude)patches/**" ":(exclude)patches_git/**" > diff_bkp.diff')
-      commands+=('git add -A')
+      commands+=('git add -- diff_upstream.diff diff_bkp.diff')
       commands+=('git commit -m "update diff files"')
       ;;
     "dwmblocks")
       AddUpstreamIfMissing "https://github.com/torrinfail/dwmblocks"
       commands+=('git fetch --all')
       commands+=('git diff upstream/master..HEAD -- . ":(exclude)*.diff" > diff_upstream.diff')
-      commands+=('git add -A')
+      commands+=('git add -- diff_upstream.diff')
       commands+=('git commit -m "update diff files"')
       ;;
     "awsm")
@@ -78,7 +78,7 @@ if [[ "$repoOwner" == "ornfelt" ]]; then
       commands+=('git diff upstream/master..HEAD -- . ":(exclude)*.diff" > diff_upstream.diff')
       commands+=('git diff origin/bkp -- . ":(exclude)*.diff" ":(exclude).gitignore" ":(exclude)patches/**" ":(exclude)patches_git/**" > diff_bkp.diff')
       commands+=('git diff origin/tarneaux -- . ":(exclude)*.diff" ":(exclude).gitignore" ":(exclude)patches/**" ":(exclude)patches_git/**" > diff_tarneaux.diff')
-      commands+=('git add -A')
+      commands+=('git add -- diff_upstream.diff diff_bkp.diff diff_tarneaux.diff')
       commands+=('git commit -m "update diff files"')
       ;;
     "stk-code")
@@ -86,7 +86,7 @@ if [[ "$repoOwner" == "ornfelt" ]]; then
       commands+=('git fetch upstream')
       commands+=('git diff upstream/master..HEAD -- . ":(exclude)*.diff" > diff_upstream.diffx')
       commands+=('git diff 3f125f6^! > changes.diffx')
-      commands+=('git add -A')
+      commands+=('git add -- diff_upstream.diffx changes.diffx')
       commands+=('git commit -m "update diff files"')
       ;;
     *)
@@ -105,7 +105,7 @@ if [[ "${repoName%.git}" == "AzerothCore-wotlk-with-NPCBots" ]]; then
     #commands+=('git diff upstream/npcbots_3.3.5...npcbots_3.3.5 -- . ":(exclude)*.conf" ":(exclude)*.patch" ":(exclude)*.diffx" | tee acore.diffx')
     commands+=('git diff upstream/npcbots_3.3.5...npcbots_3.3.5 -- . ":(exclude)*.conf" ":(exclude)*.patch" ":(exclude)*.diffx" > acore.diffx')
   fi
-    commands+=('git add -A')
+    commands+=('git add -- acore.diffx')
     commands+=('git commit -m "update diff files"')
 fi
 
@@ -115,7 +115,7 @@ if [[ "${repoName%.git}" == "Trinitycore-3.3.5-with-NPCBots" ]]; then
   commands+=('git fetch upstream')
   #commands+=('git diff upstream/npcbots_3.3.5...npcbots_3.3.5 -- . ":(exclude)*.conf" ":(exclude)*.patch" ":(exclude)*.diffx" | tee tcore.diffx')
   commands+=('git diff upstream/npcbots_3.3.5...npcbots_3.3.5 -- . ":(exclude)*.conf" ":(exclude)*.patch" ":(exclude)*.diffx" > tcore.diffx')
-  commands+=('git add -A')
+  commands+=('git add -- tcore.diffx')
   commands+=('git commit -m "update diff files"')
 fi
 
@@ -164,4 +164,3 @@ else
   echo "Executing: $pushCommandDisplay"
   eval "$pushCommandActual"
 fi
-
