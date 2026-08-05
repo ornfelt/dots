@@ -5,6 +5,7 @@ require("autocmds.md_sync").setup()
 require("autocmds.code_autocmds")
 require("autocmds.sql_autocmds")
 require("autocmds.treesitter_autocmds")
+require("autocmds.preproc_match")
 
 -- Automatic command to adjust format options
 vim.cmd [[
