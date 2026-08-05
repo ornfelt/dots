@@ -478,9 +478,8 @@ wezterm.on('trigger-vim-with-scrollback-copy-latest', function(window, pane)
     else
       window:copy_to_clipboard(clipboard_text, 'PrimarySelection')
     end
-    if DEBUG_MESSAGES then
-      status.notify(window, "Copied to Clipboard", "Latest input and output have been copied.", true)
-    end
+
+    status.notify(window, "Copied to Clipboard", "Latest input and output have been copied.", true)
   else
     status.notify(window, "No Input/Output Found", "No valid input/output detected in scrollback.", false)
   end
