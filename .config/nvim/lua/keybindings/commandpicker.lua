@@ -1,16 +1,6 @@
 require('dbg_log').log_file(debug.getinfo(1, 'S').source)
 
 local commands = {
-  -- Packer
-  { label = "PackerUpdate", cmd = "PackerUpdate" },
-  { label = "PackerLoad", cmd = "PackerLoad" },
-  { label = "PackerSync", cmd = "PackerSync" },
-  -- Built-in vim.pack
-  { label = "VimPackGet", cmd = "lua print(vim.inspect(vim.pack.get()))" },
-  { label = "VimPackUpdate", cmd = "lua vim.pack.update()" },
-  { label = "VimPackStatus", cmd = "VimPackStatus" },
-  -- Lazy
-  { label = "Lazy", cmd = "Lazy" },
   -- Markview
   { label = "Markview", cmd = "Markview" },
   -- Custom
@@ -242,6 +232,29 @@ local commands = {
   { label = "DiffviewDiffFiles test1.txt test2.txt - Diff two arbitrary files", cmd = "DiffviewDiffFiles test1.txt test2.txt" },
   { label = "DiffviewClose - Close the current diffview", cmd = "DiffviewClose" },
 }
+
+-- Packer
+if vim.fn.exists(":PackerUpdate") == 2 then
+  vim.list_extend(commands, {
+    { label = "PackerUpdate", cmd = "PackerUpdate" },
+    { label = "PackerLoad", cmd = "PackerLoad" },
+    { label = "PackerSync", cmd = "PackerSync" },
+  })
+end
+
+-- Built-in vim.pack
+if vim.pack and vim.pack.get and vim.pack.update then
+  vim.list_extend(commands, {
+    { label = "VimPackGet", cmd = "lua print(vim.inspect(vim.pack.get()))" },
+    { label = "VimPackUpdate", cmd = "lua vim.pack.update()" },
+    { label = "VimPackStatus", cmd = "VimPackStatus" },
+  })
+end
+
+-- Lazy
+if vim.fn.exists(":Lazy") == 2 then
+  commands[#commands + 1] = { label = "Lazy", cmd = "Lazy" }
+end
 
 local selections_to_print = {
   ["messages"] = true,
