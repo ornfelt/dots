@@ -406,6 +406,7 @@ alias .book="cd $HOME/Code2/Python/my_py/bookshelf && echo 'Usage examples:\npyt
 alias .gfx="cd $HOME/Code2/General/gfx"
 alias .utils="cd $HOME/Code2/General/utils"
 alias .srclist="$HOME/.local/bin/my_scripts/2025/srclist.sh"
+alias .arg_tests="$HOME/.local/bin/my_scripts/2025/arg_tests.sh"
 alias .script_helper="$HOME/.local/bin/my_scripts/2025/script_helper.sh"
 alias .lsh="$HOME/.local/bin/my_scripts/2025/lsh.sh"
 alias .audio_helper="$HOME/.local/bin/my_scripts/audio_helper.sh"
