@@ -14,6 +14,11 @@
 # If nothing is built, runs `dotnet build` in the project dir, picking the
 # newest TargetFramework from the csproj that is installed on this machine.
 #
+# After a build is chosen, git is asked (cheaply) whether anything under
+# $code_root_dir/Code2/C#/my_cs/nvcs/src/nvcs changed after the exe was built -
+# both the last commit touching it and any uncommitted/untracked file there. If
+# so, it is rebuilt with the SAME config/framework it already had, then run.
+#
 # All arguments are forwarded verbatim to nvcs:
 #     ./nvcs.sh test.py --verbose
 # ---------------------------------------------------------------------------
@@ -27,6 +32,8 @@ SCRIPT_ARGS=("$@")
 USE_RELEASE=false           # true  => `dotnet build -c Release` instead of Debug
 DRY_RUN=false               # true  => print the commands instead of running them
 TIE_TOLERANCE_SECONDS=5     # build times within this many seconds count as "the same"
+CHECK_SOURCES=true          # false => skip the git "sources newer than exe" check
+SRC_REL_PATH='src/nvcs'     # path (relative to the repo dir) watched for changes
 
 # ---------------------------------------------------------------------------
 # Colored print helpers
@@ -98,12 +105,55 @@ sort_tfms_desc() {
 }
 
 # ---------------------------------------------------------------------------
+# Git freshness helpers
+# ---------------------------------------------------------------------------
+# Committer date (epoch) of the last commit touching $SRC_REL_PATH; 0 when git
+# failed, the dir is not a repo, or that path was never committed.
+last_commit_time() {
+    local out
+    out="$(git -C "$REPO_DIR" log -1 --format=%ct -- "$SRC_REL_PATH" 2>/dev/null)"
+    if [[ "$out" =~ ^[0-9]+$ ]]; then echo "$out"; else echo 0; fi
+}
+
+# Newest build time among files git reports as dirty/untracked under
+# $SRC_REL_PATH. `git log` only sees COMMITTED work, so this covers "edited and
+# saved but not committed yet". Sets DIRTY_TIME (0 = none) and DIRTY_FILE.
+find_dirty_worktree_change() {
+    DIRTY_TIME=0
+    DIRTY_FILE=""
+
+    local top entry st p full t
+    top="$(git -C "$REPO_DIR" rev-parse --show-toplevel 2>/dev/null)"
+    [[ -n "$top" ]] || return 0
+
+    # -z: NUL-separated, so paths with spaces/quotes/# need no unquoting.
+    # Porcelain paths are relative to the repo TOP, not to $REPO_DIR.
+    while IFS= read -r -d '' entry; do
+        st="${entry:0:2}"
+        p="${entry:3}"
+        # renames/copies emit the original path as an extra field - consume it
+        if [[ "$st" == R* || "$st" == C* ]]; then IFS= read -r -d '' _ || true; fi
+
+        [[ -n "$p" ]] || continue
+        full="$top/$p"
+        [[ -f "$full" ]] || continue          # deletions have nothing to stat
+
+        t="$(file_build_time "$full")"
+        if (( t > DIRTY_TIME )); then
+            DIRTY_TIME=$t
+            DIRTY_FILE="$p"
+        fi
+    done < <(git -C "$REPO_DIR" status --porcelain -z --untracked-files=all -- "$SRC_REL_PATH" 2>/dev/null)
+}
+
+# ---------------------------------------------------------------------------
 # Paths
 # ---------------------------------------------------------------------------
 if [[ -z "${code_root_dir:-}" ]]; then
     fail "environment variable 'code_root_dir' is not set."
 fi
 
+REPO_DIR="$code_root_dir/Code2/C#/my_cs/nvcs"
 PROJECT_DIR="$code_root_dir/Code2/C#/my_cs/nvcs/src/nvcs"
 CSPROJ_PATH="$PROJECT_DIR/nvcs.csproj"
 BIN_DIR="$PROJECT_DIR/bin"
@@ -384,6 +434,74 @@ if (( ${#RUNTIME_TFMS[@]} )) && ! contains "$BEST_TFM" "${RUNTIME_TFMS[@]}"; the
     write_err "  installed : $(join_by ', ' "${RUNTIME_TFMS[@]}")"
     write_err "  Install the .NET ${BEST_TFM#net} runtime, or rebuild for one of the installed versions."
     exit 1
+fi
+
+# ---------------------------------------------------------------------------
+# 5b. Rebuild when sources changed after the chosen exe was built
+# ---------------------------------------------------------------------------
+BEST_TIME="${CAND_TIME[BEST_IDX]}"
+BEST_CONFIG="${CAND_CONFIG[BEST_IDX]}"
+
+if ! $CHECK_SOURCES; then
+    write_warn "Source freshness check disabled ($SRC_REL_PATH not inspected)."
+elif ! command -v git >/dev/null 2>&1; then
+    write_warn "'git' was not found on PATH - skipping the source freshness check."
+elif [[ ! -d "$REPO_DIR" ]]; then
+    write_warn "Repo dir not found: $REPO_DIR - skipping the source freshness check."
+else
+    write_info "Exe built : $(date -d "@$BEST_TIME" '+%Y-%m-%d %H:%M:%S')"
+    write_info "Checking '$SRC_REL_PATH' in $REPO_DIR for newer changes..."
+
+    commit_time="$(last_commit_time)"
+    find_dirty_worktree_change      # sets DIRTY_TIME / DIRTY_FILE
+
+    newest_src=0
+    newest_what=""
+
+    if (( commit_time > 0 )); then
+        write_info "  last commit touching it : $(date -d "@$commit_time" '+%Y-%m-%d %H:%M:%S')"
+        newest_src=$commit_time
+        newest_what="last commit touching $SRC_REL_PATH"
+    else
+        write_warn "  no git history for $SRC_REL_PATH (not a repo, or nothing committed there)."
+    fi
+
+    if (( DIRTY_TIME > 0 )); then
+        write_info "  newest uncommitted edit : $(date -d "@$DIRTY_TIME" '+%Y-%m-%d %H:%M:%S')  ($DIRTY_FILE)"
+        if (( DIRTY_TIME > newest_src )); then
+            newest_src=$DIRTY_TIME
+            newest_what="uncommitted change in $DIRTY_FILE"
+        fi
+    fi
+
+    if (( newest_src > BEST_TIME )); then
+        stale_by=$(( newest_src - BEST_TIME ))
+        write_warn "STALE: sources are ${stale_by}s newer than the exe ($newest_what) - recompiling."
+
+        rebuild_args=(build -c "$BEST_CONFIG")
+        if $IS_MULTI_TARGET; then
+            rebuild_args+=(-f "$BEST_TFM")
+            write_info "Reusing the chosen exe's options: $BEST_CONFIG / $BEST_TFM."
+        else
+            write_info "Reusing the chosen exe's configuration: $BEST_CONFIG (single-target csproj, no -f)."
+        fi
+
+        write_info_alt "Running: dotnet ${rebuild_args[*]}   (cwd: $PROJECT_DIR)"
+
+        if $DRY_RUN; then
+            write_warn "DRY_RUN enabled - rebuild skipped."
+        else
+            ( cd "$PROJECT_DIR" && dotnet "${rebuild_args[@]}" )
+            rebuild_exit=$?
+            (( rebuild_exit == 0 )) || fail "dotnet build failed with exit code $rebuild_exit."
+            [[ -e "$BEST_PATH" ]] || fail "rebuild reported success but $BEST_PATH no longer exists."
+
+            CAND_TIME[BEST_IDX]="$(file_build_time "$BEST_PATH")"
+            write_ok "Rebuild succeeded (${CAND_LABEL[BEST_IDX]}) - exe now $(date -d "@${CAND_TIME[BEST_IDX]}" '+%Y-%m-%d %H:%M:%S')."
+        fi
+    elif (( newest_src > 0 )); then
+        write_ok "Up to date: nothing under $SRC_REL_PATH is newer than the exe."
+    fi
 fi
 
 # ---------------------------------------------------------------------------
