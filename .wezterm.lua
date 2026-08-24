@@ -1,10 +1,12 @@
 -- Pull in the wezterm API
 local os              = require 'os'
-local wezterm         = require 'wezterm'
+local wezterm         = require 'wezterm' --[[@as Wezterm]]
 local act             = wezterm.action
 local mux             = wezterm.mux
 local session_manager = require 'wezterm-session-manager/session-manager'
 local status          = require 'status'
+local claude          = require 'claude'
+local nvim_server     = require 'nvim_server'
 
 -- Hard-coded switch: set to true to enable the extra debug notifications and
 -- log calls that are normally turned off. The notifications go through the
@@ -71,6 +73,10 @@ config.quick_select_patterns = {
 config.hide_tab_bar_if_only_one_tab = true
 -- The status line lives in the tab bar, so let status.lua know when it's hidden
 status.tab_bar_hidden_with_single_tab = config.hide_tab_bar_if_only_one_tab
+
+-- Tells every spawned pane which headless nvim server to attach to; empty
+-- unless nvim_server.enabled is set (see ~/.wezterm/nvim_server.lua)
+config.set_environment_variables = nvim_server.env()
 
 config.mouse_bindings = {
   -- Open URLs with Ctrl+Click
@@ -591,7 +597,7 @@ config.keys = {
   {
     key = 'q',
     mods = 'LEADER|SHIFT',
-    action = act.CloseCurrentTab{ confirm = true },
+    action = nvim_server.on_close_tab(act.CloseCurrentTab{ confirm = true }),
   },
 
   -- ----------------------------------------------------------------
@@ -607,20 +613,20 @@ config.keys = {
   {
     key = 'Enter',
     mods = 'LEADER',
-    action = act.SplitPane {
+    action = nvim_server.on_new_pane(act.SplitPane {
       direction = 'Right',
       size = { Percent = 50 },
-    },
+    }),
   },
   -- Horizontal split
   -- bind leader-<: act.SplitPane (horizontal/down)
   {
     key = '<',
     mods = 'LEADER',
-    action = act.SplitPane {
+    action = nvim_server.on_new_pane(act.SplitPane {
       direction = 'Down',
       size = { Percent = 50 },
-    },
+    }),
   },
   -- bind leader-h: act.ActivatePaneDirection Left
   { key = "h", mods = "LEADER", action = act.ActivatePaneDirection("Left") },
@@ -639,9 +645,9 @@ config.keys = {
   -- bind leader-o: act.AdjustPaneSize Right
   { key = 'o', mods = 'LEADER', action = act.AdjustPaneSize { 'Right', 5 }, },
   -- bind leader-q: act.CloseCurrentPane
-  { key = "q", mods = "LEADER", action = act.CloseCurrentPane { confirm = false } },
+  { key = "q", mods = "LEADER", action = nvim_server.on_close_pane(act.CloseCurrentPane { confirm = false }) },
   -- bind leader-ctrl-q: act.CloseCurrentPane
-  { key = "q", mods = "LEADER|CTRL", action = act.CloseCurrentPane { confirm = false } },
+  { key = "q", mods = "LEADER|CTRL", action = nvim_server.on_close_pane(act.CloseCurrentPane { confirm = false }) },
 
   -- Swap active pane with another one
   -- bind leader-shift-t: act.PaneSelect (swap with active)
@@ -753,7 +759,7 @@ config.keys = {
   -- bind leader-m: wezterm.action.EmitEvent save_session
   {key = "m", mods = "LEADER", action = wezterm.action{EmitEvent = "save_session"}},
   -- bind leader-.: wezterm.action.EmitEvent restore_session
-  {key = ".", mods = "LEADER", action = wezterm.action{EmitEvent = "restore_session"}},
+  {key = ".", mods = "LEADER", action = nvim_server.on_new_pane(wezterm.action{EmitEvent = "restore_session"})},
   --{key = "p", mods = "LEADER", action = wezterm.action{EmitEvent = "load_session"}},
 
   -- Disable default
@@ -793,9 +799,28 @@ config.keys = {
   -- bind leader-0: wezterm.action.ActivateTab 9
   { key = "0", mods = "LEADER", action = wezterm.action{ActivateTab=9}, },
   -- bind leader-t: wezterm.action.SpawnTab
-  { key = 't', mods = "LEADER", action = wezterm.action{SpawnTab="DefaultDomain"}, },
+  { key = 't', mods = "LEADER", action = nvim_server.on_new_pane(wezterm.action{SpawnTab="DefaultDomain"}), },
   -- bind leader-shift-q: wezterm.action.QuitApplication
-  { key = 'q', mods = 'LEADER|SHIFT', action = wezterm.action.QuitApplication },
+  { key = 'q', mods = 'LEADER|SHIFT', action = nvim_server.on_quit(wezterm.action.QuitApplication) },
+
+  -- Reconcile headless nvim servers now and log a breakdown to wez_nvim_log.txt
+  -- bind leader-n: nvim_server.sync_now
+  {
+    key = 'n',
+    mods = 'LEADER',
+    action = wezterm.action_callback(function(window, _pane)
+      nvim_server.sync_now(window)
+    end),
+  },
+  -- Dump the state of tabs/panes/servers to wez_nvim_log.txt, changing nothing
+  -- bind leader-r: nvim_server.report
+  {
+    key = 'r',
+    mods = 'LEADER',
+    action = wezterm.action_callback(function(window, _pane)
+      nvim_server.report(window)
+    end),
+  },
 
   -- Seamless wezterm/tmux/vim pane integration
   -- bind alt-h: split_nav Left
@@ -1050,6 +1075,7 @@ local function split_to_directory_with_delay(win, pane)
       },
       pane
     )
+    nvim_server.panes_added(win)
   elseif DEBUG_MESSAGES then
     wezterm.log_info("Invalid directory path: " .. (directory or "nil"))
     status.notify(win, "WezTerm Notification", "Invalid directory path: " .. (directory or "nil"), false)
@@ -1266,8 +1292,11 @@ wezterm.on("format-tab-title", function(tab)
   new_title = new_title:gsub("\\", "/")
   new_title = new_title:gsub("//+", "/") .. " "
 
+  -- Claude Code: robot icon while a finished response hasn't been visited yet
+  local claude_icon = claude.tab_icon(tab)
+
   --local max_title_len = 20 -- If use_fancy_tab_bar
-  local max_title_len = TAB_MAX_WIDTH
+  local max_title_len = TAB_MAX_WIDTH - (claude_icon and claude.icon_width or 0)
   local min_title_len = 12
 
   if #new_title > max_title_len then
@@ -1282,6 +1311,10 @@ wezterm.on("format-tab-title", function(tab)
     local pad_left  = math.floor(pad_total / 2)
     local pad_right = pad_total - pad_left
     new_title = string.rep(" ", pad_left) .. new_title .. string.rep(" ", pad_right)
+  end
+
+  if claude_icon then
+    new_title = claude_icon .. new_title
   end
 
   return {
@@ -1343,6 +1376,11 @@ end)
 --end)
 
 wezterm.on("update-right-status", function(window, pane)
+  -- Claude Code markers; this event is also what expires status messages
+  claude.poll(window, pane)
+  -- Starts the headless nvim server job / fills the pool on the first tick
+  nvim_server.poll(window)
+
   local cwd_uri = tostring(pane:get_current_working_dir())
   if not cwd_uri then
     status.render(window, {})

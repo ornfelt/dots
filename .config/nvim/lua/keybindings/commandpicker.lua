@@ -209,6 +209,7 @@ local commands = {
   { label = "Trouble telescope", cmd = "Trouble telescope" },
   { label = "Trouble telescope_files", cmd = "Trouble telescope_files" },
   -- General
+  { label = "NvimServerInfo", cmd = "NvimServerInfo" },
   { label = "messages", cmd = "messages" },
   { label = "Reload Configuration", cmd = "lua vim.cmd('source ' .. vim.env.MYVIMRC)" },
   { label = "List Buffers", cmd = "lua print(vim.inspect(vim.api.nvim_list_bufs()))" },
@@ -257,6 +258,7 @@ if vim.fn.exists(":Lazy") == 2 then
 end
 
 local selections_to_print = {
+  ["NvimServerInfo"] = true,
   ["messages"] = true,
   ["CycleAiMode"] = true,
   ["CyclePythonExecCommand"] = true,

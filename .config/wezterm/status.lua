@@ -9,7 +9,7 @@
 -- event instead of window:set_right_status(); that event fires roughly once a
 -- second, which is what expires messages.
 
-local wezterm = require 'wezterm'
+local wezterm = require 'wezterm' --[[@as Wezterm]]
 
 local M = {}
 

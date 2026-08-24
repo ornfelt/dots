@@ -4,11 +4,25 @@ local myconfig = require("myconfig")
 
 local code_root_dir = myconfig.code_root_dir
 
+-- ':!' expands '%' as the current file and '#' as the alternate one, before the
+-- shell ever sees the line -- the quotes around a path do not protect it, and
+-- neither does the '#' sitting in the middle of a word. This repo is
+-- "$code_root_dir/Code2/C#/my_cs/nvcs", so <leader>h on any file of its own put
+-- that '#' on the command line and got
+-- "E194: No alternate file name to substitute for '#'" the moment it ran.
+-- A backslash in front is how vim spells the character itself; the expansion
+-- takes the backslash off again. (fnameescape() escapes these two as well, but
+-- it escapes spaces too, which the quotes here already handle -- and ':!'
+-- leaves a backslash before a space alone, so it would leak into the shell.)
+local function cmd_escape(s)
+  return (s:gsub("([#%%])", "\\%1"))
+end
+
 local function PythonCommand()
   vim.cmd('w') -- Save the file first
   code_root_dir = code_root_dir:gsub(" ", '" "')
 
-  local command = "!python " .. code_root_dir .. "Code2/Python/my_py/scripts/"
+  local command = "!python " .. cmd_escape(code_root_dir) .. "Code2/Python/my_py/scripts/"
   local mode = vim.fn.mode()
 
   if mode == 'v' or mode == 'V' or mode == '^V' then
@@ -24,7 +38,7 @@ local function PythonCommand()
     local send_file_end = false
     local last_line = send_file_end and vim.fn.line("$") or ""
 
-    local args = ' "' .. current_file .. '" ' .. current_line
+    local args = ' "' .. cmd_escape(current_file) .. '" ' .. current_line
     if send_file_end then
       args = args .. " " .. last_line
     end

@@ -22,3 +22,4 @@ x-scheme-handler/eclipse+command x-scheme-handler/eclipse+mpc=_usr_lib_eclipse_.
 image/jpeg=feh.desktop
 image/jpg=feh.desktop
 image/jeg=feh.desktop
+x-scheme-handler/claude-cli=claude-code-url-handler.desktop

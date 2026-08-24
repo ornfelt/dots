@@ -13,7 +13,7 @@ local M = {}
 local ns = vim.api.nvim_create_namespace('preproc_match')
 
 M.config = {
-  filetypes = { 'c', 'cpp', 'objc', 'objcpp', 'cuda', 'glsl' },
+  filetypes = { 'c', 'cpp', 'cs', 'objc', 'objcpp', 'cuda', 'glsl' },
   hl_group = 'PreprocParen', -- links to MatchParen by default, see setup()
   whole_line = false,        -- true = highlight the entire directive line
   toggle_key = '<leader>#',  -- toggles the highlighting on/off

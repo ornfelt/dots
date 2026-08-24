@@ -1,5 +1,8 @@
 require('dbg_log').log_file(debug.getinfo(1, 'S').source)
 
+-- Enable faster Lua module loading with bytecode caching
+vim.loader.enable()
+
 local nvim_supports_vim_pack = vim.fn.has("nvim-0.12") == 1 and vim.pack ~= nil
 
 --require("config.lazy")
