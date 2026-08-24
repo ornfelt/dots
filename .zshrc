@@ -438,6 +438,7 @@ alias .script_helper="$HOME/.local/bin/my_scripts/2025/script_helper.sh"
 # Hard-coded switch: let `vim` attach to a headless server. With this off,
 # `vim` opens a plain nvim exactly like `nvim` does.
 VIM_USE_NVIM_SERVER=false
+#VIM_USE_NVIM_SERVER=true
 
 # Ask the server to :cd here before attaching. Off, so a reused pool server is
 # left exactly as its previous user left it; file arguments are passed as
