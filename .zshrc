@@ -287,6 +287,7 @@ alias cb='clipboard'
 alias tb='nc termbin.com 9999'
 alias doomsync='$HOME/.emacs.d/bin/doom sync && systemctl restart emacs --user'
 alias vim='nvim'
+alias vi='nvim'
 alias lua='lua5.4'
 alias python='python3'
 alias xup='xrdb $HOME/.Xresources'
@@ -414,7 +415,222 @@ alias nvcs="$HOME/.local/bin/my_scripts/2025/nvcs.sh"
 alias .lsh="$HOME/.local/bin/my_scripts/2025/lsh.sh"
 alias .audio_helper="$HOME/.local/bin/my_scripts/audio_helper.sh"
 alias .audit_diff_commit_info="$HOME/.local/bin/my_scripts/2025/audit_diff_commit_info.sh"
+alias .audit_diff_restore="$HOME/.local/bin/my_scripts/2025/audit_diff_restore.sh"
+alias .gen_commit_msg="$HOME/.local/bin/my_scripts/2025/gen_commit_msg.sh"
+alias .kill_nvim_servers="$HOME/.local/bin/my_scripts/2025/kill_nvim_servers.sh"
 alias .script_helper="$HOME/.local/bin/my_scripts/2025/script_helper.sh"
+
+# ---------------------------------------------------------------------------
+# Headless nvim servers (wezterm)
+#
+# ~/.wezterm/nvim_server.lua keeps `nvim --headless --listen ...` servers warm
+# and tells every pane about them through WEZ_NVIM_*, so nothing has to be
+# configured twice here. Attaching a UI to a warm server costs ~60ms instead of
+# the ~2.4s a cold nvim costs with this config.
+#
+#   vim                 attach to this pane's server (or lease a pooled one)
+#   vim file1 file2     the same, opening those files first
+#   nvim                always a plain nvim, never a server
+#
+# Falls back to a plain nvim whenever no server can be reached.
+# ---------------------------------------------------------------------------
+
+# Hard-coded switch: let `vim` attach to a headless server. With this off,
+# `vim` opens a plain nvim exactly like `nvim` does.
+VIM_USE_NVIM_SERVER=false
+
+# Ask the server to :cd here before attaching. Off, so a reused pool server is
+# left exactly as its previous user left it; file arguments are passed as
+# absolute paths either way.
+#NVIM_SERVER_SYNC_CWD=false
+NVIM_SERVER_SYNC_CWD=true
+# How long to wait for a server that is still starting up
+NVIM_SERVER_WAIT_MS=8000
+
+nvim_server_address() {
+    print -r -- "$WEZ_NVIM_DIR/$1.sock"
+}
+
+nvim_server_names() {
+    local prefix=$1 f
+    for f in "$WEZ_NVIM_DIR"/${prefix}*.sock(N); do
+        f=${f:t}
+        print -r -- "${f%.sock}"
+    done
+}
+
+nvim_server_ready() {
+    [[ -S $(nvim_server_address "$1") ]]
+}
+
+nvim_server_wait() {
+    local name=$1 timeout_ms=$2
+    local -i i tries=$(( timeout_ms / 50 ))
+    for (( i = 0; i < tries; i++ )); do
+        nvim_server_ready "$name" && return 0
+        sleep 0.05
+    done
+    return 1
+}
+
+nvim_server_new_name() {
+    local id
+    if [[ -r /proc/sys/kernel/random/uuid ]]; then
+        id=${$(</proc/sys/kernel/random/uuid)//-/}
+        id=${id[1,12]}
+    else
+        id=$(printf '%04x%04x%04x' $RANDOM $RANDOM $RANDOM)
+    fi
+    print -r -- "nvim-wez-pool-$id"
+}
+
+nvim_server_start() {
+    local name=$1
+    local dir=$WEZ_NVIM_DIR
+    local addr=$(nvim_server_address "$name")
+    local pid_file="$dir/$name.pid"
+    # Same bootstrap as in ~/.wezterm/nvim_server.lua: the server records its
+    # own pid so wezterm can find and kill it later, and removes it on exit
+    local boot="lua local d=[[$dir]] local p=[[$pid_file]] vim.fn.mkdir(d,[[p]]) vim.fn.writefile({tostring(vim.fn.getpid())},p) vim.api.nvim_create_autocmd('VimLeavePre',{callback=function() vim.fn.delete(p) end})"
+    command nvim --headless --listen "$addr" --cmd "$boot" >/dev/null 2>&1 &!
+}
+
+nvim_server_ui_count() {
+    # --headless matters here: without it the client starts a whole TUI
+    local out status
+    out=$(command nvim --headless --server "$(nvim_server_address "$1")" \
+        --remote-expr 'len(nvim_list_uis())' 2>/dev/null)
+    status=$?
+    if (( status != 0 )); then print -r -- -1; return; fi
+    out=${out//[[:space:]]/}
+    if [[ $out == <-> ]]; then print -r -- "$out"; else print -r -- -1; fi
+}
+
+nvim_server_lease_create() {
+    # O_EXCL via noclobber is atomic, so two panes cannot claim the same server
+    ( set -o noclobber
+      print -r -- "pid=$$ pane=$WEZTERM_PANE" > "$1" ) 2>/dev/null
+}
+
+# Sets NVIM_CLAIM_NAME / NVIM_CLAIM_LEASE on success
+nvim_server_claim_from_pool() {
+    local dir=$WEZ_NVIM_DIR name lease
+    NVIM_CLAIM_NAME=""
+    NVIM_CLAIM_LEASE=""
+    [[ -d $dir ]] || mkdir -p "$dir"
+
+    local -a pool_names
+    pool_names=(${(f)"$(nvim_server_names 'nvim-wez-pool-')"})
+
+    # A server with no lease file is free without having to ask it
+    for name in $pool_names; do
+        lease="$dir/$name.lease"
+        [[ -e $lease ]] && continue
+        if nvim_server_lease_create "$lease"; then
+            NVIM_CLAIM_NAME=$name; NVIM_CLAIM_LEASE=$lease; break
+        fi
+    done
+
+    # Otherwise look for a lease left behind by a pane that was killed: the
+    # server is still running but nothing is attached to it any more
+    if [[ -z $NVIM_CLAIM_NAME ]]; then
+        for name in $pool_names; do
+            [[ $(nvim_server_ui_count "$name") == 0 ]] || continue
+            lease="$dir/$name.lease"
+            rm -f "$lease" 2>/dev/null
+            if nvim_server_lease_create "$lease"; then
+                NVIM_CLAIM_NAME=$name; NVIM_CLAIM_LEASE=$lease; break
+            fi
+        done
+    fi
+
+    # Pool exhausted, so grow it
+    if [[ -z $NVIM_CLAIM_NAME ]]; then
+        name=$(nvim_server_new_name)
+        nvim_server_start "$name"
+        if nvim_server_wait "$name" "$NVIM_SERVER_WAIT_MS"; then
+            lease="$dir/$name.lease"
+            if nvim_server_lease_create "$lease"; then
+                NVIM_CLAIM_NAME=$name; NVIM_CLAIM_LEASE=$lease
+            fi
+        fi
+    fi
+
+    # Keep a spare ready, but only start one once the pool is nearly empty.
+    # Topping straight back up to the prefill size would mean starting an nvim
+    # on every single edit and holding that many idle servers forever.
+    # One at a time, so a burst of edits does not start a swarm of them.
+    local -i min_free=${WEZ_NVIM_POOL_MIN_FREE:-1} free=0
+    for name in ${(f)"$(nvim_server_names 'nvim-wez-pool-')"}; do
+        [[ -e "$dir/$name.lease" ]] || (( free++ ))
+    done
+    (( free <= min_free )) && nvim_server_start "$(nvim_server_new_name)"
+
+    [[ -n $NVIM_CLAIM_NAME ]]
+}
+
+invoke_nvim_server() {
+    local -a files
+    files=("$@")
+    local mode=$WEZ_NVIM_MODE
+
+    if [[ -z $mode || $mode == off || -z $WEZ_NVIM_DIR ]]; then
+        command nvim "${files[@]}"
+        return
+    fi
+
+    local name="" lease=""
+
+    if [[ $mode == pool ]]; then
+        if nvim_server_claim_from_pool; then
+            name=$NVIM_CLAIM_NAME
+            lease=$NVIM_CLAIM_LEASE
+        fi
+    elif [[ -n $WEZTERM_PANE ]]; then
+        name="nvim-wez-${WEZ_NVIM_INSTANCE}-${WEZTERM_PANE}"
+        if ! nvim_server_ready "$name"; then
+            # The reconciler may not have caught up with a brand new pane yet
+            nvim_server_start "$name"
+        fi
+        nvim_server_wait "$name" "$NVIM_SERVER_WAIT_MS" || name=""
+    fi
+
+    if [[ -z $name ]]; then
+        print -P "%F{yellow}vim: no nvim server available, starting a normal nvim%f"
+        command nvim "${files[@]}"
+        return
+    fi
+
+    local addr=$(nvim_server_address "$name")
+    {
+        if $NVIM_SERVER_SYNC_CWD; then
+            local cwd=${PWD//\'/\'\'}
+            command nvim --headless --server "$addr" \
+                --remote-expr "chdir('$cwd')" >/dev/null 2>&1
+        fi
+        if (( ${#files} > 0 )); then
+            # Made absolute here so they do not depend on the server's own cwd
+            local -a paths
+            paths=(${^files:a})
+            command nvim --headless --server "$addr" --remote "${paths[@]}" >/dev/null 2>&1
+        fi
+        command nvim --server "$addr" --remote-ui
+    } always {
+        [[ -n $lease ]] && rm -f "$lease" 2>/dev/null
+    }
+}
+
+# Overrides the plain `vim` alias set further up; `nvim` is left alone, so
+# there is always a way to start an editor without a server
+if $VIM_USE_NVIM_SERVER; then
+    alias vim='invoke_nvim_server'
+    alias vi='invoke_nvim_server'
+fi
+
+function .cc {
+    unset ANTHROPIC_API_KEY
+    claude --permission-mode auto "$@"
+}
 
 run_edex() {
   local f="$HOME/Downloads/eDEX-UI-Linux-x86_64.AppImage"
