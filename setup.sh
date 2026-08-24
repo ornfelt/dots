@@ -110,6 +110,22 @@ cp .Xresources $HOME/.Xresources
 cp .Xresources_cat $HOME/.Xresources_cat
 cp .zshrc $HOME/.zshrc
 
+# Claude config
+mkdir -p "$HOME/.claude"
+
+if [[ -f ".claude/settings.json" ]]; then
+    cp ".claude/settings.json" "$HOME/.claude/settings.json"
+else
+    log_warn "File .claude/settings.json does not exist. Skipping copy."
+fi
+
+if [[ -d ".claude/hooks" ]]; then
+    rm -rf "$HOME/.claude/hooks"
+    cp -r ".claude/hooks" "$HOME/.claude/"
+else
+    log_warn "Directory .claude/hooks does not exist. Skipping copy."
+fi
+
 # Update alacritty, preserving custom font size (if any)
 DEFAULT_FONT_SIZE="7.0"
 ALACRITTY_CONFIG_DIR="$HOME/.config/alacritty"

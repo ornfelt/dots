@@ -90,6 +90,7 @@ rm -rf .config/rofi
 rm -rf .config/st
 rm -rf .config/zathura
 rm -rf .dwm
+rm -rf .claude
 rm -rf bin
 rm .bashrc
 rm .tmux.conf
@@ -155,6 +156,20 @@ cp -r $HOME/.xinitrc .xinitrc
 cp -r $HOME/.Xresources .Xresources
 cp -r $HOME/.Xresources_cat .Xresources_cat
 cp -r $HOME/.zshrc .zshrc
+
+# Copy selected Claude configuration
+mkdir -p .claude
+if [[ -f "$HOME/.claude/settings.json" ]]; then
+    cp "$HOME/.claude/settings.json" .claude/
+else
+    log_warn "File $HOME/.claude/settings.json does not exist. Skipping copy."
+fi
+
+if [[ -d "$HOME/.claude/hooks" ]]; then
+    cp -r "$HOME/.claude/hooks" .claude/
+else
+    log_warn "Directory $HOME/.claude/hooks does not exist. Skipping copy."
+fi
 
 rm --f .config/dmenu/dmenu
 rm --f .config/dmenu/stest
