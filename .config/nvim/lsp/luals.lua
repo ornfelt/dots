@@ -15,7 +15,7 @@ local root_markers = { ".luarc.json", ".luarc.jsonc", ".stylua.toml", "stylua.to
 -- instead. wezterm puts ~/.wezterm and ~/.config/wezterm on package.path, so
 -- rooting there is both correct and cheap - that directory is all that gets
 -- scanned, and `require 'claude'` finds ~/.wezterm/claude.lua.
-local home_sidecars = { ".wezterm", ".config/wezterm" }
+local home_sidecars = { ".config/wezterm", ".wezterm" }
 
 -- Modules with no file behind them (`require 'wezterm'` is served by the
 -- wezterm binary itself) only resolve if LuaCATS stubs are on disk; whichever

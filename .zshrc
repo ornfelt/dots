@@ -445,6 +445,7 @@ VIM_USE_NVIM_SERVER=false
 # absolute paths either way.
 #NVIM_SERVER_SYNC_CWD=false
 NVIM_SERVER_SYNC_CWD=true
+
 # How long to wait for a server that is still starting up
 NVIM_SERVER_WAIT_MS=8000
 
@@ -498,13 +499,22 @@ nvim_server_start() {
 
 nvim_server_ui_count() {
     # --headless matters here: without it the client starts a whole TUI
-    local out status
+    local out rc
     out=$(command nvim --headless --server "$(nvim_server_address "$1")" \
         --remote-expr 'len(nvim_list_uis())' 2>/dev/null)
-    status=$?
-    if (( status != 0 )); then print -r -- -1; return; fi
+    rc=$?
+
+    if (( rc != 0 )); then
+        print -r -- -1
+        return
+    fi
+
     out=${out//[[:space:]]/}
-    if [[ $out == <-> ]]; then print -r -- "$out"; else print -r -- -1; fi
+    if [[ $out == <-> ]]; then
+        print -r -- "$out"
+    else
+        print -r -- -1
+    fi
 }
 
 nvim_server_lease_create() {
@@ -527,8 +537,18 @@ nvim_server_claim_from_pool() {
     for name in $pool_names; do
         lease="$dir/$name.lease"
         [[ -e $lease ]] && continue
+
+        # A socket can survive a hard-killed nvim process. Verify that the server
+        # actually accepts RPC connections before leasing it.
+        if [[ $(nvim_server_ui_count "$name") == -1 ]]; then
+            rm -f "$dir/$name.sock" "$dir/$name.pid" "$lease" 2>/dev/null
+            continue
+        fi
+
         if nvim_server_lease_create "$lease"; then
-            NVIM_CLAIM_NAME=$name; NVIM_CLAIM_LEASE=$lease; break
+            NVIM_CLAIM_NAME=$name
+            NVIM_CLAIM_LEASE=$lease
+            break
         fi
     done
 

@@ -97,6 +97,10 @@ M.pool_min_free = 2
 -- Also log every background tick, not just the manual trigger
 M.log_background_ticks = false
 
+-- How long to give a pool prefill batch to appear before allowing another
+-- attempt. Prevents repeated status ticks from spawning duplicate batches.
+M.pool_prefill_timeout_seconds = 8
+
 -- wezterm only watches the main config file for changes, not the modules it
 -- requires, so without this the switches above would need a restart (or a
 -- touch of ~/.wezterm.lua) before they took effect.
@@ -345,10 +349,18 @@ local function scan_servers(verify, readonly)
       local pid = read_pid(path)
       local alive = (not verify) or nvim_alive(pid)
       if not alive then
-        -- Hard killed or crashed before it could clean up after itself
         table.insert(result.stale, { name = name, pid = pid })
+
         if not readonly then
           os.remove(path)
+
+          -- A hard-killed Unix server cannot remove its socket itself.
+          if not is_windows then
+            os.remove(address_for(name))
+          end
+
+          -- A crashed/killed client may also leave its lease behind.
+          os.remove(M.state_dir .. '/' .. name .. '.lease')
         end
       end
       if alive or readonly then
@@ -582,14 +594,30 @@ end
 -- then on `vim` replaces the server it takes, so the pool stays warm without
 -- a background job.
 local function prefill_pool()
-  if wezterm.GLOBAL.nvim_server_prefilled then
+  local servers = scan_servers(true)
+
+  -- Pool is already large enough.
+  if #servers.pool >= M.pool_size then
+    wezterm.GLOBAL.nvim_server_prefill_retry_after = nil
     return
   end
-  wezterm.GLOBAL.nvim_server_prefilled = true
 
-  -- Pool servers outlive wezterm, so an earlier instance may have left plenty
-  local servers = scan_servers(true)
-  for _ = #servers.pool + 1, M.pool_size do
+  -- background_child_process() is asynchronous. While a previous batch is
+  -- starting, scan_servers() may not see its pid files yet.
+  local now = os.time()
+  local retry_after =
+    tonumber(wezterm.GLOBAL.nvim_server_prefill_retry_after) or 0
+
+  if now < retry_after then
+    return
+  end
+
+  local missing = M.pool_size - #servers.pool
+
+  wezterm.GLOBAL.nvim_server_prefill_retry_after =
+    now + M.pool_prefill_timeout_seconds
+
+  for _ = 1, missing do
     spawn(pool_server_name())
   end
 end

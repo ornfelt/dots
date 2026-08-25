@@ -9,7 +9,7 @@
 #[ -f ~/.fzf.bash ] && source ~/.fzf.bash
 
 alias ls='ls --color=auto'
-alias vim='nvim'
+alias vim >/dev/null 2>&1 || alias vim='nvim'
 alias lua='lua5.4'
 alias python='python3'
 #alias config='/usr/bin/git --git-dir=/home/jonas/.cfg/ --work-tree=/home/jonas'
