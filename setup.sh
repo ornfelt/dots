@@ -264,6 +264,18 @@ else
     log_ok "fzf already installed."
 fi
 
+# wezterm types
+WEZTERM_TYPES_DIR="$HOME/.wezterm/types"
+
+if [ ! -d "$WEZTERM_TYPES_DIR" ]; then
+    log_step "Installing wezterm-types"
+    mkdir -p "$HOME/.wezterm"
+    git clone --depth 1 https://github.com/gonstoll/wezterm-types.git "$WEZTERM_TYPES_DIR"
+    log_ok "wezterm-types installed."
+else
+    log_ok "wezterm-types already installed."
+fi
+
 # packer.nvim (old)
 #if [ ! -d "$HOME/.local/share/nvim/site/pack/packer/start/packer.nvim/.git" ]; then
 #    git clone --depth 1 https://github.com/wbthomason/packer.nvim "$HOME/.local/share/nvim/site/pack/packer/start/packer.nvim"
