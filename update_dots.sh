@@ -275,6 +275,29 @@ done
 
 log_ok "All keys are empty. ./bash_profile is intact."
 
+# Restore Claude settings if the only change is effortLevel
+RESTORE_CLAUDE_EFFORT_ONLY=true
+
+if $RESTORE_CLAUDE_EFFORT_ONLY; then
+    CLAUDE_SETTINGS=".claude/settings.json"
+
+    if ! git diff --quiet -- "$CLAUDE_SETTINGS"; then
+        changed_lines=$(
+            git diff --unified=0 -- "$CLAUDE_SETTINGS" |
+                grep -E '^[+-]' |
+                grep -vE '^(---|\+\+\+)'
+        )
+
+        if [[ -n "$changed_lines" ]] &&
+           echo "$changed_lines" | grep -qv '"effortLevel"'; then
+            log_info "Claude settings contains changes other than effortLevel. Keeping changes."
+        else
+            log_info "Only Claude effortLevel changed. Restoring $CLAUDE_SETTINGS."
+            git restore -- "$CLAUDE_SETTINGS"
+        fi
+    fi
+fi
+
 log_ok "Copied latest files..."
 
 #git add -A

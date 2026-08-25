@@ -121,15 +121,15 @@ local commands = {
   { label = "ChatGPTRun Code Readability Analysis - Analyze code readability", cmd = "ChatGPTRun code_readability_analysis" },
   { label = "ChatGPT - Run ChatGPT for selection", cmd = "ChatGPT" },
   -- LSP
-  { label = "LSP Info", cmd = "LspInfo" },
-  { label = "LSP Log", cmd = "LspLog" },
+  { label = "LSP Info", cmd = "lua if vim.fn.exists(':LspInfo') == 2 then vim.cmd('LspInfo') else vim.cmd('checkhealth vim.lsp') end" },
+  { label = "LSP Log", cmd = "lua if vim.fn.exists(':LspLog') == 2 then vim.cmd('LspLog') else local path = (vim.lsp.log and vim.lsp.log.get_filename) and vim.lsp.log.get_filename() or vim.lsp.get_log_path(); vim.cmd('tabedit ' .. vim.fn.fnameescape(path)) end" },
   { label = "LSP Document Symbols", cmd = "lua vim.lsp.buf.document_symbol()" },
-  { label = "LSP Client Attached", cmd = "lua print(vim.lsp.buf.server_ready())" },
-  { label = "LSP Client Capabilities", cmd = "lua print(vim.inspect(vim.lsp.get_active_clients()[1].server_capabilities))" },
-  { label = "LSP Client Name", cmd = "lua print(vim.lsp.get_active_clients()[1].name)" },
-  { label = "LSP Active Clients", cmd = "lua print(vim.inspect(vim.lsp.get_active_clients()))" },
-  { label = "LSP Start Client", cmd = "lua vim.lsp.start_client({ name = 'example', cmd = {'path/to/server'} })" },
-  { label = "LSP Stop Client", cmd = "lua vim.lsp.stop_client(vim.lsp.get_active_clients())" },
+  { label = "LSP Client Attached", cmd = "lua print(#((vim.lsp.get_clients and vim.lsp.get_clients({ bufnr = 0 })) or vim.lsp.get_active_clients({ bufnr = 0 })) > 0)" },
+  { label = "LSP Client Capabilities", cmd = "lua print(vim.inspect(((vim.lsp.get_clients and vim.lsp.get_clients()) or vim.lsp.get_active_clients())[1].server_capabilities))" },
+  { label = "LSP Client Name", cmd = "lua print(((vim.lsp.get_clients and vim.lsp.get_clients()) or vim.lsp.get_active_clients())[1].name)" },
+  { label = "LSP Active Clients", cmd = "lua print(vim.inspect((vim.lsp.get_clients and vim.lsp.get_clients()) or vim.lsp.get_active_clients()))" },
+  { label = "LSP Start Client", cmd = "lua if vim.lsp.start then vim.lsp.start({ name = 'example', cmd = {'path/to/server'} }) else vim.lsp.start_client({ name = 'example', cmd = {'path/to/server'} }) end" },
+  { label = "LSP Stop Client", cmd = "lua if vim.lsp.get_clients then for _, client in ipairs(vim.lsp.get_clients()) do client:stop() end else vim.lsp.stop_client(vim.lsp.get_active_clients()) end" },
   -- Telescope file pickers
   { label = "Telescope Find files", cmd = "lua require('telescope.builtin').find_files()" },
   { label = "Telescope Git files", cmd = "lua require('telescope.builtin').git_files()" },
@@ -398,4 +398,3 @@ end, { noremap = true, silent = true })
 --    vim.cmd(cmd)
 --  end
 --end, { noremap = true, silent = true })
-
