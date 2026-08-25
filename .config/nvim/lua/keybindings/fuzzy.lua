@@ -149,83 +149,283 @@ vim.api.nvim_set_keymap('n', '<leader>A', ':lua StartFinder("code_root_dir")<CR>
 -- bind leader-f: StartFinder my_notes_path (n)
 vim.api.nvim_set_keymap('n', '<leader>f', ':lua StartFinder("my_notes_path")<CR>', { noremap = true, silent = true })
 
-function open_files_from_list()
+-- files.json: the shared "quick open" list, written with {env_var} placeholders so the
+-- same list works on every machine. The same rules live in up.ps1, up.sh and
+-- {my_notes_path}/scripts/files/files_json_common.py.
+local FILES_JSON_NAME = "files.json"
+local FILES_JSON_FILES_KEY = "files"
+local FILES_JSON_PATH_KEY = "path"
+
+-- Show every entry the way it is written in files.json ({my_notes_path}/some_file.txt)
+-- instead of the resolved absolute path. This only changes what the picker displays,
+-- opening always uses the resolved path. Set to false to list plain absolute paths.
+local SHOW_PLACEHOLDER_PATHS = true
+
+-- Every placeholder understood in files.json. Each one resolves from the environment
+-- variable of the same name when it is set, and from a per platform default otherwise.
+local PLACEHOLDER_NAMES = {
+  "my_notes_path",
+  "code_root_dir",
+  "conf_dir",
+  "ps_profile_path",
+  "wezterm_dir",
+  "local_dir",
+  "downloads_dir",
+  "home_dir",
+}
+
+local function is_windows()
+  return vim.fn.has('win32') == 1 or vim.fn.has('win64') == 1
+end
+
+-- Trim leading/trailing whitespace, backslashes -> forward slashes, collapse repeated slashes
+local function normalize_list_path(path)
+  if not path or path == "" then return "" end
+  path = path:gsub("^%s+", ""):gsub("%s+$", "")
+  path = path:gsub("\\", "/"):gsub("//+", "/")
+  return path
+end
+
+-- Drop trailing slashes so a prefix and the rest of the path always join with a single '/'
+local function strip_trailing_slash(path)
+  local stripped = path:gsub("/+$", "")
+  if stripped == "" then return path:sub(1, 1) end
+  return stripped
+end
+
+local function get_env(name)
+  local value = os.getenv(name)
+  if value == nil or value == "" then return nil end
+  return value
+end
+
+local function get_home_dir()
+  local first, second = "HOME", "USERPROFILE"
+  if is_windows() then
+    first, second = "USERPROFILE", "HOME"
+  end
+  return strip_trailing_slash(normalize_list_path(get_env(first) or get_env(second) or ""))
+end
+
+-- Defaults used when the matching environment variable is not set
+local function get_placeholder_fallbacks(home)
+  if is_windows() then
+    return {
+      conf_dir = strip_trailing_slash(normalize_list_path(get_env("LOCALAPPDATA") or (home .. "/AppData/Local"))),
+      wezterm_dir = home .. "/.wezterm",
+      local_dir = "C:/local",
+      downloads_dir = home .. "/Downloads",
+      home_dir = home,
+    }
+  end
+  return {
+    conf_dir = home .. "/.config",
+    wezterm_dir = home .. "/.config/wezterm",
+    local_dir = home .. "/Documents/local",
+    downloads_dir = home .. "/Downloads",
+    home_dir = home,
+  }
+end
+
+local function get_placeholder_values()
+  local fallbacks = get_placeholder_fallbacks(get_home_dir())
+  local values = {}
+  for _, name in ipairs(PLACEHOLDER_NAMES) do
+    local raw = get_env(name) or fallbacks[name]
+    if raw and raw ~= "" then
+      values[name] = strip_trailing_slash(normalize_list_path(raw))
+    end
+  end
+  return values
+end
+
+-- {placeholder} path -> absolute path. Returns nil plus the name when one cannot be resolved.
+local function resolve_placeholders(path, values)
+  local missing = nil
+  local resolved = path:gsub("{([%a_][%w_]*)}", function(name)
+    local value = values[name]
+    if not value then
+      missing = missing or name
+      return "{" .. name .. "}"
+    end
+    return value
+  end)
+  if missing then return nil, missing end
+  return normalize_list_path(resolved)
+end
+
+local function read_file_contents(path)
+  local file = io.open(path, "r")
+  if not file then return nil end
+  local content = file:read("*a")
+  file:close()
+  return content
+end
+
+local function decode_json(content)
+  local decoded, data = pcall(vim.json.decode, content)
+  if decoded then return data end
+  decoded, data = pcall(vim.fn.json_decode, content)
+  if decoded then return data end
+  return nil
+end
+
+-- Raw entry paths from files.json
+local function read_list_entries(notes_dir)
+  local json_path = notes_dir .. "/" .. FILES_JSON_NAME
+  local content = read_file_contents(json_path)
+  if not content then
+    vim.notify(FILES_JSON_NAME .. " not found in " .. notes_dir, vim.log.levels.WARN)
+    return nil
+  end
+
+  local data = decode_json(content)
+  if not data then
+    vim.notify("Could not parse " .. json_path, vim.log.levels.ERROR)
+    return nil
+  end
+
+  local entries = data[FILES_JSON_FILES_KEY] or data
+  local paths = {}
+  for _, entry in ipairs(entries) do
+    if type(entry) == "table" then
+      table.insert(paths, entry[FILES_JSON_PATH_KEY])
+    elseif type(entry) == "string" then
+      table.insert(paths, entry)
+    end
+  end
+  return paths
+end
+
+-- Resolved, de-duplicated entries. Every item is { display = what the picker shows,
+-- path = the absolute path to open }. Entries whose file is not on this machine are left
+-- out unless include_missing is set.
+local function load_file_list(include_missing)
+  local notes_dir = strip_trailing_slash(normalize_list_path(my_notes_path))
+  local raw_paths = read_list_entries(notes_dir)
+  if not raw_paths then return {}, 0, 0 end
+
+  local values = get_placeholder_values()
+  local items, seen, missing, unresolved = {}, {}, 0, 0
+
+  for _, raw in ipairs(raw_paths) do
+    local path = normalize_list_path(raw)
+    if path ~= "" and not path:match("^#") then
+      local resolved = resolve_placeholders(path, values)
+      if not resolved then
+        unresolved = unresolved + 1
+      elseif not seen[resolved:lower()] then
+        seen[resolved:lower()] = true
+        if include_missing or vim.loop.fs_stat(resolved) then
+          table.insert(items, {
+            display = SHOW_PLACEHOLDER_PATHS and path or resolved,
+            path = resolved,
+          })
+        else
+          missing = missing + 1
+        end
+      end
+    end
+  end
+
+  return items, missing, unresolved
+end
+
+function open_files_from_list(include_missing)
   local use_fzf = myconfig.get_file_picker() == myconfig.FilePicker.FZF
   local use_fzf_lua = myconfig.get_file_picker() == myconfig.FilePicker.FZF_LUA
-  local file_path = my_notes_path .. "/files.txt"
-  local files = myconfig.read_lines_from_file(file_path, true)
+  local items, missing, unresolved = load_file_list(include_missing)
+
+  if #items == 0 then
+    vim.notify("No files to open from " .. FILES_JSON_NAME, vim.log.levels.WARN)
+    return
+  end
+  if unresolved > 0 then
+    vim.notify(unresolved .. " entries use a placeholder that is not set on this machine.",
+      vim.log.levels.WARN)
+  end
+
+  -- fzf and fzf-lua hand back the line they displayed, so keep a way back to the real path
+  local entries, path_by_display = {}, {}
+  for _, item in ipairs(items) do
+    table.insert(entries, item.display)
+    path_by_display[item.display] = item.path
+  end
+
+  local suffix = missing > 0 and (", " .. missing .. " not here") or ""
+  local prompt_title = string.format("Select a file to open (%d%s)", #items, suffix)
+
+  -- Takes either a displayed line or an absolute path
+  local function open_file(selected, split_cmd)
+    local file = path_by_display[selected] or selected
+    if file and file ~= "" then
+      vim.cmd(split_cmd .. " " .. vim.fn.fnameescape(file))
+    end
+  end
 
   if use_fzf then
     -- Use fzf file picker to display file paths (edit/tabedit)
     vim.fn['fzf#run']({
-      source = files,
-      -- sink = function(selected)
-      -- vim.cmd('edit ' .. selected)
-      -- end,
-      options = '--multi --prompt "Select a file to open> " --expect=ctrl-t',
+      source = entries,
+      options = '--multi --prompt "' .. prompt_title .. '> " --expect=ctrl-t',
       window = {
         width = 0.6,
         height = 0.6,
         border = 'rounded'
       },
       sinklist = function(selected)
+        if not selected or #selected == 0 then return end
         local key = selected[1]
-        local file = selected[2]
-        if key == "ctrl-t" then
-          vim.cmd('tabedit ' .. file)
-        else
-          vim.cmd('edit ' .. file)
+        local split_cmd = key == "ctrl-t" and "tabedit" or "edit"
+        for i = 2, #selected do
+          open_file(selected[i], split_cmd)
         end
       end
     })
   elseif use_fzf_lua then
     -- Use fzf-lua file picker to display file paths
-    require('fzf-lua').fzf_exec(files, {
-      prompt = 'Select a file: ',
+    require('fzf-lua').fzf_exec(entries, {
+      prompt = prompt_title .. '> ',
       actions = {
         ['default'] = function(selected)
-          vim.cmd('edit ' .. selected[1])
+          for _, file in ipairs(selected or {}) do open_file(file, 'edit') end
         end,
         ['ctrl-t'] = function(selected)
-          vim.cmd('tabedit ' .. selected[1])
+          for _, file in ipairs(selected or {}) do open_file(file, 'tabedit') end
         end,
       }
     })
   else
     -- Use Telescope file picker to display file paths
     require('telescope.pickers').new({}, {
-      prompt_title = "Select a file to open",
+      prompt_title = prompt_title,
       finder = require('telescope.finders').new_table({
-        results = files,
+        results = items,
+        entry_maker = function(item)
+          return {
+            value = item.path,
+            display = item.display,
+            ordinal = item.display,
+            path = item.path,
+            filename = item.path,
+          }
+        end,
       }),
       sorter = require('telescope.config').values.generic_sorter({}),
       attach_mappings = function(_, map)
         local actions = require('telescope.actions')
         local action_state = require('telescope.actions.state')
 
-        map('i', '<CR>', function(prompt_bufnr)
+        local function open_selected(prompt_bufnr, split_cmd)
           local selection = action_state.get_selected_entry()
           actions.close(prompt_bufnr)
-          vim.cmd('edit ' .. selection.value)
-        end)
+          if selection then open_file(selection.value, split_cmd) end
+        end
 
-        map('i', '<C-t>', function(prompt_bufnr)
-          local selection = action_state.get_selected_entry()
-          actions.close(prompt_bufnr)
-          vim.cmd('tabedit ' .. selection.value)
-        end)
-
-        map('n', '<CR>', function(prompt_bufnr)
-          local selection = action_state.get_selected_entry()
-          actions.close(prompt_bufnr)
-          vim.cmd('edit ' .. selection.value)
-        end)
-
-        map('n', '<C-t>', function(prompt_bufnr)
-          local selection = action_state.get_selected_entry()
-          actions.close(prompt_bufnr)
-          vim.cmd('tabedit ' .. selection.value)
-        end)
+        map('i', '<CR>', function(prompt_bufnr) open_selected(prompt_bufnr, 'edit') end)
+        map('i', '<C-t>', function(prompt_bufnr) open_selected(prompt_bufnr, 'tabedit') end)
+        map('n', '<CR>', function(prompt_bufnr) open_selected(prompt_bufnr, 'edit') end)
+        map('n', '<C-t>', function(prompt_bufnr) open_selected(prompt_bufnr, 'tabedit') end)
 
         return true
       end,
@@ -235,6 +435,8 @@ end
 
 -- bind leader-w: open_files_from_list (n)
 vim.api.nvim_set_keymap('n', '<leader>w', ':lua open_files_from_list()<CR>', { noremap = true, silent = true })
+-- bind leader-s-w: open_files_from_list including files missing on this machine (n)
+vim.api.nvim_set_keymap('n', '<leader>W', ':lua open_files_from_list(true)<CR>', { noremap = true, silent = true })
 
 -- List tabs with telescope
 local actions = require("telescope.actions")
