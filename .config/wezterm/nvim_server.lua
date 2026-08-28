@@ -58,6 +58,36 @@ if not is_windows then
   M.enabled = false
 end
 
+-- One switch for all three sides. WEZ_NVIM_SERVERS overrides everything above,
+-- and the same variable is read by the `vim` function in the PowerShell
+-- profile and in .zshrc, so servers can be turned on or off from one place
+-- instead of three. Unset means "use the hard-coded switches"; 0/off/false/no
+-- (any case) means off, anything else means on.
+--
+-- Set it where the whole session sees it, not in a shell rc: on Windows as a
+-- user environment variable (setx WEZ_NVIM_SERVERS 0, then restart wezterm),
+-- on linux in ~/.zshenv or ~/.profile - wezterm is started by the desktop and
+-- never sources ~/.zshrc, so a value set there would reach the shell but not
+-- this module.
+M.env_switch = 'WEZ_NVIM_SERVERS'
+
+local function env_bool(name)
+  local value = os.getenv(name)
+  if value == nil then
+    return nil
+  end
+  value = value:lower():gsub('%s', '')
+  if value == '' then
+    return nil
+  end
+  return not (value == '0' or value == 'off' or value == 'false' or value == 'no')
+end
+
+local override = env_bool(M.env_switch)
+if override ~= nil then
+  M.enabled = override
+end
+
 -- Hard-coded switch: share a pool of long-lived servers instead of mapping one
 -- server to each pane. Pool servers are never killed automatically; they stay
 -- around when a pane, tab or the whole wezterm instance goes away.
@@ -100,6 +130,14 @@ M.log_background_ticks = false
 -- How long to give a pool prefill batch to appear before allowing another
 -- attempt. Prevents repeated status ticks from spawning duplicate batches.
 M.pool_prefill_timeout_seconds = 8
+
+-- Hard-coded switch: prefill the pool once per wezterm instance and never
+-- again while it runs. The prefill is driven by "update-right-status", so
+-- without this every tick that finds fewer than pool_size servers starts
+-- replacements, and killing the pool by hand (kill_nvim_servers) refills it
+-- within a second. Off: the pool is topped back up whenever it runs short.
+-- Either way `vim` still replaces the server it claims (see pool_min_free).
+M.prefill_once = true
 
 -- wezterm only watches the main config file for changes, not the modules it
 -- requires, so without this the switches above would need a restart (or a
@@ -590,15 +628,25 @@ end
 -- Pool
 -- ---------------------------------------------------------------------------
 
---- Tops the pool up to M.pool_size. Only runs once per wezterm instance; from
--- then on `vim` replaces the server it takes, so the pool stays warm without
--- a background job.
+--- Tops the pool up to M.pool_size. With M.prefill_once it really does run
+-- only once per wezterm instance; from then on `vim` replaces the server it
+-- takes, so the pool stays warm without a background job.
+--
+-- The flag lives in wezterm.GLOBAL rather than in a local: this module is
+-- re-evaluated on every config reload, and a local would let a reload prefill
+-- the pool all over again.
 local function prefill_pool()
+  if M.prefill_once and wezterm.GLOBAL.nvim_server_prefilled then
+    return
+  end
+
   local servers = scan_servers(true)
 
   -- Pool is already large enough.
   if #servers.pool >= M.pool_size then
     wezterm.GLOBAL.nvim_server_prefill_retry_after = nil
+    -- Started with a full pool (it outlives wezterm), so this instance is done
+    wezterm.GLOBAL.nvim_server_prefilled = true
     return
   end
 
@@ -620,6 +668,10 @@ local function prefill_pool()
   for _ = 1, missing do
     spawn(pool_server_name())
   end
+
+  -- One batch is all this instance starts; a spawn that failed is left to
+  -- `vim`, which starts a server itself when the pool runs dry
+  wezterm.GLOBAL.nvim_server_prefilled = true
 end
 
 -- ---------------------------------------------------------------------------

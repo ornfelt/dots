@@ -7,6 +7,7 @@ local session_manager = require 'wezterm-session-manager/session-manager'
 local status          = require 'status'
 local claude          = require 'claude'
 local nvim_server     = require 'nvim_server'
+local bg_status       = require 'bg_status'
 
 -- Hard-coded switch: set to true to enable the extra debug notifications and
 -- log calls that are normally turned off. The notifications go through the
@@ -31,6 +32,18 @@ config.enable_wayland = false -- Required for hyprland?
 
 --config.font = wezterm.font('Hack')
 --config.font = wezterm.font('Monaspace Neon')
+
+-- The status line icons (see bg_status.lua) come from wezterm's bundled nerd
+-- font, which draws them a little small next to the text. The status line is
+-- part of the retro tab bar (use_fancy_tab_bar is false), so it uses the
+-- terminal font and the only way to size the icons is to scale that fallback.
+-- 1.0 is the normal size; wezterm keeps its own fallback list after this one,
+-- so emoji and every other glyph are unaffected.
+local NERD_FONT_SCALE = 0.8
+config.font = wezterm.font_with_fallback {
+  'JetBrains Mono', -- wezterm's default, spelled out so the fallback can follow
+  { family = 'Symbols Nerd Font Mono', scale = NERD_FONT_SCALE },
+}
 
 config.audible_bell = "Disabled"
 
@@ -1209,6 +1222,10 @@ if wezterm.target_triple == 'x86_64-pc-windows-msvc' or wezterm.target_triple ==
   config.default_prog = { 'powershell.exe' }
 
   wezterm.on('gui-startup', function(cmd)
+    -- Background worker for the keychron/ahk swap and the nvim server check;
+    -- it makes sure only one copy runs, however many wezterms are started
+    bg_status.start()
+
     -- allow `wezterm start -- something` to affect what we spawn
     -- in our initial window
     local args = {}
@@ -1380,10 +1397,13 @@ wezterm.on("update-right-status", function(window, pane)
   claude.poll(window, pane)
   -- Starts the headless nvim server job / fills the pool on the first tick
   nvim_server.poll(window)
+  -- Starts the background worker on the first tick (see bg_status.lua); its
+  -- last result is only read from the state file below, never computed here
+  bg_status.poll(window)
 
   local cwd_uri = tostring(pane:get_current_working_dir())
   if not cwd_uri then
-    status.render(window, {})
+    status.render(window, bg_status.segments())
     return
   end
 
@@ -1467,7 +1487,8 @@ wezterm.on("update-right-status", function(window, pane)
     end
   end
 
-  local segments = {}
+  -- Worker output (nvim servers / keyboard) goes in front of the branch
+  local segments = bg_status.segments()
 
   if git_branch then
     table.insert(segments, { Foreground = { Color = branch_color } })

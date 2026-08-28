@@ -440,6 +440,19 @@ alias .script_helper="$HOME/.local/bin/my_scripts/2025/script_helper.sh"
 VIM_USE_NVIM_SERVER=false
 #VIM_USE_NVIM_SERVER=true
 
+# One switch for all three sides: WEZ_NVIM_SERVERS overrides the switch above,
+# and ~/.wezterm/nvim_server.lua and the PowerShell profile read the same
+# variable. Unset means "use the switch above"; 0/off/false/no (any case) means
+# off, anything else means on. Export it from ~/.zshenv or ~/.profile rather
+# than here: wezterm is started by the desktop and never sources ~/.zshrc, so a
+# value set here reaches this function but not nvim_server.lua.
+if [[ -n $WEZ_NVIM_SERVERS ]]; then
+    case ${WEZ_NVIM_SERVERS:l} in
+        0|off|false|no) VIM_USE_NVIM_SERVER=false ;;
+        *)              VIM_USE_NVIM_SERVER=true  ;;
+    esac
+fi
+
 # Ask the server to :cd here before attaching. Off, so a reused pool server is
 # left exactly as its previous user left it; file arguments are passed as
 # absolute paths either way.
