@@ -54,9 +54,9 @@ M.enabled = true
 -- Forced off on linux, whatever the switch above says: the shell side that
 -- actually attaches to a server is the `vim` function in the PowerShell
 -- profile, so servers would be started here and then never used.
-if not is_windows then
-  M.enabled = false
-end
+--if not is_windows then
+--  M.enabled = false
+--end
 
 -- One switch for all three sides. WEZ_NVIM_SERVERS overrides everything above,
 -- and the same variable is read by the `vim` function in the PowerShell
