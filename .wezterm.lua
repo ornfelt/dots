@@ -1307,7 +1307,24 @@ wezterm.on("format-tab-title", function(tab)
   local new_title = tostring(tab.active_pane.current_working_dir):gsub("^file:///", "")
   -- Normalize slashes
   new_title = new_title:gsub("\\", "/")
-  new_title = new_title:gsub("//+", "/") .. " "
+  new_title = new_title:gsub("//+", "/")
+
+  -- On Linux, replace $HOME with ~
+  if is_linux then
+    local home = os.getenv("HOME")
+    if home then
+      -- current_working_dir has had the leading "/" removed above
+      home = home:gsub("^/", "")
+
+      if new_title == home then
+        new_title = "~/"
+      elseif new_title:sub(1, #home + 1) == home .. "/" then
+        new_title = "~/" .. new_title:sub(#home + 2)
+      end
+    end
+  end
+
+  new_title = new_title .. " "
 
   -- Claude Code: robot icon while a finished response hasn't been visited yet
   local claude_icon = claude.tab_icon(tab)
