@@ -1309,18 +1309,16 @@ wezterm.on("format-tab-title", function(tab)
   new_title = new_title:gsub("\\", "/")
   new_title = new_title:gsub("//+", "/")
 
-  -- On Linux, replace $HOME with ~
-  if is_linux then
-    local home = os.getenv("HOME")
-    if home then
-      -- current_working_dir has had the leading "/" removed above
-      home = home:gsub("^/", "")
+  -- Replace home dir with ~
+  local home = is_linux and os.getenv("HOME") or os.getenv("USERPROFILE")
+  if home then
+    home = home:gsub("\\", "/")
+    home = home:gsub("^/", "")
 
-      if new_title == home then
-        new_title = "~/"
-      elseif new_title:sub(1, #home + 1) == home .. "/" then
-        new_title = "~/" .. new_title:sub(#home + 2)
-      end
+    if new_title == home then
+      new_title = "~/"
+    elseif new_title:sub(1, #home + 1) == home .. "/" then
+      new_title = "~/" .. new_title:sub(#home + 2)
     end
   end
 

@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+
+if [ -z "$my_notes_path" ]; then
+    echo "Environment variable 'my_notes_path' is not set."
+    exit 1
+fi
+
+#python "$my_notes_path/scripts/files/git_scripts/git_diff.py"
+# Forward all script arguments to python
+python "$my_notes_path/scripts/files/git_scripts/git_diff.py" "$@"
+
