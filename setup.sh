@@ -109,6 +109,7 @@ sudo chown "$USER:$USER" "$HOME/.xinitrc"
 cp .Xresources $HOME/.Xresources
 cp .Xresources_cat $HOME/.Xresources_cat
 cp .zshrc $HOME/.zshrc
+cp .zshenv $HOME/.zshenv
 
 # Claude config
 mkdir -p "$HOME/.claude"

@@ -51,26 +51,9 @@ local is_windows = wezterm.target_triple:find('windows') ~= nil
 -- Hard-coded switch: nothing in this module does anything unless this is true
 M.enabled = true
 
--- Forced off on linux, whatever the switch above says: the shell side that
--- actually attaches to a server is the `vim` function in the PowerShell
--- profile, so servers would be started here and then never used.
---if not is_windows then
---  M.enabled = false
---end
-
--- One switch for all three sides. WEZ_NVIM_SERVERS overrides everything above,
--- and the same variable is read by the `vim` function in the PowerShell
--- profile and in .zshrc, so servers can be turned on or off from one place
--- instead of three. Unset means "use the hard-coded switches"; 0/off/false/no
--- (any case) means off, anything else means on.
---
--- Set it where the whole session sees it, not in a shell rc: on Windows as a
--- user environment variable (setx WEZ_NVIM_SERVERS 0, then restart wezterm),
--- on linux in ~/.zshenv or ~/.profile - wezterm is started by the desktop and
--- never sources ~/.zshrc, so a value set there would reach the shell but not
--- this module.
-M.env_switch = 'WEZ_NVIM_SERVERS'
-
+--- Reads a boolean environment variable: nil when unset or empty, false for
+-- 0/off/false/no in any case, true for anything else. The same helper is in
+-- ~/.wezterm/bg_status.lua, which reads the linux switch below as well.
 local function env_bool(name)
   local value = os.getenv(name)
   if value == nil then
@@ -82,6 +65,33 @@ local function env_bool(name)
   end
   return not (value == '0' or value == 'off' or value == 'false' or value == 'no')
 end
+
+-- Opt in to running the wezterm side of this on linux. Read by bg_status.lua
+-- too, so one variable covers both modules; the AutoHotkey job in the worker
+-- has no such switch on purpose and stays windows only.
+M.linux_env_switch = 'WEZ_ENABLE_ON_LINUX'
+
+-- Forced off on linux unless that variable says otherwise: the shell side that
+-- actually attaches to a server is the `vim` function in the PowerShell
+-- profile, so without the .zshrc half turned on too, servers would be started
+-- here and then never used.
+if not is_windows and not env_bool(M.linux_env_switch) then
+  M.enabled = false
+end
+
+-- One switch for all three sides. WEZ_NVIM_SERVERS overrides everything above,
+-- and the same variable is read by the `vim` function in the PowerShell
+-- profile and in .zshrc, so servers can be turned on or off from one place
+-- instead of three. Unset means "use the hard-coded switches"; 0/off/false/no
+-- (any case) means off, anything else means on. Being last, it also wins over
+-- the linux switch, in either direction.
+--
+-- Set it where the whole session sees it, not in a shell rc: on Windows as a
+-- user environment variable (setx WEZ_NVIM_SERVERS 0, then restart wezterm),
+-- on linux in ~/.bash_profile, ~/.zshenv or ~/.profile - wezterm is started by
+-- the desktop and never sources ~/.zshrc, so a value set there would reach the
+-- shell but not this module.
+M.env_switch = 'WEZ_NVIM_SERVERS'
 
 local override = env_bool(M.env_switch)
 if override ~= nil then

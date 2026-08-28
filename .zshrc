@@ -422,8 +422,6 @@ alias .gc="$HOME/.local/bin/my_scripts/2025/gc.sh"
 alias .gcp="$HOME/.local/bin/my_scripts/2025/gcp.sh"
 alias .script_helper="$HOME/.local/bin/my_scripts/2025/script_helper.sh"
 
-export WEZ_NVIM_SERVERS=true
-
 # ---------------------------------------------------------------------------
 # Headless nvim servers (wezterm)
 #

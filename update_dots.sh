@@ -99,6 +99,7 @@ rm .xinitrc
 rm .Xresources
 rm .Xresources_cat
 rm .zshrc
+rm .zshenv
 
 log_ok "Removed files..."
 sleep 0.5
@@ -156,6 +157,7 @@ cp -r $HOME/.xinitrc .xinitrc
 cp -r $HOME/.Xresources .Xresources
 cp -r $HOME/.Xresources_cat .Xresources_cat
 cp -r $HOME/.zshrc .zshrc
+cp -r $HOME/.zshenv .zshenv
 
 # Copy selected Claude configuration
 mkdir -p .claude

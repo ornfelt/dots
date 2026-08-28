@@ -30,13 +30,33 @@ local is_windows = wezterm.target_triple:find('windows') ~= nil
 -- Hard-coded switch: nothing in this module does anything unless this is true
 M.enabled = true
 
--- Forced off on linux, whatever the switch above says: the keyboard half of
--- the worker is AutoHotkey, i.e. windows only, and the headless nvim servers
--- it reports on are disabled there too (see nvim_server.lua). Drop these three
--- lines to run it on linux as well; the worker itself is cross platform.
---if not is_windows then
---  M.enabled = false
---end
+--- Reads a boolean environment variable: nil when unset or empty, false for
+-- 0/off/false/no in any case, true for anything else. Same helper as in
+-- ~/.wezterm/nvim_server.lua, which reads the linux switch below as well.
+local function env_bool(name)
+  local value = os.getenv(name)
+  if value == nil then
+    return nil
+  end
+  value = value:lower():gsub('%s', '')
+  if value == '' then
+    return nil
+  end
+  return not (value == '0' or value == 'off' or value == 'false' or value == 'no')
+end
+
+-- Opt in to running the wezterm side of this on linux. The same variable
+-- enables nvim_server.lua, so one export covers both modules.
+M.linux_env_switch = 'WEZ_ENABLE_ON_LINUX'
+
+-- Forced off on linux unless that variable says otherwise: the keyboard half
+-- of the worker is AutoHotkey, i.e. windows only whatever this says, and the
+-- headless nvim servers it reports on are off there by default too (see
+-- nvim_server.lua). With the switch set, the worker still runs and reports on
+-- the nvim servers; the keyboard icon simply never appears.
+if not is_windows and not env_bool(M.linux_env_switch) then
+  M.enabled = false
+end
 
 -- Hard-coded switch: how the status line shows what the worker found.
 --   false  only a warning text, and only while the nvim servers are out of
