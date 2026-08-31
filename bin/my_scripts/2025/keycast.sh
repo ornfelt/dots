@@ -25,10 +25,11 @@ die() { err "$*"; exit 1; }
 # ---------------------------------------------------------------- defaults --
 CMD="start"                 # start | kill | status  (also accepted positionally)
 CORNER="bottom-right"       # bottom-right|bottom-left|top-right|top-left|none
-MARGIN="24"                 # px between the window and the screen edges
+MARGIN_X="24"               # px between the window and the left/right edge
+MARGIN_Y="40"               # px between the window and the top/bottom edge
 HEIGHT="44"                 # window height in px (screenkey scales the font to it)
-WIDTH=""                    # window width in px; empty = derived from --max-keys
-MAX_KEYS="5"                # roughly how many keystrokes fit before old ones scroll off
+WIDTH=""                    # window width in px; empty = derived from --max-chars
+MAX_CHARS="8"               # roughly how many characters fit before old ones scroll off
 POSITION="bottom"           # only used with --corner none: top|center|bottom|fixed
 FONT_SIZE="small"           # small | medium | large
 TIMEOUT="2.5"               # seconds a keystroke stays on screen
@@ -39,6 +40,8 @@ KEY_MODE="composed"         # composed | translated | keysyms | raw
 MODS_MODE="normal"          # normal | emacs | mac | win
 GEOMETRY=""                 # explicit WxH+X+Y, overrides --corner/--width/--height
 SCREEN_SIZE=""              # explicit WxH of the screen, skips autodetection
+LOG_FILE="/dev/null"        # where the background process writes its output
+FOREGROUND=0                # 1 = keep screenkey attached to this terminal
 EXTRA_ARGS=()               # anything after `--` is passed straight to screenkey
 DEBUG=0
 ASSUME_YES=0
@@ -48,17 +51,19 @@ usage() {
 Usage: ${0##*/} [start|kill|status] [options] [-- <screenkey args>]
 
 Commands (positional, or via --cmd):
-  start                 launch screenkey (default)
+  start                 launch screenkey in the background (default)
   kill | stop           kill any running screenkey process
   status                report whether screenkey is running
 
 Placement (a fixed geometry is computed from these):
   -C, --corner <c>      bottom-right|bottom-left|top-right|top-left|none
                                                         (default: $CORNER)
-      --margin <px>     gap to the screen edges         (default: $MARGIN)
+      --margin <px>     set both margins at once
+      --margin-x <px>   gap to the left/right edge      (default: $MARGIN_X)
+      --margin-y <px>   gap to the top/bottom edge      (default: $MARGIN_Y)
   -H, --height <px>     window height, drives font size (default: $HEIGHT)
-  -W, --width <px>      window width                    (default: from --max-keys)
-  -n, --max-keys <n>    keystrokes visible at a time    (default: $MAX_KEYS)
+  -W, --width <px>      window width                    (default: from --max-chars)
+  -n, --max-chars <n>   characters visible at a time    (default: $MAX_CHARS)
       --screen-size <WxH>  skip screen autodetection    (default: autodetect)
   -g, --geometry <geo>  explicit WxH+X+Y, overrides the above
   -p, --position <pos>  only with --corner none         (default: $POSITION)
@@ -73,15 +78,19 @@ Appearance / behaviour:
   -m, --mods-mode <m>   normal|emacs|mac|win            (default: $MODS_MODE)
 
 Misc:
+  -f, --foreground      keep screenkey in this terminal (default: background)
+  -l, --log <file>      output log of the background process
+                                                        (default: $LOG_FILE)
   -c, --cmd <cmd>       same as the positional command
   -y, --yes             answer yes to the install prompt
   -d, --debug           print commands instead of running them
   -h, --help            show this help
 
 Examples:
-  ${0##*/}                          # small, bottom right, ~5 keys, no background
+  ${0##*/}                          # small, bottom right, ~8 chars, no background
   ${0##*/} kill                     # stop it
-  ${0##*/} -n 3 -H 36               # even smaller, ~3 keys
+  ${0##*/} -n 12 -H 36              # wider window, smaller text
+  ${0##*/} -f -l /tmp/keycast.log   # run attached, or log when backgrounded
   ${0##*/} --debug start            # show the computed geometry and command
   ${0##*/} -- --screen 1            # pass extra flags to screenkey
 EOF
@@ -97,6 +106,20 @@ run() {
     "$@"
 }
 
+# Same, but detached from this terminal: new session, no tty, output to the log.
+run_bg() {
+    if (( DEBUG )); then
+        dbg "$(printf '%q ' "$@")>>$(printf '%q' "$LOG_FILE") 2>&1 &"
+        return 0
+    fi
+    if command -v setsid >/dev/null 2>&1; then
+        setsid "$@" </dev/null >>"$LOG_FILE" 2>&1 &
+    else
+        nohup "$@" </dev/null >>"$LOG_FILE" 2>&1 &
+    fi
+    disown 2>/dev/null || true
+}
+
 need_arg() { [[ -n "${2:-}" ]] || die "option '$1' requires a value"; }
 
 # ------------------------------------------------------------ arg parsing ---
@@ -110,14 +133,18 @@ while (( $# )); do
         --cmd=*)         CMD="${1#*=}";                              shift ;;
         -C|--corner)     need_arg "$1" "${2:-}"; CORNER="$2";      shift 2 ;;
         --corner=*)      CORNER="${1#*=}";                           shift ;;
-        --margin)        need_arg "$1" "${2:-}"; MARGIN="$2";      shift 2 ;;
-        --margin=*)      MARGIN="${1#*=}";                           shift ;;
+        --margin)        need_arg "$1" "${2:-}"; MARGIN_X="$2"; MARGIN_Y="$2"; shift 2 ;;
+        --margin=*)      MARGIN_X="${1#*=}"; MARGIN_Y="$MARGIN_X";     shift ;;
+        --margin-x)      need_arg "$1" "${2:-}"; MARGIN_X="$2";      shift 2 ;;
+        --margin-x=*)    MARGIN_X="${1#*=}";                           shift ;;
+        --margin-y)      need_arg "$1" "${2:-}"; MARGIN_Y="$2";      shift 2 ;;
+        --margin-y=*)    MARGIN_Y="${1#*=}";                           shift ;;
         -H|--height)     need_arg "$1" "${2:-}"; HEIGHT="$2";      shift 2 ;;
         --height=*)      HEIGHT="${1#*=}";                           shift ;;
         -W|--width)      need_arg "$1" "${2:-}"; WIDTH="$2";       shift 2 ;;
         --width=*)       WIDTH="${1#*=}";                            shift ;;
-        -n|--max-keys)   need_arg "$1" "${2:-}"; MAX_KEYS="$2";    shift 2 ;;
-        --max-keys=*)    MAX_KEYS="${1#*=}";                         shift ;;
+        -n|--max-chars)  need_arg "$1" "${2:-}"; MAX_CHARS="$2";   shift 2 ;;
+        --max-chars=*)   MAX_CHARS="${1#*=}";                        shift ;;
         --screen-size)   need_arg "$1" "${2:-}"; SCREEN_SIZE="$2"; shift 2 ;;
         --screen-size=*) SCREEN_SIZE="${1#*=}";                      shift ;;
         -p|--position)   need_arg "$1" "${2:-}"; POSITION="$2";    shift 2 ;;
@@ -138,6 +165,9 @@ while (( $# )); do
         --mods-mode=*)   MODS_MODE="${1#*=}";                        shift ;;
         -g|--geometry)   need_arg "$1" "${2:-}"; GEOMETRY="$2";    shift 2 ;;
         --geometry=*)    GEOMETRY="${1#*=}";                         shift ;;
+        -l|--log)        need_arg "$1" "${2:-}"; LOG_FILE="$2";    shift 2 ;;
+        --log=*)         LOG_FILE="${1#*=}";                         shift ;;
+        -f|--foreground) FOREGROUND=1;                               shift ;;
         -y|--yes)        ASSUME_YES=1;                               shift ;;
         -d|--debug)      DEBUG=1;                                    shift ;;
         -h|--help)       usage; exit 0 ;;
@@ -203,6 +233,17 @@ ensure_screenkey() {
 }
 
 # ------------------------------------------------------------ geometry bit --
+# True if the installed screenkey knows about the given flag. Versions differ:
+# --no-detach in particular does not exist everywhere.
+SCREENKEY_HELP=""
+screenkey_has_flag() {
+    command -v screenkey >/dev/null 2>&1 || return 1
+    if [[ -z "$SCREENKEY_HELP" ]]; then
+        SCREENKEY_HELP=$(screenkey --help 2>&1 || true)
+    fi
+    [[ "$SCREENKEY_HELP" == *"$1"* ]]
+}
+
 # Screen size as WxH, from --screen-size, xdpyinfo or xrandr.
 detect_screen_size() {
     local dims=""
@@ -223,13 +264,13 @@ detect_screen_size() {
     printf '%s\n' "$dims"
 }
 
-# Width per keystroke, as a percentage of the window height. screenkey scales
+# Width of one character, as a percentage of the window height. screenkey scales
 # the font to the window height, so this tracks --font-size.
-key_width_pct() {
+char_width_pct() {
     case "$FONT_SIZE" in
-        small)  printf '88\n' ;;
-        medium) printf '132\n' ;;
-        large)  printf '198\n' ;;
+        small)  printf '44\n' ;;
+        medium) printf '66\n' ;;
+        large)  printf '99\n' ;;
         *)      die "unknown font size: $FONT_SIZE (small|medium|large)" ;;
     esac
 }
@@ -239,24 +280,25 @@ compute_geometry() {
     dims=$(detect_screen_size)
     sw="${dims%x*}"; sh="${dims#*x}"
 
-    [[ "$HEIGHT" =~ ^[0-9]+$ ]]   || die "--height must be a number of pixels"
-    [[ "$MARGIN" =~ ^[0-9]+$ ]]   || die "--margin must be a number of pixels"
-    [[ "$MAX_KEYS" =~ ^[0-9]+$ ]] || die "--max-keys must be a number"
+    [[ "$HEIGHT" =~ ^[0-9]+$ ]]    || die "--height must be a number of pixels"
+    [[ "$MARGIN_X" =~ ^[0-9]+$ ]]  || die "--margin-x must be a number of pixels"
+    [[ "$MARGIN_Y" =~ ^[0-9]+$ ]]  || die "--margin-y must be a number of pixels"
+    [[ "$MAX_CHARS" =~ ^[0-9]+$ ]] || die "--max-chars must be a number"
     h="$HEIGHT"
 
     if [[ -n "$WIDTH" ]]; then
         [[ "$WIDTH" =~ ^[0-9]+$ ]] || die "--width must be a number of pixels"
         w="$WIDTH"
     else
-        pct=$(key_width_pct)
-        w=$(( MAX_KEYS * h * pct / 100 ))
+        pct=$(char_width_pct)
+        w=$(( MAX_CHARS * h * pct / 100 ))
     fi
 
     case "$CORNER" in
-        bottom-right) x=$(( sw - w - MARGIN )); y=$(( sh - h - MARGIN )) ;;
-        bottom-left)  x=$MARGIN;                y=$(( sh - h - MARGIN )) ;;
-        top-right)    x=$(( sw - w - MARGIN )); y=$MARGIN ;;
-        top-left)     x=$MARGIN;                y=$MARGIN ;;
+        bottom-right) x=$(( sw - w - MARGIN_X )); y=$(( sh - h - MARGIN_Y )) ;;
+        bottom-left)  x=$MARGIN_X;                y=$(( sh - h - MARGIN_Y )) ;;
+        top-right)    x=$(( sw - w - MARGIN_X )); y=$MARGIN_Y ;;
+        top-left)     x=$MARGIN_X;                y=$MARGIN_Y ;;
         *) die "unknown corner: $CORNER (bottom-right|bottom-left|top-right|top-left|none)" ;;
     esac
     (( x < 0 )) && x=0
@@ -267,13 +309,17 @@ compute_geometry() {
 
 # ------------------------------------------------------------- process bit --
 # Prints the pids of running screenkey processes (never this script's own pid).
+# The pattern is anchored so unrelated commands that merely mention screenkey
+# somewhere in their arguments are not matched; one leading token is allowed so
+# that "python3 /usr/bin/screenkey ..." is still found.
+SCREENKEY_RE='^([^[:space:]]+[[:space:]]+)?([^[:space:]]*/)?screenkey([[:space:]]|$)'
 screenkey_pids() {
     local pids=() p
     while read -r p; do
         [[ -n "$p" ]] || continue
         [[ "$p" == "$$" || "$p" == "$PPID" ]] && continue
         pids+=("$p")
-    done < <(pgrep -f '(^|/)screenkey([[:space:]]|$)' 2>/dev/null || true)
+    done < <(pgrep -f "$SCREENKEY_RE" 2>/dev/null || true)
     (( ${#pids[@]} )) && printf '%s\n' "${pids[@]}"
     return 0
 }
@@ -346,10 +392,16 @@ do_start() {
         --mods-mode "$MODS_MODE"
     )
 
+    # We detach ourselves, so screenkey should not fork on its own - but only
+    # some versions know this flag, and passing it to the others is an error.
+    if (( ! FOREGROUND )) && screenkey_has_flag "--no-detach"; then
+        args+=(--no-detach)
+    fi
+
     local geometry="$GEOMETRY"
     if [[ -z "$geometry" && "$CORNER" != "none" ]]; then
         geometry=$(compute_geometry)
-        info "geometry ${geometry} (${CORNER}, ~${MAX_KEYS} keys visible)"
+        info "geometry ${geometry} (${CORNER}, ~${MAX_CHARS} chars visible)"
     fi
 
     if [[ -n "$geometry" ]]; then
@@ -360,12 +412,42 @@ do_start() {
     fi
     (( ${#EXTRA_ARGS[@]} )) && args+=("${EXTRA_ARGS[@]}")
 
-    run screenkey "${args[@]}"
-
-    if (( DEBUG )); then
+    if (( FOREGROUND )); then
+        info "running in the foreground, ctrl-c to stop"
+        run screenkey "${args[@]}"
         return 0
     fi
-    ok "screenkey started"
+
+    # With no --log, still capture the output so a failed start can explain
+    # itself; the temp file is removed again once we know it started.
+    local tmplog=""
+    if [[ "$LOG_FILE" == "/dev/null" ]]; then
+        tmplog=$(mktemp -t keycast.XXXXXX.log)
+        LOG_FILE="$tmplog"
+    fi
+
+    run_bg screenkey "${args[@]}"
+
+    if (( DEBUG )); then
+        [[ -n "$tmplog" ]] && rm -f "$tmplog"
+        return 0
+    fi
+
+    # Make sure it actually came up before claiming success.
+    sleep 0.7
+    pids=$(screenkey_pids | tr '\n' ' ')
+    if [[ -z "${pids% }" ]]; then
+        err "screenkey did not stay running"
+        if [[ -s "$LOG_FILE" ]]; then
+            warn "last output:"
+            sed 's/^/       /' "$LOG_FILE" | tail -n 20 >&2
+        fi
+        [[ -n "$tmplog" ]] && rm -f "$tmplog"
+        exit 1
+    fi
+    [[ -n "$tmplog" ]] && rm -f "$tmplog"
+    ok "screenkey started in the background (pid: ${pids% })"
+    info "stop it with '${0##*/} kill'"
 }
 
 case "$CMD" in
