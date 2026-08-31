@@ -223,6 +223,7 @@ gfortran-x86-64-linux-gnu
 ghostscript
 gir1.2-atk-1.0
 gir1.2-atspi-2.0
+gir1.2-ayatanaappindicator3-0.1
 gir1.2-cloudproviders-0.3.0
 gir1.2-freedesktop
 gir1.2-freedesktop-dev
@@ -2760,6 +2761,7 @@ python3-fonttools
 python3-fqdn
 python3-fs
 python3-gi
+python3-gi-cairo
 python3-greenlet
 python3-html5lib
 python3-idna
@@ -2966,6 +2968,7 @@ runit-helper
 rustup
 samba-libs
 scons
+screenkey
 sed
 sensible-utils
 sgml-base
@@ -2975,6 +2978,7 @@ shim-signed
 shim-signed-common
 shim-unsigned
 silversearcher-ag
+slop
 sound-theme-freedesktop
 spirv-tools
 spotify-client

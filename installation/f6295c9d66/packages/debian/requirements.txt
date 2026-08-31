@@ -181,6 +181,7 @@ rpds-py==0.21.0
 scipy==1.15.3
 SCons==4.8.1
 screeninfo==0.8.1
+screenkey==1.5
 Send2Trash==1.8.3
 sentencepiece==0.2.1
 setuptools==78.1.1

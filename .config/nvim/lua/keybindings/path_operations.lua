@@ -284,10 +284,35 @@ vim.keymap.set('n', '<M-c-c>', function()
     print('Copied: ' .. path)
 end, { desc = 'Copy current file path to clipboard' })
 
+-- When true, check that the path is an existing file or dir before opening it in a new tab
+local VERIFY_PATH_EXISTS = true
+
+local function open_path_in_tab(path)
+  if VERIFY_PATH_EXISTS then
+    -- Undo the '#' escaping (done for the vim command) before testing the path
+    local test_path = path:gsub("\\#", "#")
+    if vim.fn.filereadable(test_path) == 0 and vim.fn.isdirectory(test_path) == 0 then
+      print("Path does not exist: " .. test_path)
+      return
+    end
+  end
+  vim.cmd("tabe " .. path)
+end
+
 -- lua print(vim.fn.expand("<cWORD>"))
-function open_file_with_env()
+function open_file_with_env(from_clipboard)
   -- local cword = vim.fn.expand("<cfile>")
-  local cword = vim.fn.expand("<cWORD>")
+  local cword
+  if from_clipboard then
+    cword = vim.fn.getreg('+')
+    if cword == "" then
+      vim.notify("Clipboard is empty!", vim.log.levels.WARN)
+      return
+    end
+    cword = cword:match("^%s*(.-)%s*$") -- Trim surrounding whitespace/newlines
+  else
+    cword = vim.fn.expand("<cWORD>")
+  end
 
   local use_debug_print = myconfig.should_debug_print()
 
@@ -349,7 +374,7 @@ function open_file_with_env()
     end
 
     -- vim.cmd("edit " .. new_cword)
-    vim.cmd("tabe " .. new_cword)
+    open_path_in_tab(new_cword)
 
   -- Match colon followed by word that's not '/', like $env:code_root_dir
   elseif cword:match(":[^/]+/") then
@@ -383,16 +408,19 @@ function open_file_with_env()
       print("new_cword (from :var): " .. new_cword)
     end
 
-    vim.cmd("tabe " .. new_cword)
+    open_path_in_tab(new_cword)
 
   else
     -- vim.cmd("edit " .. cword)
-    vim.cmd("tabe " .. cword)
+    open_path_in_tab(cword)
   end
 end
 
 -- bind gf: open_file_with_env (n)
 vim.api.nvim_set_keymap('n', 'gf', ':lua open_file_with_env()<CR>', { noremap = true, silent = true })
+
+-- bind gF: open_file_with_env using the clipboard path (n)
+vim.api.nvim_set_keymap('n', 'gF', ':lua open_file_with_env(true)<CR>', { noremap = true, silent = true })
 
 function open_in_firefox()
   local cword = vim.fn.expand("<cWORD>")

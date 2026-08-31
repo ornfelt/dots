@@ -106,6 +106,10 @@
       "rev": "b62d1a588765f0aa1b46ed260252c9e456408835",
       "src": "https://github.com/seblyng/roslyn.nvim"
     },
+    "screenkey.nvim": {
+      "rev": "740e238d1f143cb5f3a9d932f9c5142d3581b986",
+      "src": "https://github.com/NStefan002/screenkey.nvim"
+    },
     "sqls.nvim": {
       "rev": "dfc304f10fe364611ffdb3efc488ae260b0dca78",
       "src": "https://github.com/nanotee/sqls.nvim"

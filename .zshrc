@@ -421,6 +421,8 @@ alias .kill_nvim_servers="$HOME/.local/bin/my_scripts/2025/kill_nvim_servers.sh"
 alias .gc="$HOME/.local/bin/my_scripts/2025/gc.sh"
 alias .gcp="$HOME/.local/bin/my_scripts/2025/gcp.sh"
 alias .gd="$HOME/.local/bin/my_scripts/2025/gd.sh"
+alias .do_the_thing="$HOME/.local/bin/my_scripts/2025/do_the_thing.sh"
+alias .keycast="$HOME/.local/bin/my_scripts/2025/keycast.sh"
 alias .script_helper="$HOME/.local/bin/my_scripts/2025/script_helper.sh"
 
 # ---------------------------------------------------------------------------

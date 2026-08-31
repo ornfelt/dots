@@ -457,6 +457,7 @@ rofi
 rsync
 rustup
 scons
+screenkey
 sed
 sensible-utils
 shim-signed

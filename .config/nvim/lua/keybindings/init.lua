@@ -250,7 +250,19 @@ myconfig.map('v', '<C-c>', 'y')
 -- bind leader-*: search for bookmark marker (n)
 myconfig.map('n', '<leader>*', [[:/^\*\*\*$<CR>]]) -- Search for my bookmark
 -- bind leader-%: search in highlighted text (v)
-myconfig.map('v', '<leader>%', '/\\%V') -- Search in highlighted text
+myconfig.map('v', '<leader>%', function()
+  -- Leave visual mode first: typing '/' while it is still active makes the search a
+  -- visual motion, so \%V keeps matching against the shrinking live selection instead
+  -- of the whole one. With '< and '> set, \%V covers the full area that gv reselects.
+  vim.cmd('normal! \27')
+  local start_line = vim.fn.line("'<")
+  local line_len = #vim.fn.getline(start_line)
+  local col = math.max(0, math.min(vim.fn.col("'<"), line_len) - 1)
+  -- Start just before the selection so a match at its very first character is found too
+  if col > 0 then col = col - 1 end
+  vim.api.nvim_win_set_cursor(0, { start_line, col })
+  vim.api.nvim_feedkeys('/\\%V', 'n', false)
+end) -- Search in highlighted text
 
 -- myconfig.map('v', '<leader>/', '"3y/<C-R>3<CR>') -- Search for highlighted text
 -- Search for copied text
