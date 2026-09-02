@@ -106,7 +106,7 @@ M.colors = {
   ok      = '#98971a', -- green, everything in sync
   warn    = '#fe8019', -- orange, servers older than the config
   bad     = '#cc241d', -- red, unused by default
-  info    = '#83a598', -- blue, ahk is doing the remapping / dotfiles are newer
+  info    = '#83a598', -- blue, the keychron remaps itself / dotfiles are newer
   dim     = '#665c54', -- grey, nothing to say / worker not running
 }
 
