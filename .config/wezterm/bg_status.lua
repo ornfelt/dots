@@ -67,6 +67,9 @@ M.use_icons = true
 
 -- Text drawn in warning color in the default (non icon) mode
 M.warning_text = 'nvim servers out of date'
+-- Shown instead of it, in info color, while a lua file in the dotfiles copy of
+-- the config is newer than a running server (see M.colors.info below)
+M.dotfiles_warning_text = 'nvim dotfiles newer than servers'
 -- Also show how many servers are out of date. Text mode spells it out as
 -- "(2/5)" after the warning; icon mode only puts the number of stale servers
 -- next to the icon, and nothing at all while they are in sync, so the icons
@@ -103,7 +106,7 @@ M.colors = {
   ok      = '#98971a', -- green, everything in sync
   warn    = '#fe8019', -- orange, servers older than the config
   bad     = '#cc241d', -- red, unused by default
-  info    = '#83a598', -- blue, ahk is doing the remapping
+  info    = '#83a598', -- blue, ahk is doing the remapping / dotfiles are newer
   dim     = '#665c54', -- grey, nothing to say / worker not running
 }
 
@@ -281,6 +284,9 @@ local function icon_counts(nvim)
 end
 
 --- Icon, color and optional count for the nvim servers, or nil for no icon.
+-- blue   a lua file in the dotfiles copy is newer than a running server
+-- orange the servers predate the live config
+-- green  in sync
 -- Nothing is drawn while no server is running: with the headless servers
 -- switched off there is nothing that could be out of sync, and an icon for it
 -- would just be noise. (Return M.icons.nvim, M.colors.dim here instead to get
@@ -288,6 +294,11 @@ end
 local function nvim_icon(nvim)
   if not nvim or not nvim.enabled or (nvim.servers or 0) == 0 then
     return nil
+  end
+  -- Checked first: this is the one thing the worker knows about the dotfiles
+  -- copy itself, and orange would say the live config is stale instead
+  if nvim.reference_newer then
+    return M.icons.nvim, M.colors.info, icon_counts(nvim)
   end
   if nvim.out_of_date then
     return M.icons.nvim, M.colors.warn, icon_counts(nvim)
@@ -330,8 +341,11 @@ function M.segments()
   end
 
   if not M.use_icons then
-    -- Say something only when the servers are out of date
-    if state and state.nvim and state.nvim.out_of_date then
+    -- Say something only when the dotfiles or the servers are out of date
+    if state and state.nvim and state.nvim.reference_newer then
+      add(M.dotfiles_warning_text .. text_counts(state.nvim), M.colors.info)
+      table.insert(segments, { Text = M.separator })
+    elseif state and state.nvim and state.nvim.out_of_date then
       add(M.warning_text .. text_counts(state.nvim), M.colors.warn)
       table.insert(segments, { Text = M.separator })
     end
