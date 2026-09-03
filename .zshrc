@@ -406,6 +406,7 @@ alias .mov="cd $HOME/Documents/my_notes/scripts/files/mov && echo 'Usage example
 alias .mov_py="cd $HOME/Documents/my_notes/scripts/files/mov_py && echo 'Usage examples:\npython app.py'"
 alias .book="cd $HOME/Code2/Python/my_py/bookshelf && echo 'Usage examples:\npython app.py'"
 alias .gfx="cd $HOME/Code2/General/gfx"
+alias .sql="cd $HOME/Code2/Sql/my_sqz"
 alias .utils="cd $HOME/Code2/General/utils"
 alias .srclist="$HOME/.local/bin/my_scripts/2025/srclist.sh"
 alias .arg_tests="$HOME/.local/bin/my_scripts/2025/arg_tests.sh"
