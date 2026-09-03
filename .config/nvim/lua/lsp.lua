@@ -292,6 +292,10 @@ for _, path in ipairs(paths) do
     local ok, cfg = pcall(dofile, path)
     if not ok or type(cfg) ~= 'table' then
       log("INVALID %-24s  (config file didn't return a table) [%s]", name, path)
+    elseif next(cfg) == nil then
+      -- empty table = disabled on this platform; don't enable it, otherwise the
+      -- config bundled with nvim-lspconfig (runtimepath lsp/<name>.lua) is used
+      log("SKIPPED %-24s  (config returned an empty table)   [%s]", name, path)
     else
       local cmd = cfg.cmd
       local ok_exec = true
