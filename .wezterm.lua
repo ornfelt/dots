@@ -552,6 +552,40 @@ wezterm.on('trigger-copy-latest-n', function(window, pane)
   end
 end)
 
+wezterm.on('trigger-copy-latest-lines', function(window, pane)
+  local N = 300 -- how many lines to copy
+  local text = pane:get_lines_as_text(pane:get_dimensions().scrollback_rows)
+  local lines = {}
+
+  for line in (text .. "\n"):gmatch("(.-)\r?\n") do
+    table.insert(lines, line)
+  end
+
+  -- Drop the blank lines below the cursor so N counts actual output
+  while #lines > 0 and not lines[#lines]:match("%S") do
+    table.remove(lines)
+  end
+
+  if #lines > 0 then
+    local first = math.max(1, #lines - N + 1)
+    local copied = #lines - first + 1
+    local clipboard_text = table.concat(lines, "\n", first, #lines)
+    if is_linux then
+      window:copy_to_clipboard(clipboard_text, 'Clipboard')
+    else
+      window:copy_to_clipboard(clipboard_text, 'PrimarySelection')
+    end
+    status.notify(
+      window,
+      "Copied to Clipboard",
+      "Latest " .. copied .. " line" .. (copied == 1 and "" or "s") .. " copied.",
+      true
+    )
+  else
+    status.notify(window, "No Lines Found", "No scrollback lines detected in this pane.", false)
+  end
+end)
+
 -- Custom key bindings
 config.keys = {
   -- Leader is defined as Ctrl-A but this allows it to be sent to programs like vim when pressed twice
@@ -1027,6 +1061,18 @@ config.keys = {
         win:perform_action({ SendKey = { key = 'k', mods = 'ALT|CTRL' } }, pane)
       else
         wezterm.emit('trigger-copy-latest-n', win, pane)
+      end
+    end),
+  },
+  -- bind alt-ctrl-j: copy latest 300 lines of this pane (wezterm or tmux)
+  {
+    key = 'J',
+    mods = 'ALT|CTRL',
+    action = wezterm.action_callback(function(win, pane)
+      if is_tmux(pane) then
+        win:perform_action({ SendKey = { key = 'j', mods = 'ALT|CTRL' } }, pane)
+      else
+        wezterm.emit('trigger-copy-latest-lines', win, pane)
       end
     end),
   },
