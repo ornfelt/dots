@@ -11,6 +11,48 @@ write_err()   { printf '\033[31m%s\033[0m\n' "$1"; } # Red
 #print_config_path=false
 print_config_path=true
 
+# Data dirs each server needs next to its binary
+VMANGOS_REQUIRED_DIRS="5875 Cameras maps mmaps vmaps"
+MANGOS_CLASSIC_REQUIRED_DIRS="Cameras dbc maps mmaps vmaps"
+MANGOS_TBC_REQUIRED_DIRS="Buildings Cameras dbc maps"
+MANGOSZERO_REQUIRED_DIRS="dbc maps mmaps vmaps"
+
+# Reported but not treated as an error - older mangos-tbc builds ran without these
+MANGOS_TBC_OPTIONAL_DIRS="mmaps vmaps"
+NO_OPTIONAL_DIRS=""
+
+test_required_dirs() {
+    # test_required_dirs <path> <required dirs> <optional dirs>
+    local path="$1"
+    local required_dirs="$2"
+    local optional_dirs="$3"
+    local dir_name missing="" missing_count=0 required_count=0
+
+    for dir_name in $(printf '%s\n' "$required_dirs"); do
+        required_count=$((required_count + 1))
+
+        if [[ -d "$path/$dir_name" ]]; then
+            write_ok "$dir_name/ found."
+        else
+            write_err "$dir_name/ is missing from $path"
+            missing="${missing:+$missing, }$dir_name"
+            missing_count=$((missing_count + 1))
+        fi
+    done
+
+    for dir_name in $(printf '%s\n' "$optional_dirs"); do
+        if [[ -d "$path/$dir_name" ]]; then
+            write_ok "$dir_name/ found."
+        else
+            write_warn "$dir_name/ is missing - optional, older builds did not need it."
+        fi
+    done
+
+    if (( missing_count > 0 )); then
+        write_warn "$missing_count of $required_count required dir(s) missing: $missing"
+    fi
+}
+
 find_config_file() {
     local file="$1"
 
@@ -88,21 +130,29 @@ case "$server" in
 0|z)
     write_alt "MangosZero chosen..."
     mangos_path="$HOME/mangoszero/run/bin"
+    required_dirs="$MANGOSZERO_REQUIRED_DIRS"
+    optional_dirs="$NO_OPTIONAL_DIRS"
     ;;
 
 c)
     write_alt "Cmangos chosen..."
     mangos_path="$HOME/cmangos/run/bin"
+    required_dirs="$MANGOS_CLASSIC_REQUIRED_DIRS"
+    optional_dirs="$NO_OPTIONAL_DIRS"
     ;;
 
 tbc)
     write_alt "Cmangos tbc chosen..."
     mangos_path="$HOME/cmangos-tbc/run/bin"
+    required_dirs="$MANGOS_TBC_REQUIRED_DIRS"
+    optional_dirs="$MANGOS_TBC_OPTIONAL_DIRS"
     ;;
 
 *)
     write_alt "Vmangos chosen..."
     mangos_path="$HOME/vmangos/bin"
+    required_dirs="$VMANGOS_REQUIRED_DIRS"
+    optional_dirs="$NO_OPTIONAL_DIRS"
     ;;
 esac
 
@@ -121,6 +171,10 @@ if ! cd -- "$mangos_path"; then
 fi
 
 write_label "Current directory: $mangos_path"
+
+printf '\n'
+
+test_required_dirs "$mangos_path" "$required_dirs" "$optional_dirs"
 
 if [[ "$server" == "tbc" ]]; then
     printf '\n'
