@@ -59,6 +59,8 @@ Notes:
         ../CMakeLists.txt  -> 'cmake .. ...'
         neither            -> warn + force PRINT-ONLY
   - vcpkg is assumed OFF on Linux; vcpkg alternative is skipped.
+  - Entries with "platform": "windows" in the JSON are ignored here;
+    "platform": "linux" (or legacy "linux_only": true) entries are Linux-only.
   - Requires: jq.
 EOF
         exit 0
@@ -144,6 +146,21 @@ path_contains_in_order() {
 # or [["a","b"],["c","d"]] (multi-group: any group may match).
 pattern_matches() {
     local pattern_json="$1"
+
+    # Platform gate: entries marked for another OS are skipped entirely, so a
+    # linux/windows pair may share the same keywords. Legacy linux_only=true
+    # is treated as platform="linux".
+    local plat
+    plat=$(jq -r '
+        if (.platform // "") != "" then (.platform | ascii_downcase)
+        elif .linux_only == true then "linux"
+        else "any"
+        end
+    ' <<<"$pattern_json")
+    if [[ "$plat" != "any" && "$plat" != "linux" ]]; then
+        return 1
+    fi
+
     local kind
     kind=$(jq -r '
         .keywords as $k
@@ -303,6 +320,16 @@ dispatch_pattern() {
     # 3) standard base_flags + variants
     ensure_cmake_detected "$ctx"
 
+    # extra_args: raw text between the cmake prefix and the -D flags
+    # (mostly a generator/arch on Windows; usually empty on Linux).
+    local extra prefix
+    extra=$(substitute_tokens "$(jq -r '.extra_args // ""' <<<"$pattern_json")")
+    if [[ -n "$extra" ]]; then
+        prefix="$CMAKE_PREFIX $extra"
+    else
+        prefix="$CMAKE_PREFIX"
+    fi
+
     # vcpkg alternative: skipped on Linux per design.
     # (cmake.ps1 always prints it; cmake.py prints it on Windows.)
 
@@ -310,9 +337,9 @@ dispatch_pattern() {
     main_flags=$(flags_string "$pattern_json" "")
     local main_cmd
     if [[ -z "$main_flags" ]]; then
-        main_cmd="$CMAKE_PREFIX"
+        main_cmd="$prefix"
     else
-        main_cmd="$CMAKE_PREFIX $main_flags"
+        main_cmd="$prefix $main_flags"
     fi
     run_or_print "$main_cmd"
 
@@ -332,9 +359,9 @@ dispatch_pattern() {
                 local vflags
                 vflags=$(flags_string "$pattern_json" "$vi")
                 if [[ -z "$vflags" ]]; then
-                    echo "$CMAKE_PREFIX"
+                    echo "$prefix"
                 else
-                    echo "$CMAKE_PREFIX $vflags"
+                    echo "$prefix $vflags"
                 fi
             done
         fi
