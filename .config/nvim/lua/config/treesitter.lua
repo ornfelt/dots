@@ -540,6 +540,11 @@ else
       ts          = "typescript",
       typescript  = "typescript",
       tsx         = "tsx",
+      -- the filetypes nvim actually gives a .jsx / .tsx file; the short names
+      -- above are never a real 'filetype', so without these two React files
+      -- were the only ones this command turned down
+      javascriptreact = "javascript",
+      typescriptreact = "tsx",
     }
     local ts_lang = lang_map[ft]
     if not ts_lang then
@@ -872,6 +877,9 @@ vim.api.nvim_create_user_command("FindCustomTypes", function(opts)
     ts         = "typescript",
     typescript = "typescript",
     tsx        = "tsx",
+    -- as in :SkeletonCopy above: "jsx" and "tsx" are not filetypes nvim uses
+    javascriptreact = "javascript",
+    typescriptreact = "tsx",
   }
   local ts_lang = lang_map[ft]
   if not ts_lang then

@@ -2980,6 +2980,7 @@ shim-unsigned
 silversearcher-ag
 slop
 sound-theme-freedesktop
+speedtest-cli
 spirv-tools
 spotify-client
 sqv

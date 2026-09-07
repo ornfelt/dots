@@ -462,6 +462,7 @@ sed
 sensible-utils
 shim-signed
 silversearcher-ag
+speedtest-cli
 spotify-client
 sqv
 subversion
