@@ -985,7 +985,8 @@ config.keys = {
     --  wezterm.action.SendKey({ key = "Tab", mods = "CTRL" }),
     --}),
     action = wezterm.action_callback(function(window, pane)
-      if is_tmux(pane) then
+      -- With several wezterm tabs open, cycle those instead of tmux windows
+      if is_tmux(pane) and #window:mux_window():tabs() == 1 then
         --wezterm.action.SendKey({ key = "Tab", mods = "CTRL" })
         local success, stdout, stderr = wezterm.run_child_process({"tmux", "next-window"})
         if not success then
@@ -1012,7 +1013,8 @@ config.keys = {
     key = "Tab",
     mods = "CTRL|SHIFT",
     action = wezterm.action_callback(function(window, pane)
-      if is_tmux(pane) then
+      -- With several wezterm tabs open, cycle those instead of tmux windows
+      if is_tmux(pane) and #window:mux_window():tabs() == 1 then
         local success, stdout, stderr = wezterm.run_child_process({"tmux", "previous-window"})
         if not success then
           wezterm.log_error("Failed to switch tmux window: " .. (stderr or "unknown error"))
