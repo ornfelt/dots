@@ -165,7 +165,21 @@ local function get_notes_path()
     print("Environment variable 'code_root_dir' is not set.")
     return nil
   end
-  return code_root_dir .. "/Code2/SQL/my_sql/config/dbs"
+
+  -- The project directory is "SQL" on one machine and "Sql" on another, and on
+  -- a case sensitive filesystem only one of them is there -- the same two
+  -- candidates the Program.cs, appsettings.json and scripts readers try.
+  local candidates = {
+    code_root_dir .. "/Code2/SQL/my_sql/config/dbs",
+    code_root_dir .. "/Code2/Sql/my_sql/config/dbs",
+  }
+  for _, path in ipairs(candidates) do
+    if vim.fn.isdirectory(path) == 1 then
+      return path
+    end
+  end
+
+  return candidates[1]
 end
 
 local function parse_db_files(path)
@@ -200,9 +214,12 @@ local function parse_db_files(path)
       engine = "sql_server"
     end
 
-    -- Map engine and environment to file name
-    db_data[db_name] = tables
-    engine_env_map[db_name] = { engine = engine, env = env }
+    -- Map engine and environment to file name. A file with no first line has
+    -- no environment to be found by, and the lookups below index that field.
+    if env then
+      db_data[db_name] = tables
+      engine_env_map[db_name] = { engine = engine, env = env }
+    end
   end
 
   return db_data, engine_env_map
@@ -439,13 +456,13 @@ function insert_select_statements_from_db()
 
   -- Find file corresponding to env
   local db_name = find_file_for_env(env, db_data, engine_env_map)
-  if use_debug_print then
-    print("db_name: " .. db_name)
-  end
-
   if not db_name then
     print("No matching database file found for the environment:", env)
     return
+  end
+
+  if use_debug_print then
+    print("db_name: " .. db_name)
   end
 
   local file_path = db_path .. "/" .. db_name .. ".txt"

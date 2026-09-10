@@ -6,11 +6,11 @@ local code_root_dir = myconfig.code_root_dir
 
 -- Helper function for setting key mappings for filetypes
 local function create_hellow_mapping(ft, fe)
-  code_root_dir = code_root_dir:gsub(" ", '" "')
-  local template_file = code_root_dir .. "Code2/General/utils/hellow/hellow." .. ft
-  if fe then
-    template_file = code_root_dir .. "Code2/General/utils/hellow/hellow." .. fe
-  end
+  -- fnameescape() so a code_root_dir with a space in it still reaches :r as one
+  -- file name. Escaping a local copy: the old `code_root_dir = code_root_dir:gsub(...)`
+  -- rewrote the upvalue, so every call after the first escaped the escaping.
+  local template_file = vim.fn.fnameescape(
+    code_root_dir .. "Code2/General/utils/hellow/hellow." .. (fe or ft))
 
   vim.api.nvim_create_autocmd("FileType", {
     pattern = ft,
@@ -40,6 +40,7 @@ create_hellow_mapping("haskell", "hs")
 create_hellow_mapping("java")
 create_hellow_mapping("julia", "jl")
 create_hellow_mapping("javascript", "js")
+create_hellow_mapping("javascriptreact", "js")
 create_hellow_mapping("kotlin", "kt")
 create_hellow_mapping("lua")
 create_hellow_mapping("ocaml", "ml")
@@ -56,6 +57,7 @@ create_hellow_mapping("scheme", "scm")
 create_hellow_mapping("st")
 create_hellow_mapping("swift")
 create_hellow_mapping("typescript", "ts")
+create_hellow_mapping("typescriptreact", "ts")
 create_hellow_mapping("vb")
 create_hellow_mapping("zig")
 

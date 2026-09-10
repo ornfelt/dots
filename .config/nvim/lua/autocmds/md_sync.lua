@@ -89,6 +89,10 @@ local function read_json(path)
 end
 
 local function write_json(path, tbl)
+  -- An empty lua table is a list to vim.json.encode, so unlinking the last
+  -- entry would leave "[]" behind - and the viewer reads this file as an
+  -- object (`load_metadata().get(name)`), which a list cannot answer.
+  if next(tbl) == nil then return write_file(path, "{}") end
   return write_file(path, vim.json.encode(tbl))
 end
 
@@ -223,6 +227,10 @@ function M.unlink(opts)
   if not mdd or not mf then
     notify("code_root_dir not set", vim.log.levels.ERROR, silent); return
   end
+  -- Without this a [No Name] buffer asks to unlink md_files itself.
+  if name == "" then
+    notify("no file", vim.log.levels.ERROR, silent); return
+  end
   local dst = mdd .. "/" .. name
   uv.fs_unlink(dst, function(_)
     vim.schedule(function()
@@ -242,7 +250,8 @@ function M.open_in_browser()
   if not is_md(file) then
     notify("not a markdown file", vim.log.levels.ERROR); return
   end
-  local url = string.format("http://127.0.0.1:%d/view/%s", port(), name)
+  -- The name goes into a url, so it is escaped: "release notes.md" is not one.
+  local url = string.format("http://127.0.0.1:%d/view/%s", port(), vim.uri_encode(name))
   local opener
   if vim.fn.has("mac") == 1 then
     opener = { "open", url }
