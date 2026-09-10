@@ -1495,24 +1495,18 @@ wezterm.on("update-right-status", function(window, pane)
       --git_branch = git_branch and (git_branch .. " c") or nil
     else
       git_cache_force_next = false
-      local git_cmd
 
-      if is_windows then
-        git_cmd = string.format(
-          'cd "%s"; git status --porcelain -b 2>$null',
-          cwd:gsub("\\", "/")
-        )
-      else
-        git_cmd = string.format(
-          "cd '%s' && git status --porcelain -b 2>/dev/null",
-          cwd
-        )
-      end
-
+      -- run_child_process blocks the gui thread, so nothing that runs here
+      -- may be slow. Going through a shell meant spawning a powershell.exe
+      -- that loads the whole profile first (~1.3s per tick, every
+      -- git_cache_ttl seconds, per window) - which is what made a freshly
+      -- opened pane sit at the powershell banner. "git -C" needs no shell
+      -- at all (~0.1s), and --no-optional-locks keeps it from touching the
+      -- index, so it can never block on an index.lock held by a git command
+      -- running in a pane.
       local success, stdout, stderr = wezterm.run_child_process({
-        is_windows and "powershell" or "bash",
-        is_windows and "-Command" or "-c",
-        git_cmd,
+        "git", "--no-optional-locks", "-C", cwd:gsub("\\", "/"),
+        "status", "--porcelain", "-b",
       })
 
       if success and stdout and stdout:match("%S") then
