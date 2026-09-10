@@ -472,6 +472,8 @@ systemd-sysv
 systemd-timesyncd
 systemd
 sysvinit-utils
+tailscale-archive-keyring
+tailscale
 tar
 task-english
 task-laptop

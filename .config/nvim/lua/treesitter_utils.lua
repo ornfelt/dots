@@ -99,19 +99,43 @@ local function ensure_variable_imported(tree, language, variable_name, package)
     )
   )
   for _, match, _ in query:iter_matches(tree:root(), bufnr) do
-    for id, node in pairs(match) do
+    for id, captured in pairs(match) do
       local name = query.captures[id]
       if name == 'import_clause' then
-        local start_row, start_col = node:start()
+        -- Since nvim 0.11 iter_matches() hands out a *list* of nodes per
+        -- capture; before that it was the node itself. A TSNode is userdata, a
+        -- list is a table, so this reads either shape.
+        local nodes = type(captured) == 'table' and captured or { captured }
 
-        vim.api.nvim_buf_set_text(
-          bufnr,
-          start_row,
-          start_col + 1,
-          start_row,
-          start_col + 1,
-          { string.format('%s, ', variable_name) }
-        )
+        for _, node in ipairs(nodes) do
+          -- The name goes in front of the first one already in the braces, so
+          -- whatever spacing the file uses inside them is kept: "{ useEffect }"
+          -- becomes "{ useState, useEffect }". Sitting just after the "{"
+          -- instead would write "{useState,  useEffect }".
+          local first
+          for i = 0, node:named_child_count() - 1 do
+            local child = node:named_child(i)
+            if child:type() == 'import_specifier' then
+              first = child
+              break
+            end
+          end
+
+          local start_row, start_col, inserted
+
+          if first then
+            start_row, start_col = first:start()
+            inserted = string.format('%s, ', variable_name)
+          else
+            -- An empty "{}": there is no first name to sit in front of, so the
+            -- name goes just after the brace and needs no comma behind it.
+            start_row, start_col = node:start()
+            start_col = start_col + 1
+            inserted = variable_name
+          end
+
+          vim.api.nvim_buf_set_text(bufnr, start_row, start_col, start_row, start_col, { inserted })
+        end
       end
     end
   end

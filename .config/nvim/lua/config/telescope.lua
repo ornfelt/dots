@@ -70,10 +70,18 @@ local function run_make_command(target)
   local command = "make " .. target
   local output = vim.fn.system(command)
 
+  -- system() hands back the newline the command ended with, and vim.split
+  -- turns that into an empty last line -- a blank line at the bottom of every
+  -- output window. Drop the empty lines off the end.
+  local lines = vim.split(output, "\n")
+  while #lines > 0 and lines[#lines] == "" do
+    table.remove(lines)
+  end
+
   -- Open a new split window and show the output
   vim.cmd("new")
   local buf = vim.api.nvim_get_current_buf()
-  vim.api.nvim_buf_set_lines(buf, 0, -1, false, vim.split(output, "\n"))
+  vim.api.nvim_buf_set_lines(buf, 0, -1, false, lines)
   vim.api.nvim_buf_set_option(buf, "modifiable", false)
   vim.api.nvim_buf_set_name(buf, "Make Output: " .. target)
 end

@@ -159,6 +159,7 @@ pyrr==0.10.3
 pysdl2-dll==2.32.0
 PySDL2==0.9.17
 pysmbc==1.0.25.1
+pyte==0.8.2
 pytesseract==0.3.13
 pytest==9.0.3
 python-apt==3.0.0

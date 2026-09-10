@@ -8,7 +8,7 @@ vim.keymap.set({ 'n', 'v' }, '<leader>twk', '<cmd>Treewalker Up<cr>',    { silen
 -- bind leader-twj: Treewalker Down (n, v)
 vim.keymap.set({ 'n', 'v' }, '<leader>twj', '<cmd>Treewalker Down<cr>',  { silent = true })
 -- bind leader-twh: Treewalker Left (n, v)
-vim.keymap.set({ 'n', 'v' }, '<leader)twh', '<cmd>Treewalker Left<cr>',  { silent = true })
+vim.keymap.set({ 'n', 'v' }, '<leader>twh', '<cmd>Treewalker Left<cr>',  { silent = true })
 -- bind leader-twl: Treewalker Right (n, v)
 vim.keymap.set({ 'n', 'v' }, '<leader>twl', '<cmd>Treewalker Right<cr>', { silent = true })
 

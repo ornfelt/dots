@@ -18,8 +18,13 @@ local function add_async()
 
   -- Get current Tree-sitter node, ignoring injections for embedded JS
   local current_node = vim.treesitter.get_node { ignore_injections = false }
+  -- "function" is what tree-sitter-javascript used to call a function
+  -- expression; it renamed the node to "function_expression", so the old name
+  -- on its own quietly stopped matching `const f = function () {}`. Both are
+  -- listed, and so is "method_definition" -- an await inside a method of a
+  -- class or an object literal is the same syntax error as anywhere else.
   local function_node = treesitter_utils.find_node_ancestor(
-    { "arrow_function", "function_declaration", "function" },
+    { "arrow_function", "function_declaration", "function", "function_expression", "method_definition" },
     current_node
   )
   if not function_node then

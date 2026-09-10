@@ -1,5 +1,3 @@
-lsof
-lua-lgi
 lua5.2
 lua5.3
 lua5.4
@@ -114,6 +112,8 @@ systemd-sysv
 systemd-timesyncd
 systemd
 sysvinit-utils
+tailscale-archive-keyring
+tailscale
 tar
 task-english
 task-laptop

@@ -1,4 +1,3 @@
-libedit2
 libegl1
 libelf1t64
 libenet-dev
@@ -177,3 +176,5 @@ login
 logrotate
 logsave
 lsb-release
+lsof
+lua-lgi

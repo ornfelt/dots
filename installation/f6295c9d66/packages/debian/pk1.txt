@@ -177,3 +177,4 @@ libdb5.3t64
 libdebconfclient0
 libdrm-dev
 libdrogon-dev
+libedit2
