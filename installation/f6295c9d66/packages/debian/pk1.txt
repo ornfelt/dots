@@ -138,6 +138,7 @@ less
 lf
 libace-dev
 libacl1
+libadwaita-1-dev
 libapparmor1
 libapt-pkg7.0
 libasound2-dev

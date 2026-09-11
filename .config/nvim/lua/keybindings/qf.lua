@@ -40,12 +40,17 @@ end
 -- bind leader-db: set diagnostics to quickfix and jump to current line (n)
 vim.keymap.set('n', '<leader>db', function()
   local current_line = vim.fn.line('.')
+  -- read before setqflist(): it opens the quickfix window, and the current
+  -- buffer from in there is the list itself
+  local current_buf = vim.api.nvim_get_current_buf()
   vim.diagnostic.setqflist()
 
   --vim.defer_fn(function()
   local qf_items = vim.fn.getqflist()
   for i, item in ipairs(qf_items) do
-    if item.lnum == current_line then
+    -- the list holds every buffer's diagnostics, so the line number alone
+    -- would jump into whichever file happens to have one on the same line
+    if item.lnum == current_line and item.bufnr == current_buf then
       vim.cmd(tostring(i) .. 'cc')
       vim.cmd('copen')
       return

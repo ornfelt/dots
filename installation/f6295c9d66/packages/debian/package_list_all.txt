@@ -221,6 +221,8 @@ gfortran-14
 gfortran-14-x86-64-linux-gnu
 gfortran-x86-64-linux-gnu
 ghostscript
+gir1.2-adw-1
+gir1.2-appstream-1.0
 gir1.2-atk-1.0
 gir1.2-atspi-2.0
 gir1.2-ayatanaappindicator3-0.1
@@ -231,8 +233,11 @@ gir1.2-gdkpixbuf-2.0
 gir1.2-girepository-2.0
 gir1.2-glib-2.0
 gir1.2-glib-2.0-dev
+gir1.2-graphene-1.0
 gir1.2-gtk-2.0
 gir1.2-gtk-3.0
+gir1.2-gtk-4.0
+gir1.2-gtksource-5
 gir1.2-gudev-1.0
 gir1.2-handy-1
 gir1.2-harfbuzz-0.0
@@ -388,6 +393,8 @@ libabsl20240722
 libace-8.0.2
 libace-dev
 libacl1
+libadwaita-1-0
+libadwaita-1-dev
 libaec0
 libaio1t64
 libalgorithm-diff-perl
@@ -406,6 +413,8 @@ libaopalliance-java
 libapache-pom-java
 libapache2-mod-php8.4
 libapparmor1
+libappstream-dev
+libappstream5
 libapr1t64
 libaprutil1-dbd-sqlite3
 libaprutil1-ldap
@@ -986,6 +995,7 @@ libgprofng0
 libgps-dev
 libgps30t64
 libgraphene-1.0-0
+libgraphene-1.0-dev
 libgraphite2-3
 libgraphite2-3
 libgraphite2-dev
@@ -1015,12 +1025,16 @@ libgtk-3-dev
 libgtk-4-1
 libgtk-4-bin
 libgtk-4-common
+libgtk-4-dev
 libgtk-4-media-gstreamer
 libgtk-layer-shell0
 libgtk2.0-0t64
 libgtk2.0-bin
 libgtk2.0-common
 libgtk2.0-dev
+libgtksourceview-5-0
+libgtksourceview-5-common
+libgtksourceview-5-dev
 libgts-0.7-5t64
 libgts-bin
 libguard-perl
@@ -1775,6 +1789,7 @@ libstb0t64
 libstdc++-14-dev
 libstdc++6
 libstdc++6
+libstemmer0d
 libsvn1
 libsvtav1enc2
 libsvtav1enc2
@@ -2099,6 +2114,7 @@ libxml2
 libxml2
 libxml2-dev
 libxml2-utils
+libxmlb2
 libxmp-dev
 libxmp4
 libxmu-dev

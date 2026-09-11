@@ -40,7 +40,9 @@ vim.keymap.set('n', '<leader>wa', function()
     [[%s,…,...,ge]], -- unicode ellipsis char -> ascii three dots
     [[%s,–,-,ge]], -- unicode en dash -> ascii hyphen
     [[%s,—,-,ge]], -- unicode em dash -> ascii hyphen
-    [[%s,≈,~,ge]], -- unicode approximately equal -> ascii tilde
+    -- the ~ is escaped: unescaped, a "~" in a :s replacement means "the
+    -- previous replacement", so this line used to write the em dash's "-"
+    [[%s,≈,\~,ge]], -- unicode approximately equal -> ascii tilde
     [[%s,·,*,ge]], -- unicode middle dot/interpunct -> ascii asterix
   }
 
@@ -248,23 +250,29 @@ local function split_into_parts(word)
           table.insert(parts, word:sub(i, j - 2):lower())
           i = j - 1
         else
-          -- All capitals to end or delimiter (e.g., "BB", "BSA")
+          -- All capitals to end or delimiter (e.g., "BB", "BSA"), with any
+          -- digits that trail them ("BB2")
+          while j <= #word and word:sub(j, j):match("%d") do
+            j = j + 1
+          end
           table.insert(parts, word:sub(i, j - 1):lower())
           i = j
         end
       else
-        -- Single capital, grab until next capital or delimiter
+        -- Single capital, grab until next capital or delimiter. Digits
+        -- count as part of the word: "getX2Value" is get + x2 + value, and
+        -- dropping the 2 would silently rename it.
         local k = i + 1
-        while k <= #word and word:sub(k, k):match("[a-z]") do
+        while k <= #word and word:sub(k, k):match("[a-z%d]") do
           k = k + 1
         end
         table.insert(parts, word:sub(i, k - 1):lower())
         i = k
       end
-    elseif char:match("[a-z]") then
+    elseif char:match("[a-z%d]") then
       -- Lowercase sequence (shouldn't happen in PascalCase but handle it)
       local j = i
-      while j <= #word and word:sub(j, j):match("[a-z]") do
+      while j <= #word and word:sub(j, j):match("[a-z%d]") do
         j = j + 1
       end
       table.insert(parts, word:sub(i, j - 1):lower())
@@ -299,6 +307,18 @@ local function replace_word_under_cursor(new_word)
   local _ = get_word_under_cursor()
   --vim.cmd("normal! ciw" .. new_word)
   -- Important to fix kebab case -> other case
+
+  -- <cWORD> skips forward to the next WORD when the cursor sits on a blank in
+  -- front of it, but ciW does not -- it changes the run of whitespace instead,
+  -- which wrote the converted word in front of the untouched original. Step
+  -- onto the WORD first so both mean the same span.
+  local line = vim.fn.getline(".")
+  local col = vim.fn.col(".")
+  if line:sub(col, col):match("%s") then
+    local at = line:find("%S", col)
+    if at then vim.fn.cursor(vim.fn.line("."), at) end
+  end
+
   vim.cmd("normal! ciW" .. new_word)
 end
 

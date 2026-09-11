@@ -94,13 +94,20 @@ function toggle_filetree(jump_to_current)
   local target_name = (fullpath ~= "") and vim.fn.fnamemodify(fullpath, ":t") or nil
   local filepath = (fullpath == "") and "~/" or vim.fn.expand("%:p:h")
 
-  -- Silly fix for making oil work with domain-based user dirs
-  if filepath:find("%.corp") then
-    filepath = filepath:gsub(".*se%-[^\\]+%-01\\", "H:/")
-    --filepath = filepath:gsub(" ", "\\ ")
-  else
-    if not filepath:lower():find("h:") then
-      filepath = "./"
+  -- Silly fix for making oil work with domain-based user dirs. Both branches
+  -- are about Windows drive letters -- the domain rewrite, and the "H: or give
+  -- up" fallback next to it -- so neither means anything anywhere else, and the
+  -- fallback actively gets in the way there: it throws the file's own directory
+  -- away and opens the working directory instead, which is not what this is
+  -- for (the cursor then has no line to land on either).
+  if vim.fn.has("win32") == 1 then
+    if filepath:find("%.corp") then
+      filepath = filepath:gsub(".*se%-[^\\]+%-01\\", "H:/")
+      --filepath = filepath:gsub(" ", "\\ ")
+    else
+      if not filepath:lower():find("h:") then
+        filepath = "./"
+      end
     end
   end
 

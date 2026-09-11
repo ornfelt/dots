@@ -6,6 +6,23 @@ local my_notes_path = myconfig.my_notes_path
 local code_root_dir = myconfig.code_root_dir
 local ps_profile_path = myconfig.ps_profile_path
 
+-- vim.pesc() escapes a string so it can be used as a lua PATTERN. A
+-- REPLACEMENT needs the opposite escaping -- '%' is the only character that
+-- means anything there -- so a pattern escape used as one writes its own
+-- backslashes into the result: lua 5.1 quietly drops the '%' and lua 5.4
+-- refuses the whole gsub with "invalid use of '%' in replacement string".
+local function resc(s)
+  return (s:gsub("%%", "%%%%"))
+end
+
+-- myconfig builds ps_profile_path out of an environment variable, and an
+-- unset one leaves the string "nil" behind. There is nothing to collapse to
+-- in that case -- and collapsing it anyway rewrites a literal "nil/" in
+-- ordinary text.
+local function has_ps_profile_path()
+  return ps_profile_path ~= nil and ps_profile_path ~= "" and not ps_profile_path:match("^nil/?$")
+end
+
 -- myconfig.map('n', '<leader>wp', ':s,\\\\,/,g<CR>') -- Normalize path
 function NormalizePath()
   vim.cmd('normal! 0')
@@ -35,12 +52,12 @@ function ReplacePathBasedOnContext()
     print("home_directory: " .. (home_directory or "nil"))
   end
 
-  -- vim.pesc will escape the string for use in Vim regular expressions
-  -- It adds necessary backslashes to special chars etc.
+  -- vim.pesc escapes the directory for use as a lua pattern (the left hand
+  -- side); resc escapes it for use as a replacement (the right hand side).
   if line:find("{my_notes_path}/", 1, true) or line:find("{code_root_dir}/", 1, true) or line:find("{conf_dir}/", 1, true) then
-    line = line:gsub("{my_notes_path}", vim.pesc(my_notes_path))
-    line = line:gsub("{code_root_dir}", vim.pesc(code_root_dir))
-    line = line:gsub("{conf_dir}", vim.pesc(myconfig.get_conf_dir()))
+    line = line:gsub("{my_notes_path}", resc(my_notes_path))
+    line = line:gsub("{code_root_dir}", resc(code_root_dir))
+    line = line:gsub("{conf_dir}", resc(myconfig.get_conf_dir()))
   else
     line = line:gsub(vim.pesc(my_notes_path), "{my_notes_path}/")
     --line = line:gsub(vim.pesc(code_root_dir), "{code_root_dir}/")
@@ -48,9 +65,9 @@ function ReplacePathBasedOnContext()
     line = line:gsub(vim.pesc(myconfig.get_conf_dir()), "{conf_dir}/")
   end
 
-  if ps_profile_path then
+  if has_ps_profile_path() then
     if line:find("{ps_profile_path}/", 1, true) then
-      line = line:gsub("{ps_profile_path}", vim.pesc(ps_profile_path))
+      line = line:gsub("{ps_profile_path}", resc(ps_profile_path))
     else
       line = line:gsub(vim.pesc(ps_profile_path), "{ps_profile_path}/")
     end
@@ -65,7 +82,7 @@ function ReplacePathBasedOnContext()
       line = line:gsub(vim.pesc(home_directory), "$HOME")
       home_replaced = true
     else
-      line = line:gsub("%$HOME", home_directory)
+      line = line:gsub("%$HOME", resc(home_directory))
     end
   end
 
@@ -76,7 +93,8 @@ function ReplacePathBasedOnContext()
     end
     local env_var_value = os.getenv(env_var_name)
     if env_var_value then
-      return vim.pesc(env_var_value)
+      -- what a gsub callback hands back is used verbatim, so no escaping here
+      return env_var_value
     else
       return "$" .. env_var_name -- Leave as is if not found
     end
@@ -87,7 +105,7 @@ function ReplacePathBasedOnContext()
     line = line:gsub('%$env:([%w_]+)', function(env_var_name)
       local env_var_value = os.getenv(env_var_name)
       if env_var_value then
-        return vim.pesc(env_var_value)
+        return env_var_value
       else
         return "$env:" .. env_var_name -- Leave as is if not found
       end
@@ -248,6 +266,13 @@ vim.api.nvim_set_keymap('v', '<leader>-', ':lua copy_current_file_path(false)<CR
 
 function copy_current_file_name(without_extension)
   local file_path = vim.api.nvim_buf_get_name(0)
+  if file_path == "" then
+    -- same guard copy_current_file_path has: without it the clipboard is
+    -- quietly emptied and the message says a name was copied
+    print("No file in current buffer")
+    return
+  end
+
   local file_name = vim.fn.fnamemodify(file_path, ':t')
 
   if without_extension then
@@ -341,14 +366,18 @@ function open_file_with_env(from_clipboard)
 
   if cword:match("^a/") or cword:match("^b/") then
     --local git_root = vim.fn.system("git rev-parse --show-toplevel 2>/dev/null"):gsub("\n", "")
-    local git_root = vim.fn.system('git -C "' .. vim.fn.getcwd() .. '" rev-parse --show-toplevel')
-    if git_root == "" then
+    -- get_git_root() trims the newline `git rev-parse` leaves on its answer and
+    -- reports whether this really is a repository; the raw system() call that
+    -- was here handed the newline straight into the path, so every a/ or b/
+    -- line said "Path does not exist".
+    local git_root, in_repo = myconfig.get_git_root()
+    if not in_repo then
       print("Current file is not in a Git repository.")
       return
     end
 
     -- Replace 'a/' or 'b/' with git root dir
-    cword = cword:gsub("^[ab]/", git_root .. "/")
+    cword = cword:gsub("^[ab]/", resc(git_root .. "/"))
   end
 
   if cword:find("{") then
