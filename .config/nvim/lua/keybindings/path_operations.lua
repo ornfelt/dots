@@ -410,6 +410,34 @@ function open_file_with_env(from_clipboard)
 
     open_path_in_tab(new_cword)
 
+  -- Unix-style env vars without a colon, like $HOME/.config/nvim/init.lua
+  elseif cword:match("%$[%w_]+") then
+    local missing_var = nil
+    local new_cword = cword:gsub("%$([%w_]+)", function(var)
+      if var == "conf_dir" then
+        return myconfig.get_conf_dir()
+      end
+      local value = os.getenv(var)
+      if value then
+        return value
+      end
+      missing_var = missing_var or var
+      return "$" .. var -- Leave as is if not found
+    end)
+
+    if new_cword == cword then
+      print("Environment variable " .. (missing_var or "?") .. " not found.")
+      return
+    end
+
+    new_cword = myconfig.normalize_path(new_cword)
+
+    if use_debug_print then
+      print("new_cword (from $var): " .. new_cword)
+    end
+
+    open_path_in_tab(new_cword)
+
   else
     -- vim.cmd("edit " .. cword)
     open_path_in_tab(cword)

@@ -20,10 +20,30 @@ end
 -- bind leader-b: togglebar (n)
 myconfig.map('n', '<leader>b', togglebar) -- Toggle lualine
 
+-- The sum itself. load() hands back nil for anything that is not an expression
+-- -- a line of prose, an unclosed bracket -- and calling that nil used to throw
+-- E5108 with a lua stack traceback at whoever pressed <m-+> over an ordinary
+-- line. Report it the way vim reports a bad expression instead, and keep the
+-- silence for a nil/false answer that the "if (calc)" below always had.
+local function calc_eval(text)
+  text = text or ""
+  local chunk = load("return " .. text)
+  local ok, value
+  if chunk then
+    ok, value = pcall(chunk)
+  end
+  if not chunk or not ok then
+    vim.notify("E15: Invalid expression: " .. vim.trim(text), vim.log.levels.ERROR)
+    return nil
+  end
+  return value
+end
+
 -- bind m-+: lua calculator (i)
 vim.keymap.set("i", "<m-+>", function()
   vim.ui.input({ prompt = "Calc: " }, function(input)
-    local calc = load("return " .. (input or ""))()
+    if input == nil then return end
+    local calc = calc_eval(input)
     if (calc) then
       vim.api.nvim_feedkeys(tostring(calc), "i", true)
     end
@@ -38,7 +58,7 @@ vim.keymap.set("v", "<m-+>", function()
   local end_pos = vim.fn.getpos(".")
   local lines = vim.fn.getline(start_pos[2], end_pos[2])
   local selected_text = table.concat(lines, "\n")
-  local calc = load("return " .. selected_text)()
+  local calc = calc_eval(selected_text)
   if calc then
     vim.fn.cursor(end_pos[2], end_pos[3])
     vim.api.nvim_put({tostring(calc)}, 'l', true, true)
@@ -48,7 +68,7 @@ end)
 
 vim.keymap.set("n", "<m-+>", function()
   local current_line = vim.fn.getline('.')
-  local calc = load("return " .. current_line)()
+  local calc = calc_eval(current_line)
   if calc then
     local line_num = vim.fn.line('.')
     vim.fn.append(line_num, tostring(calc))
@@ -87,8 +107,14 @@ function execute_command()
     vim.fn.setreg('+', command)
     print("Copied to clipboard: " .. command)
   else
-    -- Execute it
-    vim.cmd(command)
+    -- Execute it. A line that is not a command (or a command that fails) is
+    -- reported the way vim reports it -- "E492: Not an editor command: ..." --
+    -- rather than as a lua stack traceback out of the keymap.
+    local ok, err = pcall(vim.cmd, command)
+    if not ok then
+      err = tostring(err)
+      vim.notify(err:match("E%d+:.*") or err, vim.log.levels.ERROR)
+    end
   end
 end
 
@@ -98,7 +124,11 @@ end
 -- lua print(vim.fn.getenv("ps_profile_path"))
 -- bind leader-,: execute_command (n, v)
 vim.api.nvim_set_keymap('n', '<leader>,', ':lua execute_command()<CR>', { noremap = true, silent = true })
-vim.api.nvim_set_keymap('v', '<leader>,', ':lua execute_command()<CR>', { noremap = true, silent = true })
+-- <cmd> rather than ':' -- a ':' rhs drops out of Visual before the lua runs,
+-- so mode() was never "v" here and the selection branch above could not fire;
+-- the whole line under the cursor was run instead. <leader>cc already does it
+-- this way.
+vim.api.nvim_set_keymap('v', '<leader>,', '<cmd>lua execute_command()<CR>', { noremap = true, silent = true })
 
 function count_characters()
   local mode = vim.api.nvim_get_mode().mode
