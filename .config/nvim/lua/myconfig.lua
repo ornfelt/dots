@@ -513,6 +513,96 @@ end
 -- cmd CycleFilePicker: CycleFilePicker
 vim.api.nvim_create_user_command('CycleFilePicker', CycleFilePicker, {})
 
+-- Dynamic grep backend selection
+local GrepBackend = {
+  VIMGREP = "vimgrep",
+  RIPGREP = "ripgrep",
+  GITGREP = "gitgrep",
+  GREP    = "grep"
+}
+
+M.GrepBackend = GrepBackend
+
+-- What each backend needs on PATH; vimgrep is vim's own search and always there
+local grep_backend_commands = {
+  [GrepBackend.RIPGREP] = "rg",
+  [GrepBackend.GITGREP] = "git",
+  [GrepBackend.GREP]    = "grep"
+}
+
+-- The backends this machine can actually run, in cycle order - grep is missing
+-- on most windows boxes, and ripgrep only exists once it is installed
+function M.get_available_grep_backends()
+  local available = { GrepBackend.VIMGREP }
+  for _, backend in ipairs({ GrepBackend.RIPGREP, GrepBackend.GITGREP, GrepBackend.GREP }) do
+    if M.is_callable(grep_backend_commands[backend]) then
+      table.insert(available, backend)
+    end
+  end
+  return available
+end
+
+function M.get_grep_backend()
+  local backend = read_config("GrepBackend", GrepBackend.VIMGREP):lower()
+  for _, available in ipairs(M.get_available_grep_backends()) do
+    if backend == available then
+      return backend
+    end
+  end
+  -- an unknown name, or a tool that is not installed here
+  return GrepBackend.VIMGREP
+end
+
+local function CycleGrepBackend()
+  if not file_exists(config_file_path) then
+    --print("Config file not found: " .. config_file_path)
+    return
+  end
+
+  local possible_backends = M.get_available_grep_backends()
+  local current_backend = read_config("GrepBackend", GrepBackend.VIMGREP):lower()
+
+  local current_index = nil
+  for i, backend in ipairs(possible_backends) do
+    if backend == current_backend then
+      current_index = i
+      break
+    end
+  end
+
+  -- Cycle to the next index (wrap-around using modulo arithmetic)
+  local next_index = (current_index or 0) % #possible_backends + 1
+  local new_backend = possible_backends[next_index]
+
+  local lines = {}
+  local backend_updated = false
+
+  for line in io.lines(config_file_path) do
+    if line:match("^GrepBackend:") then
+      table.insert(lines, "GrepBackend: " .. new_backend)
+      backend_updated = true
+    else
+      table.insert(lines, line)
+    end
+  end
+
+  if not backend_updated then
+    table.insert(lines, "GrepBackend: " .. new_backend)
+  end
+
+  -- Write the updated lines back to the config file
+  local file = io.open(config_file_path, "w")
+  for _, line in ipairs(lines) do
+    file:write(line .. "\n")
+  end
+  file:close()
+
+  print("New grep backend selected: " .. new_backend)
+end
+
+-- cmd CycleGrepBackend: CycleGrepBackend
+vim.api.nvim_create_user_command('CycleGrepBackend', CycleGrepBackend, {})
+
 -- Generic setter for string config values. Creates or replaces the line for `key`.
 function M.set_config(key, value)
   value = value or ""
