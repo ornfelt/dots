@@ -68,13 +68,15 @@ local function SqlExecCommand()
   --  end
   --end
   -- cleaner:
+  -- Spelt 'Sql' like the path above: the directory on disk is Code2/Sql, and
+  -- everywhere but Windows a 'SQL' here means no override is ever found.
   local exec_map = {
-    cpp = '/Code2/SQL/my_sql/sql_exec/cpp/build/Release/SqlExec.exe',
-    go = '/Code2/SQL/my_sql/sql_exec/go/sql_exec.exe',
-    java = '/Code2/SQL/my_sql/sql_exec/java/build.ps1',
-    python = '/Code2/SQL/my_sql/sql_exec/py/main.py',
-    rust = '/Code2/SQL/my_sql/sql_exec/rust/sql_exec/target/release/sql_exec.exe',
-    typescript = '/Code2/SQL/my_sql/sql_exec/ts/dist/Main.js',
+    cpp = '/Code2/Sql/my_sql/sql_exec/cpp/build/Release/SqlExec.exe',
+    go = '/Code2/Sql/my_sql/sql_exec/go/sql_exec.exe',
+    java = '/Code2/Sql/my_sql/sql_exec/java/build.ps1',
+    python = '/Code2/Sql/my_sql/sql_exec/py/main.py',
+    rust = '/Code2/Sql/my_sql/sql_exec/rust/sql_exec/target/release/sql_exec.exe',
+    typescript = '/Code2/Sql/my_sql/sql_exec/ts/dist/Main.js',
   }
 
   if sql_exec_lang == "c++" then
@@ -194,10 +196,13 @@ local function SqlExecCommand()
 end
 
 local function is_prioritized_filetype(filetype)
+  -- 'js', 'jsx', 'py', 'rs', 'ts' and 'tsx' are extensions rather than
+  -- filetypes -- the names nvim really gives those buffers are next to them.
   local prioritized_filetypes = {
     'c', 'cpp', 'cs', 'css', 'go', 'h', 'hpp', 'html',
-    'java', 'js', 'jsx', 'lua', 'php', 'py', 'python',
-    'rs', 'ts', 'tsx', 'zig'
+    'java', 'js', 'javascript', 'jsx', 'javascriptreact',
+    'lua', 'php', 'py', 'python',
+    'rs', 'rust', 'ts', 'typescript', 'tsx', 'typescriptreact', 'zig'
   }
 
   for _, ft in ipairs(prioritized_filetypes) do
@@ -233,7 +238,9 @@ function compile_run()
       vim.cmd('!%:r.exe')
     else
       vim.cmd('!gcc -Wall -lm -lcurl % -o %<')
-      vim.cmd('!time ./%:r')
+      -- %:p:r, not ./%:r: "%" is the name the file was opened under, so a
+      -- "vim ~/proj/hull.c" leaves ./%:r meaning "./" .. an absolute path.
+      vim.cmd('!time %:p:r')
     end
   elseif filetype == 'cpp' then
     if is_windows then
@@ -241,7 +248,7 @@ function compile_run()
       vim.cmd('!%:r.exe')
     else
       vim.cmd('!g++ -O2 -Wall % -o %< -std=c++17 -lcurl -lcpprest -lcrypto -lssl -lpthread')
-      vim.cmd('!time ./%:r')
+      vim.cmd('!time %:p:r')
     end
   elseif filetype == 'java' then
     --local build_script = is_windows and './build.ps1' or './build.sh'
@@ -275,11 +282,12 @@ function compile_run()
     vim.cmd('!firefox % &')
   elseif filetype == 'php' then
     vim.cmd(is_windows and '!php %' or '!time php %')
-  elseif filetype == 'javascript' or filetype == 'jsx' then
+  elseif filetype == 'javascript' or filetype == 'jsx' or filetype == 'javascriptreact' then
     vim.cmd(is_windows and '!node %' or '!time node %')
-  elseif filetype == 'typescript' or filetype == 'tsx' then
+  elseif filetype == 'typescript' or filetype == 'tsx' or filetype == 'typescriptreact' then
     local ts_file = vim.fn.expand('%:p')
-    local js_file = ts_file:gsub('%.ts$', '.js')
+    -- tsc writes x.js for both x.ts and x.tsx
+    local js_file = ts_file:gsub('%.tsx?$', '.js')
 
     --vim.cmd(is_windows and '!tsc %; node ' .. js_file or '!tsc % && time node ' .. js_file)
     --vim.cmd(is_windows and '!tsc; node ' .. js_file or '!tsc && time node ' .. js_file)
@@ -306,7 +314,7 @@ function compile_run()
     vim.cmd('!cargo build && cargo run')
   elseif filetype == 'lua' then
     vim.cmd(is_windows and '!lua %' or '!time lua %')
-  elseif filetype == 'mkd' or filetype == 'mk' then
+  elseif filetype == 'mkd' or filetype == 'mk' or filetype == 'markdown' then
     vim.cmd('!grip')
   elseif filetype == 'cs' or filetype == 'fs' or filetype == 'fsx' or filetype == 'fsharp' or filetype == 'vb' then
     vim.cmd('!dotnet build && dotnet run')
