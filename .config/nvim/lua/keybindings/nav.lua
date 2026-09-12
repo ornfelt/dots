@@ -150,8 +150,7 @@ myconfig.map('n', '<M-m>', ':tabe ~/.config/nvim/init.lua<CR>')
 -- bind m-,: open zshrc (n)
 myconfig.map('n', '<M-,>', ':tabe ~/.zshrc<CR>')
 -- bind m-.: open vimtutor notes (n)
--- my_notes_path already ends in a slash, so no second one in front of the file
-myconfig.map('n', '<M-.>', '<cmd>tabe ' .. my_notes_path .. 'vimtutor.txt<CR>')
+myconfig.map('n', '<M-.>', '<cmd>tabe ' .. my_notes_path .. '/vimtutor.txt<CR>')
 
 local function get_file_prefix()
   if term_program == "wezterm" or term_program:match("xterm") or term_program == "tmux" then
@@ -272,9 +271,7 @@ function save_resolved_path_to_file()
   resolved_path = vim.fn.fnamemodify(resolved_path, ":p:h")
   resolved_path = resolved_path:gsub("\\", "/")
 
-  -- home_dir already ends in a slash (myconfig normalizes it that way), so
-  -- "/new_wez_dir.txt" made the path -- and the message naming it -- "//"
-  local file_path = myconfig.home_dir .. "new_wez_dir.txt"
+  local file_path = myconfig.home_dir .. "/new_wez_dir.txt"
 
   local file = io.open(file_path, "w")
   if file then
