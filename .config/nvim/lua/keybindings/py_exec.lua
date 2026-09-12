@@ -18,14 +18,28 @@ local function cmd_escape(s)
   return (s:gsub("([#%%])", "\\%1"))
 end
 
+-- A space in the path becomes '" "', so the shell reads it as one argument.
+-- Kept in a local: this used to be assigned back to code_root_dir itself, so
+-- every press escaped the already-escaped path once more.
+local function quoted_root()
+  return (code_root_dir:gsub(" ", '" "'))
+end
+
+-- mode() for blockwise Visual is the one character CTRL-V ("\22"), not the
+-- two characters '^V'; comparing against '^V' let a block selection through
+-- as if nothing were selected.
+local function is_visual(mode)
+  return mode == 'v' or mode == 'V' or mode == "\22"
+end
+
 local function PythonCommand()
   vim.cmd('w') -- Save the file first
-  code_root_dir = code_root_dir:gsub(" ", '" "')
+  local root = quoted_root()
 
-  local command = "!python " .. cmd_escape(code_root_dir) .. "Code2/Python/my_py/scripts/"
+  local command = "!python " .. cmd_escape(root) .. "Code2/Python/my_py/scripts/"
   local mode = vim.fn.mode()
 
-  if mode == 'v' or mode == 'V' or mode == '^V' then
+  if is_visual(mode) then
     --vim.cmd('normal gv')
     vim.fn.feedkeys(":" .. command)
     -- local pos = #command
@@ -67,7 +81,7 @@ vim.api.nvim_set_keymap('n', '<leader>h', '<cmd>RunPythonCommand<CR>', { noremap
 
 function PythonExecCommand()
   vim.cmd('w') -- Save the file first
-  code_root_dir = code_root_dir:gsub(" ", '" "')
+  local root = quoted_root()
 
   --local script_path = code_root_dir .. "Code2/Python/my_py/scripts/read_file.py"
   --local script_path = code_root_dir .. "Code2/Python/my_py/scripts/gpt.py"
@@ -81,11 +95,14 @@ function PythonExecCommand()
   local first_line_tbl = vim.api.nvim_buf_get_lines(0, 0, 1, false)
   local first_line = first_line_tbl[1] or ""
   local normalized_first_line = first_line:gsub("%s+", ""):lower()
-  if normalized_first_line:find("--model:") ~= nil then
+  -- A plain find: as a pattern, "--model:" is "model:" after any number of
+  -- dashes, so a first line like `model: str = "gpt-4o"` counted too.
+  if normalized_first_line:find("--model:", 1, true) ~= nil then
     command = "gpt_model_based"
   end
 
-  local script_path = code_root_dir .. "/Code2/Python/my_py/scripts/" .. command .. ".py"
+  -- code_root_dir already ends in a '/'
+  local script_path = root .. "Code2/Python/my_py/scripts/" .. command .. ".py"
 
   local use_debug_print = myconfig.should_debug_print()
 
@@ -98,7 +115,7 @@ function PythonExecCommand()
   local mode = vim.fn.mode()
   local args = { '"' .. current_file .. '"' }
 
-  if mode == 'v' or mode == 'V' then
+  if is_visual(mode) then
     -- vim.cmd('normal! gv')
     -- local start_pos = vim.fn.getpos("'<")
     -- local end_pos = vim.fn.getpos("'>")
@@ -142,6 +159,11 @@ function PythonExecCommand()
     vim.cmd('belowright 20new')
     local new_buf = vim.api.nvim_get_current_buf()
     vim.api.nvim_buf_set_lines(new_buf, 0, -1, false, vim.split(output, "\n"))
+    -- Output to read, not a file: without this every press left a modified
+    -- [No Name] buffer behind, and :wall / :qa stopped on it (E141 / E37).
+    vim.bo[new_buf].buftype = 'nofile'
+    vim.bo[new_buf].bufhidden = 'wipe'
+    vim.bo[new_buf].modified = false
     -- Testing args
     -- vim.api.nvim_buf_set_lines(new_buf, 0, -1, false, vim.split(formatted_args, "\n"))
   end
