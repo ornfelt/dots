@@ -69,3 +69,5 @@ nvim/init_bundle.lua
 bin/my_scripts/typescript
 .config/wezterm/wezterm-session-manager/*.json
 .config/wezterm/wezterm-session-manager/README.md
+
+commit_message.txt
