@@ -56,6 +56,44 @@ local function diff_copy()
   print("Files copied to " .. target_dir)
 end
 
+-- What an "a/…" / "b/…" path out of a diff header names, as something that can
+-- be opened.
+--
+-- git spells the two the other way round depending on where the diff came from:
+-- inside a repository every path is written relative to its root
+-- ("a/lua/keybindings/diff.lua"), while `git diff --no-index /tmp/a /tmp/b`
+-- writes an absolute one with its leading separator taken off ("a/tmp/a"). A
+-- plain "/" .. path only ever handled the second kind, and turned every
+-- repo-relative header into a path at the root of the filesystem -- which is
+-- why gf'ing a header inside a repo opened two empty buffers.
+local function resolve_header_path(raw)
+  local path = raw
+
+  if vim.fn.has('win32') == 1 then
+    return (path:gsub("/", "\\"))
+  end
+
+  -- an absolute path, or one with a drive letter still on it, is already itself
+  if path:match("^/") or path:match("^%a:") then
+    return path
+  end
+
+  local git_root = myconfig.get_git_root()
+  local candidates = {}
+  if git_root and git_root ~= "" then
+    table.insert(candidates, myconfig.normalize_path(git_root .. "/" .. path))
+  end
+  table.insert(candidates, myconfig.normalize_path("/" .. path))
+
+  for _, candidate in ipairs(candidates) do
+    if vim.fn.filereadable(candidate) == 1 then
+      return candidate
+    end
+  end
+
+  return candidates[1]
+end
+
 local function diff_current_lines()
   local line_number = vim.fn.line('.')
   local current_line = vim.fn.getline(line_number)
@@ -67,14 +105,7 @@ local function diff_current_lines()
   local unique_paths = {}
 
   for prefix, path in combined_lines:gmatch('([ab])/([^\n%s]+)') do
-    local full_path = path
-    if vim.loop.os_uname().sysname == "Windows_NT" then
-      full_path = full_path:gsub("/", "\\")
-    else
-      if not full_path:match("^/") then
-        full_path = "/" .. full_path -- Add '/' prefix for Linux paths
-      end
-    end
+    local full_path = resolve_header_path(path)
 
     if not unique_paths[full_path] then
       table.insert(file_paths, full_path)
@@ -437,6 +468,27 @@ function continue_diff_process(current_file, relative_path, branch_name, use_deb
   vim.cmd("vert diffsplit " .. vim.fn.fnameescape(target_file2))
 end
 
+-- The repository the current buffer's diff commands work in, or nil.
+--
+-- `git rev-parse --show-toplevel` answers with a trailing newline, and on
+-- failure it answers "fatal: not a git repository…" rather than nothing -- so a
+-- `git_root == ""` test never fires and the "not in a Git repository" message
+-- below it was unreachable. vim.v.shell_error is what says whether there is a
+-- repository at all.
+local function git_root_of_cwd()
+  local output = vim.fn.system('git -C "' .. vim.fn.getcwd() .. '" rev-parse --show-toplevel')
+  if vim.v.shell_error ~= 0 then
+    return nil
+  end
+
+  local git_root = vim.trim(output)
+  if git_root == "" then
+    return nil
+  end
+
+  return myconfig.normalize_path(git_root)
+end
+
 local function diffg_command()
   local current_file = vim.fn.expand('%:p')
   if current_file == "" then
@@ -444,9 +496,8 @@ local function diffg_command()
     return
   end
 
-  --local git_root = vim.fn.system("git rev-parse --show-toplevel 2>/dev/null"):gsub("\n", "")
-  local git_root = vim.fn.system('git -C "' .. vim.fn.getcwd() .. '" rev-parse --show-toplevel')
-  if git_root == "" then
+  local git_root = git_root_of_cwd()
+  if not git_root then
     print("Current file is not in a Git repository.")
     return
   end
@@ -457,10 +508,7 @@ local function diffg_command()
   end
 
   -- Remove git_root and the trailing '/'
-  -- (this worked with commented git_root code above on linux)
-  --local relative_path = current_file:sub(#git_root + 2)
-
-  local relative_path = current_file:sub(#git_root)
+  local relative_path = current_file:sub(#git_root + 2)
   relative_path = relative_path:gsub("^[/\\]+", "") -- Remove leading slashes
   if use_debug_print then
     print("relative_path: " .. relative_path)
@@ -486,9 +534,8 @@ local function diffgf_command()
     return
   end
 
-  --local git_root = vim.fn.system("git rev-parse --show-toplevel 2>/dev/null"):gsub("\n", "")
-  local git_root = vim.fn.system('git -C "' .. vim.fn.getcwd() .. '" rev-parse --show-toplevel')
-  if git_root == "" then
+  local git_root = git_root_of_cwd()
+  if not git_root then
     print("Current file is not in a Git repository.")
     return
   end
@@ -499,10 +546,7 @@ local function diffgf_command()
   end
 
   -- Remove git_root and the trailing '/'
-  -- (this worked with commented git_root code above on linux)
-  --local relative_path = current_file:sub(#git_root + 2)
-
-  local relative_path = current_file:sub(#git_root)
+  local relative_path = current_file:sub(#git_root + 2)
   relative_path = relative_path:gsub("^[/\\]+", "") -- Remove leading slashes
   if use_debug_print then
     print("relative_path: " .. relative_path)
