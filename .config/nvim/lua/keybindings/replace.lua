@@ -27,9 +27,9 @@ local function VisualReplaceCommand()
     return
   end
 
-  -- Yank visually selected text into register z
-  vim.cmd('noau normal! "zy')
-  local selected_text = vim.fn.getreg('z')
+  -- Read the selected text straight off the buffer rather than yanking it into
+  -- register z, which would throw away a macro kept there
+  local selected_text = table.concat(vim.fn.getregion(vim.fn.getpos('v'), vim.fn.getpos('.'), { type = mode }), "\n")
 
   -- Trim any leading/trailing whitespace
   selected_text = selected_text:gsub("^%s*(.-)%s*$", "%1")
@@ -41,12 +41,14 @@ local function VisualReplaceCommand()
   -- selected_text = selected_text:gsub("([%%%^%$%(%)%%%.%[%]%*%+%-%?%|])", "\\%1")
 
   local cmd_string = ":%s," .. selected_text .. ","
-  -- Replace termcodes to ensure special keys are interpreted correctly
-  local keys = vim.api.nvim_replace_termcodes(cmd_string, true, false, true)
   -- Exit visual mode by sending <Esc>
   local esc = vim.api.nvim_replace_termcodes("<Esc>", true, false, true)
   vim.api.nvim_feedkeys(esc, 'n', false)
-  vim.api.nvim_feedkeys(keys, 'n', false)
+  -- Feed the text as it is, not through nvim_replace_termcodes: a selection with
+  -- "<CR>" in it (a keymap line) would otherwise press Enter half way through and
+  -- run a substitution nobody finished writing. escape_ks keeps the 0x80 byte of
+  -- a multibyte character from being read as a special key.
+  vim.api.nvim_feedkeys(cmd_string, 'n', true)
 end
 
 -- bind leader-r: replace word under cursor (n)
