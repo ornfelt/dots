@@ -7,18 +7,25 @@ local my_notes_path = myconfig.my_notes_path
 local utils = require('telescope.utils')
 local builtin = require('telescope.builtin')
 
-function ts_project_files()
-  local _, ret, _ = utils.get_os_command_output({ 'git', 'rev-parse', '--is-inside-work-tree' })
+-- opts.cwd is where to look; without it, the directory of the file being edited.
+-- fuzzy_project_files() hands it the repository root, because "project files"
+-- means the project: `git ls-files` run from a subdirectory lists that
+-- subdirectory only, so from src/foo/bar.c everything above src/foo would be
+-- missing from the list. The git probe is run there too, for the same reason.
+function ts_project_files(opts)
+  opts = opts or {}
+  local cwd = opts.cwd or utils.buffer_dir()
+  local _, ret, _ = utils.get_os_command_output({ 'git', 'rev-parse', '--is-inside-work-tree' }, cwd)
   if ret == 0 then
     --builtin.git_files()
     builtin.git_files({
-      cwd = utils.buffer_dir(),
+      cwd = cwd,
       previewer = true,
     })
   else
     --builtin.find_files()
     builtin.find_files({
-      cwd = utils.buffer_dir(),
+      cwd = cwd,
       previewer = true,
     })
   end
@@ -63,7 +70,7 @@ function fuzzy_project_files()
       require("fzf-lua").files({})
     end
   else
-    ts_project_files()
+    ts_project_files({ cwd = cwd })
   end
 end
 
