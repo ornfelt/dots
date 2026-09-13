@@ -1,10 +1,21 @@
 require('dbg_log').log_file(debug.getinfo(1, 'S').source)
 
+-- { index = tab number it had, buffers = { { name, position } } }
 local last_closed_tab = nil
 
 local function buf_is_modified(buf)
-  return vim.api.nvim_buf_is_valid(buf)
-    and vim.api.nvim_get_option_value("modified", { buf = buf })
+  if not vim.api.nvim_buf_is_valid(buf) then
+    return false
+  end
+
+  -- Only the buffers :q itself would stop for: a nofile, nowrite, terminal or
+  -- prompt buffer cannot be written, so there is nothing to "save first".
+  local buftype = vim.api.nvim_get_option_value("buftype", { buf = buf })
+  if buftype == "nofile" or buftype == "nowrite" or buftype == "terminal" or buftype == "prompt" then
+    return false
+  end
+
+  return vim.api.nvim_get_option_value("modified", { buf = buf })
 end
 
 local function any_buffer_is_modified()
@@ -43,47 +54,48 @@ local function save_and_close_tab()
     return
   end
 
-  local tabpage = vim.api.nvim_get_current_tabpage()
-  local windows = vim.api.nvim_tabpage_list_wins(tabpage)
-  local buffers = {}
-
   if #windows > 1 then
     vim.cmd("q")
     return
   end
 
+  local buffers = {}
+
   for _, win in ipairs(windows) do
     local buf = vim.api.nvim_win_get_buf(win)
-    table.insert(buffers, {
-      name = vim.api.nvim_buf_get_name(buf),
-      position = vim.api.nvim_win_get_cursor(win),
-    })
+    local name = vim.api.nvim_buf_get_name(buf)
+    -- A [No Name] buffer has nothing to reopen
+    if name ~= "" then
+      table.insert(buffers, {
+        name = name,
+        position = vim.api.nvim_win_get_cursor(win),
+      })
+    end
   end
 
-  last_closed_tab = buffers
+  -- A tab with nothing worth reopening leaves the one remembered before alone
+  if #buffers > 0 then
+    last_closed_tab = { index = vim.fn.tabpagenr(), buffers = buffers }
+  end
   vim.cmd("tabclose")
 end
 
 local function restore_tab()
-  if not last_closed_tab or #last_closed_tab == 0 then
+  if not last_closed_tab or #last_closed_tab.buffers == 0 then
     print("No closed tab to restore.")
     return
   end
 
-  vim.cmd("tabnew")
+  -- Back where it was closed, whichever tab is current now: [N]tabnew opens
+  -- the tab after tab N, and 0tabnew before the first
+  local after = math.min(last_closed_tab.index - 1, vim.fn.tabpagenr("$"))
+  vim.cmd(after .. "tabnew")
 
-  local current_tab_index = vim.fn.tabpagenr()
-  local total_tabs = vim.fn.tabpagenr("$")
-
-  if current_tab_index < total_tabs then
-    vim.cmd("tabmove -1")
-  end
-
-  for _, buf_data in ipairs(last_closed_tab) do
-    if buf_data.name ~= "" then
-      vim.cmd.edit(vim.fn.fnameescape(buf_data.name))
-      vim.api.nvim_win_set_cursor(0, buf_data.position)
-    end
+  for _, buf_data in ipairs(last_closed_tab.buffers) do
+    vim.cmd.edit(vim.fn.fnameescape(buf_data.name))
+    -- The file may have got shorter since the tab was closed
+    local line = math.min(buf_data.position[1], vim.api.nvim_buf_line_count(0))
+    vim.api.nvim_win_set_cursor(0, { line, buf_data.position[2] })
   end
 
   last_closed_tab = nil
