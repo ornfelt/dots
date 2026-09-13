@@ -59,7 +59,7 @@ local commands = {
   { label = "SqlsShowTables", cmd = "SqlsShowTables" },
   { label = "SqlsShowDatabases", cmd = "SqlsShowDatabases" },
   { label = "SqlsSwitchDatabase", cmd = "SqlsSwitchDatabase" },
-  { label = "SqlsShowConnections", cmd = "SqlsShowDatabases" },
+  { label = "SqlsShowConnections", cmd = "SqlsShowConnections" },
   { label = "SqlsSwitchConnection", cmd = "SqlsSwitchConnection" },
   -- MdViewer
   { label = "MdCopy", cmd = "MdCopy" },
@@ -126,8 +126,11 @@ local commands = {
   { label = "LSP Log", cmd = "lua if vim.fn.exists(':LspLog') == 2 then vim.cmd('LspLog') else local path = (vim.lsp.log and vim.lsp.log.get_filename) and vim.lsp.log.get_filename() or vim.lsp.get_log_path(); vim.cmd('tabedit ' .. vim.fn.fnameescape(path)) end" },
   { label = "LSP Document Symbols", cmd = "lua vim.lsp.buf.document_symbol()" },
   { label = "LSP Client Attached", cmd = "lua print(#((vim.lsp.get_clients and vim.lsp.get_clients({ bufnr = 0 })) or vim.lsp.get_active_clients({ bufnr = 0 })) > 0)" },
-  { label = "LSP Client Capabilities", cmd = "lua print(vim.inspect(((vim.lsp.get_clients and vim.lsp.get_clients()) or vim.lsp.get_active_clients())[1].server_capabilities))" },
-  { label = "LSP Client Name", cmd = "lua print(((vim.lsp.get_clients and vim.lsp.get_clients()) or vim.lsp.get_active_clients())[1].name)" },
+  -- this buffer's client first, and any client when it has none; "no active clients" rather than
+  -- an "attempt to index a nil value" when there is none at all. Still spelled "lua print(...)",
+  -- which is what sends the output to the split below.
+  { label = "LSP Client Capabilities", cmd = "lua print((function() local get = vim.lsp.get_clients or vim.lsp.get_active_clients; local c = get({ bufnr = 0 })[1] or get()[1]; return c and vim.inspect(c.server_capabilities) or 'no active clients' end)())" },
+  { label = "LSP Client Name", cmd = "lua print((function() local get = vim.lsp.get_clients or vim.lsp.get_active_clients; local c = get({ bufnr = 0 })[1] or get()[1]; return c and c.name or 'no active clients' end)())" },
   { label = "LSP Active Clients", cmd = "lua print(vim.inspect((vim.lsp.get_clients and vim.lsp.get_clients()) or vim.lsp.get_active_clients()))" },
   { label = "LSP Start Client", cmd = "lua if vim.lsp.start then vim.lsp.start({ name = 'example', cmd = {'path/to/server'} }) else vim.lsp.start_client({ name = 'example', cmd = {'path/to/server'} }) end" },
   { label = "LSP Stop Client", cmd = "lua if vim.lsp.get_clients then for _, client in ipairs(vim.lsp.get_clients()) do client:stop() end else vim.lsp.stop_client(vim.lsp.get_active_clients()) end" },
@@ -181,18 +184,21 @@ local commands = {
   { label = "Telescope Lua reloader", cmd = "lua require('telescope.builtin').reloader()" },
   { label = "Telescope Symbols", cmd = "lua require('telescope.builtin').symbols()" },
   -- Treesitter
-  { label = "Treesitter Toggle Highlighting", cmd = "lua vim.cmd('TSBufToggle highlight')" },
+  -- :TSBufToggle went with nvim-treesitter's master branch; highlighting is vim.treesitter's own now
+  { label = "Treesitter Toggle Highlighting", cmd = "lua if vim.treesitter.highlighter.active[vim.api.nvim_get_current_buf()] then vim.treesitter.stop() else vim.treesitter.start() end" },
   { label = "Treesitter Inspect Tree", cmd = "InspectTree" },
-  { label = "Treesitter Install info", cmd = "TSInstallInfo" },
+  -- :TSInstallInfo is gone on nvim-treesitter's main branch too
+  { label = "Treesitter Install info", cmd = "lua print(vim.inspect(require('nvim-treesitter').get_installed()))" },
   { label = "Treesitter check health", cmd = "checkhealth nvim-treesitter" },
   -- Diagnostics
-  { label = "Diagnostics Buffer ", cmd = "lua print(vim.inspect(vim.diagnostic.get(0)))" },
-  { label = "Diagnostics Workspace ", cmd = "lua print(vim.inspect(vim.diagnostic.get()))" },
-  { label = "Diagnostics Cursor ", cmd = "lua print(vim.inspect(vim.diagnostic.get_cursor()))" },
+  { label = "Diagnostics Buffer", cmd = "lua print(vim.inspect(vim.diagnostic.get(0)))" },
+  { label = "Diagnostics Workspace", cmd = "lua print(vim.inspect(vim.diagnostic.get()))" },
+  -- there is no vim.diagnostic.get_cursor(); the cursor's diagnostics are get() on its line
+  { label = "Diagnostics Cursor", cmd = "lua print(vim.inspect(vim.diagnostic.get(0, { lnum = vim.fn.line('.') - 1 })))" },
   -- Trouble
   { label = "Trouble diagnostics", cmd = "Trouble diagnostics" },
   { label = "Trouble fzf", cmd = "Trouble fzf" },
-  { label = "Trouble fzf_files", cmd = "Trouble fzf" },
+  { label = "Trouble fzf_files", cmd = "Trouble fzf_files" },
   { label = "Trouble loclist", cmd = "Trouble loclist" },
   { label = "Trouble lsp", cmd = "Trouble lsp" },
   { label = "Trouble lsp_command", cmd = "Trouble lsp_command" },
@@ -217,15 +223,18 @@ local commands = {
   { label = "Buffers", cmd = "buffers" },
   { label = "undolist", cmd = "undolist" },
   { label = "Toggle Relative Numbers", cmd = "lua vim.o.relativenumber = not vim.o.relativenumber" },
-  { label = "Neovim Log", cmd = "lua vim.cmd('tabedit ' .. vim.fn.stdpath('state') .. '/log')" },
+  -- the log is $NVIM_LOG_FILE, stdpath('log')/nvim.log -- stdpath('state')/log is a file nvim stopped writing
+  { label = "Neovim Log", cmd = "lua local f = vim.env.NVIM_LOG_FILE; if not f or f == '' then f = vim.fn.stdpath('log') .. '/nvim.log' end; vim.cmd('tabedit ' .. vim.fn.fnameescape(f))" },
   { label = "Check Health", cmd = "lua vim.cmd('checkhealth')" },
   -- Built-in diff commands (windo will apply for entire window)
   { label = "diffthis", cmd = "windo diffthis" },
   { label = "diffoff", cmd = "windo diffoff" },
   { label = "diffget", cmd = "windo diffget" },
   { label = "diffput", cmd = "windo diffput" },
-  { label = "diffpatch", cmd = "windo diffpatch" },
-  { label = "diffsplit", cmd = "windo diffsplit" },
+  -- :diffpatch and :diffsplit need a file name, and windo would run them once per window: E471
+  -- every time. They put the command on the command line for the name to be typed instead.
+  { label = "diffpatch", cmd = "lua vim.api.nvim_feedkeys(':diffpatch ', 'n', false)" },
+  { label = "diffsplit", cmd = "lua vim.api.nvim_feedkeys(':vert diffsplit ', 'n', false)" },
   { label = "diffupdate", cmd = "windo diffupdate" },
   -- Diffview
   { label = "DiffviewOpen - Diff working tree against index", cmd = "DiffviewOpen" },
@@ -294,12 +303,14 @@ end
 local function run_command(label)
   local cmd = label_to_cmd[label]
   if selections_to_print[cmd] or cmd:match("^lua print") then
-    local out = vim.fn.execute(cmd)
+    -- execute() starts its output with a newline; without it the output starts on line 1
+    local out = vim.fn.execute(cmd):gsub("^\n", "")
     vim.cmd("belowright 10split")
     local buf = vim.api.nvim_create_buf(false, true)
     vim.api.nvim_win_set_buf(0, buf)
     vim.api.nvim_buf_set_lines(buf, 0, -1, false, vim.split(out, "\n"))
-    vim.api.nvim_buf_set_option(buf, "bufhidden", "wipe")
+    -- nvim_buf_set_option() is deprecated since 0.10
+    vim.bo[buf].bufhidden = "wipe"
   else
     vim.cmd(cmd)
   end
@@ -356,8 +367,14 @@ vim.keymap.set('n', '<leader><leader>', function()
           actions.select_default:replace(function()
             local sel = action_state.get_selected_entry()
             actions.close(prompt_bufnr)
-            -- note: sel.display is the label
-            run_command(sel.display)
+            -- run it once telescope is gone: straight after close() the prompt's
+            -- insert mode is still on, and its "-- INSERT --" is drawn over the
+            -- first line of what a command like :buffers prints
+            vim.cmd("stopinsert")
+            vim.schedule(function()
+              -- note: sel.display is the label
+              run_command(sel.display)
+            end)
           end)
           return true
         end,
