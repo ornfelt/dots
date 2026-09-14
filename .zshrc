@@ -428,6 +428,7 @@ alias .ccs="$HOME/.local/bin/my_scripts/2025/ccs.sh"
 alias .display_info="$HOME/.local/bin/my_scripts/2025/display_info.sh"
 alias .cmake_helper="$HOME/.local/bin/my_scripts/2025/cmake_helper.sh"
 alias .script_helper="$HOME/.local/bin/my_scripts/2025/script_helper.sh"
+alias .xxx="xset q && xset s off && xset -dpms"
 
 # ---------------------------------------------------------------------------
 # Headless nvim servers (wezterm)
