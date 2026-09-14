@@ -281,6 +281,22 @@ config.colors = {
 
 config.force_reverse_video_cursor = true
 
+-- Neovide style smear/trail animation for the cursor. Only the custom wezterm
+-- build from ~/Downloads/wezterm knows about this option; a stock wezterm would
+-- reject the unknown config key, so it is guarded by the flag that only the
+-- custom build sets (it reads as nil elsewhere).
+if wezterm.has_smear_cursor then
+  config.smear_cursor = {
+    enabled = true,
+    -- Speed: how long the whole animation takes. Lower is snappier.
+    duration_ms = 130,
+    -- How far the trailing corners lag behind, 0..1. Higher is a longer smear.
+    trail_size = 0.7,
+    -- Movements smaller than this many cells snap, so typing does not smear.
+    min_distance_cells = 0.5,
+  }
+end
+
 -- Setup muxing by default
 config.unix_domains = {
   {

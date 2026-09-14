@@ -29,8 +29,15 @@ local function getTabBufferInfo()
   return result
 end
 
+-- Skip the word count in very large files, counting them is slow
+local max_wordcount_lines = 6000
+
 -- Get word count if the file is a text or markdown type
 local function getWords()
+  if vim.api.nvim_buf_line_count(0) > max_wordcount_lines then
+    return ""
+  end
+
   if vim.bo.filetype == "md" or vim.bo.filetype == "text" or vim.bo.filetype == "txt" or vim.bo.filetype == "vtxt" or vim.bo.filetype == "markdown" then
     return tostring(vim.fn.wordcount().words)
   else
