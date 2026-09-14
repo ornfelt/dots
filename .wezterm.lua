@@ -288,10 +288,13 @@ config.force_reverse_video_cursor = true
 if wezterm.has_smear_cursor then
   config.smear_cursor = {
     enabled = true,
-    -- Speed: how long the whole animation takes. Lower is snappier.
-    duration_ms = 130,
+    -- Speed: how long a short movement takes. Lower is snappier.
+    duration_ms = 105,
+    -- Ceiling for a movement that crosses the window; the duration scales with
+    -- the distance between this and duration_ms.
+    max_duration_ms = 190,
     -- How far the trailing corners lag behind, 0..1. Higher is a longer smear.
-    trail_size = 0.7,
+    trail_size = 0.58,
     -- Movements smaller than this many cells snap, so typing does not smear.
     min_distance_cells = 0.5,
   }
