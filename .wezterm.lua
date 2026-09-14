@@ -57,6 +57,117 @@ else
   config.max_fps = 60 -- default
 end
 
+-- GPU / renderer presets
+-- https://wezfurlong.org/wezterm/config/lua/config/front_end.html
+-- https://wezfurlong.org/wezterm/config/lua/wezterm.gui/enumerate_gpus.html
+-- Pick one of the presets below by assigning it to GPU_PRESET. NONE leaves the
+-- renderer settings untouched, so wezterm picks whatever it defaults to.
+local GPU_PRESETS = {
+  NONE = 'none',                           -- don't touch any renderer setting
+  WEBGPU_VULKAN = 'webgpu_vulkan',         -- WebGpu on the first Vulkan adapter
+  WEBGPU_DX12 = 'webgpu_dx12',             -- WebGpu on the first Dx12 adapter (Windows)
+  WEBGPU_DISCRETE = 'webgpu_discrete',     -- WebGpu on the first discrete GPU, any backend
+  WEBGPU_INTEGRATED = 'webgpu_integrated', -- WebGpu on the integrated GPU (battery friendly)
+  WEBGPU_HIGH_POWER = 'webgpu_high_power', -- WebGpu, let the driver pick the fast adapter
+  WEBGPU_LOW_POWER = 'webgpu_low_power',   -- WebGpu, let the driver pick the low power adapter
+  OPENGL = 'opengl',                       -- OpenGL, whatever the platform gives us
+  OPENGL_EGL = 'opengl_egl',               -- OpenGL through EGL (ANGLE on Windows)
+  OPENGL_NO_EGL = 'opengl_no_egl',         -- OpenGL through WGL/GLX instead of EGL
+  SOFTWARE = 'software',                   -- CPU rendering, last resort / remote sessions
+}
+
+-- Set preset to use here:
+local GPU_PRESET = GPU_PRESETS.NONE
+
+-- Returns the first enumerated adapter matching backend and/or device_type
+-- ('DiscreteGpu', 'IntegratedGpu', 'Cpu', 'Other'); nil means "don't care".
+-- Falls back to a backend-only match, and returns nil when nothing fits, in
+-- which case wezterm keeps choosing the adapter itself.
+local function find_gpu(backend, device_type)
+  if not wezterm.gui then
+    return nil -- no gui available (mux server), nothing to enumerate
+  end
+
+  local backend_match
+  for _, gpu in ipairs(wezterm.gui.enumerate_gpus()) do
+    local backend_ok = backend == nil or gpu.backend == backend
+    local device_ok = device_type == nil or gpu.device_type == device_type
+    if backend_ok and device_ok then
+      return gpu
+    end
+    if backend_ok and backend_match == nil then
+      backend_match = gpu
+    end
+  end
+  return backend_match
+end
+
+local function use_webgpu(adapter)
+  config.front_end = 'WebGpu'
+  config.webgpu_preferred_adapter = adapter
+end
+
+local gpu_preset_appliers = {
+  [GPU_PRESETS.NONE] = function() end,
+
+  [GPU_PRESETS.WEBGPU_VULKAN] = function()
+    use_webgpu(find_gpu('Vulkan'))
+  end,
+
+  [GPU_PRESETS.WEBGPU_DX12] = function()
+    use_webgpu(find_gpu('Dx12'))
+  end,
+
+  [GPU_PRESETS.WEBGPU_DISCRETE] = function()
+    use_webgpu(find_gpu(nil, 'DiscreteGpu'))
+    config.webgpu_power_preference = 'HighPerformance'
+  end,
+
+  [GPU_PRESETS.WEBGPU_INTEGRATED] = function()
+    use_webgpu(find_gpu(nil, 'IntegratedGpu'))
+    config.webgpu_power_preference = 'LowPower'
+  end,
+
+  [GPU_PRESETS.WEBGPU_HIGH_POWER] = function()
+    config.front_end = 'WebGpu'
+    config.webgpu_power_preference = 'HighPerformance'
+  end,
+
+  [GPU_PRESETS.WEBGPU_LOW_POWER] = function()
+    config.front_end = 'WebGpu'
+    config.webgpu_power_preference = 'LowPower'
+  end,
+
+  [GPU_PRESETS.OPENGL] = function()
+    config.front_end = 'OpenGL'
+  end,
+
+  [GPU_PRESETS.OPENGL_EGL] = function()
+    config.front_end = 'OpenGL'
+    config.prefer_egl = true
+  end,
+
+  [GPU_PRESETS.OPENGL_NO_EGL] = function()
+    config.front_end = 'OpenGL'
+    config.prefer_egl = false
+  end,
+
+  [GPU_PRESETS.SOFTWARE] = function()
+    config.front_end = 'Software'
+  end,
+}
+
+local apply_gpu_preset = gpu_preset_appliers[GPU_PRESET]
+if apply_gpu_preset then
+  apply_gpu_preset()
+  if DEBUG_MESSAGES then
+    wezterm.log_info('gpu preset: ' .. GPU_PRESET ..
+      ', adapter: ' .. wezterm.to_string(config.webgpu_preferred_adapter))
+  end
+else
+  wezterm.log_error('unknown gpu preset: ' .. tostring(GPU_PRESET))
+end
+
 -- https://wezfurlong.org/wezterm/hyperlinks.html#implicit-hyperlinks
 config.hyperlink_rules = wezterm.default_hyperlink_rules()
 

@@ -110,6 +110,10 @@
       "rev": "740e238d1f143cb5f3a9d932f9c5142d3581b986",
       "src": "https://github.com/NStefan002/screenkey.nvim"
     },
+    "smear-cursor.nvim": {
+      "rev": "9e9378d6ee34bb3782e0e8c63d9ec8ca618b479b",
+      "src": "https://github.com/sphamba/smear-cursor.nvim"
+    },
     "sqls.nvim": {
       "rev": "dfc304f10fe364611ffdb3efc488ae260b0dca78",
       "src": "https://github.com/nanotee/sqls.nvim"

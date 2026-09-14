@@ -36,6 +36,7 @@ return {
   require("pack.Comment"),
   require("pack.vim-emoji"),
   require("pack.undotree"),
+  require("pack.smear-cursor"),
   --require("pack.screenkey"),
   --require("pack.markview"),
   --require("pack.render-markdown"),

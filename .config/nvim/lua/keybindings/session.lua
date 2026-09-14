@@ -271,11 +271,6 @@ function save_tabs_and_splits()
 
   local my_notes_tabs = {}
   local dir_counts = {}
-  -- pairs() walks a table in no particular order, so the winner of a tie would
-  -- otherwise be a different directory -- and the session a different file --
-  -- every time the same layout is saved. The directories are counted in the
-  -- order they are first seen, and read back in that order below.
-  local dir_order = {}
   local current_tab = vim.fn.tabpagenr()
   local current_win = vim.fn.winnr()
 
@@ -310,11 +305,7 @@ function save_tabs_and_splits()
         final_dir = final_dir:gsub("/", "_")
         -- Count occurrences of the final directory
         if final_dir ~= "" then
-          if dir_counts[final_dir] == nil then
-            table.insert(dir_order, final_dir)
-            dir_counts[final_dir] = 0
-          end
-          dir_counts[final_dir] = dir_counts[final_dir] + 1
+          dir_counts[final_dir] = (dir_counts[final_dir] or 0) + 1
         end
 
         if full_path:find(my_notes_path, 1, true) then
@@ -343,8 +334,7 @@ function save_tabs_and_splits()
   -- Determine if any of our hardcoded patterns surpass the threshold (≥2 files)
   local forced_subpath = nil
   local max_pattern_count = 0
-  for _, pattern in ipairs(hardcoded_patterns) do
-    local count = pattern_counts[pattern]
+  for pattern, count in pairs(pattern_counts) do
     if count >= 2 and count > max_pattern_count then
       max_pattern_count = count
       forced_subpath   = pattern
@@ -355,9 +345,9 @@ function save_tabs_and_splits()
   local most_common_dir = nil
   local max_count = 0
   if not forced_subpath then
-    for _, dir in ipairs(dir_order) do
-      if dir_counts[dir] > max_count then
-        max_count = dir_counts[dir]
+    for dir, count in pairs(dir_counts) do
+      if count > max_count then
+        max_count = count
         most_common_dir = dir
       end
     end
@@ -393,50 +383,27 @@ function save_tabs_and_splits()
     end
   end
 
-  -- Collect the layout before writing anything.
-  -- A window with no file name has no path to write, so counting it in the
-  -- window count would leave the loader reading the next tab's window count as
-  -- a file name -- and opening a file called "2". Only windows that have a name
-  -- are counted, and a tab left with none of them is skipped altogether, so
-  -- "TAB:" is the position of the current tab among the tabs that were kept.
-  local layout = {}
-  local active_tab = 1
+  -- Save tabs and splits layout
+  local file = io.open(layout_filename, "w")
+  file:write(tab_count .. "\n")
 
   for i = 1, tab_count do
     vim.cmd(i .. "tabnext")
 
     local win_count = vim.fn.winnr('$')
-    local paths = {}
+    file:write(win_count .. "\n")
 
     for j = 1, win_count do
       vim.cmd(j .. "wincmd w")
       local buf_name = vim.fn.bufname('%')
       if buf_name ~= "" then
-        table.insert(paths, myconfig.normalize_path(vim.fn.fnamemodify(buf_name, ':p')))
-      end
-    end
-
-    if #paths > 0 then
-      table.insert(layout, paths)
-      if i <= current_tab then
-        active_tab = #layout
+        local full_path = myconfig.normalize_path(vim.fn.fnamemodify(buf_name, ':p'))
+        file:write(full_path .. "\n")
       end
     end
   end
 
-  -- Save tabs and splits layout
-  vim.fn.mkdir(session_dir, 'p')
-  local file = io.open(layout_filename, "w")
-  file:write(#layout .. "\n")
-
-  for _, paths in ipairs(layout) do
-    file:write(#paths .. "\n")
-    for _, full_path in ipairs(paths) do
-      file:write(full_path .. "\n")
-    end
-  end
-
-  file:write("TAB:" .. active_tab .. "\n")
+  file:write("TAB:" .. current_tab .. "\n")
   file:close()
 
   -- Restore original tab and window
