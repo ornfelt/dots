@@ -35,10 +35,17 @@ end
 
 -- This autocmd ensures that whenever you open a .txt or .sql file, vim will convert its line 
 -- endings to DOS style (CRLF) by re-editing it as such.
+-- Skip the re-edit in very large files, reading them a second time is slow
+local max_ff_reedit_lines = 200000
+
 vim.api.nvim_create_autocmd("BufRead", {
   -- pattern = "*",
   pattern = {"*.txt", "*.sql"},
   callback = function()
+    if vim.api.nvim_buf_line_count(0) > max_ff_reedit_lines then
+      return
+    end
+
     vim.cmd('edit ++ff=dos %')
   end
 })
