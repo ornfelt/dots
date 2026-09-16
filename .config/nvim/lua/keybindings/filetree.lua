@@ -92,7 +92,11 @@ function toggle_filetree(jump_to_current)
   if jump_to_current == nil then jump_to_current = true end
   local fullpath = vim.fn.expand("%:p")
   local target_name = (fullpath ~= "") and vim.fn.fnamemodify(fullpath, ":t") or nil
-  local filepath = (fullpath == "") and "~/" or vim.fn.expand("%:p:h")
+  -- A buffer with no file behind it has no directory to follow, so that one
+  -- opens the working directory: '%:p:h' is already the working directory when
+  -- there is no file name, so there is nothing to special-case here. <M-w> is
+  -- the key that always goes to $HOME.
+  local filepath = vim.fn.expand("%:p:h")
 
   -- Silly fix for making oil work with domain-based user dirs. Both branches
   -- are about Windows drive letters -- the domain rewrite, and the "H: or give
