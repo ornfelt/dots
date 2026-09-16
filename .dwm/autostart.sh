@@ -28,6 +28,13 @@ for app in $apps; do
   fi
 done
 
+# Keep the screen from blanking. xfce4-power-manager re-applies its own
+# DPMS profile on every AC<->battery change, so re-assert this after it starts.
+xset s off
+xset s noblank
+xset -dpms
+xset -b
+
 # Use clipmenud instead (see xinitrc)
 #greenclip daemon &
 

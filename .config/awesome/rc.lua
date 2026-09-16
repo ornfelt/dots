@@ -70,6 +70,10 @@ end
 run_once({ "picom", "--animations" })
 run_once({ "xfce4-power-manager" })
 
+-- Keep the screen from blanking. xfce4-power-manager re-applies its own
+-- DPMS profile on every AC<->battery change, so re-assert this after it starts.
+awful.spawn.with_shell("xset s off; xset s noblank; xset -dpms; xset -b")
+
 -- This function implements the XDG autostart specification
 --[[
 awful.spawn.with_shell(

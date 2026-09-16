@@ -136,6 +136,8 @@ cp -r $HOME/.config/st .config/st/
 cp -r $HOME/.config/zathura .config/zathura/
 cp $HOME/.config/mimeapps.list .config/
 cp $HOME/.config/gtk-3.0/bookmarks .config/gtk-3.0/
+mkdir -p .config/xfce4/xfconf/xfce-perchannel-xml
+cp $HOME/.config/xfce4/xfconf/xfce-perchannel-xml/xfce4-power-manager.xml .config/xfce4/xfconf/xfce-perchannel-xml/
 
 cp -r $HOME/.dwm .dwm/
 mkdir -p bin

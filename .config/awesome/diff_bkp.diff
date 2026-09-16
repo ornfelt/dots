@@ -11528,10 +11528,10 @@ index cc12cfd..0000000
 -    layout = wibox.layout.align.vertical
 -}
 diff --git a/rc.lua b/rc.lua
-index 899a8b7..cfdc05d 100644
+index 899a8b7..d5356d4 100644
 --- a/rc.lua
 +++ b/rc.lua
-@@ -1,107 +1,135 @@
+@@ -1,107 +1,139 @@
 -local awesome, client, mouse, screen, tag = awesome, client, mouse, screen, tag
 -local ipairs, string, os, table, tostring, tonumber, type = ipairs, string, os, table, tostring, tonumber, type
 +-- See original rc.lua:
@@ -11633,6 +11633,10 @@ index 899a8b7..cfdc05d 100644
 +run_once({ "picom", "--animations" })
 +run_once({ "xfce4-power-manager" })
 +
++-- Keep the screen from blanking. xfce4-power-manager re-applies its own
++-- DPMS profile on every AC<->battery change, so re-assert this after it starts.
++awful.spawn.with_shell("xset s off; xset s noblank; xset -dpms; xset -b")
++
 +-- This function implements the XDG autostart specification
 +--[[
 +awful.spawn.with_shell(
@@ -11730,7 +11734,7 @@ index 899a8b7..cfdc05d 100644
      --awful.layout.suit.corner.nw,
      --awful.layout.suit.corner.ne,
      --awful.layout.suit.corner.sw,
-@@ -111,93 +139,98 @@ awful.layout.layouts = {
+@@ -111,93 +143,98 @@ awful.layout.layouts = {
      --lain.layout.centerwork,
      --lain.layout.centerwork.horizontal,
      --lain.layout.termfair,
@@ -11897,7 +11901,7 @@ index 899a8b7..cfdc05d 100644
  
  -- Re-set wallpaper when a screen's geometry changes (e.g. different resolution)
  screen.connect_signal("property::geometry", function(s)
-@@ -212,32 +245,80 @@ screen.connect_signal("property::geometry", function(s)
+@@ -212,32 +249,80 @@ screen.connect_signal("property::geometry", function(s)
      end
  end)
  
@@ -11985,7 +11989,7 @@ index 899a8b7..cfdc05d 100644
      awful.key({ }, "F1",      hotkeys_popup.show_help,
          {description = "Show help", group="awesome"}),
  
-@@ -245,6 +326,7 @@ globalkeys = my_table.join(
+@@ -245,6 +330,7 @@ globalkeys = my_table.join(
      --          {description = "Launch firefox", group = "awesome"}),
      -- awful.key({ modkey, ctrlkey }, "w", function () awful.util.mymainmenu:show() end,
      --     {description = "Show main menu", group = "awesome"}),
@@ -11993,7 +11997,7 @@ index 899a8b7..cfdc05d 100644
      awful.key({ modkey, "Shift" }, "p", function ()
              for s in screen do
                  s.mywibox.visible = not s.mywibox.visible
-@@ -255,163 +337,204 @@ globalkeys = my_table.join(
+@@ -255,163 +341,204 @@ globalkeys = my_table.join(
          end,
          {description = "Show/hide wibox (bar)", group = "awesome"}),
  
@@ -12207,7 +12211,7 @@ index 899a8b7..cfdc05d 100644
      -- awful.key({ altkey,         }, "Escape", awful.tag.history.restore,
      --     {description = "go back", group = "tag"}),
  
-@@ -421,55 +544,65 @@ globalkeys = my_table.join(
+@@ -421,55 +548,65 @@ globalkeys = my_table.join(
      --awful.key({ altkey, "Shift" }, "Tab", awful.tag.viewprev,
      --    {description = "view previous", group = "tag"}),
  
@@ -12290,7 +12294,7 @@ index 899a8b7..cfdc05d 100644
      awful.key({ modkey,         }, "u", awful.client.urgent.jumpto,
          {description = "jump to urgent client", group = "client"}),
      -- awful.key({ ctrlkey,        }, "Tab", function () awful.client.focus.history.previous()
-@@ -477,24 +610,50 @@ globalkeys = my_table.join(
+@@ -477,24 +614,50 @@ globalkeys = my_table.join(
      --     {description = "go back", group = "client"}),
  
      -- On the fly useless gaps change
@@ -12346,7 +12350,7 @@ index 899a8b7..cfdc05d 100644
      --     {description = "rename tag", group = "tag"}),
      -- awful.key({ modkey, "Shift" }, "Left", function () lain.util.move_tag(-1) end,
      --     {description = "move tag to the left", group = "tag"}),
-@@ -531,7 +690,7 @@ globalkeys = my_table.join(
+@@ -531,7 +694,7 @@ globalkeys = my_table.join(
      --           end,
      --           {description = "restore minimized", group = "client"}),
  
@@ -12355,7 +12359,7 @@ index 899a8b7..cfdc05d 100644
      awful.key({ modkey, }, "F12", function () awful.screen.focused().quake:toggle() end,
                {description = "dropdown application", group = "super"}),
  
-@@ -544,24 +703,35 @@ globalkeys = my_table.join(
+@@ -544,24 +707,35 @@ globalkeys = my_table.join(
      --     {description = "show weather", group = "widgets"}),
  
      -- Brightness
@@ -12395,7 +12399,7 @@ index 899a8b7..cfdc05d 100644
      awful.key({ }, "XF86AudioMute",
          function ()
              os.execute(string.format("amixer -q set %s toggle", beautiful.volume.togglechannel or beautiful.volume.channel))
-@@ -587,9 +757,10 @@ globalkeys = my_table.join(
+@@ -587,9 +761,10 @@ globalkeys = my_table.join(
      --]]
  )
  
@@ -12407,7 +12411,7 @@ index 899a8b7..cfdc05d 100644
      awful.key({ modkey,           }, "f",
          function (c)
              c.fullscreen = not c.fullscreen
-@@ -597,28 +768,45 @@ clientkeys = my_table.join(
+@@ -597,28 +772,45 @@ clientkeys = my_table.join(
          end,
          {description = "toggle fullscreen", group = "client"}),
  
@@ -12456,7 +12460,7 @@ index 899a8b7..cfdc05d 100644
  
      -- awful.key({ modkey,         }, "n",
      --     function (c)
-@@ -628,99 +816,279 @@ clientkeys = my_table.join(
+@@ -628,99 +820,279 @@ clientkeys = my_table.join(
      --     end ,
      -- {description = "minimize", group = "client"}),
  
@@ -12817,7 +12821,7 @@ index 899a8b7..cfdc05d 100644
      awful.button({ modkey }, 3, function (c)
          c:emit_signal("request::activate", "mouse_click", {raise = true})
          awful.mouse.client.resize(c)
-@@ -730,12 +1098,33 @@ clientbuttons = gears.table.join(
+@@ -730,12 +1102,33 @@ clientbuttons = gears.table.join(
  -- Set keys
  root.keys(globalkeys)
  
@@ -12851,7 +12855,7 @@ index 899a8b7..cfdc05d 100644
                       focus = awful.client.focus.filter,
                       raise = true,
                       keys = clientkeys,
-@@ -746,92 +1135,51 @@ awful.rules.rules = {
+@@ -746,92 +1139,51 @@ awful.rules.rules = {
       }
      },
  
@@ -12986,7 +12990,7 @@ index 899a8b7..cfdc05d 100644
  
  -- Signal function to execute when a new client appears.
  client.connect_signal("manage", function (c)
-@@ -839,8 +1187,8 @@ client.connect_signal("manage", function (c)
+@@ -839,8 +1191,8 @@ client.connect_signal("manage", function (c)
      -- i.e. put it at the end of others instead of setting it master.
      -- if not awesome.startup then awful.client.setslave(c) end
  
@@ -12997,7 +13001,7 @@ index 899a8b7..cfdc05d 100644
        and not c.size_hints.program_position then
          -- Prevent clients from being unreachable after screen count changes.
          awful.placement.no_offscreen(c)
-@@ -857,7 +1205,7 @@ client.connect_signal("request::titlebars", function(c)
+@@ -857,7 +1209,7 @@ client.connect_signal("request::titlebars", function(c)
  
      -- Default
      -- buttons for the titlebar
@@ -13006,7 +13010,7 @@ index 899a8b7..cfdc05d 100644
          awful.button({ }, 1, function()
              c:emit_signal("request::activate", "titlebar", {raise = true})
              awful.mouse.client.move(c)
-@@ -868,7 +1216,7 @@ client.connect_signal("request::titlebars", function(c)
+@@ -868,7 +1220,7 @@ client.connect_signal("request::titlebars", function(c)
          end)
      )
  
@@ -13015,7 +13019,7 @@ index 899a8b7..cfdc05d 100644
          { -- Left
              awful.titlebar.widget.iconwidget(c),
              buttons = buttons,
-@@ -894,72 +1242,159 @@ client.connect_signal("request::titlebars", function(c)
+@@ -894,72 +1246,159 @@ client.connect_signal("request::titlebars", function(c)
      }
  end)
  

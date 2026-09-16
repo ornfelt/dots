@@ -54,6 +54,13 @@ export WEZ_NVIM_SERVERS=0
 
 exec clipmenud &
 
+# Disable screen blanking / DPMS / bell (must be BEFORE the exec below,
+# since `exec` replaces this shell and nothing after it would run)
+xset s off
+xset s noblank
+xset -dpms
+xset -b
+
 #exec i3
 exec awesome
 exec dwm &
@@ -65,9 +72,6 @@ exec dwm &
 sh ~/.dwm/autostart.sh &
 #sh ~/.dwm/autostart.sh >> ~/.dwm/autostart.log 2>&1 &
 
-xset s off
-xset -dpms
-xset -b
 
 if picom --help | grep -q "\-\-animations"; then
     picom --animations
