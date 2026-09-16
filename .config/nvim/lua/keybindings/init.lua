@@ -332,3 +332,27 @@ end, { desc = "GitGraph - Draw" })
 --	})
 --end, { desc = "[U]ndotree toggle" })
 
+-- :SmearCursorInfo -- why the cursor does or does not smear here: is the
+-- smear-cursor plugin loaded and on, and which wezterm is this running in
+-- (lua/pack/smear-cursor.lua leaves the trail to a wezterm built from source).
+-- Each check's output is printed under the :lua line that produced it, so the
+-- line can be copied and run on its own. nvcs has the same command built in,
+-- with a third check for its own smear state (__nvcs.smear()).
+local smear_info_checks = {
+  "local ok,m = pcall(require,'smear_cursor'); print(ok and ('smear enabled: '..tostring(m.enabled)) or 'smear plugin not loaded')",
+  'print(os.getenv("WEZTERM_EXECUTABLE"))',
+}
+
+vim.api.nvim_create_user_command("SmearCursorInfo", function()
+  for i, code in ipairs(smear_info_checks) do
+    if i > 1 then
+      print("")
+    end
+    print("[" .. i .. "] :lua " .. code)
+    local ok, err = pcall(vim.cmd, "lua " .. code)
+    if not ok then
+      print("error: " .. tostring(err))
+    end
+  end
+end, {})
+

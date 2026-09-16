@@ -217,6 +217,7 @@ local commands = {
   { label = "Trouble telescope_files", cmd = "Trouble telescope_files" },
   -- General
   { label = "NvimServerInfo", cmd = "NvimServerInfo" },
+  { label = "SmearCursorInfo", cmd = "SmearCursorInfo" },
   { label = "messages", cmd = "messages" },
   { label = "Reload Configuration", cmd = "lua vim.cmd('source ' .. vim.env.MYVIMRC)" },
   { label = "List Buffers", cmd = "lua print(vim.inspect(vim.api.nvim_list_bufs()))" },
@@ -269,6 +270,7 @@ end
 
 local selections_to_print = {
   ["NvimServerInfo"] = true,
+  ["SmearCursorInfo"] = true,
   ["messages"] = true,
   ["CycleAiMode"] = true,
   ["CyclePythonExecCommand"] = true,
