@@ -1502,8 +1502,9 @@ wezterm.on("format-tab-title", function(tab)
 
   new_title = new_title .. " "
 
-  -- Claude Code: robot icon while a finished response hasn't been visited yet
-  local claude_icon = claude.tab_icon(tab)
+  -- Claude Code: robot icon while a finished response hasn't been visited yet,
+  -- a dead robot in the warning color when it ended on an API error
+  local claude_icon, claude_icon_color = claude.tab_icon(tab)
 
   --local max_title_len = 20 -- If use_fancy_tab_bar
   local max_title_len = TAB_MAX_WIDTH - (claude_icon and claude.icon_width or 0)
@@ -1521,6 +1522,15 @@ wezterm.on("format-tab-title", function(tab)
     local pad_left  = math.floor(pad_total / 2)
     local pad_right = pad_total - pad_left
     new_title = string.rep(" ", pad_left) .. new_title .. string.rep(" ", pad_right)
+  end
+
+  if claude_icon and claude_icon_color then
+    return {
+      { Foreground = { Color = claude_icon_color } },
+      { Text = claude_icon },
+      'ResetAttributes',
+      { Text = new_title },
+    }
   end
 
   if claude_icon then

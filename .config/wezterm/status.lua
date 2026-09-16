@@ -33,12 +33,14 @@ M.colors = {
   progress = '#83a598',
   success  = '#98971a',
   failure  = '#cc241d',
+  warning  = '#fe8019',
 }
 
 M.prefix = {
   progress = '',
   success  = '✓ ',
   failure  = '✗ ',
+  warning  = '⚠ ',
 }
 
 -- Current message: { text = ..., color = ..., expires_at = ..., window_id = ... }
@@ -92,21 +94,29 @@ function M.progress(window, message)
 end
 
 --- Shows the result of an operation; falls back to a toast when disabled.
--- @param ok boolean: true for success, false for failure
-function M.notify(window, title, message, ok)
+-- @param ok boolean|string: true for success, false for failure, 'warning' for
+-- something that went wrong outside wezterm (drawn in the warning color)
+-- @param toast boolean|nil: false skips the toast fallback, for a message that
+-- another wezterm instance already raises one for
+-- @param timeout_ms number|nil: how long the status line message stays,
+-- defaults to M.timeout_ms
+function M.notify(window, title, message, ok, toast, timeout_ms)
   if not M.enabled or not status_line_visible(window) then
     if current then
       current = nil
       redraw(window)
     end
-    window:toast_notification(title, message, nil, M.toast_timeout_ms)
+    if toast ~= false then
+      window:toast_notification(title, message, nil, M.toast_timeout_ms)
+    end
     return
   end
 
+  local kind = ok == 'warning' and 'warning' or (ok and 'success' or 'failure')
   current = {
-    text = (ok and M.prefix.success or M.prefix.failure) .. message,
-    color = ok and M.colors.success or M.colors.failure,
-    expires_at = os.time() + math.max(1, math.ceil(M.timeout_ms / 1000)),
+    text = M.prefix[kind] .. message,
+    color = M.colors[kind],
+    expires_at = os.time() + math.max(1, math.ceil((timeout_ms or M.timeout_ms) / 1000)),
     window_id = window:window_id(),
   }
   redraw(window)
