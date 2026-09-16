@@ -49,7 +49,14 @@ local current = nil
 -- repaint immediately without waiting for the next update-right-status tick.
 local last_tail = {}
 
-local function status_line_visible(window)
+--- True when a message would be drawn on the status line rather than raised as
+-- a toast. Callers can use it to pick plain text over glyphs, since a toast is
+-- rendered by the desktop notification daemon and has no access to wezterm's
+-- font fallback (nerd font glyphs come out as tofu there).
+function M.visible(window)
+  if not M.enabled then
+    return false
+  end
   if not M.tab_bar_hidden_with_single_tab then
     return true
   end
@@ -81,7 +88,7 @@ end
 
 --- Shows a message while an operation is running (stays until notify/render).
 function M.progress(window, message)
-  if not M.enabled or not status_line_visible(window) then
+  if not M.visible(window) then
     return
   end
   current = {
@@ -101,7 +108,7 @@ end
 -- @param timeout_ms number|nil: how long the status line message stays,
 -- defaults to M.timeout_ms
 function M.notify(window, title, message, ok, toast, timeout_ms)
-  if not M.enabled or not status_line_visible(window) then
+  if not M.visible(window) then
     if current then
       current = nil
       redraw(window)

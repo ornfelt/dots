@@ -56,10 +56,15 @@ M.notification_title = 'Claude Code'
 -- A finished response stays on the status line a second longer than the
 -- other status messages
 M.notification_timeout_ms = status.timeout_ms + 1000
--- Prefixed to the notification text. Both the status line and the toast
--- fallback take plain text, so a glyph/emoji is the only icon either can show.
+-- Prefixed to the notification text on the status line, which wezterm draws
+-- itself and so has the emoji and nerd font fallbacks available.
 M.notification_icon = M.icon
 M.failed_notification_icon = M.failed_icon
+-- Prefixed instead when the message falls back to a toast: that is drawn by the
+-- desktop notification daemon with its own font, where a nerd font glyph is
+-- tofu and an emoji is at best inconsistent. ASCII always renders.
+M.toast_icon = '\\o/ '
+M.failed_toast_icon = ':( '
 -- Between the sessions that just finished and the ones still waiting
 M.notification_separator = '  ·  '
 -- Between the parts of "wezterm 5052, tab 3, pane 18"
@@ -234,22 +239,29 @@ local function announce(fresh, fallback_window)
     end
   end
 
-  local parts = {}
-  if #fresh_failed > 0 then
-    table.insert(parts, M.failed_notification_icon .. 'Error in ' .. table.concat(describe(fresh_failed), ', '))
-  end
-  if #fresh_done > 0 then
-    table.insert(parts, M.notification_icon .. 'Finished in ' .. table.concat(describe(fresh_done), ', '))
-  end
-  if #waiting > 0 then
-    table.insert(parts, 'waiting: ' .. table.concat(describe(waiting), ', '))
-  end
-
   local target = target_gui_window()
   if not target then
     local first = fresh[1]
     target = first.mine and gui_window_for_pane(first.pane_id, fallback_window) or fallback_window
   end
+
+  -- The icons have to be picked before the message is built, since the toast
+  -- fallback can't draw the glyph ones
+  local on_status_line = target ~= nil and status.visible(target)
+  local done_icon = on_status_line and M.notification_icon or M.toast_icon
+  local failed_icon = on_status_line and M.failed_notification_icon or M.failed_toast_icon
+
+  local parts = {}
+  if #fresh_failed > 0 then
+    table.insert(parts, failed_icon .. 'Error in ' .. table.concat(describe(fresh_failed), ', '))
+  end
+  if #fresh_done > 0 then
+    table.insert(parts, done_icon .. 'Finished in ' .. table.concat(describe(fresh_done), ', '))
+  end
+  if #waiting > 0 then
+    table.insert(parts, 'waiting: ' .. table.concat(describe(waiting), ', '))
+  end
+
   status.notify(target, M.notification_title, table.concat(parts, M.notification_separator),
     #fresh_failed > 0 and 'warning' or true, any_mine, M.notification_timeout_ms)
 end
