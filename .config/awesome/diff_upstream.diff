@@ -32,10 +32,10 @@ index ae28bde..0000000
 -	url = https://github.com/lcpz/awesome-freedesktop.git
 diff --git a/CLAUDE_USAGE.md b/CLAUDE_USAGE.md
 new file mode 100644
-index 0000000..ac5adf7
+index 0000000..b7d9a1e
 --- /dev/null
 +++ b/CLAUDE_USAGE.md
-@@ -0,0 +1,148 @@
+@@ -0,0 +1,153 @@
 +# claude_usage — vendored module notes
 +
 +`claude_usage/` is a vendored copy of
@@ -178,6 +178,11 @@ index 0000000..ac5adf7
 +```
 +claude_usage is identical to https://github.com/derblub/awesome-claude-usage @ 9b2a26a
 +```
++
++`~/.local/bin/my_scripts/git_push.sh` used to carry its own copy of the awsm
++diff commands, which had already drifted (`...master` there vs `..HEAD` here,
++producing different output). It now delegates to this script, so the logic lives
++in one place and a push regenerates `diff_claude_usage.diff` along with the rest.
 +
 +Unlike the other three diffs, this one cannot use a git remote — the vendored
 +tree comes from an unrelated repository with its files at the root rather than
@@ -7656,7 +7661,7 @@ index 0000000..bf254ac
 Binary files /dev/null and b/freedesktop/screenshot.png differ
 diff --git a/gen_diffs.sh b/gen_diffs.sh
 new file mode 100755
-index 0000000..df2a06f
+index 0000000..063f649
 --- /dev/null
 +++ b/gen_diffs.sh
 @@ -0,0 +1,50 @@
@@ -7667,7 +7672,7 @@ index 0000000..df2a06f
 +    exit 1
 +fi
 +
-+git diff upstream/master...master -- . ":(exclude)*.diff" > diff_upstream.diff
++git diff upstream/master..HEAD -- . ":(exclude)*.diff" > diff_upstream.diff
 +git diff origin/bkp -- . ":(exclude)*.diff" ":(exclude).gitignore" ":(exclude)patches/**" ":(exclude)patches_git/**" > diff_bkp.diff
 +git diff origin/tarneaux -- . ":(exclude)*.diff" ":(exclude).gitignore" ":(exclude)patches/**" ":(exclude)patches_git/**" > diff_tarneaux.diff
 +
@@ -19728,7 +19733,7 @@ deleted file mode 100755
 index 7ec8009..0000000
 Binary files a/themes/holo/wall.png and /dev/null differ
 diff --git a/themes/multicolor/theme.lua b/themes/multicolor/theme.lua
-index f7d62b5..e55ea7a 100644
+index f7d62b5..e68ff81 100644
 --- a/themes/multicolor/theme.lua
 +++ b/themes/multicolor/theme.lua
 @@ -16,20 +16,24 @@ local my_table = awful.util.table or gears.table -- 4.{0,1} compatibility
@@ -20411,7 +20416,7 @@ index f7d62b5..e55ea7a 100644
  function theme.at_screen_connect(s)
      -- Quake application
      s.quake = lain.util.quake({ app = awful.util.terminal })
-@@ -272,22 +745,78 @@ function theme.at_screen_connect(s)
+@@ -272,22 +745,79 @@ function theme.at_screen_connect(s)
      -- Create a promptbox for each screen
      s.mypromptbox = awful.widget.prompt()
      -- Create an imagebox widget which will contains an icon indicating which layout we're using.
@@ -20469,6 +20474,7 @@ index f7d62b5..e55ea7a 100644
 +  s.mytaglist = awful.widget.taglist {
 +    screen = s,
 +    filter = function(t) return t.selected or #t:clients() > 0 end,
++    buttons = awful.util.taglist_buttons,
 +    layout = {
 +      --spacing = 8,
 +      --spacing = 2,
@@ -20499,7 +20505,7 @@ index f7d62b5..e55ea7a 100644
  
      -- Add widgets to the wibox
      s.mywibox:setup {
-@@ -296,7 +825,8 @@ function theme.at_screen_connect(s)
+@@ -296,7 +826,8 @@ function theme.at_screen_connect(s)
              layout = wibox.layout.fixed.horizontal,
              --s.mylayoutbox,
              s.mytaglist,
@@ -20509,7 +20515,7 @@ index f7d62b5..e55ea7a 100644
              mpdicon,
              theme.mpd.widget,
          },
-@@ -304,25 +834,38 @@ function theme.at_screen_connect(s)
+@@ -304,25 +835,38 @@ function theme.at_screen_connect(s)
          nil,
          { -- Right widgets
              layout = wibox.layout.fixed.horizontal,
@@ -20552,7 +20558,7 @@ index f7d62b5..e55ea7a 100644
              baticon,
              bat.widget,
              clockicon,
-@@ -331,20 +874,20 @@ function theme.at_screen_connect(s)
+@@ -331,20 +875,20 @@ function theme.at_screen_connect(s)
      }
  
      -- Create the bottom wibox

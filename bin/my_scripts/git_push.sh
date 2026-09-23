@@ -74,11 +74,12 @@ if [[ "$repoOwner" == "ornfelt" ]]; then
     "awsm")
       AddUpstreamIfMissing "https://github.com/lcpz/awesome-copycats"
       commands+=('git fetch --all')
-      #commands+=('git diff upstream/master...master -- . ":(exclude)*.diff" > diff_upstream.diff')
-      commands+=('git diff upstream/master..HEAD -- . ":(exclude)*.diff" > diff_upstream.diff')
-      commands+=('git diff origin/bkp -- . ":(exclude)*.diff" ":(exclude).gitignore" ":(exclude)patches/**" ":(exclude)patches_git/**" > diff_bkp.diff')
-      commands+=('git diff origin/tarneaux -- . ":(exclude)*.diff" ":(exclude).gitignore" ":(exclude)patches/**" ":(exclude)patches_git/**" > diff_tarneaux.diff')
-      commands+=('git add -- diff_upstream.diff diff_bkp.diff diff_tarneaux.diff')
+      # The repo's own gen_diffs.sh owns this logic; it also covers the vendored
+      # claude_usage/ tree, which has no remote here and so cannot be reached by
+      # a plain git diff. Delegating keeps one implementation instead of two that
+      # drift (they already had: ...master here vs ..HEAD there).
+      commands+=('(cd "$(git rev-parse --show-toplevel)" && ./gen_diffs.sh)')
+      commands+=('git add -- diff_upstream.diff diff_bkp.diff diff_tarneaux.diff diff_claude_usage.diff')
       commands+=('git commit -m "update diff files"')
       ;;
     "stk-code")

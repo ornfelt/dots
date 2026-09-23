@@ -1,9 +1,9 @@
 diff --git a/CLAUDE_USAGE.md b/CLAUDE_USAGE.md
 new file mode 100644
-index 0000000..ac5adf7
+index 0000000..b7d9a1e
 --- /dev/null
 +++ b/CLAUDE_USAGE.md
-@@ -0,0 +1,148 @@
+@@ -0,0 +1,153 @@
 +# claude_usage — vendored module notes
 +
 +`claude_usage/` is a vendored copy of
@@ -146,6 +146,11 @@ index 0000000..ac5adf7
 +```
 +claude_usage is identical to https://github.com/derblub/awesome-claude-usage @ 9b2a26a
 +```
++
++`~/.local/bin/my_scripts/git_push.sh` used to carry its own copy of the awsm
++diff commands, which had already drifted (`...master` there vs `..HEAD` here,
++producing different output). It now delegates to this script, so the logic lives
++in one place and a push regenerates `diff_claude_usage.diff` along with the rest.
 +
 +Unlike the other three diffs, this one cannot use a git remote — the vendored
 +tree comes from an unrelated repository with its files at the root rather than
@@ -8220,7 +8225,7 @@ index 0000000..bf254ac
 Binary files /dev/null and b/freedesktop/screenshot.png differ
 diff --git a/gen_diffs.sh b/gen_diffs.sh
 new file mode 100755
-index 0000000..df2a06f
+index 0000000..063f649
 --- /dev/null
 +++ b/gen_diffs.sh
 @@ -0,0 +1,50 @@
@@ -8231,7 +8236,7 @@ index 0000000..df2a06f
 +    exit 1
 +fi
 +
-+git diff upstream/master...master -- . ":(exclude)*.diff" > diff_upstream.diff
++git diff upstream/master..HEAD -- . ":(exclude)*.diff" > diff_upstream.diff
 +git diff origin/bkp -- . ":(exclude)*.diff" ":(exclude).gitignore" ":(exclude)patches/**" ":(exclude)patches_git/**" > diff_bkp.diff
 +git diff origin/tarneaux -- . ":(exclude)*.diff" ":(exclude).gitignore" ":(exclude)patches/**" ":(exclude)patches_git/**" > diff_tarneaux.diff
 +
@@ -20013,10 +20018,10 @@ index 0000000..a96b9b1
 Binary files /dev/null and b/themes/multicolor/icons/titlebar/sticky_normal_inactive.png differ
 diff --git a/themes/multicolor/theme.lua b/themes/multicolor/theme.lua
 new file mode 100644
-index 0000000..e55ea7a
+index 0000000..e68ff81
 --- /dev/null
 +++ b/themes/multicolor/theme.lua
-@@ -0,0 +1,893 @@
+@@ -0,0 +1,894 @@
 +--[[
 +
 +     Multicolor Awesome WM theme 2.0
@@ -20811,6 +20816,7 @@ index 0000000..e55ea7a
 +  s.mytaglist = awful.widget.taglist {
 +    screen = s,
 +    filter = function(t) return t.selected or #t:clients() > 0 end,
++    buttons = awful.util.taglist_buttons,
 +    layout = {
 +      --spacing = 8,
 +      --spacing = 2,

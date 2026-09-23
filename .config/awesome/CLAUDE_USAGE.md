@@ -141,6 +141,11 @@ upstream has moved on since the pin. The script prints which:
 claude_usage is identical to https://github.com/derblub/awesome-claude-usage @ 9b2a26a
 ```
 
+`~/.local/bin/my_scripts/git_push.sh` used to carry its own copy of the awsm
+diff commands, which had already drifted (`...master` there vs `..HEAD` here,
+producing different output). It now delegates to this script, so the logic lives
+in one place and a push regenerates `diff_claude_usage.diff` along with the rest.
+
 Unlike the other three diffs, this one cannot use a git remote — the vendored
 tree comes from an unrelated repository with its files at the root rather than
 under `claude_usage/` — so the script shallow-clones upstream to a temp dir and
