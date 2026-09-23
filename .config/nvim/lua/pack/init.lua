@@ -37,7 +37,7 @@ return {
   require("pack.vim-emoji"),
   require("pack.undotree"),
   -- turns itself off in a terminal that draws its own cursor trail
-  require("pack.smear-cursor"),
+  --require("pack.smear-cursor"),
   --require("pack.screenkey"),
   --require("pack.markview"),
   --require("pack.render-markdown"),

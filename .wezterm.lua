@@ -1299,8 +1299,82 @@ end
 local GITHUB_NOTIFY_TITLE = "WezTerm Notification"
 -- The status line has no room for a full git error, so they are cut down
 local MAX_STATUS_ERROR_LEN = 60
--- Browser the repo is opened in
-local GITHUB_BROWSER = "firefox"
+-- Browsers the repo can be opened in, in order of preference; the first one
+-- found running is used. linux_processes are the names ps reports (comm, cut
+-- to 15 chars), linux_commands what is looked up on PATH to launch it, and
+-- windows_process the image name tasklist reports, which "start" also resolves
+-- through App Paths since browser installers rarely put themselves on PATH
+local GITHUB_BROWSERS = {
+  { name = "firefox",  linux_processes = { "firefox", "firefox-esr", "firefox-bin" },
+    linux_commands = { "firefox", "firefox-esr" },                 windows_process = "firefox.exe" },
+  { name = "chrome",   linux_processes = { "chrome" },
+    linux_commands = { "google-chrome", "google-chrome-stable" },  windows_process = "chrome.exe" },
+  { name = "chromium", linux_processes = { "chromium", "chromium-browse" },
+    linux_commands = { "chromium", "chromium-browser" } },
+  { name = "edge",     linux_processes = { "msedge" },
+    linux_commands = { "microsoft-edge", "microsoft-edge-stable" }, windows_process = "msedge.exe" },
+  { name = "brave",    linux_processes = { "brave" },
+    linux_commands = { "brave-browser", "brave" },                 windows_process = "brave.exe" },
+  { name = "vivaldi",  linux_processes = { "vivaldi-bin" },
+    linux_commands = { "vivaldi" },                                windows_process = "vivaldi.exe" },
+  { name = "opera",    linux_processes = { "opera" },
+    linux_commands = { "opera" },                                  windows_process = "opera.exe" },
+}
+
+-- Full path of a command on PATH, or nil
+local function find_on_path(command)
+  for dir in (os.getenv("PATH") or ""):gmatch("[^:]+") do
+    local candidate = dir .. "/" .. command
+    local file = io.open(candidate, "r")
+    if file then
+      file:close()
+      return candidate
+    end
+  end
+  return nil
+end
+
+-- Set of running process names, lowercased; one process listing covers every
+-- browser instead of one pgrep/tasklist per browser on the gui thread
+local function running_processes()
+  local args = is_linux and { "ps", "-A", "-o", "comm=" } or { "tasklist", "/NH", "/FO", "CSV" }
+  local success, stdout = wezterm.run_child_process(args)
+  local running = {}
+  if not success or not stdout then
+    return running
+  end
+  for line in stdout:gmatch("[^\r\n]+") do
+    -- tasklist CSV rows start with the quoted image name: "firefox.exe","1234",...
+    local name = is_linux and line:gsub("^%s+", ""):gsub("%s+$", "") or line:match('^"([^"]+)"')
+    if name then
+      running[name:lower()] = true
+    end
+  end
+  return running
+end
+
+-- Launch command for the first preferred browser that is running, plus its
+-- name, or nil when none is
+local function running_browser_command(url)
+  local running = running_processes()
+  for _, browser in ipairs(GITHUB_BROWSERS) do
+    if is_linux then
+      for _, process in ipairs(browser.linux_processes) do
+        if running[process] then
+          for _, command in ipairs(browser.linux_commands) do
+            local path = find_on_path(command)
+            if path then
+              return { path, url }, browser.name
+            end
+          end
+        end
+      end
+    elseif browser.windows_process and running[browser.windows_process] then
+      return { "cmd.exe", "/c", "start", "", browser.windows_process, url }, browser.name
+    end
+  end
+  return nil
+end
 
 -- First line of a git error, short enough for the status line
 local function short_error(text, fallback)
@@ -1351,7 +1425,7 @@ local function git_in(cwd, ...)
   return out
 end
 
--- Open the github repo, on the branch checked out here, in firefox
+-- Open the github repo, on the branch checked out here, in a running browser
 local function open_github_repo(win, pane)
   local cwd_uri = pane:get_current_working_dir()
   if not cwd_uri then
@@ -1423,9 +1497,21 @@ local function open_github_repo(win, pane)
   end
 
   -- background_child_process returns right away; run_child_process would block
-  -- the gui thread until firefox exits, which is the whole session when it was
-  -- not already running
-  wezterm.background_child_process({ GITHUB_BROWSER, github_url })
+  -- the gui thread until the browser exits, which is the whole session when it
+  -- was not already running
+  local browser_command, browser_name = running_browser_command(github_url)
+  if browser_command then
+    wezterm.background_child_process(browser_command)
+  else
+    -- No known browser running: leave it to the system default browser
+    browser_name = "default browser"
+    wezterm.open_with(github_url)
+  end
+
+  -- Debug
+  if DEBUG_MESSAGES then
+    log_to_file("github browser: " .. browser_name)
+  end
 
   local repo = remote_url:match("([^/]+)$") or remote_url
   if subdir then
@@ -1529,7 +1615,10 @@ if wezterm.target_triple == 'x86_64-pc-windows-msvc' or wezterm.target_triple ==
 end
 
 wezterm.on("format-tab-title", function(tab)
-  local new_title = tostring(tab.active_pane.current_working_dir):gsub("^file:///", "")
+  -- Percent-decode through the shared helper: a dir like C:/Users/jonas/Code2/C#/BloogBot
+  -- arrives as C%23 in the OSC 7 URI and was shown that way in the tab. The leading
+  -- slash is dropped so the home-dir match below (which also drops it) still works.
+  local new_title = path_from_cwd_uri(tab.active_pane.current_working_dir):gsub("^/", "")
   -- Normalize slashes
   new_title = new_title:gsub("\\", "/")
   new_title = new_title:gsub("//+", "/")

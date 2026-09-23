@@ -792,6 +792,7 @@ function theme.at_screen_connect(s)
   s.mytaglist = awful.widget.taglist {
     screen = s,
     filter = function(t) return t.selected or #t:clients() > 0 end,
+    buttons = awful.util.taglist_buttons,
     layout = {
       --spacing = 8,
       --spacing = 2,
