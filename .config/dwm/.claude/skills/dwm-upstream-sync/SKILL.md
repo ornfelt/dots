@@ -13,7 +13,7 @@ repo - no separate clone is used.
 
 ## Arguments
 
-- **none** - apply every remaining upstream commit, oldest first.
+- **none** - apply the remaining upstream commits, oldest first, within the per-run budget below.
 - `status` - only report the last synced commit and the remaining list. Write nothing.
 - `<commit-id>` - apply just that upstream commit.
 
@@ -70,11 +70,15 @@ For each commit in the work list:
    `config.def.h`, mirror the same change into `config.h` too (adapted to the values already
    there). `config.mk` version bumps are taken as-is.
 6. Verify (see below). Fix build errors caused by this commit; report pre-existing ones.
-7. Commit with upstream's subject (and body, if any), unchanged:
+7. Commit using the same commit name and description as upstream - upstream's subject line and
+   body (if any), unchanged, so the subject match in step 2 keeps working on later runs:
 
    ```bash
-   git commit -m "<upstream subject>"
+   git commit -m "<upstream subject>" [-m "<upstream body>"]
    ```
+
+   **Do not add a `Co-Authored-By` trailer** (or any other attribution line) to this commit or to
+   the `update diff files` commit - the message is upstream's message and nothing else.
 
 8. Refresh the diff files and commit them:
 
@@ -86,6 +90,16 @@ For each commit in the work list:
    Only commit if the diffs actually changed.
 
 Then move on to the next commit. Never squash several upstream commits into one.
+
+## How much per run
+
+Take one upstream commit at a time - one fork commit (plus its `update diff files` commit) per
+upstream commit - but keep going through the work list until roughly **1000 changed lines** have
+been landed in the run (count the upstream diffs: `git show --numstat <sha>`), or stop earlier at a
+logical point: a question for the user, a larger commit that is better done in its own run, or a
+group of related commits that has just been completed (e.g. a fix and its follow-up regression
+fix). Do not stop in the middle of such a group just because the budget is reached; finish it, then
+stop. If nothing is left before the budget is spent, stop there.
 
 Do not push. The user pushes.
 

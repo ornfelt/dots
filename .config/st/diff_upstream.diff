@@ -1,9 +1,9 @@
 diff --git a/.claude/skills/st-upstream-sync/SKILL.md b/.claude/skills/st-upstream-sync/SKILL.md
 new file mode 100644
-index 0000000..d25cfc2
+index 0000000..56d0bc7
 --- /dev/null
 +++ b/.claude/skills/st-upstream-sync/SKILL.md
-@@ -0,0 +1,111 @@
+@@ -0,0 +1,125 @@
 +---
 +name: st-upstream-sync
 +description: Land upstream suckless st commits into this customized st fork, one at a time and in upstream order. Finds the newest upstream commit already in master by subject, applies the next ones, resolves conflicts, keeps config.h in step with config.def.h, verifies with make, commits each with the upstream subject and refreshes the diff files. Asks before any change that needs a logic or implementation change to the fork.
@@ -19,7 +19,7 @@ index 0000000..d25cfc2
 +
 +## Arguments
 +
-+- **none** - apply every remaining upstream commit, oldest first.
++- **none** - apply the remaining upstream commits, oldest first, within the per-run budget below.
 +- `status` - only report the last synced commit and the remaining list. Write nothing.
 +- `<commit-id>` - apply just that upstream commit.
 +
@@ -75,11 +75,15 @@ index 0000000..d25cfc2
 +   `config.def.h`, mirror the same change into `config.h` too (adapted to the values already
 +   there). `config.mk` version bumps are taken as-is.
 +6. Verify (see below). Fix build errors caused by this commit; report pre-existing ones.
-+7. Commit with upstream's subject (and body, if any), unchanged:
++7. Commit using the same commit name and description as upstream - upstream's subject line and
++   body (if any), unchanged, so the subject match in step 2 keeps working on later runs:
 +
 +   ```bash
-+   git commit -m "<upstream subject>"
++   git commit -m "<upstream subject>" [-m "<upstream body>"]
 +   ```
++
++   **Do not add a `Co-Authored-By` trailer** (or any other attribution line) to this commit or to
++   the `update diff files` commit - the message is upstream's message and nothing else.
 +
 +8. Refresh the diff files against the upstream commit just landed (`<sha>`) and commit them:
 +
@@ -92,6 +96,16 @@ index 0000000..d25cfc2
 +   Only commit if the diffs actually changed.
 +
 +Then move on to the next commit. Never squash several upstream commits into one.
++
++## How much per run
++
++Take one upstream commit at a time - one fork commit (plus its `update diff files` commit) per
++upstream commit - but keep going through the work list until roughly **1000 changed lines** have
++been landed in the run (count the upstream diffs: `git show --numstat <sha>`), or stop earlier at a
++logical point: a question for the user, a larger commit that is better done in its own run, or a
++group of related commits that has just been completed (e.g. a fix and its follow-up regression
++fix). Do not stop in the middle of such a group just because the budget is reached; finish it, then
++stop. If nothing is left before the budget is spent, stop there.
 +
 +Do not push. The user pushes.
 +
@@ -1211,7 +1225,7 @@ index 39120b4..b82beb3 100644
  defines the
  .I font
 diff --git a/st.c b/st.c
-index c15ca4b..894416e 100644
+index c15ca4b..75fcd5e 100644
 --- a/st.c
 +++ b/st.c
 @@ -35,6 +35,7 @@
@@ -1326,44 +1340,19 @@ index c15ca4b..894416e 100644
  		while (last >= gp && last->u == ' ')
  			--last;
  
-@@ -712,24 +719,25 @@ execsh(char *cmd, char **args)
- void
- sigchld(int a)
- {
--	int stat, olderrno;
-+	int stat;
- 	pid_t p;
- 
--	olderrno = errno;
--	do {
--		p = waitpid(pid, &stat, WNOHANG);
--	} while (p < 0 && errno == EINTR);
--
--	if (p < 0)
--		_exit(1);
-+	if ((p = waitpid(pid, &stat, WNOHANG)) < 0)
-+		die("waiting for pid %hd failed: %s\n", pid, strerror(errno));
+@@ -724,6 +731,11 @@ sigchld(int a)
+ 		_exit(1);
  
  	if (pid != p) {
--		errno = olderrno;
 +		if (p == 0 && wait(&stat) < 0)
-+			die("wait: %s\n", strerror(errno));
++			_exit(1);
 +
 +		/* reinstall sigchld handler */
 +		signal(SIGCHLD, sigchld);
+ 		errno = olderrno;
  		return;
  	}
- 
--	if ((WIFEXITED(stat) && WEXITSTATUS(stat)) || WIFSIGNALED(stat))
--		_exit(1);
-+	if (WIFEXITED(stat) && WEXITSTATUS(stat))
-+		die("child exited with status %d\n", WEXITSTATUS(stat));
-+	else if (WIFSIGNALED(stat))
-+		die("child terminated due to signal %d\n", WTERMSIG(stat));
- 	_exit(0);
- }
- 
-@@ -808,7 +816,7 @@ ttynew(const char *line, char *cmd, const char *out, char **args)
+@@ -808,7 +820,7 @@ ttynew(const char *line, char *cmd, const char *out, char **args)
  		break;
  	default:
  #ifdef __OpenBSD__
@@ -1372,7 +1361,7 @@ index c15ca4b..894416e 100644
  			die("pledge\n");
  #endif
  		close(s);
-@@ -849,6 +857,9 @@ void
+@@ -849,6 +861,9 @@ void
  ttywrite(const char *s, size_t n, int may_echo)
  {
  	const char *next;
@@ -1382,17 +1371,7 @@ index c15ca4b..894416e 100644
  
  	if (may_echo && IS_SET(MODE_ECHO))
  		twrite(s, n, 1);
-@@ -970,9 +981,6 @@ tsetdirt(int top, int bot)
- {
- 	int i;
- 
--	if (term.row <= 0)
--		return;
--
- 	LIMIT(top, 0, term.row-1);
- 	LIMIT(bot, 0, term.row-1);
- 
-@@ -1063,13 +1071,53 @@ tswapscreen(void)
+@@ -1063,13 +1078,53 @@ tswapscreen(void)
  }
  
  void
@@ -1447,7 +1426,7 @@ index c15ca4b..894416e 100644
  	tsetdirt(orig, term.bot-n);
  	tclearregion(0, term.bot-n+1, term.col-1, term.bot);
  
-@@ -1079,17 +1127,28 @@ tscrolldown(int orig, int n)
+@@ -1079,17 +1134,28 @@ tscrolldown(int orig, int n)
  		term.line[i-n] = temp;
  	}
  
@@ -1478,7 +1457,7 @@ index c15ca4b..894416e 100644
  	tclearregion(0, orig, term.col-1, orig+n-1);
  	tsetdirt(orig+n, term.bot);
  
-@@ -1099,7 +1158,8 @@ tscrollup(int orig, int n)
+@@ -1099,7 +1165,8 @@ tscrollup(int orig, int n)
  		term.line[i+n] = temp;
  	}
  
@@ -1488,7 +1467,7 @@ index c15ca4b..894416e 100644
  }
  
  void
-@@ -1128,7 +1188,7 @@ tnewline(int first_col)
+@@ -1128,7 +1195,7 @@ tnewline(int first_col)
  	int y = term.c.y;
  
  	if (y == term.bot) {
@@ -1497,7 +1476,7 @@ index c15ca4b..894416e 100644
  	} else {
  		y++;
  	}
-@@ -1296,14 +1356,14 @@ void
+@@ -1296,14 +1363,14 @@ void
  tinsertblankline(int n)
  {
  	if (BETWEEN(term.c.y, term.top, term.bot))
@@ -1514,7 +1493,7 @@ index c15ca4b..894416e 100644
  }
  
  int32_t
-@@ -1747,11 +1807,11 @@ csihandle(void)
+@@ -1747,11 +1814,11 @@ csihandle(void)
  	case 'S': /* SU -- Scroll <n> line up */
  		if (csiescseq.priv) break;
  		DEFAULT(csiescseq.arg[0], 1);
@@ -1528,7 +1507,7 @@ index c15ca4b..894416e 100644
  		break;
  	case 'L': /* IL -- Insert <n> blank lines */
  		DEFAULT(csiescseq.arg[0], 1);
-@@ -1815,11 +1875,11 @@ csihandle(void)
+@@ -1815,11 +1882,11 @@ csihandle(void)
  		tcursor(CURSOR_SAVE);
  		break;
  	case 'u': /* DECRC -- Restore cursor position (ANSI.SYS) */
@@ -1545,7 +1524,7 @@ index c15ca4b..894416e 100644
  		break;
  	case ' ':
  		switch (csiescseq.mode[1]) {
-@@ -1975,6 +2035,8 @@ strhandle(void)
+@@ -1975,6 +2042,8 @@ strhandle(void)
  				tfulldirt();
  			}
  			return;
@@ -1554,7 +1533,7 @@ index c15ca4b..894416e 100644
  		case 110: /* reset dynamic VT100 text foreground color */
  		case 111: /* reset dynamic VT100 text background color */
  		case 112: /* reset dynamic text cursor color */
-@@ -1988,8 +2050,6 @@ strhandle(void)
+@@ -1988,8 +2057,6 @@ strhandle(void)
  				tfulldirt();
  			}
  			return;
@@ -1563,7 +1542,7 @@ index c15ca4b..894416e 100644
  	case 'k': /* old title set compatibility */
  		xsettitle(strescseq.args[0]);
  		return;
-@@ -2025,6 +2085,59 @@ strparse(void)
+@@ -2025,6 +2092,59 @@ strparse(void)
  	}
  }
  
@@ -1623,7 +1602,7 @@ index c15ca4b..894416e 100644
  void
  strdump(void)
  {
-@@ -2340,7 +2453,7 @@ eschandle(uchar ascii)
+@@ -2340,7 +2460,7 @@ eschandle(uchar ascii)
  		return 0;
  	case 'D': /* IND -- Linefeed */
  		if (term.c.y == term.bot) {
@@ -1632,7 +1611,7 @@ index c15ca4b..894416e 100644
  		} else {
  			tmoveto(term.c.x, term.c.y+1);
  		}
-@@ -2353,7 +2466,7 @@ eschandle(uchar ascii)
+@@ -2353,7 +2473,7 @@ eschandle(uchar ascii)
  		break;
  	case 'M': /* RI -- Reverse index */
  		if (term.c.y == term.top) {
@@ -1641,15 +1620,7 @@ index c15ca4b..894416e 100644
  		} else {
  			tmoveto(term.c.x, term.c.y-1);
  		}
-@@ -2366,7 +2479,6 @@ eschandle(uchar ascii)
- 		resettitle();
- 		xloadcols();
- 		xsetmode(0, MODE_HIDE);
--		xsetmode(0, MODE_BRCKTPASTE);
- 		break;
- 	case '=': /* DECPAM -- Application keypad */
- 		xsetmode(1, MODE_APPKEYPAD);
-@@ -2577,7 +2689,7 @@ twrite(const char *buf, int buflen, int show_ctrl)
+@@ -2577,7 +2697,7 @@ twrite(const char *buf, int buflen, int show_ctrl)
  void
  tresize(int col, int row)
  {
@@ -1658,7 +1629,7 @@ index c15ca4b..894416e 100644
  	int minrow = MIN(row, term.row);
  	int mincol = MIN(col, term.col);
  	int *bp;
-@@ -2614,6 +2726,14 @@ tresize(int col, int row)
+@@ -2614,6 +2734,14 @@ tresize(int col, int row)
  	term.dirty = xrealloc(term.dirty, row * sizeof(*term.dirty));
  	term.tabs = xrealloc(term.tabs, col * sizeof(*term.tabs));
  
@@ -1673,7 +1644,7 @@ index c15ca4b..894416e 100644
  	/* resize each row to new width, zero-pad if needed */
  	for (i = 0; i < minrow; i++) {
  		term.line[i] = xrealloc(term.line[i], col * sizeof(Glyph));
-@@ -2672,7 +2792,7 @@ drawregion(int x1, int y1, int x2, int y2)
+@@ -2672,7 +2800,7 @@ drawregion(int x1, int y1, int x2, int y2)
  			continue;
  
  		term.dirty[y] = 0;
@@ -1682,7 +1653,7 @@ index c15ca4b..894416e 100644
  	}
  }
  
-@@ -2693,8 +2813,11 @@ draw(void)
+@@ -2693,8 +2821,11 @@ draw(void)
  		cx--;
  
  	drawregion(0, 0, term.col, term.row);

@@ -1,9 +1,9 @@
 diff --git a/.claude/skills/dwm-upstream-sync/SKILL.md b/.claude/skills/dwm-upstream-sync/SKILL.md
 new file mode 100644
-index 0000000..1807745
+index 0000000..82533bb
 --- /dev/null
 +++ b/.claude/skills/dwm-upstream-sync/SKILL.md
-@@ -0,0 +1,111 @@
+@@ -0,0 +1,125 @@
 +---
 +name: dwm-upstream-sync
 +description: Land upstream suckless dwm commits into this customized dwm fork, one at a time and in upstream order. Finds the newest upstream commit already in master by subject, applies the next ones, resolves conflicts, keeps config.h in step with config.def.h, verifies with make, commits each with the upstream subject and refreshes the diff files. Asks before any change that needs a logic or implementation change to the fork.
@@ -19,7 +19,7 @@ index 0000000..1807745
 +
 +## Arguments
 +
-+- **none** - apply every remaining upstream commit, oldest first.
++- **none** - apply the remaining upstream commits, oldest first, within the per-run budget below.
 +- `status` - only report the last synced commit and the remaining list. Write nothing.
 +- `<commit-id>` - apply just that upstream commit.
 +
@@ -76,11 +76,15 @@ index 0000000..1807745
 +   `config.def.h`, mirror the same change into `config.h` too (adapted to the values already
 +   there). `config.mk` version bumps are taken as-is.
 +6. Verify (see below). Fix build errors caused by this commit; report pre-existing ones.
-+7. Commit with upstream's subject (and body, if any), unchanged:
++7. Commit using the same commit name and description as upstream - upstream's subject line and
++   body (if any), unchanged, so the subject match in step 2 keeps working on later runs:
 +
 +   ```bash
-+   git commit -m "<upstream subject>"
++   git commit -m "<upstream subject>" [-m "<upstream body>"]
 +   ```
++
++   **Do not add a `Co-Authored-By` trailer** (or any other attribution line) to this commit or to
++   the `update diff files` commit - the message is upstream's message and nothing else.
 +
 +8. Refresh the diff files and commit them:
 +
@@ -92,6 +96,16 @@ index 0000000..1807745
 +   Only commit if the diffs actually changed.
 +
 +Then move on to the next commit. Never squash several upstream commits into one.
++
++## How much per run
++
++Take one upstream commit at a time - one fork commit (plus its `update diff files` commit) per
++upstream commit - but keep going through the work list until roughly **1000 changed lines** have
++been landed in the run (count the upstream diffs: `git show --numstat <sha>`), or stop earlier at a
++logical point: a question for the user, a larger commit that is better done in its own run, or a
++group of related commits that has just been completed (e.g. a fix and its follow-up regression
++fix). Do not stop in the middle of such a group just because the budget is reached; finish it, then
++stop. If nothing is left before the budget is spent, stop there.
 +
 +Do not push. The user pushes.
 +
@@ -116,10 +130,23 @@ index 0000000..1807745
 +and the fork commits created. If stopped on a question, name the commit it is waiting on so the
 +next run starts there.
 diff --git a/LICENSE b/LICENSE
-index 1e1b5a4..995172f 100644
+index 1e1b5a4..596e6cd 100644
 --- a/LICENSE
 +++ b/LICENSE
-@@ -17,7 +17,7 @@ MIT/X Consortium License
+@@ -1,5 +1,6 @@
+ MIT/X Consortium License
+ 
++© 2010-2026 Hiltjo Posthuma <hiltjo@codemadness.org>
+ © 2006-2019 Anselm R Garbe <anselm@garbe.ca>
+ © 2006-2009 Jukka Salmi <jukka at salmi dot ch>
+ © 2006-2007 Sander van Dijk <a dot h dot vandijk at gmail dot com>
+@@ -11,13 +12,12 @@ MIT/X Consortium License
+ © 2008 Martin Hurton <martin dot hurton at gmail dot com>
+ © 2008 Neale Pickett <neale dot woozle dot org>
+ © 2009 Mate Nagy <mnagy at port70 dot net>
+-© 2010-2016 Hiltjo Posthuma <hiltjo@codemadness.org>
+ © 2010-2012 Connor Lane Smith <cls@lubutu.com>
+ © 2011 Christoph Lohmann <20h@r-36.net>
  © 2015-2016 Quentin Rameau <quinq@fifth.space>
  © 2015-2016 Eric Pruitt <eric.pruitt@gmail.com>
  © 2016-2017 Markus Teich <markus.teich@stusta.mhn.de>
@@ -566,13 +593,13 @@ index 342750a..b478853 100644
      { ClkRootWin,           0,              Button2,        togglebar,      {0} },
  };
 diff --git a/config.mk b/config.mk
-index 1fc4bf1..93f9739 100644
+index 1fc4bf1..49b3c6c 100644
 --- a/config.mk
 +++ b/config.mk
 @@ -1,5 +1,5 @@
  # dwm version
 -VERSION = 6.5
-+VERSION = 6.6
++VERSION = 6.8
  
  # Customize below to fit your system
  
@@ -1593,7 +1620,7 @@ index 7feba78..d04bec6 100644
  .BR dmenu (1),
  .BR st (1)
 diff --git a/dwm.c b/dwm.c
-index 9086e16..ce407e7 100644
+index 9086e16..da49912 100644
 --- a/dwm.c
 +++ b/dwm.c
 @@ -29,6 +29,7 @@
@@ -3090,7 +3117,7 @@ index 9086e16..ce407e7 100644
          return;
      unfocus(selmon->sel, 0);
      XWarpPointer(dpy, None, m->barwin, 0, 0, 0, 0, m->mw / 2, m->mh / 2);
-@@ -1102,622 +1138,669 @@ focusmon(const Arg *arg)
+@@ -1102,622 +1138,670 @@ focusmon(const Arg *arg)
  void
  focusstack(const Arg *arg)
  {
@@ -3121,8 +3148,8 @@ index 9086e16..ce407e7 100644
 -    unsigned long dl;
 -    unsigned char *p = NULL;
 -    Atom da, atom = None;
-+	int di;
-+	unsigned long dl;
++	int format;
++	unsigned long nitems, dl;
 +	unsigned char *p = NULL;
 +	Atom da, atom = None;
  
@@ -3133,8 +3160,9 @@ index 9086e16..ce407e7 100644
 -    }
 -    return atom;
 +	if (XGetWindowProperty(dpy, c->win, prop, 0L, sizeof atom, False, XA_ATOM,
-+		&da, &di, &dl, &dl, &p) == Success && p) {
-+		atom = *(Atom *)p;
++		&da, &format, &nitems, &dl, &p) == Success && p) {
++		if (nitems > 0 && format == 32)
++			atom = *(long *)p;
 +		XFree(p);
 +	}
 +	return atom;
@@ -3211,10 +3239,10 @@ index 9086e16..ce407e7 100644
 -    XFree(p);
 -    return result;
 +	if (XGetWindowProperty(dpy, w, wmatom[WMState], 0L, 2L, False, wmatom[WMState],
-+		&real, &format, &n, &extra, (unsigned char **)&p) != Success)
++		&real, &format, &n, &extra, &p) != Success)
 +		return -1;
-+	if (n != 0)
-+		result = *p;
++	if (n != 0 && format == 32)
++		result = *(long *)p;
 +	XFree(p);
 +	return result;
  }
@@ -4238,7 +4266,7 @@ index 9086e16..ce407e7 100644
  {
      system("killall -q dwmblocks; dwmblocks &");
  }
-@@ -1725,44 +1808,44 @@ runAutostart(void)
+@@ -1725,44 +1809,46 @@ runAutostart(void)
  void
  scan(void)
  {
@@ -4311,12 +4339,14 @@ index 9086e16..ce407e7 100644
 +	c->tags = m->tagset[m->seltags]; /* assign tags of target monitor */
 +	attach(c);
 +	attachstack(c);
++	if (c->isfullscreen)
++		resizeclient(c, m->mx, m->my, m->mw, m->mh);
 +	focus(NULL);
 +	arrange(NULL);
  }
  
  void
-@@ -1787,318 +1870,616 @@ sendmonview(Client *c, Monitor *m)
+@@ -1787,318 +1873,614 @@ sendmonview(Client *c, Monitor *m)
  void
  setclientstate(Client *c, long state)
  {
@@ -4384,12 +4414,10 @@ index 9086e16..ce407e7 100644
 -                (unsigned char *) &(c->win), 1);
 -    }
 -    sendevent(c, wmatom[WMTakeFocus]);
-+	if (!c->neverfocus) {
++	if (!c->neverfocus)
 +		XSetInputFocus(dpy, c->win, RevertToPointerRoot, CurrentTime);
-+		XChangeProperty(dpy, root, netatom[NetActiveWindow],
-+			XA_WINDOW, 32, PropModeReplace,
-+			(unsigned char *) &(c->win), 1);
-+	}
++	XChangeProperty(dpy, root, netatom[NetActiveWindow], XA_WINDOW, 32,
++		PropModeReplace, (unsigned char *)&c->win, 1);
 +	sendevent(c, wmatom[WMTakeFocus]);
  }
  
@@ -5169,7 +5197,7 @@ index 9086e16..ce407e7 100644
  {
      if (selmon->sel && arg->ui & TAGMASK) {
          selmon->sel->tags = arg->ui & TAGMASK;
-@@ -2109,439 +2490,515 @@ tagview(const Arg *arg)
+@@ -2109,439 +2491,515 @@ tagview(const Arg *arg)
  }
  
  void
@@ -5983,7 +6011,7 @@ index 9086e16..ce407e7 100644
      }
  
      selmon->seltags ^= 1; /* toggle sel tagset */
-@@ -2554,135 +3011,161 @@ view(const Arg *arg)
+@@ -2554,135 +3012,161 @@ view(const Arg *arg)
  pid_t
  winpid(Window w)
  {
@@ -6226,7 +6254,7 @@ index 9086e16..ce407e7 100644
  }
  
  /* There's no way to check accesses to destroyed windows, thus those cases are
-@@ -2691,25 +3174,25 @@ wintomon(Window w)
+@@ -2691,25 +3175,25 @@ wintomon(Window w)
  int
  xerror(Display *dpy, XErrorEvent *ee)
  {
@@ -6266,7 +6294,7 @@ index 9086e16..ce407e7 100644
  }
  
  /* Startup Error handler to check if another window manager
-@@ -2717,107 +3200,103 @@ xerrordummy(Display *dpy, XErrorEvent *ee)
+@@ -2717,107 +3201,103 @@ xerrordummy(Display *dpy, XErrorEvent *ee)
  int
  xerrorstart(Display *dpy, XErrorEvent *ee)
  {

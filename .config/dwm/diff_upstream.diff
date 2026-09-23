@@ -1,9 +1,9 @@
 diff --git a/.claude/skills/dwm-upstream-sync/SKILL.md b/.claude/skills/dwm-upstream-sync/SKILL.md
 new file mode 100644
-index 0000000..1807745
+index 0000000..82533bb
 --- /dev/null
 +++ b/.claude/skills/dwm-upstream-sync/SKILL.md
-@@ -0,0 +1,111 @@
+@@ -0,0 +1,125 @@
 +---
 +name: dwm-upstream-sync
 +description: Land upstream suckless dwm commits into this customized dwm fork, one at a time and in upstream order. Finds the newest upstream commit already in master by subject, applies the next ones, resolves conflicts, keeps config.h in step with config.def.h, verifies with make, commits each with the upstream subject and refreshes the diff files. Asks before any change that needs a logic or implementation change to the fork.
@@ -19,7 +19,7 @@ index 0000000..1807745
 +
 +## Arguments
 +
-+- **none** - apply every remaining upstream commit, oldest first.
++- **none** - apply the remaining upstream commits, oldest first, within the per-run budget below.
 +- `status` - only report the last synced commit and the remaining list. Write nothing.
 +- `<commit-id>` - apply just that upstream commit.
 +
@@ -76,11 +76,15 @@ index 0000000..1807745
 +   `config.def.h`, mirror the same change into `config.h` too (adapted to the values already
 +   there). `config.mk` version bumps are taken as-is.
 +6. Verify (see below). Fix build errors caused by this commit; report pre-existing ones.
-+7. Commit with upstream's subject (and body, if any), unchanged:
++7. Commit using the same commit name and description as upstream - upstream's subject line and
++   body (if any), unchanged, so the subject match in step 2 keeps working on later runs:
 +
 +   ```bash
-+   git commit -m "<upstream subject>"
++   git commit -m "<upstream subject>" [-m "<upstream body>"]
 +   ```
++
++   **Do not add a `Co-Authored-By` trailer** (or any other attribution line) to this commit or to
++   the `update diff files` commit - the message is upstream's message and nothing else.
 +
 +8. Refresh the diff files and commit them:
 +
@@ -92,6 +96,16 @@ index 0000000..1807745
 +   Only commit if the diffs actually changed.
 +
 +Then move on to the next commit. Never squash several upstream commits into one.
++
++## How much per run
++
++Take one upstream commit at a time - one fork commit (plus its `update diff files` commit) per
++upstream commit - but keep going through the work list until roughly **1000 changed lines** have
++been landed in the run (count the upstream diffs: `git show --numstat <sha>`), or stop earlier at a
++logical point: a question for the user, a larger commit that is better done in its own run, or a
++group of related commits that has just been completed (e.g. a fix and its follow-up regression
++fix). Do not stop in the middle of such a group just because the budget is reached; finish it, then
++stop. If nothing is left before the budget is spent, stop there.
 +
 +Do not push. The user pushes.
 +
@@ -175,25 +189,6 @@ index 0000000..d42c9e0
 +dkms.conf
 +a.out
 +dwm
-diff --git a/LICENSE b/LICENSE
-index 596e6cd..995172f 100644
---- a/LICENSE
-+++ b/LICENSE
-@@ -1,6 +1,5 @@
- MIT/X Consortium License
- 
--© 2010-2026 Hiltjo Posthuma <hiltjo@codemadness.org>
- © 2006-2019 Anselm R Garbe <anselm@garbe.ca>
- © 2006-2009 Jukka Salmi <jukka at salmi dot ch>
- © 2006-2007 Sander van Dijk <a dot h dot vandijk at gmail dot com>
-@@ -12,6 +11,7 @@ MIT/X Consortium License
- © 2008 Martin Hurton <martin dot hurton at gmail dot com>
- © 2008 Neale Pickett <neale dot woozle dot org>
- © 2009 Mate Nagy <mnagy at port70 dot net>
-+© 2010-2016 Hiltjo Posthuma <hiltjo@codemadness.org>
- © 2010-2012 Connor Lane Smith <cls@lubutu.com>
- © 2011 Christoph Lohmann <20h@r-36.net>
- © 2015-2016 Quentin Rameau <quinq@fifth.space>
 diff --git a/config.def.h b/config.def.h
 index 81c3fc0..13c77a9 100644
 --- a/config.def.h
@@ -939,16 +934,9 @@ index 0000000..b478853
 +    { ClkRootWin,           0,              Button2,        togglebar,      {0} },
 +};
 diff --git a/config.mk b/config.mk
-index 982dc21..93f9739 100644
+index 982dc21..49b3c6c 100644
 --- a/config.mk
 +++ b/config.mk
-@@ -1,5 +1,5 @@
- # dwm version
--VERSION = 6.8
-+VERSION = 6.6
- 
- # Customize below to fit your system
- 
 @@ -20,10 +20,11 @@ FREETYPEINC = /usr/include/freetype2
  # OpenBSD (uncomment)
  #FREETYPEINC = ${X11INC}/freetype2
@@ -1062,7 +1050,7 @@ index ddc8321..d04bec6 100644
  dwm is customized by creating a custom config.h and (re)compiling the source
  code. This keeps it fast, secure and simple.
 diff --git a/dwm.c b/dwm.c
-index ab3a84c..ce407e7 100644
+index ab3a84c..da49912 100644
 --- a/dwm.c
 +++ b/dwm.c
 @@ -29,6 +29,7 @@
@@ -1724,7 +1712,7 @@ index ab3a84c..ce407e7 100644
  void
  expose(XEvent *e)
  {
-@@ -834,49 +1119,77 @@ focusmon(const Arg *arg)
+@@ -834,30 +1119,35 @@ focusmon(const Arg *arg)
  	focus(NULL);
  }
  
@@ -1779,23 +1767,7 @@ index ab3a84c..ce407e7 100644
  }
  
  Atom
- getatomprop(Client *c, Atom prop)
- {
--	int format;
--	unsigned long nitems, dl;
-+	int di;
-+	unsigned long dl;
- 	unsigned char *p = NULL;
- 	Atom da, atom = None;
- 
- 	if (XGetWindowProperty(dpy, c->win, prop, 0L, sizeof atom, False, XA_ATOM,
--		&da, &format, &nitems, &dl, &p) == Success && p) {
--		if (nitems > 0 && format == 32)
--			atom = *(long *)p;
-+		&da, &di, &dl, &dl, &p) == Success && p) {
-+		atom = *(Atom *)p;
- 		XFree(p);
- 	}
+@@ -877,6 +1167,30 @@ getatomprop(Client *c, Atom prop)
  	return atom;
  }
  
@@ -1826,21 +1798,7 @@ index ab3a84c..ce407e7 100644
  int
  getrootptr(int *x, int *y)
  {
-@@ -897,10 +1210,10 @@ getstate(Window w)
- 	Atom real;
- 
- 	if (XGetWindowProperty(dpy, w, wmatom[WMState], 0L, 2L, False, wmatom[WMState],
--		&real, &format, &n, &extra, &p) != Success)
-+		&real, &format, &n, &extra, (unsigned char **)&p) != Success)
- 		return -1;
--	if (n != 0 && format == 32)
--		result = *(long *)p;
-+	if (n != 0)
-+		result = *p;
- 	XFree(p);
- 	return result;
- }
-@@ -1031,18 +1344,20 @@ killclient(const Arg *arg)
+@@ -1031,18 +1345,20 @@ killclient(const Arg *arg)
  void
  manage(Window w, XWindowAttributes *wa)
  {
@@ -1862,7 +1820,7 @@ index ab3a84c..ce407e7 100644
  
  	updatetitle(c);
  	if (XGetTransientForHint(dpy, w, &trans) && (t = wintoclient(trans))) {
-@@ -1051,6 +1366,7 @@ manage(Window w, XWindowAttributes *wa)
+@@ -1051,6 +1367,7 @@ manage(Window w, XWindowAttributes *wa)
  	} else {
  		c->mon = selmon;
  		applyrules(c);
@@ -1870,7 +1828,7 @@ index ab3a84c..ce407e7 100644
  	}
  
  	if (c->x + WIDTH(c) > c->mon->wx + c->mon->ww)
-@@ -1068,6 +1384,10 @@ manage(Window w, XWindowAttributes *wa)
+@@ -1068,6 +1385,10 @@ manage(Window w, XWindowAttributes *wa)
  	updatewindowtype(c);
  	updatesizehints(c);
  	updatewmhints(c);
@@ -1881,7 +1839,7 @@ index ab3a84c..ce407e7 100644
  	XSelectInput(dpy, w, EnterWindowMask|FocusChangeMask|PropertyChangeMask|StructureNotifyMask);
  	grabbuttons(c, 0);
  	if (!c->isfloating)
-@@ -1085,6 +1405,8 @@ manage(Window w, XWindowAttributes *wa)
+@@ -1085,6 +1406,8 @@ manage(Window w, XWindowAttributes *wa)
  	c->mon->sel = c;
  	arrange(c->mon);
  	XMapWindow(dpy, c->win);
@@ -1890,7 +1848,7 @@ index ab3a84c..ce407e7 100644
  	focus(NULL);
  }
  
-@@ -1125,23 +1447,6 @@ monocle(Monitor *m)
+@@ -1125,23 +1448,6 @@ monocle(Monitor *m)
  		resize(c, m->wx, m->wy, m->ww - 2 * c->bw, m->wh - 2 * c->bw, 0);
  }
  
@@ -1914,7 +1872,7 @@ index ab3a84c..ce407e7 100644
  void
  movemouse(const Arg *arg)
  {
-@@ -1172,7 +1477,7 @@ movemouse(const Arg *arg)
+@@ -1172,7 +1478,7 @@ movemouse(const Arg *arg)
  			handler[ev.type](&ev);
  			break;
  		case MotionNotify:
@@ -1923,7 +1881,7 @@ index ab3a84c..ce407e7 100644
  				continue;
  			lasttime = ev.xmotion.time;
  
-@@ -1245,16 +1550,36 @@ propertynotify(XEvent *e)
+@@ -1245,16 +1551,36 @@ propertynotify(XEvent *e)
  			drawbars();
  			break;
  		}
@@ -1964,7 +1922,7 @@ index ab3a84c..ce407e7 100644
  void
  quit(const Arg *arg)
  {
-@@ -1292,6 +1617,13 @@ resizeclient(Client *c, int x, int y, int w, int h)
+@@ -1292,6 +1618,13 @@ resizeclient(Client *c, int x, int y, int w, int h)
  	c->oldw = c->w; c->w = wc.width = w;
  	c->oldh = c->h; c->h = wc.height = h;
  	wc.border_width = c->bw;
@@ -1978,7 +1936,7 @@ index ab3a84c..ce407e7 100644
  	XConfigureWindow(dpy, c->win, CWX|CWY|CWWidth|CWHeight|CWBorderWidth, &wc);
  	configure(c);
  	XSync(dpy, False);
-@@ -1326,7 +1658,7 @@ resizemouse(const Arg *arg)
+@@ -1326,7 +1659,7 @@ resizemouse(const Arg *arg)
  			handler[ev.type](&ev);
  			break;
  		case MotionNotify:
@@ -1987,7 +1945,7 @@ index ab3a84c..ce407e7 100644
  				continue;
  			lasttime = ev.xmotion.time;
  
-@@ -1390,6 +1722,89 @@ run(void)
+@@ -1390,6 +1723,89 @@ run(void)
  			handler[ev.type](&ev); /* call handler */
  }
  
@@ -2077,13 +2035,7 @@ index ab3a84c..ce407e7 100644
  void
  scan(void)
  {
-@@ -1429,12 +1844,29 @@ sendmon(Client *c, Monitor *m)
- 	c->tags = m->tagset[m->seltags]; /* assign tags of target monitor */
- 	attach(c);
- 	attachstack(c);
--	if (c->isfullscreen)
--		resizeclient(c, m->mx, m->my, m->mw, m->mh);
- 	focus(NULL);
+@@ -1435,6 +1851,25 @@ sendmon(Client *c, Monitor *m)
  	arrange(NULL);
  }
  
@@ -2109,23 +2061,7 @@ index ab3a84c..ce407e7 100644
  void
  setclientstate(Client *c, long state)
  {
-@@ -1472,10 +1904,12 @@ sendevent(Client *c, Atom proto)
- void
- setfocus(Client *c)
- {
--	if (!c->neverfocus)
-+	if (!c->neverfocus) {
- 		XSetInputFocus(dpy, c->win, RevertToPointerRoot, CurrentTime);
--	XChangeProperty(dpy, root, netatom[NetActiveWindow], XA_WINDOW, 32,
--		PropModeReplace, (unsigned char *)&c->win, 1);
-+		XChangeProperty(dpy, root, netatom[NetActiveWindow],
-+			XA_WINDOW, 32, PropModeReplace,
-+			(unsigned char *) &(c->win), 1);
-+	}
- 	sendevent(c, wmatom[WMTakeFocus]);
- }
- 
-@@ -1507,6 +1941,23 @@ setfullscreen(Client *c, int fullscreen)
+@@ -1507,6 +1942,23 @@ setfullscreen(Client *c, int fullscreen)
  	}
  }
  
@@ -2149,7 +2085,7 @@ index ab3a84c..ce407e7 100644
  void
  setlayout(const Arg *arg)
  {
-@@ -1521,6 +1972,206 @@ setlayout(const Arg *arg)
+@@ -1521,6 +1973,206 @@ setlayout(const Arg *arg)
  		drawbar(selmon);
  }
  
@@ -2356,7 +2292,7 @@ index ab3a84c..ce407e7 100644
  /* arg > 1.0 will set mfact absolutely */
  void
  setmfact(const Arg *arg)
-@@ -1576,6 +2227,7 @@ setup(void)
+@@ -1576,6 +2228,7 @@ setup(void)
  	netatom[NetWMState] = XInternAtom(dpy, "_NET_WM_STATE", False);
  	netatom[NetWMCheck] = XInternAtom(dpy, "_NET_SUPPORTING_WM_CHECK", False);
  	netatom[NetWMFullscreen] = XInternAtom(dpy, "_NET_WM_STATE_FULLSCREEN", False);
@@ -2364,7 +2300,7 @@ index ab3a84c..ce407e7 100644
  	netatom[NetWMWindowType] = XInternAtom(dpy, "_NET_WM_WINDOW_TYPE", False);
  	netatom[NetWMWindowTypeDialog] = XInternAtom(dpy, "_NET_WM_WINDOW_TYPE_DIALOG", False);
  	netatom[NetClientList] = XInternAtom(dpy, "_NET_CLIENT_LIST", False);
-@@ -1584,7 +2236,8 @@ setup(void)
+@@ -1584,7 +2237,8 @@ setup(void)
  	cursor[CurResize] = drw_cur_create(drw, XC_sizing);
  	cursor[CurMove] = drw_cur_create(drw, XC_fleur);
  	/* init appearance */
@@ -2374,7 +2310,7 @@ index ab3a84c..ce407e7 100644
  	for (i = 0; i < LENGTH(colors); i++)
  		scheme[i] = drw_scm_create(drw, colors[i], 3);
  	/* init bars */
-@@ -1632,6 +2285,10 @@ showhide(Client *c)
+@@ -1632,6 +2286,10 @@ showhide(Client *c)
  	if (!c)
  		return;
  	if (ISVISIBLE(c)) {
@@ -2385,7 +2321,7 @@ index ab3a84c..ce407e7 100644
  		/* show clients top down */
  		XMoveWindow(dpy, c->win, c->x, c->y);
  		if ((!c->mon->lt[c->mon->sellt]->arrange || c->isfloating) && !c->isfullscreen)
-@@ -1644,6 +2301,20 @@ showhide(Client *c)
+@@ -1644,6 +2302,20 @@ showhide(Client *c)
  	}
  }
  
@@ -2406,7 +2342,7 @@ index ab3a84c..ce407e7 100644
  void
  spawn(const Arg *arg)
  {
-@@ -1666,14 +2337,111 @@ spawn(const Arg *arg)
+@@ -1666,14 +2338,111 @@ spawn(const Arg *arg)
  	}
  }
  
@@ -2523,7 +2459,7 @@ index ab3a84c..ce407e7 100644
  }
  
  void
-@@ -1685,31 +2453,56 @@ tagmon(const Arg *arg)
+@@ -1685,31 +2454,56 @@ tagmon(const Arg *arg)
  }
  
  void
@@ -2602,7 +2538,7 @@ index ab3a84c..ce407e7 100644
  }
  
  void
-@@ -1721,6 +2514,18 @@ togglebar(const Arg *arg)
+@@ -1721,6 +2515,18 @@ togglebar(const Arg *arg)
  	arrange(selmon);
  }
  
@@ -2621,7 +2557,7 @@ index ab3a84c..ce407e7 100644
  void
  togglefloating(const Arg *arg)
  {
-@@ -1729,12 +2534,74 @@ togglefloating(const Arg *arg)
+@@ -1729,12 +2535,74 @@ togglefloating(const Arg *arg)
  	if (selmon->sel->isfullscreen) /* no support for fullscreen windows */
  		return;
  	selmon->sel->isfloating = !selmon->sel->isfloating || selmon->sel->isfixed;
@@ -2698,7 +2634,7 @@ index ab3a84c..ce407e7 100644
  void
  toggletag(const Arg *arg)
  {
-@@ -1781,6 +2648,20 @@ unmanage(Client *c, int destroyed)
+@@ -1781,6 +2649,20 @@ unmanage(Client *c, int destroyed)
  	Monitor *m = c->mon;
  	XWindowChanges wc;
  
@@ -2719,7 +2655,7 @@ index ab3a84c..ce407e7 100644
  	detach(c);
  	detachstack(c);
  	if (!destroyed) {
-@@ -1796,9 +2677,12 @@ unmanage(Client *c, int destroyed)
+@@ -1796,9 +2678,12 @@ unmanage(Client *c, int destroyed)
  		XUngrabServer(dpy);
  	}
  	free(c);
@@ -2735,7 +2671,7 @@ index ab3a84c..ce407e7 100644
  }
  
  void
-@@ -1871,11 +2755,11 @@ updategeom(void)
+@@ -1871,11 +2756,11 @@ updategeom(void)
  
  #ifdef XINERAMA
  	if (XineramaIsActive(dpy)) {
@@ -2752,7 +2688,7 @@ index ab3a84c..ce407e7 100644
  
  		for (n = 0, m = mons; m; m = m->next, n++);
  		/* only consider unique geometries as separate screens */
-@@ -1894,6 +2778,51 @@ updategeom(void)
+@@ -1894,6 +2779,51 @@ updategeom(void)
  			else
  				mons = createmon();
  		}
@@ -2804,7 +2740,7 @@ index ab3a84c..ce407e7 100644
  		for (i = 0, m = mons; i < nn && m; m = m->next, i++)
  			if (i >= n
  			|| unique[i].x_org != m->mx || unique[i].y_org != m->my
-@@ -2027,6 +2956,9 @@ updatewindowtype(Client *c)
+@@ -2027,6 +2957,9 @@ updatewindowtype(Client *c)
  
  	if (state == netatom[NetWMFullscreen])
  		setfullscreen(c, 1);
@@ -2814,7 +2750,7 @@ index ab3a84c..ce407e7 100644
  	if (wtype == netatom[NetWMWindowTypeDialog])
  		c->isfloating = 1;
  }
-@@ -2053,13 +2985,157 @@ updatewmhints(Client *c)
+@@ -2053,13 +2986,157 @@ updatewmhints(Client *c)
  void
  view(const Arg *arg)
  {
@@ -2979,7 +2915,7 @@ index ab3a84c..ce407e7 100644
  }
  
  Client *
-@@ -2140,6 +3216,60 @@ zoom(const Arg *arg)
+@@ -2140,6 +3217,60 @@ zoom(const Arg *arg)
  	pop(c);
  }
  
@@ -3040,7 +2976,7 @@ index ab3a84c..ce407e7 100644
  int
  main(int argc, char *argv[])
  {
-@@ -2151,15 +3281,22 @@ main(int argc, char *argv[])
+@@ -2151,15 +3282,22 @@ main(int argc, char *argv[])
  		fputs("warning: no locale support\n", stderr);
  	if (!(dpy = XOpenDisplay(NULL)))
  		die("dwm: cannot open display");

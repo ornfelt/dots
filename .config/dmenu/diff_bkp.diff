@@ -1,9 +1,9 @@
 diff --git a/.claude/skills/dmenu-upstream-sync/SKILL.md b/.claude/skills/dmenu-upstream-sync/SKILL.md
 new file mode 100644
-index 0000000..d2ee409
+index 0000000..e9a8697
 --- /dev/null
 +++ b/.claude/skills/dmenu-upstream-sync/SKILL.md
-@@ -0,0 +1,111 @@
+@@ -0,0 +1,125 @@
 +---
 +name: dmenu-upstream-sync
 +description: Land upstream suckless dmenu commits into this customized dmenu fork, one at a time and in upstream order. Finds the newest upstream commit already in master by subject, applies the next ones, resolves conflicts, keeps config.h in step with config.def.h, verifies with make, commits each with the upstream subject and refreshes the diff files. Asks before any change that needs a logic or implementation change to the fork.
@@ -19,7 +19,7 @@ index 0000000..d2ee409
 +
 +## Arguments
 +
-+- **none** - apply every remaining upstream commit, oldest first.
++- **none** - apply the remaining upstream commits, oldest first, within the per-run budget below.
 +- `status` - only report the last synced commit and the remaining list. Write nothing.
 +- `<commit-id>` - apply just that upstream commit.
 +
@@ -75,11 +75,15 @@ index 0000000..d2ee409
 +   `config.def.h`, mirror the same change into `config.h` too (adapted to the values already
 +   there). `config.mk` version bumps are taken as-is.
 +6. Verify (see below). Fix build errors caused by this commit; report pre-existing ones.
-+7. Commit with upstream's subject (and body, if any), unchanged:
++7. Commit using the same commit name and description as upstream - upstream's subject line and
++   body (if any), unchanged, so the subject match in step 2 keeps working on later runs:
 +
 +   ```bash
-+   git commit -m "<upstream subject>"
++   git commit -m "<upstream subject>" [-m "<upstream body>"]
 +   ```
++
++   **Do not add a `Co-Authored-By` trailer** (or any other attribution line) to this commit or to
++   the `update diff files` commit - the message is upstream's message and nothing else.
 +
 +8. Refresh the diff files against the upstream commit just landed (`<sha>`) and commit them:
 +
@@ -92,6 +96,16 @@ index 0000000..d2ee409
 +   Only commit if the diffs actually changed.
 +
 +Then move on to the next commit. Never squash several upstream commits into one.
++
++## How much per run
++
++Take one upstream commit at a time - one fork commit (plus its `update diff files` commit) per
++upstream commit - but keep going through the work list until roughly **1000 changed lines** have
++been landed in the run (count the upstream diffs: `git show --numstat <sha>`), or stop earlier at a
++logical point: a question for the user, a larger commit that is better done in its own run, or a
++group of related commits that has just been completed (e.g. a fix and its follow-up regression
++fix). Do not stop in the middle of such a group just because the budget is reached; finish it, then
++stop. If nothing is left before the budget is spent, stop there.
 +
 +Do not push. The user pushes.
 +
@@ -265,10 +279,21 @@ index 566348b..dcc5bb3 100644
  # paths
  PREFIX = /usr/local
 diff --git a/dmenu.1 b/dmenu.1
-index 323f93c..c036baa 100644
+index 323f93c..8463af2 100644
 --- a/dmenu.1
 +++ b/dmenu.1
-@@ -40,6 +40,9 @@ which lists programs in the user's $PATH and runs the result in their $SHELL.
+@@ -20,6 +20,10 @@ dmenu \- dynamic menu
+ .IR color ]
+ .RB [ \-sf
+ .IR color ]
++.RB [ \-ob
++.IR color ]
++.RB [ \-of
++.IR color ]
+ .RB [ \-w
+ .IR windowid ]
+ .P
+@@ -40,6 +44,9 @@ which lists programs in the user's $PATH and runs the result in their $SHELL.
  .B \-b
  dmenu appears at the bottom of the screen.
  .TP
@@ -278,8 +303,21 @@ index 323f93c..c036baa 100644
  .B \-f
  dmenu grabs the keyboard before reading stdin if not reading from a tty. This
  is faster, but will lock up X until stdin reaches end\-of\-file.
+@@ -75,6 +82,12 @@ defines the selected background color.
+ .BI \-sf " color"
+ defines the selected foreground color.
+ .TP
++.BI \-ob " color"
++defines the outline background color (for multiple selection).
++.TP
++.BI \-of " color"
++defines the outline foreground color (for multiple selection).
++.TP
+ .B \-v
+ prints version information to stdout, then exits.
+ .TP
 diff --git a/dmenu.c b/dmenu.c
-index 1bbc3ac..a3a2a5a 100644
+index 1bbc3ac..2be59d5 100644
 --- a/dmenu.c
 +++ b/dmenu.c
 @@ -21,16 +21,15 @@
@@ -304,7 +342,7 @@ index 1bbc3ac..a3a2a5a 100644
  };
  
  static char text[BUFSIZ] = "";
-@@ -60,768 +59,807 @@ static char *(*fstrstr)(const char *, const char *) = strstr;
+@@ -60,768 +59,816 @@ static char *(*fstrstr)(const char *, const char *) = strstr;
  static unsigned int
  textw_clamp(const char *str, unsigned int n)
  {
@@ -569,7 +607,7 @@ index 1bbc3ac..a3a2a5a 100644
 +		/* draw vertical list */
 +		for (item = curr; item != next; item = item->right)
 +			drawitem(item, x, y += bh, mw - x);
-+	} else if (matches) {
++	} else if (matches && curr) {
 +		/* draw horizontal list */
 +		x += inputw;
 +		w = TEXTW("<");
@@ -1108,7 +1146,7 @@ index 1bbc3ac..a3a2a5a 100644
 -            match();
 -            break;
 -    }
-+		if (!iscntrl((unsigned char)*buf))
++		if (len > 0 && !iscntrl((unsigned char)*buf))
 +			insert(buf, len);
 +		break;
 +	case XK_Delete:
@@ -1463,6 +1501,8 @@ index 1bbc3ac..a3a2a5a 100644
 -    } else
 +	i = 0;
 +	if (parentwin == root && (info = XineramaQueryScreens(dpy, &n))) {
++		if (n < 1)
++			die("Xinerama reported no screens");
 +		XGetInputFocus(dpy, &w, &di);
 +		if (mon >= 0 && mon < n)
 +			i = mon;
@@ -1485,6 +1525,9 @@ index 1bbc3ac..a3a2a5a 100644
 +			for (i = 0; i < n; i++)
 +				if (INTERSECT(x, y, 1, 1, info[i]) != 0)
 +					break;
++		/* fallback to the first screen if there is no intersection */
++		if (i >= n)
++			i = 0;
 +
 +		if (centered) {
 +			mw = MIN(MAX(max_textw() + promptw, min_width), info[i].width);
@@ -1706,6 +1749,10 @@ index 1bbc3ac..a3a2a5a 100644
 +			colors[SchemeSel][ColBg] = argv[++i];
 +		else if (!strcmp(argv[i], "-sf"))  /* selected foreground color */
 +			colors[SchemeSel][ColFg] = argv[++i];
++		else if (!strcmp(argv[i], "-ob"))  /* outline background color */
++			colors[SchemeOut][ColBg] = argv[++i];
++		else if (!strcmp(argv[i], "-of"))  /* outline foreground color */
++			colors[SchemeOut][ColFg] = argv[++i];
 +		else if (!strcmp(argv[i], "-w"))   /* embedding window id */
 +			embed = argv[++i];
 +		else if (!strcmp(argv[i], "-bw"))
