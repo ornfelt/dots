@@ -1,0 +1,17 @@
+{
+  "numStartups": 42,
+  "oauthAccount": {"emailAddress": "REDACTED"},
+  "cachedUsageUtilization": {
+    "fetchedAtMs": 1758490000000,
+    "accountUuid": "REDACTED",
+    "utilization": {
+      "five_hour": {"utilization": 3, "resets_at": "2026-09-21T20:50:00.261668+00:00"},
+      "seven_day": {"utilization": 67, "resets_at": "2026-09-23T15:00:00.261688+00:00"},
+      "limits": [
+        {"kind": "session", "group": "session", "percent": 3, "resets_at": "2026-09-21T20:50:00.261668+00:00", "scope": null, "is_active": false},
+        {"kind": "weekly_all", "group": "weekly", "percent": 67, "resets_at": "2026-09-23T15:00:00.261688+00:00", "scope": null, "is_active": true}
+      ],
+      "spend": {"used": {"amount_minor": 0, "currency": "USD", "exponent": 2}, "limit": null, "percent": 0, "enabled": false}
+    }
+  }
+}

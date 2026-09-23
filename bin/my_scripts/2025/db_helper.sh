@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# script_helper.sh - launcher for the ScriptHelper GUI / CLI
+# db_helper.sh - launcher for the DbHelper GUI / CLI
 
 set -euo pipefail
 
@@ -9,10 +9,10 @@ if [[ -z "${code_root_dir:-}" ]]; then
     exit 1
 fi
 
-PROJECT_DIR="$code_root_dir/Code2/C#/my_csharp/ScriptHelper"
+PROJECT_DIR="$code_root_dir/Code2/C#/my_csharp/DbHelper"
 
-if [[ ! -f "$PROJECT_DIR/ScriptHelper.csproj" ]]; then
-    echo "ScriptHelper.csproj not found at: $PROJECT_DIR" >&2
+if [[ ! -f "$PROJECT_DIR/DbHelper.csproj" ]]; then
+    echo "DbHelper.csproj not found at: $PROJECT_DIR" >&2
     exit 1
 fi
 
@@ -32,7 +32,7 @@ if [[ -z "$RUNTIME_MAJORS" || -z "$MAX_SDK_MAJOR" ]]; then
     exit 1
 fi
 
-CSPROJ_TFM=$(sed -n 's:.*<TargetFramework>\(net[0-9.]*\)</TargetFramework>.*:\1:p' "$PROJECT_DIR/ScriptHelper.csproj" | head -n 1)
+CSPROJ_TFM=$(sed -n 's:.*<TargetFramework>\(net[0-9.]*\)</TargetFramework>.*:\1:p' "$PROJECT_DIR/DbHelper.csproj" | head -n 1)
 CSPROJ_MAJOR=$(echo "$CSPROJ_TFM" | sed -n 's/^net\([0-9]*\).*/\1/p')
 
 TFM=""
@@ -59,15 +59,15 @@ if [[ "$TFM" != "$CSPROJ_TFM" ]]; then
 fi
 
 # ── Find or build ────────────────────────────────────────────────────
-RELEASE_EXE="$PROJECT_DIR/bin/Release/$TFM/ScriptHelper"
-DEBUG_EXE="$PROJECT_DIR/bin/Debug/$TFM/ScriptHelper"
+RELEASE_EXE="$PROJECT_DIR/bin/Release/$TFM/DbHelper"
+DEBUG_EXE="$PROJECT_DIR/bin/Debug/$TFM/DbHelper"
 
 if [[ -x "$RELEASE_EXE" ]]; then
     EXE_PATH="$RELEASE_EXE"
 elif [[ -x "$DEBUG_EXE" ]]; then
     EXE_PATH="$DEBUG_EXE"
 else
-    echo "Building ScriptHelper..." >&2
+    echo "Building DbHelper..." >&2
     pushd "$PROJECT_DIR" > /dev/null
     dotnet build "${BUILD_ARGS[@]}"
     popd > /dev/null

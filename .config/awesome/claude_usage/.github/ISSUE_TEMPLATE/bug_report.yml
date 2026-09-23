@@ -1,0 +1,34 @@
+name: Bug report
+description: Something does not work as documented
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: What did you expect, what did you see instead?
+    validations:
+      required: true
+  - type: textarea
+    id: debug
+    attributes:
+      label: Debug dump
+      description: |
+        Output of `awesome-client 'return require("claude_usage").debug()'` (contains no secrets).
+      render: text
+  - type: input
+    id: awesome
+    attributes:
+      label: AwesomeWM version
+      placeholder: awesome --version
+  - type: input
+    id: claude
+    attributes:
+      label: Claude Code version
+      placeholder: claude --version
+  - type: textarea
+    id: config
+    attributes:
+      label: Widget configuration
+      description: The options table you pass to `claude_usage.new()`.
+      render: lua

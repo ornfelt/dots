@@ -225,28 +225,57 @@ substitute_tokens() {
     printf '%s' "$s"
 }
 
+# Quotes a -D value unless it is a plain bareword. run_or_print hands the command string
+# to eval, which splits on spaces, and cmake.ps1 / cmake.py hand the same string to the
+# PowerShell parser, which also splits a bare -DFOO=3.5 into "-DFOO=3" and ".5" because
+# the 3 starts a number literal and the dot begins a new token. Values that are already
+# quoted are left alone.
+quote_flag_value() {
+    local v="$1"
+    if [[ "$v" =~ ^[A-Za-z0-9_+-]+$ ]]; then
+        printf '%s' "$v"
+    elif [[ ${#v} -ge 2 && "$v" == \"*\" ]]; then
+        printf '%s' "$v"
+    else
+        printf '"%s"' "$v"
+    fi
+}
+
 # Build "-Dk=v -Dk=v ..." from base_flags (and optionally a variant's toggles).
 # Order: base order preserved, toggles override matching keys, new keys appended.
+# Values are substituted first and quoted after, the same order cmake.ps1 and cmake.py use.
 flags_string() {
     local pattern_json="$1"
     local variant_idx="${2:-}"
-    local raw
+    local entries
     if [[ -z "$variant_idx" ]]; then
-        raw=$(jq -r '
+        entries=$(jq -r '
             (.base_flags // {})
             | to_entries
-            | map("-D\(.key)=\(.value)")
-            | join(" ")
+            | map("\(.key)\t\(.value)")
+            | join("\n")
         ' <<<"$pattern_json")
     else
-        raw=$(jq -r --argjson i "$variant_idx" '
+        entries=$(jq -r --argjson i "$variant_idx" '
             ((.base_flags // {}) + ((.variants[$i].toggles) // {}))
             | to_entries
-            | map("-D\(.key)=\(.value)")
-            | join(" ")
+            | map("\(.key)\t\(.value)")
+            | join("\n")
         ' <<<"$pattern_json")
     fi
-    substitute_tokens "$raw"
+
+    # jq built for Windows writes CRLF, which would leave a stray carriage return glued to
+    # the last field of every line. Harmless on Linux, where jq writes plain newlines.
+    entries=${entries//$'\r'/}
+
+    local out="" key val
+    while IFS=$'\t' read -r key val; do
+        [[ -z "$key" ]] && continue
+        val=$(substitute_tokens "$val")
+        val=$(quote_flag_value "$val")
+        out+="${out:+ }-D${key}=${val}"
+    done <<<"$entries"
+    printf '%s' "$out"
 }
 
 run_or_print() {

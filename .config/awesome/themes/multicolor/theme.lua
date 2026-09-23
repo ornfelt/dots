@@ -548,6 +548,91 @@ local custom_spotify_widget = spotify_widget({
  -- Spotify widget with left, right, top, bottom margins
 local spotify_widget_with_margin = wibox.container.margin(custom_spotify_widget, 0, 3, 0, 0)
 
+-- Claude Code usage (claude_usage/)
+local claude_orange = "#D97757"
+
+-- Show the extra-usage amount (the " +30.19€" tail) in the bar. The popup still
+-- reports the spend either way.
+local claude_show_spend = false
+
+-- The popup sits just below the mouse and tracks it while the widget is hovered.
+local claude_usage  -- forward declaration, the follow timer needs it
+local claude_popup
+
+local claude_last_x, claude_last_y
+
+local function claude_place_under_mouse(d, force)
+    local coords = mouse.coords()
+    if not force and coords.x == claude_last_x and coords.y == claude_last_y then
+        return  -- pointer has not moved, nothing to reposition
+    end
+    claude_last_x, claude_last_y = coords.x, coords.y
+    local wa = (mouse.screen or awful.screen.focused()).workarea
+    local w, h = d.width, d.height
+    local x = coords.x - math.floor(w / 2)
+    local y = coords.y + dpi(16)
+
+    -- keep it on screen: clamp horizontally, flip above the cursor if it would overflow
+    if x < wa.x then x = wa.x end
+    if x + w > wa.x + wa.width then x = wa.x + wa.width - w end
+    if y + h > wa.y + wa.height then y = coords.y - h - dpi(8) end
+    if y < wa.y then y = wa.y end
+
+    d.x, d.y = x, y
+end
+
+local function claude_mouse_over_widget()
+    local widgets = mouse.current_widgets
+    if not widgets then return false end
+    for _, w in ipairs(widgets) do
+        if w == claude_usage then return true end
+    end
+    return false
+end
+
+-- Stops on its own once the popup closes or the pointer leaves the widget, so a
+-- pinned popup stays where it was pinned instead of chasing the cursor.
+local claude_follow_timer = gears.timer({
+    timeout = 0.03,
+    callback = function()
+        if not claude_popup or not claude_popup.visible or not claude_mouse_over_widget() then
+            claude_follow_timer:stop()
+            return
+        end
+        claude_place_under_mouse(claude_popup)
+    end,
+})
+
+claude_usage = require("claude_usage").new({
+    on_click = (awful.util.terminal or "xterm") .. " -e claude",
+
+    -- beautiful.font is not set yet while beautiful.init() runs this file, so the
+    -- widget would fall back to "sans 10"; name the bar font explicitly. The icon
+    -- size and the popup fonts are derived from it.
+    font   = theme.font,
+
+    spend_in_bar = claude_show_spend,
+
+    -- no chip: icon and numbers drawn in Claude orange, amber/red at the thresholds
+    style  = "bare",
+    colors = {
+        normal = claude_orange,
+        icon   = claude_orange,
+        warn   = "#E39B3A",
+        crit   = "#C8442E",
+        error  = "#9C9A93",
+    },
+
+    popup_placement = function(d)
+        claude_popup = d
+        claude_place_under_mouse(d, true)  -- also runs when the popup content resizes
+        if not claude_follow_timer.started then
+            claude_follow_timer:start()
+        end
+    end,
+})
+local claude_usage_with_margin = wibox.container.margin(claude_usage, 0, 6, 0, 0)
+
 local function update_txt_layoutbox(s)
     -- Writes a string representation of the current layout in a textbox widget
     local txt_l = theme["layout_txt_" .. awful.layout.getname(awful.layout.get(s))] or ""
@@ -763,6 +848,7 @@ function theme.at_screen_connect(s)
             --    max_length = -1,
             --}),
             spotify_widget_with_margin,
+            claude_usage_with_margin,
             netdownicon,
             netdowninfo,
             netupicon,

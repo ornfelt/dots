@@ -1280,24 +1280,93 @@ table.insert(config.keys, {
   action = wezterm.action_callback(split_to_directory_with_delay),
 })
 
--- Open github repo in firefox
+-- Turns a pane cwd URI into a plain path. The OSC 7 payload is a URI, so a dir
+-- like C:/Users/jonas/Code2/C#/BloogBot arrives percent-encoded (%23) and has
+-- to be decoded here, or everything below looks at a path that does not exist.
+-- cwd_uri.file_path is not usable for those dirs: wezterm decodes the payload
+-- before parsing it, so the '#' opens a URL fragment and file_path comes back
+-- cut short ("/C:/Users/jonas/Code2/C"). tostring() keeps the whole path.
+local function path_from_cwd_uri(cwd_uri)
+  -- Strip the scheme and the host; the host is the machine name, so matching
+  -- one by name only worked on the machine it was written for
+  local cwd = tostring(cwd_uri):gsub("^file://[^/]*", "")
+  cwd = cwd:gsub("%%(%x%x)", function(hex) return string.char(tonumber(hex, 16)) end)
+  cwd = cwd:gsub("^/([A-Za-z]:)", "%1") -- handle /C: on Windows
+  return cwd
+end
+
+-- Title used for every notification raised from open_github_repo
+local GITHUB_NOTIFY_TITLE = "WezTerm Notification"
+-- The status line has no room for a full git error, so they are cut down
+local MAX_STATUS_ERROR_LEN = 60
+-- Browser the repo is opened in
+local GITHUB_BROWSER = "firefox"
+
+-- First line of a git error, short enough for the status line
+local function short_error(text, fallback)
+  local message = ((text or ""):match("^[^\r\n]*") or ""):gsub("^%s+", ""):gsub("%s+$", "")
+  if message == "" then
+    message = fallback or ""
+  end
+  if #message > MAX_STATUS_ERROR_LEN then
+    message = message:sub(1, MAX_STATUS_ERROR_LEN) .. "..."
+  end
+  return message
+end
+
+-- github needs everything that is not URL-safe escaped in a path, or a
+-- directory like c#/my_web_wow cuts the link short at the '#'
+local function url_encode_path(path)
+  return (path:gsub("[^A-Za-z0-9%-._~/]", function(char)
+    return string.format("%%%02X", string.byte(char))
+  end))
+end
+
+-- Runs git in a directory and returns its output, or nil plus the error.
+-- Going through cmd.exe ("cd /d <dir> & git ...") cannot report failure: when
+-- the cd fails, cmd still runs git in whatever directory the child inherited
+-- and returns that output with exit code 0, so a path git never saw is
+-- reported as some unrelated repository instead of as an error.
+local function git_in(cwd, ...)
+  -- gsub also returns the replacement count, and a call in the last slot of a
+  -- table constructor expands every value it returns, so the count would end
+  -- up in the argument list as a stray "0"
+  local args = { "git", "--no-optional-locks", "-C", (cwd:gsub("\\", "/")) }
+  for _, arg in ipairs({ ... }) do
+    table.insert(args, arg)
+  end
+
+  local success, stdout, stderr = wezterm.run_child_process(args)
+
+  -- Debug
+  if DEBUG_MESSAGES then
+    log_to_file(string.format("git_in: %s -> success=%s stdout=[%s] stderr=[%s]",
+      table.concat(args, " "), tostring(success), tostring(stdout), tostring(stderr)))
+  end
+
+  local out = (stdout or ""):gsub("%s+$", "")
+  if not success or out == "" then
+    return nil, stderr
+  end
+  return out
+end
+
+-- Open the github repo, on the branch checked out here, in firefox
 local function open_github_repo(win, pane)
-  local cwd_uri = tostring(pane:get_current_working_dir())
+  local cwd_uri = pane:get_current_working_dir()
   if not cwd_uri then
     if DEBUG_MESSAGES then
       wezterm.log_error("Failed to determine current working directory.")
     end
-    status.notify(win, "WezTerm Notification", "Failed to determine current working directory.", false)
+    status.notify(win, GITHUB_NOTIFY_TITLE, "Failed to determine current working directory.", false)
     return
   end
 
-  local cwd = cwd_uri:gsub("file://ornf", "")
-  cwd = cwd:gsub("file://", "")
-  cwd = cwd:gsub("^/([A-Za-z]:)", "%1")
+  local cwd = path_from_cwd_uri(cwd_uri)
 
   if is_tmux(pane) then
     -- If tmux, use: tmux display -p -F "#{pane_current_path}"
-    local success, stdout, stderr = wezterm.run_child_process({"tmux", "display", "-p", "-F", "#{pane_current_path}"})
+    local success, stdout = wezterm.run_child_process({"tmux", "display", "-p", "-F", "#{pane_current_path}"})
     if success and stdout ~= nil and stdout ~= "" then
       cwd = stdout:gsub("[\r\n]+$", "")
     end
@@ -1312,79 +1381,57 @@ local function open_github_repo(win, pane)
   -- or:
   --vim $HOME/wez_log.txt
 
-  local is_windows = wezterm.target_triple:find("windows") ~= nil
-  local git_remote_cmd, git_branch_cmd
-
-  if is_windows then
-    -- ps
-    --git_remote_cmd = string.format('cd "%s"; git remote get-url origin', cwd)
-    --git_branch_cmd = string.format('cd "%s"; git rev-parse --abbrev-ref HEAD', cwd)
-    -- cmd
-    git_remote_cmd = string.format('cd /d %s & git remote get-url origin', cwd)
-    git_branch_cmd = string.format('cd /d %s & git rev-parse --abbrev-ref HEAD', cwd)
-  else
-    git_remote_cmd = string.format('cd %s && git remote get-url origin 2>/dev/null', cwd)
-    git_branch_cmd = string.format('cd %s && git rev-parse --abbrev-ref HEAD 2>/dev/null', cwd)
-  end
-
-  -- Debug
-  if DEBUG_MESSAGES then
-    log_to_file("git_remote_cmd: " .. (git_remote_cmd or "nil"))
-  end
-
-  local success, stdout, stderr = wezterm.run_child_process({
-    -- ps
-    --is_windows and "powershell.exe" or "bash",
-    --is_windows and "-Command" or "-c",
-    -- cmd
-    is_windows and "cmd.exe" or "bash",
-    is_windows and "/c" or "-c",
-    git_remote_cmd,
-  })
-  -- Debug
-  if DEBUG_MESSAGES then
-    log_to_file("success: " .. (tostring(success) or "nil"))
-    log_to_file("stdout: " .. (tostring(stdout) or "nil"))
-    log_to_file("stderr: " .. (tostring(stderr) or "nil"))
-  end
-  local remote = stdout
-
-  success, stdout, stderr = wezterm.run_child_process({
-    -- ps
-    --is_windows and "powershell.exe" or "bash",
-    --is_windows and "-Command" or "-c",
-    -- cmd
-    is_windows and "cmd.exe" or "bash",
-    is_windows and "/c" or "-c",
-    git_branch_cmd,
-  })
-  -- Debug
-  if DEBUG_MESSAGES then
-    log_to_file("success: " .. (tostring(success) or "nil"))
-    log_to_file("stdout: " .. (tostring(stdout) or "nil"))
-    log_to_file("stderr: " .. (tostring(stderr) or "nil"))
-  end
-  local branch = stdout
-
-  if not remote or not branch or remote == "" or branch == "" then
-    if DEBUG_MESSAGES then
-      wezterm.log_error("Failed to determine Git repository or branch.")
-    end
-    status.notify(win, "WezTerm Notification", "Failed to determine Git repository or branch.", false)
+  local remote, remote_error = git_in(cwd, "remote", "get-url", "origin")
+  if not remote then
+    status.notify(win, GITHUB_NOTIFY_TITLE,
+      "No git remote: " .. short_error(remote_error, cwd), false)
     return
   end
 
-  remote = remote:gsub("%.git$", ""):gsub("^git@github%.com:", "https://github.com/"):gsub("\r", ""):gsub("\n", "")
-  remote = remote:gsub("%.git$", "")
-  branch = branch:gsub("\r", ""):gsub("\n", "")
-  local github_url = remote .. "/tree/" .. branch
+  local branch, branch_error = git_in(cwd, "rev-parse", "--abbrev-ref", "HEAD")
+  -- A detached HEAD reports "HEAD"; the commit itself works in a tree URL
+  if branch == "HEAD" then
+    branch, branch_error = git_in(cwd, "rev-parse", "HEAD")
+  end
+  if not branch then
+    status.notify(win, GITHUB_NOTIFY_TITLE,
+      "No git branch: " .. short_error(branch_error, cwd), false)
+    return
+  end
+
+  -- git@github.com:user/repo.git and ssh://git@github.com/user/repo both have
+  -- to become https://github.com/user/repo before the branch is appended
+  local remote_url = remote
+    :gsub("^ssh://git@", "https://")
+    :gsub("^git@([^:]+):", "https://%1/")
+    :gsub("%.git$", "")
+  -- Where the pane sits inside the repo, so a subdirectory opens at that
+  -- subdirectory instead of at the repo root. It is empty at the repo root,
+  -- which git_in reports as a failure; the repo is known good by this point,
+  -- so an empty answer is the only thing that can be behind it
+  local subdir = git_in(cwd, "rev-parse", "--show-prefix")
+  subdir = subdir and (subdir:gsub("/$", ""))
+
+  local github_url = remote_url .. "/tree/" .. branch
+  if subdir then
+    github_url = github_url .. "/" .. url_encode_path(subdir)
+  end
 
   -- Debug
   if DEBUG_MESSAGES then
-    log_to_file("github_url: " .. (git_remote_cmd or "nil"))
+    log_to_file("github_url: " .. github_url)
   end
 
-  wezterm.run_child_process({ "firefox", github_url })
+  -- background_child_process returns right away; run_child_process would block
+  -- the gui thread until firefox exits, which is the whole session when it was
+  -- not already running
+  wezterm.background_child_process({ GITHUB_BROWSER, github_url })
+
+  local repo = remote_url:match("([^/]+)$") or remote_url
+  if subdir then
+    repo = repo .. "/" .. subdir
+  end
+  status.notify(win, GITHUB_NOTIFY_TITLE, "Opening " .. repo .. " @ " .. branch, true)
 end
 
 -- bind leader-g: open_github_repo
@@ -1604,16 +1651,14 @@ wezterm.on("update-right-status", function(window, pane)
   -- last result is only read from the state file below, never computed here
   bg_status.poll(window)
 
-  local cwd_uri = tostring(pane:get_current_working_dir())
+  local cwd_uri = pane:get_current_working_dir()
   if not cwd_uri then
     status.render(window, bg_status.segments())
     return
   end
 
   -- Normalize cwd from file:// URI
-  local cwd = cwd_uri:gsub("file://ornf", "")
-  cwd = cwd:gsub("file://", "")
-  cwd = cwd:gsub("^/([A-Za-z]:)", "%1") -- handle /C: on Windows
+  local cwd = path_from_cwd_uri(cwd_uri)
 
   local is_windows = wezterm.target_triple:find("windows") ~= nil
 

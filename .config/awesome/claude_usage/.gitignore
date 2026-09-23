@@ -1,0 +1,5 @@
+.luarocks/
+luacov.*
+*.swp
+*~
+/spec/tmp/
