@@ -20,7 +20,7 @@ echo " ${*:-%artist% - %title%} " | sed "s/%artist%/$artist/g;s/%title%/$titl
 }
 
 case $BLOCK_BUTTON in
-	1) rofi -theme "~/.config/rofi/themes/gruvbox/gruvbox-dark.rasi" -e "Spotify clicked" ;;
+	1) notify-send "Spotify" "$(main "%title%\n%artist%\n%album%")" ;;
 	2) rofi -theme "~/.config/rofi/themes/gruvbox/gruvbox-dark.rasi" -e "Spotify clicked 2" ;;
 	3) pkill -RTMIN+12 dwmblocks ;;
 	4) rofi -theme "~/.config/rofi/themes/gruvbox/gruvbox-dark.rasi" -e "Spotify clicked 4" ;;
