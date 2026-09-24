@@ -985,6 +985,14 @@ drawstatusbar(Monitor *m, int bh, char* stext)
                     drw_clr_create(drw, &drw->scheme[ColFg], col5);
                 } else if (text[i] == '6') {
                     drw_clr_create(drw, &drw->scheme[ColFg], col6);
+                } else if (text[i] == 'c' && text[i + 1] == '#'
+                        && strspn(text + i + 2, "0123456789abcdefABCDEF") >= 6) {
+                    /* ^c#rrggbb^: any foreground colour */
+                    char hex[8];
+                    memcpy(hex, text + i + 1, 7);
+                    hex[7] = '\0';
+                    drw_clr_create(drw, &drw->scheme[ColFg], hex);
+                    i += 7;
                 }
             }
             if (!text[i])

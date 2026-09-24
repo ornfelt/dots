@@ -148,10 +148,10 @@ index 75109ac..02d2170 100644
  
  # FreeBSD (uncomment)
 diff --git a/blocks.def.h b/blocks.def.h
-index dbb3305..f6561a0 100644
+index dbb3305..4aa4093 100644
 --- a/blocks.def.h
 +++ b/blocks.def.h
-@@ -1,11 +1,16 @@
+@@ -1,11 +1,17 @@
  //Modify this file to change what commands output to your statusbar, and recompile using the make command.
  static const Block blocks[] = {
 -	/*Icon*/	/*Command*/		/*Update Interval*/	/*Update Signal*/
@@ -161,6 +161,7 @@ index dbb3305..f6561a0 100644
 +    /*Icon*/        /*Command*/                                     /*Update Interval*/     /*Update Signal*/
 +    /* {"^c1^",        "~/.local/bin/my_scripts/spotify_dwmblocks.sh", 5,                      12}, */
 +    {"",            "~/.local/bin/my_scripts/spotify_dwmblocks.sh", 5,                      12},
++    {"",            "~/.local/bin/statusbar/sb-claude",             30,                     6},
 +    {"^2^  ",      "~/.local/bin/statusbar/weather",               1800,                   5},
 +    {"^3^  ",      "~/.local/bin/statusbar/cputemp",               5,                      4},
 +    {"^4^ ",        "~/.local/bin/statusbar/sb-volume",             0,                      10},

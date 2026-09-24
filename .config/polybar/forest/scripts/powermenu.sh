@@ -20,11 +20,12 @@ logout=" Logout"
 
 # Confirmation
 confirm_exit() {
-	rofi -theme ~/.config/rofi/themes/gruvbox/gruvbox-dark.rasi -dmenu\
+	# "No" first so an accidental Enter is harmless; lowercase so typed
+	# answers like "Y" still match the checks below
+	echo -e "No\nYes" | rofi -theme ~/.config/rofi/themes/gruvbox/gruvbox-dark.rasi -dmenu\
 		-i\
-		-no-fixed-num-lines\
-		-p "Are You Sure? : "\
-		-theme $dir/confirm.rasi
+		-p "Are You Sure?"\
+		-selected-row 0 | tr '[:upper:]' '[:lower:]'
 }
 
 # Message
@@ -80,8 +81,17 @@ case $chosen in
 			elif [[ "$DESKTOP_SESSION" == "i3" ]]; then
 				i3-msg exit
 			else
-				i3-msg exit
-				pkill x
+				# WM-agnostic: end the X session itself. Killing xinit (startx)
+				# takes down the server and every client, whatever WM runs;
+				# fall back to logind for display-manager sessions.
+				xinit_pid=$(pgrep -u "$USER" -x xinit | head -n 1)
+				if [[ -n "$xinit_pid" ]]; then
+					kill "$xinit_pid"
+				elif [[ -n "$XDG_SESSION_ID" ]]; then
+					loginctl terminate-session "$XDG_SESSION_ID"
+				else
+					loginctl terminate-user "$USER"
+				fi
 			fi
 		elif [[ $ans == "no" || $ans == "NO" || $ans == "n" || $ans == "N" ]]; then
 			exit 0

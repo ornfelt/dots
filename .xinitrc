@@ -67,7 +67,7 @@ xset -dpms
 xset -b
 
 #exec i3
-exec awesome
+#exec awesome
 exec dwm &
 # To start with logging:
 # startx > $HOME/startx.log 2>&1
