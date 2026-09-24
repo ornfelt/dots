@@ -66,10 +66,11 @@ xset s noblank
 xset -dpms
 xset -b
 
-# Window manager to start: awesome | i3 | dwm (anything else falls back to dwm).
+# Window manager to start: awesome | i3 | dwmr | dwm (anything else falls back to dwm).
 # Override for one session without editing this file: WM=awesome startx
 WM="${WM:-dwm}"
 #WM="${WM:-awesome}"
+#WM="${WM:-dwmr}"
 
 # To start with logging:
 # startx > $HOME/startx.log 2>&1
@@ -85,6 +86,12 @@ case "$WM" in
     ;;
   i3)
     exec i3
+    ;;
+  dwmr)
+    # dwmr: the Rust port of dwm (config in ~/.config/dwmr/config.toml)
+    sh ~/.dwm/autostart.sh &
+    picom -b
+    exec dwmr
     ;;
   *)
     sh ~/.dwm/autostart.sh &
