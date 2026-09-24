@@ -73,7 +73,8 @@
 #define SPTAGMASK   			(((1 << LENGTH(scratchpads))-1) << LENGTH(tags))
 #define TEXTW(X)                (drw_fontset_getwidth(drw, (X)) + lrpad)
 #define TRUNC(X,A,B)            (MAX((A), MIN((X), (B))))
-#define SCREEN_MASK 341
+#define TAGBITS                 ((1 << LENGTH(tags)) - 1) /* normal tags, no scratchpads */
+#define SCREEN_MASK             (0x55555555 & TAGBITS)    /* odd tags 1,3,5,..: first monitor */
 
 /* enums */
 enum { CurNormal, CurResize, CurMove, CurLast }; /* cursor */
@@ -2527,7 +2528,10 @@ updategeom(void)
 
         /* Logic for moving clients: only when monitors were added.
          * Odd tags live on the first monitor and even tags on the second,
-         * so with two or more monitors move even-tagged clients over. */
+         * so with two or more monitors move clients that have only even
+         * tags over. Like view() and tag(), a client with any odd tag
+         * (e.g. one on all tags) stays on the first monitor, and so do
+         * scratchpads, which have no normal tag bit. */
         if (nn > n && nn >= 2) {
             primary = mons;         /* First monitor */
             secondary = mons->next; /* Second monitor */
@@ -2535,8 +2539,8 @@ updategeom(void)
             for (c = primary->clients; c; c = next_client) {
                 next_client = c->next;
 
-                /* Check if the client belongs to an even tag */
-                if (c->tags & 0x0AA) {   /* Even tags: 2, 4, 6, 8 */
+                /* Check if the client belongs to the second monitor */
+                if ((c->tags & TAGBITS) && !(c->tags & SCREEN_MASK)) {
                     detach(c);           /* Detach from primary monitor */
                     detachstack(c);
 

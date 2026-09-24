@@ -209,10 +209,10 @@ index 482b545..95d4fd0 100644
  
  
 diff --git a/config.h b/config.h
-index 342750a..80227a0 100644
+index 342750a..11b9507 100644
 --- a/config.h
 +++ b/config.h
-@@ -13,6 +13,7 @@
+@@ -13,10 +13,11 @@
  
  #define FILES "thunar"
  //#define FILEX "ranger"
@@ -220,6 +220,11 @@ index 342750a..80227a0 100644
  #define FILEX "yazi"
  
  /* appearance */
+-static unsigned int borderpx    = 3;        /* border pixel of windows */
++static unsigned int borderpx    = 2;        /* border pixel of windows */
+ static const unsigned int gappx = 10;       /* default gap between windows in pixels */
+ static unsigned int snap        = 32;       /* snap pixel */
+ static unsigned int gappih      = 20;       /* horiz inner gap between windows */
 @@ -28,15 +29,16 @@ static int smartgaps            = 0;        /* 1 means no outer gap when there i
  static int browsergaps          = 0;        /* 0 means no outer gap when there is only one window and it is firefox */
  static int showbar              = 1;        /* 0 means no bar */
@@ -1625,7 +1630,7 @@ index 7feba78..d04bec6 100644
  .BR dmenu (1),
  .BR st (1)
 diff --git a/dwm.c b/dwm.c
-index 9086e16..bad2d9f 100644
+index 9086e16..543f8e4 100644
 --- a/dwm.c
 +++ b/dwm.c
 @@ -27,8 +27,10 @@
@@ -1650,7 +1655,7 @@ index 9086e16..bad2d9f 100644
  
  #include "drw.h"
  #include "util.h"
-@@ -53,125 +59,127 @@
+@@ -53,125 +59,128 @@
  #define GETINC(X)               ((X) - 2000)
  #define INC(X)                  ((X) + 2000)
  #define INTERSECT(x,y,w,h,m)    (MAX(0, MIN((x)+(w),(m)->wx+(m)->ww) - MAX((x),(m)->wx)) \
@@ -1674,7 +1679,8 @@ index 9086e16..bad2d9f 100644
 +#define SPTAGMASK   			(((1 << LENGTH(scratchpads))-1) << LENGTH(tags))
  #define TEXTW(X)                (drw_fontset_getwidth(drw, (X)) + lrpad)
  #define TRUNC(X,A,B)            (MAX((A), MIN((X), (B))))
-+#define SCREEN_MASK 341
++#define TAGBITS                 ((1 << LENGTH(tags)) - 1) /* normal tags, no scratchpads */
++#define SCREEN_MASK             (0x55555555 & TAGBITS)    /* odd tags 1,3,5,..: first monitor */
  
  /* enums */
  enum { CurNormal, CurResize, CurMove, CurLast }; /* cursor */
@@ -1851,7 +1857,7 @@ index 9086e16..bad2d9f 100644
  } ResourcePref;
  
  /* function declarations */
-@@ -189,23 +197,26 @@ static void clientmessage(XEvent *e);
+@@ -189,23 +198,26 @@ static void clientmessage(XEvent *e);
  static void configure(Client *c);
  static void configurenotify(XEvent *e);
  static void configurerequest(XEvent *e);
@@ -1879,7 +1885,7 @@ index 9086e16..bad2d9f 100644
  static int gettextprop(Window w, Atom atom, char *text, unsigned int size);
  static void grabbuttons(Client *c, int focused);
  static void grabkeys(void);
-@@ -216,20 +227,18 @@ static void manage(Window w, XWindowAttributes *wa);
+@@ -216,20 +228,18 @@ static void manage(Window w, XWindowAttributes *wa);
  static void mappingnotify(XEvent *e);
  static void maprequest(XEvent *e);
  static void monocle(Monitor *m);
@@ -1901,7 +1907,7 @@ index 9086e16..bad2d9f 100644
  static void scan(void);
  static int sendevent(Client *c, Atom proto);
  static void sendmon(Client *c, Monitor *m);
-@@ -237,24 +246,27 @@ static void sendmonview(Client *c, Monitor *m);
+@@ -237,24 +247,27 @@ static void sendmonview(Client *c, Monitor *m);
  static void setclientstate(Client *c, long state);
  static void setfocus(Client *c);
  static void setfullscreen(Client *c, int fullscreen);
@@ -1935,7 +1941,7 @@ index 9086e16..bad2d9f 100644
  static void togglefloating(const Arg *arg);
  static void togglescratch(const Arg *arg);
  static void togglesticky(const Arg *arg);
-@@ -268,6 +280,7 @@ static void updatebarpos(Monitor *m);
+@@ -268,6 +281,7 @@ static void updatebarpos(Monitor *m);
  static void updatebars(void);
  static void updateclientlist(void);
  static int updategeom(void);
@@ -1943,7 +1949,7 @@ index 9086e16..bad2d9f 100644
  static void updatenumlockmask(void);
  static void updatesizehints(Client *c);
  static void updatestatus(void);
-@@ -292,11 +305,10 @@ static pid_t winpid(Window w);
+@@ -292,11 +306,10 @@ static pid_t winpid(Window w);
  
  /* variables */
  static const char broken[] = "broken";
@@ -1959,7 +1965,7 @@ index 9086e16..bad2d9f 100644
  static int screen;
  static int sw, sh;           /* X display screen geometry width, height */
  static int bh;               /* bar height */
-@@ -304,22 +316,20 @@ static int lrpad;            /* sum of left and right padding for text */
+@@ -304,22 +317,20 @@ static int lrpad;            /* sum of left and right padding for text */
  static int (*xerrorxlib)(Display *, XErrorEvent *);
  static unsigned int numlockmask = 0;
  static void (*handler[LASTEvent]) (XEvent *) = {
@@ -1994,7 +2000,7 @@ index 9086e16..bad2d9f 100644
  static int running = 1;
  static Cur *cursor[CurLast];
  static Clr **scheme;
-@@ -340,548 +350,579 @@ struct NumTags { char limitexceeded[LENGTH(tags) > 31 ? -1 : 1]; };
+@@ -340,548 +351,579 @@ struct NumTags { char limitexceeded[LENGTH(tags) > 31 ? -1 : 1]; };
  void
  applyrules(Client *c)
  {
@@ -2983,7 +2989,7 @@ index 9086e16..bad2d9f 100644
      /* compute width of the status text */
      w = 0;
      i = -1;
-@@ -892,8 +933,10 @@ drawstatusbar(Monitor *m, int bh, char* stext)
+@@ -892,8 +934,10 @@ drawstatusbar(Monitor *m, int bh, char* stext)
                  text[i] = '\0';
                  w += TEXTW(text) - lrpad;
                  text[i] = '^';
@@ -2996,7 +3002,7 @@ index 9086e16..bad2d9f 100644
              } else {
                  isCode = 0;
                  text = text + i + 1;
-@@ -929,36 +972,11 @@ drawstatusbar(Monitor *m, int bh, char* stext)
+@@ -929,36 +973,11 @@ drawstatusbar(Monitor *m, int bh, char* stext)
              drw_text(drw, x, 0, w, bh, 0, text, 0);
              x += w;
  
@@ -3037,7 +3043,7 @@ index 9086e16..bad2d9f 100644
                  } else if (text[i] == '3') {
                      drw_clr_create(drw, &drw->scheme[ColFg], col3);
                  } else if (text[i] == '4') {
-@@ -967,8 +985,18 @@ drawstatusbar(Monitor *m, int bh, char* stext)
+@@ -967,8 +986,18 @@ drawstatusbar(Monitor *m, int bh, char* stext)
                      drw_clr_create(drw, &drw->scheme[ColFg], col5);
                  } else if (text[i] == '6') {
                      drw_clr_create(drw, &drw->scheme[ColFg], col6);
@@ -3056,7 +3062,7 @@ index 9086e16..bad2d9f 100644
  
              text = text + i + 1;
              i=-1;
-@@ -990,111 +1018,123 @@ drawstatusbar(Monitor *m, int bh, char* stext)
+@@ -990,111 +1019,123 @@ drawstatusbar(Monitor *m, int bh, char* stext)
  void
  drawbar(Monitor *m)
  {
@@ -3250,7 +3256,7 @@ index 9086e16..bad2d9f 100644
      selmon = m;
      focus(NULL);
  }
-@@ -1102,622 +1142,587 @@ focusmon(const Arg *arg)
+@@ -1102,622 +1143,587 @@ focusmon(const Arg *arg)
  void
  focusstack(const Arg *arg)
  {
@@ -4318,7 +4324,7 @@ index 9086e16..bad2d9f 100644
  {
      system("killall -q dwmblocks; dwmblocks &");
  }
-@@ -1725,44 +1730,48 @@ runAutostart(void)
+@@ -1725,44 +1731,48 @@ runAutostart(void)
  void
  scan(void)
  {
@@ -4400,7 +4406,7 @@ index 9086e16..bad2d9f 100644
  }
  
  void
-@@ -1775,10 +1784,12 @@ sendmonview(Client *c, Monitor *m)
+@@ -1775,10 +1785,12 @@ sendmonview(Client *c, Monitor *m)
      detachstack(c);
      arrange(c->mon);
      c->mon = m;
@@ -4415,7 +4421,7 @@ index 9086e16..bad2d9f 100644
      arrange(m);
      focus(c);
      restack(m);
-@@ -1787,318 +1798,443 @@ sendmonview(Client *c, Monitor *m)
+@@ -1787,318 +1799,443 @@ sendmonview(Client *c, Monitor *m)
  void
  setclientstate(Client *c, long state)
  {
@@ -5094,7 +5100,7 @@ index 9086e16..bad2d9f 100644
  {
      if (selmon->sel && arg->ui & TAGMASK) {
          selmon->sel->tags = arg->ui & TAGMASK;
-@@ -2109,439 +2245,500 @@ tagview(const Arg *arg)
+@@ -2109,439 +2246,503 @@ tagview(const Arg *arg)
  }
  
  void
@@ -5578,7 +5584,10 @@ index 9086e16..bad2d9f 100644
 +
 +        /* Logic for moving clients: only when monitors were added.
 +         * Odd tags live on the first monitor and even tags on the second,
-+         * so with two or more monitors move even-tagged clients over. */
++         * so with two or more monitors move clients that have only even
++         * tags over. Like view() and tag(), a client with any odd tag
++         * (e.g. one on all tags) stays on the first monitor, and so do
++         * scratchpads, which have no normal tag bit. */
 +        if (nn > n && nn >= 2) {
 +            primary = mons;         /* First monitor */
 +            secondary = mons->next; /* Second monitor */
@@ -5586,8 +5595,8 @@ index 9086e16..bad2d9f 100644
 +            for (c = primary->clients; c; c = next_client) {
 +                next_client = c->next;
 +
-+                /* Check if the client belongs to an even tag */
-+                if (c->tags & 0x0AA) {   /* Even tags: 2, 4, 6, 8 */
++                /* Check if the client belongs to the second monitor */
++                if ((c->tags & TAGBITS) && !(c->tags & SCREEN_MASK)) {
 +                    detach(c);           /* Detach from primary monitor */
                      detachstack(c);
 -                    c->mon = mons;
@@ -5899,7 +5908,7 @@ index 9086e16..bad2d9f 100644
      }
  
      selmon->seltags ^= 1; /* toggle sel tagset */
-@@ -2554,135 +2751,165 @@ view(const Arg *arg)
+@@ -2554,135 +2755,165 @@ view(const Arg *arg)
  pid_t
  winpid(Window w)
  {
@@ -6146,7 +6155,7 @@ index 9086e16..bad2d9f 100644
  }
  
  /* There's no way to check accesses to destroyed windows, thus those cases are
-@@ -2691,25 +2918,25 @@ wintomon(Window w)
+@@ -2691,25 +2922,25 @@ wintomon(Window w)
  int
  xerror(Display *dpy, XErrorEvent *ee)
  {
@@ -6186,7 +6195,7 @@ index 9086e16..bad2d9f 100644
  }
  
  /* Startup Error handler to check if another window manager
-@@ -2717,107 +2944,103 @@ xerrordummy(Display *dpy, XErrorEvent *ee)
+@@ -2717,107 +2948,103 @@ xerrordummy(Display *dpy, XErrorEvent *ee)
  int
  xerrorstart(Display *dpy, XErrorEvent *ee)
  {
@@ -6388,6 +6397,218 @@ index 0000000..2d35555
 +git diff origin/bkp -- . ":(exclude)*.diff" ":(exclude)config.def.h" ":(exclude).gitignore" ":(exclude)patches/**" ":(exclude)patches_git/**" > diff_bkp.diff
 +git diff origin/new -- . ":(exclude)*.diff" ":(exclude)config.def.h" ":(exclude).gitignore" ":(exclude)patches/**" ":(exclude)patches_git/**" > diff_new.diff
 +
+diff --git a/patches_260924/get.sh b/patches_260924/get.sh
+new file mode 100755
+index 0000000..0541653
+--- /dev/null
++++ b/patches_260924/get.sh
+@@ -0,0 +1,57 @@
++#!/usr/bin/env bash
++# Newest versions (checked 2026-09-24) of the dwm patches used by the dwmr (Rust) port.
++# See the "Porting plan: dwmr" section in $my_notes_path/linux/dwm_customizations.md.
++# Only patches that the port needs are listed; cfacts, alpha, smfact and autostart are left out.
++# Run from this directory: ./get.sh
++
++download_if_not_exists() {
++  local url="$1"
++  local filename=$(basename "$url") # Extract the file name from the URL
++
++  # Check if the file already exists
++  if [[ -f "$filename" ]]; then
++    echo "File '$filename' already exists. Skipping download."
++  else
++    echo "Downloading '$filename'..."
++    curl -fsSLO "$url"
++    if [[ $? -eq 0 ]]; then
++      echo "Downloaded '$filename' successfully."
++    else
++      echo "Failed to download '$filename'."
++    fi
++  fi
++}
++
++# 1. https://dwm.suckless.org/patches/actualfullscreen/ (newer: 6.8; only togglefullscr is used, not the isfullscreen rule)
++download_if_not_exists https://dwm.suckless.org/patches/actualfullscreen/dwm-actualfullscreen-6.8.diff
++# 2. https://dwm.suckless.org/patches/focusonclick/ (newer: based on 44dbc68, same base as dwmr)
++download_if_not_exists https://dwm.suckless.org/patches/focusonclick/dwm-focusonclick-20260516-44dbc68.diff
++# 3. https://dwm.suckless.org/patches/notitle/ (newer: 6.5)
++download_if_not_exists https://dwm.suckless.org/patches/notitle/dwm-notitle-6.5.diff
++# 4. https://dwm.suckless.org/patches/hide_vacant_tags/
++download_if_not_exists https://dwm.suckless.org/patches/hide_vacant_tags/dwm-hide_vacant_tags-6.4.diff
++# 5. https://dwm.suckless.org/patches/noborder/
++download_if_not_exists https://dwm.suckless.org/patches/noborder/dwm-noborder-6.2.diff
++# 6. https://dwm.suckless.org/patches/save_floats/
++download_if_not_exists https://dwm.suckless.org/patches/save_floats/dwm-savefloats-20181212-b69c870.diff
++# 6. https://dwm.suckless.org/patches/togglefloatingcenter/
++download_if_not_exists https://dwm.suckless.org/patches/togglefloatingcenter/dwm-togglefloatingcenter-20210806-138b405f.diff
++# 7. https://dwm.suckless.org/patches/stacker/ (newer: 6.6)
++download_if_not_exists https://dwm.suckless.org/patches/stacker/dwm-stacker-6.6.diff
++# 8. https://dwm.suckless.org/patches/sticky/ (same content as dwm-sticky-20240927-60f7034.diff)
++download_if_not_exists https://dwm.suckless.org/patches/sticky/dwm-sticky-6.5.diff
++# 9. https://dwm.suckless.org/patches/scratchpads/
++download_if_not_exists https://dwm.suckless.org/patches/scratchpads/dwm-scratchpads-20200414-728d397b.diff
++# 10. https://dwm.suckless.org/patches/tagshift/ and https://dwm.suckless.org/patches/shift-tools/
++download_if_not_exists https://dwm.suckless.org/patches/tagshift/dwm-tagshift-6.3.diff
++download_if_not_exists https://dwm.suckless.org/patches/shift-tools/shift-tools-scratchpads.c
++# 11. https://dwm.suckless.org/patches/vanitygaps/
++download_if_not_exists https://dwm.suckless.org/patches/vanitygaps/dwm-cfacts-vanitygaps-6.4_combo.diff
++# 12. https://dwm.suckless.org/patches/swallow/
++download_if_not_exists https://dwm.suckless.org/patches/swallow/dwm-swallow-6.3.diff
++# 13. https://dwm.suckless.org/patches/status2d/
++download_if_not_exists https://dwm.suckless.org/patches/status2d/dwm-status2d-6.3.diff
++# 14. https://dwm.suckless.org/patches/statuscmd/ (the status2d variant is still the newest one for status2d)
++download_if_not_exists https://dwm.suckless.org/patches/statuscmd/dwm-statuscmd-status2d-20210405-60bb3df.diff
++# 15. https://dwm.suckless.org/patches/xresources/ (newer: based on 44dbc68, with runtime reload and font)
++download_if_not_exists https://dwm.suckless.org/patches/xresources/dwm-xresources-20260524-44dbc68.diff
+diff --git a/patches_260924/shift-tools-scratchpads.c b/patches_260924/shift-tools-scratchpads.c
+new file mode 100644
+index 0000000..1e399a8
+--- /dev/null
++++ b/patches_260924/shift-tools-scratchpads.c
+@@ -0,0 +1,143 @@
++/* Sends a window to the next/prev tag */
++void
++shifttag(const Arg *arg)
++{
++	Arg shifted;
++	shifted.ui = selmon->tagset[selmon->seltags] & ~SPTAGMASK;
++
++
++	if (arg->i > 0)	/* left circular shift */
++		shifted.ui = ((shifted.ui << arg->i) | (shifted.ui >> (LENGTH(tags) - arg->i))) & ~SPTAGMASK;
++	else		/* right circular shift */
++		shifted.ui = (shifted.ui >> (- arg->i) | shifted.ui << (LENGTH(tags) + arg->i)) & ~SPTAGMASK;
++	tag(&shifted);
++}
++/* Sends a window to the next/prev tag that has a client, else it moves it to the next/prev one. */
++void
++shifttagclients(const Arg *arg)
++{
++
++	Arg shifted;
++	Client *c;
++	unsigned int tagmask = 0;
++	shifted.ui = selmon->tagset[selmon->seltags] & ~SPTAGMASK;
++
++	for (c = selmon->clients; c; c = c->next)
++		if (!(c->tags & SPTAGMASK))
++			tagmask = tagmask | c->tags;
++
++
++	if (arg->i > 0)	/* left circular shift */
++		do {
++			shifted.ui = (shifted.ui << arg->i)
++			   | (shifted.ui >> (LENGTH(tags) - arg->i));
++			shifted.ui &= ~SPTAGMASK;
++		} while (tagmask && !(shifted.ui & tagmask));
++	else		/* right circular shift */
++		do {
++			shifted.ui = (shifted.ui >> (- arg->i)
++			   | shifted.ui << (LENGTH(tags) + arg->i));
++			shifted.ui &= ~SPTAGMASK;
++		} while (tagmask && !(shifted.ui & tagmask));
++	tag(&shifted);
++}
++/* Navigate to the next/prev tag */
++void
++shiftview(const Arg *arg)
++{
++	Arg shifted;
++	shifted.ui = selmon->tagset[selmon->seltags] & ~SPTAGMASK;
++
++	if (arg->i > 0) {/* left circular shift */
++		shifted.ui = (shifted.ui << arg->i) | (shifted.ui >> (LENGTH(tags) - arg->i));
++		shifted.ui &= ~SPTAGMASK;
++	} else {	/* right circular shift */
++		shifted.ui = (shifted.ui >> (- arg->i) | shifted.ui << (LENGTH(tags) + arg->i));
++		shifted.ui &= ~SPTAGMASK;
++	}
++	view(&shifted);
++}
++/* Navigate to the next/prev tag that has a client, else moves it to the next/prev tag */
++void
++shiftviewclients(const Arg *arg)
++{
++	Arg shifted;
++	Client *c;
++	unsigned int tagmask = 0;
++	shifted.ui = selmon->tagset[selmon->seltags] & ~SPTAGMASK;
++
++	for (c = selmon->clients; c; c = c->next)
++		if (!(c->tags & SPTAGMASK))
++			tagmask = tagmask | c->tags;
++
++
++	if (arg->i > 0)	/* left circular shift */
++		do {
++			shifted.ui = (shifted.ui << arg->i)
++			   | (shifted.ui >> (LENGTH(tags) - arg->i));
++			shifted.ui &= ~SPTAGMASK;
++		} while (tagmask && !(shifted.ui & tagmask));
++	else		/* right circular shift */
++		do {
++			shifted.ui = (shifted.ui >> (- arg->i)
++			   | shifted.ui << (LENGTH(tags) + arg->i));
++			shifted.ui &= ~SPTAGMASK;
++		} while (tagmask && !(shifted.ui & tagmask));
++	view(&shifted);
++}
++/* move the current active window to the next/prev tag and view it. More like following the window */
++void
++shiftboth(const Arg *arg)
++{
++	Arg shifted;
++	shifted.ui = selmon->tagset[selmon->seltags] & ~SPTAGMASK;
++
++	if (arg->i > 0)	/* left circular shift */
++		shifted.ui = ((shifted.ui << arg->i) | (shifted.ui >> (LENGTH(tags) - arg->i))) & ~SPTAGMASK;
++	else		/* right circular shift */
++		shifted.ui = ((shifted.ui >> (- arg->i) | shifted.ui << (LENGTH(tags) + arg->i))) & ~SPTAGMASK;
++	tag(&shifted);
++	view(&shifted);
++}
++//helper function for shiftswaptags found on:
++//https://github.com/moizifty/DWM-Build/blob/65379c62640788881486401a0d8c79333751b02f/config.h#L48
++// modified to work with scratchpad
++void
++swaptags(const Arg *arg)
++{
++	Client *c;
++	unsigned int newtag = arg->ui & TAGMASK;
++	unsigned int curtag = selmon->tagset[selmon->seltags] & ~SPTAGMASK;
++
++	if (newtag == curtag || !curtag || (curtag & (curtag-1)))
++		return;
++
++	for (c = selmon->clients; c != NULL; c = c->next) {
++		if ((c->tags & newtag) || (c->tags & curtag))
++			c->tags ^= curtag ^ newtag;
++
++		if (!c->tags)
++			c->tags = newtag;
++	}
++
++	//move to the swaped tag
++	//selmon->tagset[selmon->seltags] = newtag;
++
++	focus(NULL);
++	arrange(selmon);
++}
++/* swaps "tags" (all the clients) with the next/prev tag. */
++void
++shiftswaptags(const Arg *arg)
++{
++	Arg shifted;
++	shifted.ui = selmon->tagset[selmon->seltags] & ~SPTAGMASK;
++
++	if (arg->i > 0)	/* left circular shift */
++		shifted.ui = ((shifted.ui << arg->i) | (shifted.ui >> (LENGTH(tags) - arg->i))) & ~SPTAGMASK;
++	else		/* right circular shift */
++		shifted.ui = ((shifted.ui >> (- arg->i) | shifted.ui << (LENGTH(tags) + arg->i))) & ~SPTAGMASK;
++	swaptags(&shifted);
++	// uncomment if you also want to "go" (view) the tag where the the clients are going
++	//view(&shifted);
++}
 diff --git a/shiftview.c b/shiftview.c
 deleted file mode 100644
 index 7905a6d..0000000
