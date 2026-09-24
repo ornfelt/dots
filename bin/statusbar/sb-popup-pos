@@ -1,0 +1,42 @@
+#!/bin/bash
+
+# Prints "X Y" for a popup window of WIDTH px (plus dwm's border) that opens
+# just below the dwm bar on the monitor under the mouse, 10px from the bar and
+# the screen edges. Used by the statusbar scripts' click popups.
+#
+#   sb-popup-pos WIDTH [mouse]   centred under the mouse
+#   sb-popup-pos WIDTH right     in the top right corner
+#
+# Exits with 1 (printing nothing) if the monitor can't be found.
+
+width=${1:?usage: sb-popup-pos WIDTH [mouse|right]}
+anchor=${2:-mouse}
+border=3 # dwm's borderpx
+gap=10
+
+eval "$(xdotool getmouselocation --shell)"
+read -r mx my mw mh < <(xrandr --listactivemonitors | awk -v x="$X" -v y="$Y" 'NR > 1 {
+	split($3, g, "[/x+]") # 1920/309x1080/173+0+0
+	if (x >= g[5] && x < g[5] + g[1] && y >= g[6] && y < g[6] + g[3]) { print g[5], g[6], g[1], g[3]; exit }
+}')
+[ -z "$mx" ] && exit 1
+
+# Height of dwm's bar on that monitor, 0 if it is hidden or not at the top
+barh=$(xwininfo -root -children | awk -v mx="$mx" -v my="$my" '/\("dwm" "dwm"\)/ {
+	for (i = 1; i <= NF; i++)
+		if ($i ~ /^[0-9]+x[0-9]+\+[0-9]+\+[0-9]+$/) {
+			split($i, g, "[x+]")
+			if (g[3] == mx && g[4] == my) { print g[2]; exit }
+		}
+}')
+
+total=$((width + 2 * border))
+if [ "$anchor" = right ]; then
+	x=$((mx + mw - total - gap))
+else
+	x=$((X - total / 2))
+fi
+# keep it on the monitor
+((x > mx + mw - total - gap)) && x=$((mx + mw - total - gap))
+((x < mx + gap)) && x=$((mx + gap))
+echo "$x $((my + ${barh:-0} + gap))"
