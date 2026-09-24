@@ -155,8 +155,13 @@ if [[ -z "$tokenValue" ]]; then
   exit 1
 fi
 
-pushCommandActual="git push https://${tokenValue}@github.com/${repoOwner}/${repoName} ${currentBranch}"
-pushCommandDisplay="git push https://\$${tokenEnvVarName}@github.com/${repoOwner}/${repoName} ${currentBranch}"
+# Pushing to a URL instead of to origin doesn't update origin/<branch>, so git
+# would keep saying the branch is ahead. Update it after a successful push,
+# like pushing to origin does.
+syncCommand="git update-ref refs/remotes/origin/${currentBranch} refs/heads/${currentBranch}"
+
+pushCommandActual="git push https://${tokenValue}@github.com/${repoOwner}/${repoName} ${currentBranch} && ${syncCommand}"
+pushCommandDisplay="git push https://\$${tokenEnvVarName}@github.com/${repoOwner}/${repoName} ${currentBranch} && ${syncCommand}"
 
 if [[ -n "$OutputOnly" ]]; then
   echo "$pushCommandDisplay"
