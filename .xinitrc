@@ -38,7 +38,10 @@ setxkbmap -option caps:escape
 #xrdb ~/.Xresources
 
 xhost si:localuser:root
-#systemctl --user import-environment DISPLAY
+# Give services that D-Bus starts through systemd (e.g. dunst for notify-send)
+# the X display, otherwise they can't open it. Arch does this in xinitrc.d,
+# Debian doesn't.
+dbus-update-activation-environment --systemd DISPLAY XAUTHORITY
 
 # set some env vars
 export my_notes_path="$HOME/Documents/my_notes"
