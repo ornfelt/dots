@@ -63,7 +63,8 @@ end
 local function bar_text(st)
 	local color = format.color_for(st, opts) or ORANGE
 	-- trailing space: a little room before the next block, like the widget's right margin
-	return string.format("^c%s^%s ^c%s^%s ", opts.colors.icon, ICON, color, format.bar_text(st, opts))
+	-- ^B^...^N^: dwm's bigger status font, like the widget's 1.35x icon
+	return string.format("^c%s^^B^%s^N^ ^c%s^%s ", opts.colors.icon, ICON, color, format.bar_text(st, opts))
 end
 
 -- Popup (a yad window with pango markup) ----------------------------------
