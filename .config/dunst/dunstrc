@@ -348,7 +348,7 @@
     # gruvbox dark bg0 / gray
     background = "#282828"
     foreground = "#a89984"
-    timeout = 10
+    timeout = 7
     # Icon for notifications with low urgency
     default_icon = dialog-information
 
@@ -356,7 +356,7 @@
     # gruvbox dark bg0 / fg1
     background = "#282828"
     foreground = "#ebdbb2"
-    timeout = 10
+    timeout = 7
     override_pause_level = 30
     # Icon for notifications with normal urgency
     default_icon = dialog-information
