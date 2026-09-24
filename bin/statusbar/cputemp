@@ -4,11 +4,11 @@
 #sensors | awk '/Package/ {sub(/^\+/, "", $2);print $4}' | sed 's/\+//'
 
 case $BLOCK_BUTTON in
-	1) "$TERMINAL" -e sh -c "curl -sf 'wttr.in/Uppsala'; zsh" ;;
-	2) rofi -theme "~/.config/rofi/themes/gruvbox/gruvbox-dark.rasi" -e "Weather clicked 2" ;;
-	3) pkill -RTMIN+5 dwmblocks ;;
-	4) rofi -theme "~/.config/rofi/themes/gruvbox/gruvbox-dark.rasi" -e "Weather clicked 4" ;;
-	5) rofi -theme "~/.config/rofi/themes/gruvbox/gruvbox-dark.rasi" -e "Weather clicked 5" ;;
+	1) notify-send "CPU" "$(sensors | grep -E '^(Tctl|Tccd[0-9]*|Package id [0-9]+|Core [0-9]+):'; echo; echo "Top processes:"; ps axch -o cmd:15,%cpu --sort=-%cpu | head -5)" ;;
+	2) rofi -theme "~/.config/rofi/themes/gruvbox/gruvbox-dark.rasi" -e "CPU temp clicked 2" ;;
+	3) pkill -RTMIN+4 dwmblocks ;;
+	4) rofi -theme "~/.config/rofi/themes/gruvbox/gruvbox-dark.rasi" -e "CPU temp clicked 4" ;;
+	5) rofi -theme "~/.config/rofi/themes/gruvbox/gruvbox-dark.rasi" -e "CPU temp clicked 5" ;;
 	6) "$TERMINAL" -e "$EDITOR" "$0" ;;
 esac
 
