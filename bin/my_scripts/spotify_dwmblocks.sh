@@ -27,8 +27,11 @@ player() {
 
 # After changing track, give spotify a moment to update its metadata before
 # dwmblocks refreshes the block
+# Left click: one notification at a time, clicks are ignored while it is
+# loading or shown (the lock is held until notify-send --wait returns)
 case $BLOCK_BUTTON in
-	1) notify-send "Spotify" "$(main "%title%\n%artist%\n%album%")" ;;
+	1) exec 9>"${XDG_RUNTIME_DIR:-/tmp}/sb-spotify.lock"; flock -n 9 || exit 0
+	   notify-send --wait "Spotify" "$(main "%title%\n%artist%\n%album%")" ;;
 	2) player PlayPause ;;
 	3) pkill -RTMIN+12 dwmblocks ;;
 	4) player Previous; sleep 0.5 ;;

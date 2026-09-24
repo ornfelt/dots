@@ -3,8 +3,11 @@
 # Prints all batteries, their percentage remaining and an emoji corresponding
 # to charge status (🔌 for plugged up, 🔋 for discharging on battery, etc.).
 
+# Left click: one notification at a time, clicks are ignored while it is
+# loading or shown (the lock is held until notify-send --wait returns)
 case $BLOCK_BUTTON in
-	1) notify-send "Battery" "$(acpi -b)" ;;
+	1) exec 9>"${XDG_RUNTIME_DIR:-/tmp}/sb-battery.lock"; flock -n 9 || exit 0
+	   notify-send --wait "Battery" "$(acpi -b)" ;;
 	6) "$TERMINAL" -e "$EDITOR" "$0" ;;
 esac
 

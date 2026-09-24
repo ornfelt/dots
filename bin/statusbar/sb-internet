@@ -4,8 +4,11 @@
 # Show 🌐 if connected to ethernet or ❎ if none.
 # Show 🔒 if a vpn connection is active
 
+# Left click: one notification at a time, clicks are ignored while it is
+# loading or shown (the lock is held until notify-send --wait returns)
 case $BLOCK_BUTTON in
-	1) notify-send "Network" "$(nmcli -f DEVICE,STATE,CONNECTION device status | grep -vE '^(lo|p2p-dev)'; echo; ip -4 -br addr show scope global)" ;;
+	1) exec 9>"${XDG_RUNTIME_DIR:-/tmp}/sb-internet.lock"; flock -n 9 || exit 0
+	   notify-send --wait "Network" "$(nmcli -f DEVICE,STATE,CONNECTION device status | grep -vE '^(lo|p2p-dev)'; echo; ip -4 -br addr show scope global)" ;;
 	2) rofi -theme "~/.config/rofi/themes/gruvbox/gruvbox-dark.rasi" -e "Internet clicked 2" ;;
 	3) pkill -RTMIN+3 dwmblocks ;;
 	4) rofi -theme "~/.config/rofi/themes/gruvbox/gruvbox-dark.rasi" -e "Internet clicked 4" ;;

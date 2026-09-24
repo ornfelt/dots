@@ -5,10 +5,10 @@
 forecast() {
 	local data
 	if ! data=$(curl -sf --max-time 5 "wttr.in/${CITY}?format=j1"); then
-		notify-send -h string:x-dunst-stack-tag:weather "Weather" "Couldn't get the forecast for ${CITY:-your location}"
+		notify-send --wait -h string:x-dunst-stack-tag:weather "Weather" "Couldn't get the forecast for ${CITY:-your location}"
 		return
 	fi
-	notify-send -h string:x-dunst-stack-tag:weather "Weather in ${CITY:-your location}" "$(echo "$data" | jq -r '
+	notify-send --wait -h string:x-dunst-stack-tag:weather "Weather in ${CITY:-your location}" "$(echo "$data" | jq -r '
 		def desc: .weatherDesc[0].value | sub(" +$"; "");
 		(.current_condition[0] | "Now: \(.temp_C)°C, feels \(.FeelsLikeC)°C, \(desc)",
 			"Wind \(.windspeedKmph) km/h \(.winddir16Point), humidity \(.humidity)%"),
@@ -16,8 +16,11 @@ forecast() {
 		(.weather[] | "\(.date | strptime("%Y-%m-%d") | strftime("%a %d"))  \(.mintempC)..\(.maxtempC)°C  \(.hourly[4] | desc), rain \([.hourly[].chanceofrain | tonumber] | max)%")')"
 }
 
+# Left click: one notification at a time, clicks are ignored while it is
+# loading or shown (the lock is held until notify-send --wait returns)
 case $BLOCK_BUTTON in
-	1) show_forecast=1 ;; # after $CITY is known
+	1) exec 9>"${XDG_RUNTIME_DIR:-/tmp}/sb-weather.lock"; flock -n 9 || exit 0
+	   show_forecast=1 ;; # shown once $CITY is known
 	2) rofi -theme "~/.config/rofi/themes/gruvbox/gruvbox-dark.rasi" -e "Weather clicked 2" ;;
 	3) pkill -RTMIN+5 dwmblocks ;;
 	4) rofi -theme "~/.config/rofi/themes/gruvbox/gruvbox-dark.rasi" -e "Weather clicked 4" ;;
@@ -33,7 +36,7 @@ CACHE="$HOME/.local/share/weatherreport"
 # If we have no network, show cached value (if any) and exit.
 # (Uses the "default route" check; simple and fast)
 if ! ip route get 1.1.1.1 >/dev/null 2>&1; then
-    [ -n "$show_forecast" ] && notify-send -h string:x-dunst-stack-tag:weather "Weather" "No network"
+    [ -n "$show_forecast" ] && notify-send --wait -h string:x-dunst-stack-tag:weather "Weather" "No network"
     if [[ -s "$CACHE" ]]; then
         cat "$CACHE"
     else
