@@ -54,7 +54,8 @@ end
 
 local function bar_text(st)
 	local color = format.color_for(st, opts) or ORANGE
-	return string.format("^c%s^%s ^c%s^%s", opts.colors.icon, ICON, color, format.bar_text(st, opts))
+	-- trailing space: a little room before the next block, like the widget's right margin
+	return string.format("^c%s^%s ^c%s^%s ", opts.colors.icon, ICON, color, format.bar_text(st, opts))
 end
 
 -- Popup (dunst notification with pango markup) ----------------------------
