@@ -19,12 +19,20 @@ main() {
 echo " ${*:-%artist% - %title%} " | sed "s/%artist%/$artist/g;s/%title%/$title/g;s/%album%/$album/g"i | sed "s/\&/\&/g" | sed "s#\/#\/#g"
 }
 
+# Sends an MPRIS command (PlayPause, Next, Previous) to spotify
+player() {
+  dbus-send --print-reply --dest=org.mpris.MediaPlayer2.spotify /org/mpris/MediaPlayer2 \
+    "org.mpris.MediaPlayer2.Player.$1" >/dev/null
+}
+
+# After changing track, give spotify a moment to update its metadata before
+# dwmblocks refreshes the block
 case $BLOCK_BUTTON in
 	1) notify-send "Spotify" "$(main "%title%\n%artist%\n%album%")" ;;
-	2) rofi -theme "~/.config/rofi/themes/gruvbox/gruvbox-dark.rasi" -e "Spotify clicked 2" ;;
+	2) player PlayPause ;;
 	3) pkill -RTMIN+12 dwmblocks ;;
-	4) rofi -theme "~/.config/rofi/themes/gruvbox/gruvbox-dark.rasi" -e "Spotify clicked 4" ;;
-	5) rofi -theme "~/.config/rofi/themes/gruvbox/gruvbox-dark.rasi" -e "Spotify clicked 5" ;;
+	4) player Previous; sleep 0.5 ;;
+	5) player Next; sleep 0.5 ;;
 	6) "$TERMINAL" -e "$EDITOR" "$0" ;;
 esac
 
