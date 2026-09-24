@@ -1,10 +1,47 @@
 #!/usr/bin/env bash
 
-OutputOnly=""
-#if [[ "$1" == "--output-only" ]]; then
-if [[ $# -gt 0 ]]; then
-  OutputOnly="true"
-fi
+# Regenerate and commit the diff files for the repos listed below (dwm, dmenu,
+# st, awsm, ...) before pushing. Off by default; turn on with --diff.
+GenerateDiffs=false
+OutputOnly=false
+
+function Usage() {
+  cat <<EOF
+Usage: $(basename "$0") [--diff] [--output-only]
+       $(basename "$0") help | --help | -h
+
+Push the current branch to GitHub using a token from the environment
+(GITHUB_TOKEN, or ALT_GITHUB_TOKEN for archornf repos).
+
+Options:
+  -d, --diff         Regenerate and commit the diff files for repos that have
+                     them (dwm, dmenu, st, dwmblocks, awsm, stk-code,
+                     AzerothCore/TrinityCore NPCBots) before pushing.
+                     Default: $GenerateDiffs
+  -o, --output-only  Print the commands instead of running them.
+  -h, --help, help   Show this help.
+EOF
+}
+
+# ${1,,}: lowercase, so HELP / --Help / -H also work
+case "${1,,}" in
+  help|--help|-h)
+    Usage
+    exit 0
+    ;;
+esac
+
+for arg in "$@"; do
+  case "$arg" in
+    -d|--diff) GenerateDiffs=true ;;
+    -o|--output-only) OutputOnly=true ;;
+    *)
+      echo "Unknown argument: $arg" >&2
+      Usage >&2
+      exit 1
+      ;;
+  esac
+done
 
 currentBranch="$(git rev-parse --abbrev-ref HEAD 2>/dev/null)"
 pushUrl="$(git remote get-url --push origin 2>/dev/null)"
@@ -36,91 +73,93 @@ function AddUpstreamIfMissing() {
   fi
 }
 
-if [[ "$repoOwner" == "ornfelt" ]]; then
-  #case "$repoName" in
-  case "${repoName%.git}" in
-    "dwm")
-      AddUpstreamIfMissing "https://git.suckless.org/dwm"
-      commands+=('git fetch --all')
-      commands+=('git diff upstream/master..HEAD -- . ":(exclude)*.diff" > diff_upstream.diff')
-      commands+=('git diff origin/bkp -- . ":(exclude)*.diff" ":(exclude)config.def.h" ":(exclude).gitignore" ":(exclude)patches/**" ":(exclude)patches_git/**" > diff_bkp.diff')
-      commands+=('git diff origin/new -- . ":(exclude)*.diff" ":(exclude)config.def.h" ":(exclude).gitignore" ":(exclude)patches/**" ":(exclude)patches_git/**" > diff_new.diff')
-      commands+=('git add -- diff_upstream.diff diff_bkp.diff diff_new.diff')
-      commands+=('git commit -m "update diff files"')
-      ;;
-    "dmenu")
-      AddUpstreamIfMissing "https://git.suckless.org/dmenu"
-      commands+=('git fetch --all')
-      commands+=('git diff upstream/master..HEAD -- . ":(exclude)*.diff" > diff_upstream.diff')
-      commands+=('git diff origin/bkp -- . ":(exclude)*.diff" ":(exclude)config.def.h" ":(exclude).gitignore" ":(exclude)patches/**" ":(exclude)patches_git/**" > diff_bkp.diff')
-      commands+=('git add -- diff_upstream.diff diff_bkp.diff')
-      commands+=('git commit -m "update diff files"')
-      ;;
-    "st")
-      AddUpstreamIfMissing "https://git.suckless.org/st"
-      commands+=('git fetch --all')
-      commands+=('git diff upstream/master..HEAD -- . ":(exclude)*.diff" > diff_upstream.diff')
-      commands+=('git diff bkp -- . ":(exclude)*.diff" ":(exclude)config.def.h" ":(exclude).gitignore" ":(exclude)patches/**" ":(exclude)patches_git/**" > diff_bkp.diff')
-      commands+=('git add -- diff_upstream.diff diff_bkp.diff')
-      commands+=('git commit -m "update diff files"')
-      ;;
-    "dwmblocks")
-      AddUpstreamIfMissing "https://github.com/torrinfail/dwmblocks"
-      commands+=('git fetch --all')
-      commands+=('git diff upstream/master..HEAD -- . ":(exclude)*.diff" > diff_upstream.diff')
-      commands+=('git add -- diff_upstream.diff')
-      commands+=('git commit -m "update diff files"')
-      ;;
-    "awsm")
-      AddUpstreamIfMissing "https://github.com/lcpz/awesome-copycats"
-      commands+=('git fetch --all')
-      # The repo's own gen_diffs.sh owns this logic; it also covers the vendored
-      # claude_usage/ tree, which has no remote here and so cannot be reached by
-      # a plain git diff. Delegating keeps one implementation instead of two that
-      # drift (they already had: ...master here vs ..HEAD there).
-      commands+=('(cd "$(git rev-parse --show-toplevel)" && ./gen_diffs.sh)')
-      commands+=('git add -- diff_upstream.diff diff_bkp.diff diff_tarneaux.diff diff_claude_usage.diff')
-      commands+=('git commit -m "update diff files"')
-      ;;
-    "stk-code")
-      AddUpstreamIfMissing "https://github.com/supertuxkart/stk-code"
-      commands+=('git fetch upstream')
-      commands+=('git diff upstream/master..HEAD -- . ":(exclude)*.diff" > diff_upstream.diffx')
-      commands+=('git diff 3f125f6^! > changes.diffx')
-      commands+=('git add -- diff_upstream.diffx changes.diffx')
-      commands+=('git commit -m "update diff files"')
-      ;;
-    *)
-      # Nothing
-      ;;
-  esac
-fi
-
-if [[ "${repoName%.git}" == "AzerothCore-wotlk-with-NPCBots" ]]; then
-  AddUpstreamIfMissing "https://github.com/trickerer/AzerothCore-wotlk-with-NPCBots"
-  commands+=('git fetch upstream')
-  if [[ "$currentBranch" == "linux" ]]; then
-    #commands+=('git diff upstream/npcbots_3.3.5...linux -- . ":(exclude)*.conf" ":(exclude)*.patch" ":(exclude)*.diffx" | tee acore.diffx')
-    commands+=('git diff upstream/npcbots_3.3.5...linux -- . ":(exclude)*.conf" ":(exclude)*.patch" ":(exclude)*.diffx" > acore.diffx')
-  else
-    #commands+=('git diff upstream/npcbots_3.3.5...npcbots_3.3.5 -- . ":(exclude)*.conf" ":(exclude)*.patch" ":(exclude)*.diffx" | tee acore.diffx')
-    commands+=('git diff upstream/npcbots_3.3.5...npcbots_3.3.5 -- . ":(exclude)*.conf" ":(exclude)*.patch" ":(exclude)*.diffx" > acore.diffx')
+if [[ "$GenerateDiffs" == "true" ]]; then
+  if [[ "$repoOwner" == "ornfelt" ]]; then
+    #case "$repoName" in
+    case "${repoName%.git}" in
+      "dwm")
+        AddUpstreamIfMissing "https://git.suckless.org/dwm"
+        commands+=('git fetch --all')
+        commands+=('git diff upstream/master..HEAD -- . ":(exclude)*.diff" > diff_upstream.diff')
+        commands+=('git diff origin/bkp -- . ":(exclude)*.diff" ":(exclude)config.def.h" ":(exclude).gitignore" ":(exclude)patches/**" ":(exclude)patches_git/**" > diff_bkp.diff')
+        commands+=('git diff origin/new -- . ":(exclude)*.diff" ":(exclude)config.def.h" ":(exclude).gitignore" ":(exclude)patches/**" ":(exclude)patches_git/**" > diff_new.diff')
+        commands+=('git add -- diff_upstream.diff diff_bkp.diff diff_new.diff')
+        commands+=('git commit -m "update diff files"')
+        ;;
+      "dmenu")
+        AddUpstreamIfMissing "https://git.suckless.org/dmenu"
+        commands+=('git fetch --all')
+        commands+=('git diff upstream/master..HEAD -- . ":(exclude)*.diff" > diff_upstream.diff')
+        commands+=('git diff origin/bkp -- . ":(exclude)*.diff" ":(exclude)config.def.h" ":(exclude).gitignore" ":(exclude)patches/**" ":(exclude)patches_git/**" > diff_bkp.diff')
+        commands+=('git add -- diff_upstream.diff diff_bkp.diff')
+        commands+=('git commit -m "update diff files"')
+        ;;
+      "st")
+        AddUpstreamIfMissing "https://git.suckless.org/st"
+        commands+=('git fetch --all')
+        commands+=('git diff upstream/master..HEAD -- . ":(exclude)*.diff" > diff_upstream.diff')
+        commands+=('git diff bkp -- . ":(exclude)*.diff" ":(exclude)config.def.h" ":(exclude).gitignore" ":(exclude)patches/**" ":(exclude)patches_git/**" > diff_bkp.diff')
+        commands+=('git add -- diff_upstream.diff diff_bkp.diff')
+        commands+=('git commit -m "update diff files"')
+        ;;
+      "dwmblocks")
+        AddUpstreamIfMissing "https://github.com/torrinfail/dwmblocks"
+        commands+=('git fetch --all')
+        commands+=('git diff upstream/master..HEAD -- . ":(exclude)*.diff" > diff_upstream.diff')
+        commands+=('git add -- diff_upstream.diff')
+        commands+=('git commit -m "update diff files"')
+        ;;
+      "awsm")
+        AddUpstreamIfMissing "https://github.com/lcpz/awesome-copycats"
+        commands+=('git fetch --all')
+        # The repo's own gen_diffs.sh owns this logic; it also covers the vendored
+        # claude_usage/ tree, which has no remote here and so cannot be reached by
+        # a plain git diff. Delegating keeps one implementation instead of two that
+        # drift (they already had: ...master here vs ..HEAD there).
+        commands+=('(cd "$(git rev-parse --show-toplevel)" && ./gen_diffs.sh)')
+        commands+=('git add -- diff_upstream.diff diff_bkp.diff diff_tarneaux.diff diff_claude_usage.diff')
+        commands+=('git commit -m "update diff files"')
+        ;;
+      "stk-code")
+        AddUpstreamIfMissing "https://github.com/supertuxkart/stk-code"
+        commands+=('git fetch upstream')
+        commands+=('git diff upstream/master..HEAD -- . ":(exclude)*.diff" > diff_upstream.diffx')
+        commands+=('git diff 3f125f6^! > changes.diffx')
+        commands+=('git add -- diff_upstream.diffx changes.diffx')
+        commands+=('git commit -m "update diff files"')
+        ;;
+      *)
+        # Nothing
+        ;;
+    esac
   fi
-    commands+=('git add -- acore.diffx')
+
+  if [[ "${repoName%.git}" == "AzerothCore-wotlk-with-NPCBots" ]]; then
+    AddUpstreamIfMissing "https://github.com/trickerer/AzerothCore-wotlk-with-NPCBots"
+    commands+=('git fetch upstream')
+    if [[ "$currentBranch" == "linux" ]]; then
+      #commands+=('git diff upstream/npcbots_3.3.5...linux -- . ":(exclude)*.conf" ":(exclude)*.patch" ":(exclude)*.diffx" | tee acore.diffx')
+      commands+=('git diff upstream/npcbots_3.3.5...linux -- . ":(exclude)*.conf" ":(exclude)*.patch" ":(exclude)*.diffx" > acore.diffx')
+    else
+      #commands+=('git diff upstream/npcbots_3.3.5...npcbots_3.3.5 -- . ":(exclude)*.conf" ":(exclude)*.patch" ":(exclude)*.diffx" | tee acore.diffx')
+      commands+=('git diff upstream/npcbots_3.3.5...npcbots_3.3.5 -- . ":(exclude)*.conf" ":(exclude)*.patch" ":(exclude)*.diffx" > acore.diffx')
+    fi
+      commands+=('git add -- acore.diffx')
+      commands+=('git commit -m "update diff files"')
+  fi
+
+  #if [[ "${repoName%.git}" == "TrinityCore-3.3.5-with-NPCBots" ]]; then
+  if [[ "${repoName%.git}" == "Trinitycore-3.3.5-with-NPCBots" ]]; then
+    AddUpstreamIfMissing "https://github.com/trickerer/TrinityCore-3.3.5-with-NPCBots"
+    commands+=('git fetch upstream')
+    #commands+=('git diff upstream/npcbots_3.3.5...npcbots_3.3.5 -- . ":(exclude)*.conf" ":(exclude)*.patch" ":(exclude)*.diffx" | tee tcore.diffx')
+    commands+=('git diff upstream/npcbots_3.3.5...npcbots_3.3.5 -- . ":(exclude)*.conf" ":(exclude)*.patch" ":(exclude)*.diffx" > tcore.diffx')
+    commands+=('git add -- tcore.diffx')
     commands+=('git commit -m "update diff files"')
+  fi
 fi
 
-#if [[ "${repoName%.git}" == "TrinityCore-3.3.5-with-NPCBots" ]]; then
-if [[ "${repoName%.git}" == "Trinitycore-3.3.5-with-NPCBots" ]]; then
-  AddUpstreamIfMissing "https://github.com/trickerer/TrinityCore-3.3.5-with-NPCBots"
-  commands+=('git fetch upstream')
-  #commands+=('git diff upstream/npcbots_3.3.5...npcbots_3.3.5 -- . ":(exclude)*.conf" ":(exclude)*.patch" ":(exclude)*.diffx" | tee tcore.diffx')
-  commands+=('git diff upstream/npcbots_3.3.5...npcbots_3.3.5 -- . ":(exclude)*.conf" ":(exclude)*.patch" ":(exclude)*.diffx" > tcore.diffx')
-  commands+=('git add -- tcore.diffx')
-  commands+=('git commit -m "update diff files"')
-fi
-
-if [[ -n "$OutputOnly" ]]; then
+if [[ "$OutputOnly" == "true" ]]; then
   for cmd in "${commands[@]}"; do
     echo "$cmd"
   done
@@ -163,7 +202,7 @@ syncCommand="git update-ref refs/remotes/origin/${currentBranch} refs/heads/${cu
 pushCommandActual="git push https://${tokenValue}@github.com/${repoOwner}/${repoName} ${currentBranch} && ${syncCommand}"
 pushCommandDisplay="git push https://\$${tokenEnvVarName}@github.com/${repoOwner}/${repoName} ${currentBranch} && ${syncCommand}"
 
-if [[ -n "$OutputOnly" ]]; then
+if [[ "$OutputOnly" == "true" ]]; then
   echo "$pushCommandDisplay"
 else
   #echo "Executing: $pushCommandActual"

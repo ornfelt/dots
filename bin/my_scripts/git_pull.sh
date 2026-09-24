@@ -1,5 +1,28 @@
 #!/usr/bin/env bash
 
+function Usage() {
+  cat <<EOF
+Usage: $(basename "$0") [anything]
+       $(basename "$0") help | --help | -h
+
+Pull the current branch from GitHub using a token from the environment
+(GITHUB_TOKEN, or ALT_GITHUB_TOKEN for archornf repos).
+
+Arguments:
+  (none)            Run the git pull.
+  anything else     Print the git pull command instead of running it.
+  -h, --help, help  Show this help.
+EOF
+}
+
+# ${1,,}: lowercase, so HELP / --Help / -H also work
+case "${1,,}" in
+  help|--help|-h)
+    Usage
+    exit 0
+    ;;
+esac
+
 OutputOnly=""
 #if [[ "$1" == "--output-only" ]]; then
 if [[ $# -gt 0 ]]; then
