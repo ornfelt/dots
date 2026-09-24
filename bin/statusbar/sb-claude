@@ -1,0 +1,223 @@
+#!/usr/bin/env lua5.3
+
+-- Claude Code usage for dwmblocks, the same as the awesome bar widget: the
+-- claude_usage module vendored in the awesome config does the fetching, caching
+-- and formatting (its cli.lua keeps the API calls within the rate limit).
+-- Prints nothing when the module is not there, which hides the block.
+--
+-- Uses dwm's ^c#rrggbb^ status colour code.
+
+local home = os.getenv("HOME") or ""
+local dir = home .. "/.config/awesome/claude_usage"
+package.path = dir .. "/?.lua;" .. dir .. "/?/init.lua;" .. package.path
+
+local ok, json = pcall(require, "json")
+if not ok then
+	os.exit(0)
+end
+local config = require("config")
+local format = require("format")
+local history = require("history")
+
+-- Same options as the awesome widget (themes/multicolor/theme.lua)
+local ORANGE = "#D97757"
+local opts = config.resolve({
+	spend_in_bar = false,
+	show_glyph = false, -- the widget draws its icon instead of the text glyph
+	colors = { normal = ORANGE, icon = ORANGE, warn = "#E39B3A", crit = "#C8442E", error = "#9C9A93" },
+})
+-- Popup colours from the awesome popup
+local c = opts.popup_colors
+
+local ICON = "✻" -- Claude's logo glyph (awesome draws it)
+local TERMINAL = os.getenv("TERMINAL") or "wezterm"
+
+local function sh_quote(s)
+	return "'" .. tostring(s):gsub("'", "'\\''") .. "'"
+end
+
+-- Usage state from the module's cli, max_age in seconds (0 forces an API call)
+local function get_state(max_age)
+	local cmd = "lua5.3 " .. sh_quote(dir .. "/cli.lua") .. " --json"
+	if max_age then
+		cmd = cmd .. " --max-age " .. max_age
+	end
+	local p = io.popen(cmd .. " 2>/dev/null", "r")
+	if not p then
+		return nil
+	end
+	local out = p:read("a")
+	p:close()
+	local okd, st = pcall(json.decode, out or "")
+	return okd and type(st) == "table" and st or nil
+end
+
+local function bar_text(st)
+	local color = format.color_for(st, opts) or ORANGE
+	return string.format("^c%s^%s ^c%s^%s", opts.colors.icon, ICON, color, format.bar_text(st, opts))
+end
+
+-- Popup (dunst notification with pango markup) ----------------------------
+
+local function esc(s)
+	return (tostring(s):gsub("&", "&amp;"):gsub("<", "&lt;"):gsub(">", "&gt;"))
+end
+
+local function span(text, color, attrs)
+	return string.format('<span foreground="%s"%s>%s</span>', color, attrs or "", esc(text))
+end
+
+local function level_color(level)
+	if level == "crit" then
+		return c.crit
+	elseif level == "warn" then
+		return c.warn
+	end
+	return c.accent
+end
+
+local BAR_CELLS = 32
+
+-- Progress bar with the pace marker, like bar.lua's
+local function progress(percent, color, pace)
+	local filled = math.floor(BAR_CELLS * math.max(0, math.min(percent or 0, 100)) / 100 + 0.5)
+	local marker = pace and math.min(BAR_CELLS, math.max(1, math.floor(BAR_CELLS * pace / 100 + 0.5))) or nil
+	local out = {}
+	for i = 1, BAR_CELLS do
+		if i == marker then
+			out[#out + 1] = span("┃", c.fg)
+		elseif i <= filled then
+			out[#out + 1] = span("━", color)
+		else
+			out[#out + 1] = span("━", c.track)
+		end
+	end
+	return table.concat(out)
+end
+
+-- Sparkline of the last sparkline_hours, like bar.lua's
+local SPARK = { "▁", "▂", "▃", "▄", "▅", "▆", "▇", "█" }
+local function sparkline(points, from, to, color)
+	if #points < 2 or to <= from then
+		return nil
+	end
+	local out, j, last = {}, 1, nil
+	for i = 1, BAR_CELLS do
+		local t = from + (to - from) * i / BAR_CELLS
+		while j <= #points and points[j].t <= t do
+			last = points[j].percent
+			j = j + 1
+		end
+		if last then
+			local level = math.floor(math.max(0, math.min(last, 100)) / 100 * 7 + 0.5) + 1
+			out[#out + 1] = SPARK[level]
+		else
+			out[#out + 1] = " "
+		end
+	end
+	return span(table.concat(out), color)
+end
+
+local function popup(st)
+	local now = os.time()
+	local rows = format.popup_rows(st, now, opts)
+	local samples = opts.history and history.load(opts.history_path) or {}
+	local spark_from = now - (opts.sparkline_hours or 24) * 3600
+	local body = {}
+	local function add(line)
+		body[#body + 1] = line
+	end
+
+	if rows.subtitle and rows.subtitle ~= "" then
+		add(span(rows.subtitle, c.muted))
+	end
+	if rows.empty then
+		add("")
+		add(span(rows.empty, c.muted))
+	end
+
+	local function bar_row(label, sub, percent, level, note, extra)
+		extra = extra or {}
+		local color = level_color(level)
+		local pct = percent and span(string.format("%d%%", format.round(percent)), color, ' font_weight="bold"')
+			or span("--", c.muted)
+		add("")
+		add("<b>" .. esc(label) .. "</b>" .. (sub and ("  " .. span(sub, c.muted)) or "") .. "  " .. pct)
+		add(progress(percent, color, extra.pace))
+		if note then
+			add(span(note, c.muted))
+		end
+		if extra.forecast then
+			add(span(extra.forecast, extra.forecast_level == "normal" and c.muted or level_color(extra.forecast_level)))
+		end
+		if extra.series and #extra.series >= 2 then
+			local from = math.max(spark_from, math.min(extra.series[1].t, now - 3600))
+			local line = sparkline(extra.series, from, now, color)
+			if line then
+				add(line)
+			end
+		end
+	end
+
+	for _, w in ipairs(rows.windows or {}) do
+		local note = w.reset
+		if w.active and note then
+			note = note .. " · active limit"
+		elseif w.active then
+			note = "active limit"
+		end
+		bar_row(w.label, w.sub, w.percent, w.level, note, {
+			pace = w.pace,
+			forecast = w.forecast,
+			forecast_level = w.forecast_level,
+			series = w.key and history.series(samples, w.key, spark_from) or nil,
+		})
+	end
+	if rows.spend then
+		bar_row(rows.spend.label, nil, rows.spend.percent, rows.spend.level, rows.spend.text)
+	end
+
+	local tail = {}
+	if rows.breakdown then
+		tail[#tail + 1] = span("This week: " .. rows.breakdown, c.muted)
+	end
+	if rows.context then
+		tail[#tail + 1] = span(rows.context, c.muted)
+	end
+	if rows.sessions and rows.sessions.text then
+		tail[#tail + 1] = span(rows.sessions.text, rows.sessions.attention > 0 and c.warn or c.muted)
+	end
+	if rows.error then
+		tail[#tail + 1] = span(rows.error, c.warn)
+	end
+	if #rows.footer > 0 then
+		tail[#tail + 1] = span(table.concat(rows.footer, " · "), c.muted)
+	end
+	if #tail > 0 then
+		add("")
+		for _, line in ipairs(tail) do
+			add(line)
+		end
+	end
+
+	-- the stack tag replaces the previous popup instead of stacking a new one
+	os.execute(string.format("notify-send -h string:x-dunst-stack-tag:claude-usage %s %s",
+		sh_quote(ICON .. " " .. rows.title), sh_quote(table.concat(body, "\n"))))
+end
+
+-- Mouse buttons, like the awesome widget: the popup takes the place of hovering
+local button = os.getenv("BLOCK_BUTTON")
+if button == "1" then
+	popup(get_state())
+elseif button == "2" then
+	os.execute(sh_quote(TERMINAL) .. " -e claude >/dev/null 2>&1 &")
+elseif button == "3" then
+	get_state(0) -- forced refresh, dwmblocks updates the block afterwards
+elseif button == "6" then
+	os.execute(sh_quote(TERMINAL) .. " -e " .. sh_quote(os.getenv("EDITOR") or "nvim") .. " " .. sh_quote(arg[0]) .. " &")
+end
+
+local st = get_state()
+if st then
+	print(bar_text(st))
+end
