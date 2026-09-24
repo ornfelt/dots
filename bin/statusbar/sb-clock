@@ -33,22 +33,16 @@ case "$clock" in
 	"12") icon="" ;;
 esac
 
-# Opens the calendar in the top right corner of the monitor under the mouse, at
-# the same offset as dunst's notifications (10px from the right, 50px from the top)
+# Opens the calendar in the top right corner of the monitor under the mouse,
+# 10px below the bar and the right screen edge (see sb-popup-pos)
 calendar() {
-	local width=260 border=3 X Y SCREEN WINDOW geom
-	eval "$(xdotool getmouselocation --shell)"
-	geom=$(xrandr --listactivemonitors | awk -v x="$X" -v y="$Y" 'NR > 1 {
-		split($3, g, "[/x+]")  # 1920/309x1080/173+0+0
-		if (x >= g[5] && x < g[5] + g[1] && y >= g[6] && y < g[6] + g[3]) { print g[5] + g[1], g[6]; exit }
-	}')
-	if [ -z "$geom" ]; then
+	local width=260 pos
+	if pos=$("${0%/*}/sb-popup-pos" "$width" right); then
+		set -- $pos
+		yad --calendar --no-buttons --width="$width" --posx="$1" --posy="$2"
+	else
 		yad --calendar --no-buttons --mouse
-		return
 	fi
-	set -- $geom
-	yad --calendar --no-buttons --width="$width" \
-		--posx=$(($1 - width - 2 * border - 10)) --posy=$(($2 + 50))
 }
 
 case $BLOCK_BUTTON in
