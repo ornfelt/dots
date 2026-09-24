@@ -1,8 +1,23 @@
 #!/usr/bin/bash
 #curl -sf "wttr.in/Nizhniy_Novgorod?format=1" | sed -r 's/^.{4}//' | tee "$HOME/.local/share/weatherreport" || exit 1 ; #this exit will only work if tee (or before my changes, sed with output redirection) returns anything other than zero, if curl ends with an error this exit will not be called
 
+# Shows the current weather and a 3-day forecast for $CITY in a notification
+forecast() {
+	local data
+	if ! data=$(curl -sf --max-time 5 "wttr.in/${CITY}?format=j1"); then
+		notify-send -h string:x-dunst-stack-tag:weather "Weather" "Couldn't get the forecast for ${CITY:-your location}"
+		return
+	fi
+	notify-send -h string:x-dunst-stack-tag:weather "Weather in ${CITY:-your location}" "$(echo "$data" | jq -r '
+		def desc: .weatherDesc[0].value | sub(" +$"; "");
+		(.current_condition[0] | "Now: \(.temp_C)°C, feels \(.FeelsLikeC)°C, \(desc)",
+			"Wind \(.windspeedKmph) km/h \(.winddir16Point), humidity \(.humidity)%"),
+		"",
+		(.weather[] | "\(.date | strptime("%Y-%m-%d") | strftime("%a %d"))  \(.mintempC)..\(.maxtempC)°C  \(.hourly[4] | desc), rain \([.hourly[].chanceofrain | tonumber] | max)%")')"
+}
+
 case $BLOCK_BUTTON in
-	1) "$TERMINAL" -e sh -c "curl -sf 'wttr.in/Uppsala'; zsh" ;;
+	1) show_forecast=1 ;; # after $CITY is known
 	2) rofi -theme "~/.config/rofi/themes/gruvbox/gruvbox-dark.rasi" -e "Weather clicked 2" ;;
 	3) pkill -RTMIN+5 dwmblocks ;;
 	4) rofi -theme "~/.config/rofi/themes/gruvbox/gruvbox-dark.rasi" -e "Weather clicked 4" ;;
@@ -18,6 +33,7 @@ CACHE="$HOME/.local/share/weatherreport"
 # If we have no network, show cached value (if any) and exit.
 # (Uses the "default route" check; simple and fast)
 if ! ip route get 1.1.1.1 >/dev/null 2>&1; then
+    [ -n "$show_forecast" ] && notify-send -h string:x-dunst-stack-tag:weather "Weather" "No network"
     if [[ -s "$CACHE" ]]; then
         cat "$CACHE"
     else
@@ -39,6 +55,8 @@ if [[ "${CITY,,}" == "gustavsberg" ]]; then
     CITY="Stockholm"
 fi
 #echo "CITY: $CITY"
+
+[ -n "$show_forecast" ] && forecast
 
 #WEATHER_REPORT=$(curl -sf --max-time 2 "wttr.in/Uppsala?format=1" | sed -r 's/^.{3}//;s/^ *//g;s/C//g')
 WEATHER_REPORT=$(curl -sf --max-time 2 "wttr.in/${CITY}?format=1" | sed -r 's/^.{3}//;s/^ *//g;s/C//g')
