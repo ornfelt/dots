@@ -19733,7 +19733,7 @@ deleted file mode 100755
 index 7ec8009..0000000
 Binary files a/themes/holo/wall.png and /dev/null differ
 diff --git a/themes/multicolor/theme.lua b/themes/multicolor/theme.lua
-index f7d62b5..e68ff81 100644
+index f7d62b5..2361a36 100644
 --- a/themes/multicolor/theme.lua
 +++ b/themes/multicolor/theme.lua
 @@ -16,20 +16,24 @@ local my_table = awful.util.table or gears.table -- 4.{0,1} compatibility
@@ -20180,21 +20180,21 @@ index f7d62b5..e68ff81 100644
 +
 +        --widget:set_markup(markup.fontfg(theme.font, "#e54c62", net_now.sent .. " "))
 +        --netdowninfo:set_markup(markup.fontfg(theme.font, "#87af5f", net_now.received .. " "))
-+        widget:set_markup(markup.fontfg(theme.font, "#fe8019", net_now.sent .. " "))
-+        netdowninfo:set_markup(markup.fontfg(theme.font, "#689d6a", net_now.received .. " "))
++        widget:set_markup(markup.fontfg(theme.font, "#689d6a", net_now.sent .. " "))
++        netdowninfo:set_markup(markup.fontfg(theme.font, "#b8bb26", net_now.received .. " "))
      end
  })
  
 +local netupicon = wibox.widget {
 +    widget = wibox.widget.textbox,
-+    markup = markup.fontfg(theme.font, "#fe8019", " "),
++    markup = markup.fontfg(theme.font, "#689d6a", " "),
 +    align = "center",
 +    valign = "center"
 +}
 +
 +local netdownicon = wibox.widget {
 +    widget = wibox.widget.textbox,
-+    markup = markup.fontfg(theme.font, "#689d6a", "  "),
++    markup = markup.fontfg(theme.font, "#b8bb26", "  "),
 +    align = "center",
 +    valign = "center"
 +}

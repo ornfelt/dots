@@ -102,9 +102,6 @@ unsigned int tabspaces = 8;
 /* bg opacity */
 float alpha = 0.8;
 
-/* Background opacity */
-float alpha_def;
-
 /* Terminal colors (16 first used in escape sequence) */
 static const char *colorname[] = {
 	/* 8 normal colors */
@@ -208,8 +205,8 @@ ResourcePref resources[] = {
 		{ "cursorColor",  STRING,  &colorname[258] },
 		{ "termname",     STRING,  &termname },
 		{ "shell",        STRING,  &shell },
-		{ "minlatency",   INTEGER, &minlatency },
-		{ "maxlatency",   INTEGER, &maxlatency },
+		{ "minlatency",   DOUBLE,  &minlatency },
+		{ "maxlatency",   DOUBLE,  &maxlatency },
 		{ "blinktimeout", INTEGER, &blinktimeout },
 		{ "bellvolume",   INTEGER, &bellvolume },
 		{ "tabspaces",    INTEGER, &tabspaces },

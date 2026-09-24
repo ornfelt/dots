@@ -1,6 +1,9 @@
 PREFIX  := /usr/local
 CC      := cc
-CFLAGS  := -pedantic -Wall -Wno-deprecated-declarations -Os -Wno-error=incompatible-pointer-types
+# 1 runs the block commands in parallel, 0 one at a time (like upstream).
+# Toggle with `make clean && make ASYNC=0`, or change it here.
+ASYNC   := 1
+CFLAGS  := -pedantic -Wall -Wno-deprecated-declarations -Os -DASYNC=${ASYNC}
 LDFLAGS := -lX11
 
 # FreeBSD (uncomment)

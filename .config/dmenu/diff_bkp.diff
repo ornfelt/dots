@@ -1,6 +1,6 @@
 diff --git a/.claude/skills/dmenu-upstream-sync/SKILL.md b/.claude/skills/dmenu-upstream-sync/SKILL.md
 new file mode 100644
-index 0000000..e9a8697
+index 0000000..6bf29a7
 --- /dev/null
 +++ b/.claude/skills/dmenu-upstream-sync/SKILL.md
 @@ -0,0 +1,125 @@
@@ -29,7 +29,7 @@ index 0000000..e9a8697
 +cd ~/.config/dmenu
 +git remote get-url upstream 2>/dev/null || git remote add upstream https://git.suckless.org/dmenu
 +git fetch upstream
-+git status --short   # must be clean before starting - otherwise stop and ask
++git status --short -- . ':(exclude).claude'   # must be clean before starting (.claude/ itself is ignored) - otherwise stop and ask
 +```
 +
 +## 2. Find where to start
@@ -219,10 +219,10 @@ index 8f7beba..e94e02b 100644
  
  #endif
 diff --git a/config.h b/config.h
-index 68669ac..181f342 100644
+index 68669ac..da51dc3 100644
 --- a/config.h
 +++ b/config.h
-@@ -1,24 +1,25 @@
+@@ -1,24 +1,26 @@
  /* See LICENSE file for copyright and license details. */
  /* Default settings; can be overriden by command line. */
  
@@ -238,7 +238,7 @@ index 68669ac..181f342 100644
  /* -fn option overrides fonts[0]; default X11 font or font set */
 -/* static const char *fonts[] = { "JetBrainsMono Nerd Font:size=11:style=bold:antialias=true:autohint=true", "JoyPixels:pixelsize=13:antialias=true:autohint=true" }; */
 +//static const char *fonts[] = {
-+//	"monospace:size=10"
++//  "monospace:size=10"
 +//};
  static const char *fonts[] = { "JetBrainsMono Nerd Font:size=11:style=bold" };
 -// Original:
@@ -247,20 +247,21 @@ index 68669ac..181f342 100644
  static const char *prompt      = NULL;      /* -p  option; prompt to the left of input field */
  static const char *colors[SchemeLast][2] = {
 -    /*              fg          bg       */
--    [SchemeNorm] = { "#ebdbb2", "#282828" },
++    /*     fg         bg       */
++    /* the bg of the *Highlight schemes is taken from their base scheme */
+     [SchemeNorm] = { "#ebdbb2", "#282828" },
 -    /* [SchemeSel] = { "#ebdbb2", "#98971a" }, */
-+	/*     fg         bg       */
-+	[SchemeNorm] = { "#ebdbb2", "#282828" },
-     [SchemeSel] = { "#ebdbb2", "#458588" },
+-    [SchemeSel] = { "#ebdbb2", "#458588" },
 -    [SchemeOut] = { "#ebdbb2", "#8ec07c" },
-+    [SchemeSelHighlight] = { "#d79921", "#458588" },
++    [SchemeSel] = { "#fbf1c7", "#076678" },
++    [SchemeSelHighlight] = { "#fabd2f", "#076678" },
 +    [SchemeNormHighlight] = { "#d79921", "#282828" },
-+	[SchemeOut] = { "#ebdbb2", "#8ec07c" },
-+    [SchemeOutHighlight] = { "#83a598", "#458588" },
++    [SchemeOut] = { "#282828", "#8ec07c" },
++    [SchemeOutHighlight] = { "#9d0006", "#8ec07c" },
  };
  
  /* -l option; if nonzero, dmenu uses vertical list with given number of lines */
-@@ -29,3 +30,6 @@ static unsigned int lines      = 0;
+@@ -29,3 +31,6 @@ static unsigned int lines      = 0;
   * for example: " /?\"&[]"
   */
  static const char worddelimiters[] = " ";
@@ -279,10 +280,19 @@ index 566348b..dcc5bb3 100644
  # paths
  PREFIX = /usr/local
 diff --git a/dmenu.1 b/dmenu.1
-index 323f93c..8463af2 100644
+index 323f93c..798bd32 100644
 --- a/dmenu.1
 +++ b/dmenu.1
-@@ -20,6 +20,10 @@ dmenu \- dynamic menu
+@@ -3,7 +3,7 @@
+ dmenu \- dynamic menu
+ .SH SYNOPSIS
+ .B dmenu
+-.RB [ \-bfiv ]
++.RB [ \-bcfiv ]
+ .RB [ \-l
+ .IR lines ]
+ .RB [ \-m
+@@ -20,6 +20,12 @@ dmenu \- dynamic menu
  .IR color ]
  .RB [ \-sf
  .IR color ]
@@ -290,20 +300,24 @@ index 323f93c..8463af2 100644
 +.IR color ]
 +.RB [ \-of
 +.IR color ]
++.RB [ \-bw
++.IR width ]
  .RB [ \-w
  .IR windowid ]
  .P
-@@ -40,6 +44,9 @@ which lists programs in the user's $PATH and runs the result in their $SHELL.
- .B \-b
- dmenu appears at the bottom of the screen.
+@@ -38,7 +44,10 @@ which lists programs in the user's $PATH and runs the result in their $SHELL.
+ .SH OPTIONS
  .TP
+ .B \-b
+-dmenu appears at the bottom of the screen.
++dmenu appears at the bottom of the screen. This overrides centering.
++.TP
 +.B \-c
 +dmenu appears centered on the screen.
-+.TP
+ .TP
  .B \-f
  dmenu grabs the keyboard before reading stdin if not reading from a tty. This
- is faster, but will lock up X until stdin reaches end\-of\-file.
-@@ -75,6 +82,12 @@ defines the selected background color.
+@@ -75,9 +84,19 @@ defines the selected background color.
  .BI \-sf " color"
  defines the selected foreground color.
  .TP
@@ -316,11 +330,18 @@ index 323f93c..8463af2 100644
  .B \-v
  prints version information to stdout, then exits.
  .TP
++.BI \-bw " width"
++sets the width of the window border in pixels. The border uses the selected
++background color.
++.TP
+ .BI \-w " windowid"
+ embed into windowid.
+ .SH USAGE
 diff --git a/dmenu.c b/dmenu.c
-index 1bbc3ac..2be59d5 100644
+index 1bbc3ac..c194598 100644
 --- a/dmenu.c
 +++ b/dmenu.c
-@@ -21,16 +21,15 @@
+@@ -21,16 +21,16 @@
  
  /* macros */
  #define INTERSECT(x,y,w,h,r)  (MAX(0, MIN((x)+(w),(r).x_org+(r).width)  - MAX((x),(r).x_org)) \
@@ -330,8 +351,8 @@ index 1bbc3ac..2be59d5 100644
  
  /* enums */
 -enum { SchemeNorm, SchemeSel, SchemeOut, SchemeLast }; /* color schemes */
--
 +enum { SchemeNorm, SchemeSel, SchemeOut, SchemeNormHighlight, SchemeSelHighlight, SchemeOutHighlight, SchemeLast }; /* color schemes */
+ 
  struct item {
 -    char *text;
 -    struct item *left, *right;
@@ -342,7 +363,7 @@ index 1bbc3ac..2be59d5 100644
  };
  
  static char text[BUFSIZ] = "";
-@@ -60,768 +59,816 @@ static char *(*fstrstr)(const char *, const char *) = strstr;
+@@ -60,768 +60,832 @@ static char *(*fstrstr)(const char *, const char *) = strstr;
  static unsigned int
  textw_clamp(const char *str, unsigned int n)
  {
@@ -412,21 +433,18 @@ index 1bbc3ac..2be59d5 100644
 -        len = MAX(TEXTW(item->text), len);
 -    return len;
 +	int len = 0;
-+	for (struct item *item = items; item && item->text; item++)
-+		//len = MAX(TEXTW(item->text), len);
-+        len = MIN(MAX(TEXTW(item->text), len), max_width);
-+	return len;
++	for (struct item *item = items; item && item->text && len < max_width; item++)
++		len = MAX(TEXTW(item->text), len);
++	return MIN(len, max_width);
  }
  
  static void
  cleanup(void)
  {
 -    size_t i;
-+	size_t i;
- 
+-
 -    XUngrabKey(dpy, AnyKey, AnyModifier, root);
-+    XUngrabKeyboard(dpy, CurrentTime);
-     for (i = 0; i < SchemeLast; i++)
+-    for (i = 0; i < SchemeLast; i++)
 -        free(scheme[i]);
 -    for (i = 0; items && items[i].text; ++i)
 -        free(items[i].text);
@@ -434,6 +452,10 @@ index 1bbc3ac..2be59d5 100644
 -    drw_free(drw);
 -    XSync(dpy, False);
 -    XCloseDisplay(dpy);
++	size_t i;
++
++	XUngrabKeyboard(dpy, CurrentTime);
++	for (i = 0; i < SchemeLast; i++)
 +		drw_scm_free(drw, scheme[i], 2);
 +	for (i = 0; items && items[i].text; ++i)
 +		free(items[i].text);
@@ -478,7 +500,12 @@ index 1bbc3ac..2be59d5 100644
 +drawhighlights(struct item *item, int x, int y, int maxw)
 +{
 +	char restorechar, tokens[sizeof text], *highlight,  *token;
-+	int indentx, highlightlen;
++	int indentx, highlightlen, highlightw, textw, ellipsisw, truncated;
++
++	/* width for the item text, and whether drw_text() cuts it with an ellipsis */
++	textw = maxw - lrpad / 2;
++	ellipsisw = TEXTW("...") - lrpad;
++	truncated = (int)TEXTW(item->text) - lrpad > textw;
 +
 +	drw_setscheme(drw, scheme[item == sel ? SchemeSelHighlight : item->out ? SchemeOutHighlight : SchemeNormHighlight]);
 +	strcpy(tokens, text);
@@ -489,21 +516,28 @@ index 1bbc3ac..2be59d5 100644
 +			highlightlen = highlight - item->text;
 +			restorechar = *highlight;
 +			item->text[highlightlen] = '\0';
-+			indentx = TEXTW(item->text);
++			indentx = TEXTW(item->text) - lrpad;
 +			item->text[highlightlen] = restorechar;
 +
-+			// Move highlight str end, draw highlight, & restore
++			// Hidden under the ellipsis, and so is every later match
++			if (truncated && indentx + ellipsisw > textw) break;
++
++			// Move highlight str end, calc width & restore
 +			restorechar = highlight[strlen(token)];
 +			highlight[strlen(token)] = '\0';
-+			if (indentx - (lrpad / 2) - 1 < maxw)
-+				drw_text(
-+					drw,
-+					x + indentx - (lrpad / 2) - 1,
-+					y,
-+					MIN(maxw - indentx, TEXTW(highlight) - lrpad),
-+					bh, 0, highlight, 0
-+				);
++			highlightw = TEXTW(highlight) - lrpad;
 +			highlight[strlen(token)] = restorechar;
++
++			if (truncated && indentx + highlightw > textw - ellipsisw) {
++				// Runs into the ellipsis: draw the rest of the item text with the
++				// same right edge, so it gets cut exactly like in drawitem()
++				drw_text(drw, x + lrpad / 2 + indentx, y, textw - indentx, bh, 0, highlight, 0);
++			} else {
++				// Move highlight str end, draw highlight, & restore
++				highlight[strlen(token)] = '\0';
++				drw_text(drw, x + lrpad / 2 + indentx, y, highlightw, bh, 0, highlight, 0);
++				highlight[strlen(token)] = restorechar;
++			}
 +
 +			if (strlen(highlight) - strlen(token) < strlen(token)) break;
 +			highlight = fstrstr(highlight + strlen(token), token);
@@ -1418,7 +1452,7 @@ index 1bbc3ac..2be59d5 100644
 -    Window w, dw, *dws;
 -    XWindowAttributes wa;
 -    XClassHint ch = {"dmenu", "dmenu"};
-+	int x, y, i, j;
++	int x, y, i, j, bw2;
 +	unsigned int du;
 +	XSetWindowAttributes swa;
 +	XIM xim;
@@ -1446,6 +1480,10 @@ index 1bbc3ac..2be59d5 100644
 -    mh = (lines + 1) * bh;
 -    promptw = (prompt && *prompt) ? TEXTW(prompt) - lrpad / 4 : 0;
 +	/* init appearance */
++	/* highlight schemes use the background of their base scheme, so -nb/-sb/-ob apply */
++	colors[SchemeNormHighlight][ColBg] = colors[SchemeNorm][ColBg];
++	colors[SchemeSelHighlight][ColBg] = colors[SchemeSel][ColBg];
++	colors[SchemeOutHighlight][ColBg] = colors[SchemeOut][ColBg];
 +	for (j = 0; j < SchemeLast; j++)
 +		scheme[j] = drw_scm_create(drw, colors[j], 2);
 +
@@ -1457,6 +1495,7 @@ index 1bbc3ac..2be59d5 100644
 +	lines = MAX(lines, 0);
 +	mh = (lines + 1) * bh;
 +	promptw = (prompt && *prompt) ? TEXTW(prompt) - lrpad / 4 : 0;
++	bw2 = 2 * border_width; /* the border is drawn outside of mw x mh */
  #ifdef XINERAMA
 -    i = 0;
 -    if (parentwin == root && (info = XineramaQueryScreens(dpy, &n))) {
@@ -1530,14 +1569,13 @@ index 1bbc3ac..2be59d5 100644
 +			i = 0;
 +
 +		if (centered) {
-+			mw = MIN(MAX(max_textw() + promptw, min_width), info[i].width);
-+            //mw = 900;
-+			x = info[i].x_org + ((info[i].width  - mw) / 2);
-+			y = info[i].y_org + ((info[i].height - mh) / menu_height_ratio);
++			mw = MIN(MAX(max_textw() + promptw, min_width), info[i].width - bw2);
++			x = info[i].x_org + ((info[i].width  - mw - bw2) / 2);
++			y = info[i].y_org + ((info[i].height - mh - bw2) / menu_height_ratio);
 +		} else {
 +			x = info[i].x_org;
-+			y = info[i].y_org + (topbar ? 0 : info[i].height - mh);
-+			mw = info[i].width;
++			y = info[i].y_org + (topbar ? 0 : info[i].height - mh - bw2);
++			mw = info[i].width - bw2;
 +		}
 +
 +		XFree(info);
@@ -1599,16 +1637,15 @@ index 1bbc3ac..2be59d5 100644
 +			    parentwin);
 +
 +		if (centered) {
-+			mw = MIN(MAX(max_textw() + promptw, min_width), wa.width);
-+			x = (wa.width  - mw) / 2;
-+			y = (wa.height - mh) / 2;
++			mw = MIN(MAX(max_textw() + promptw, min_width), wa.width - bw2);
++			x = (wa.width  - mw - bw2) / 2;
++			y = (wa.height - mh - bw2) / menu_height_ratio;
 +		} else {
 +			x = 0;
-+			y = topbar ? 0 : wa.height - mh;
-+			mw = wa.width;
++			y = topbar ? 0 : wa.height - mh - bw2;
++			mw = wa.width - bw2;
 +		}
 +	}
-+	promptw = (prompt && *prompt) ? TEXTW(prompt) - lrpad / 4 : 0;
 +	inputw = mw / 3; /* input width: ~33% of monitor width */
 +	match();
 +
@@ -1650,8 +1687,9 @@ index 1bbc3ac..2be59d5 100644
  {
 -    die("usage: dmenu [-bfiv] [-l lines] [-p prompt] [-fn font] [-m monitor]\n"
 -            "             [-nb color] [-nf color] [-sb color] [-sf color] [-w windowid]");
-+	die("usage: dmenu [-bfiv] [-l lines] [-p prompt] [-fn font] [-m monitor]\n"
-+	    "             [-nb color] [-nf color] [-sb color] [-sf color] [-w windowid]");
++	die("usage: dmenu [-bcfiv] [-l lines] [-p prompt] [-fn font] [-m monitor]\n"
++	    "             [-nb color] [-nf color] [-sb color] [-sf color]\n"
++	    "             [-ob color] [-of color] [-bw width] [-w windowid]");
  }
  
  int
@@ -1721,9 +1759,10 @@ index 1bbc3ac..2be59d5 100644
 +		if (!strcmp(argv[i], "-v")) {      /* prints version information */
 +			puts("dmenu-"VERSION);
 +			exit(0);
-+		} else if (!strcmp(argv[i], "-b")) /* appears at the bottom of the screen */
++		} else if (!strcmp(argv[i], "-b")) { /* appears at the bottom of the screen */
 +			topbar = 0;
-+		else if (!strcmp(argv[i], "-f"))   /* grabs keyboard before reading stdin */
++			centered = 0;
++		} else if (!strcmp(argv[i], "-f"))   /* grabs keyboard before reading stdin */
 +			fast = 1;
 +		else if (!strcmp(argv[i], "-c"))   /* centers dmenu on screen */
 +			centered = 1;
@@ -1756,7 +1795,7 @@ index 1bbc3ac..2be59d5 100644
 +		else if (!strcmp(argv[i], "-w"))   /* embedding window id */
 +			embed = argv[++i];
 +		else if (!strcmp(argv[i], "-bw"))
-+			border_width = atoi(argv[++i]); /* border width */
++			border_width = MAX(atoi(argv[++i]), 0); /* border width */
 +		else
 +			usage();
 +
@@ -1807,7 +1846,7 @@ index 1bbc3ac..2be59d5 100644
 +	return 1; /* unreachable */
  }
 diff --git a/drw.c b/drw.c
-index 65e9134..473aaa0 100644
+index 65e9134..9fdd1a4 100644
 --- a/drw.c
 +++ b/drw.c
 @@ -9,94 +9,80 @@
@@ -2129,7 +2168,7 @@ index 65e9134..473aaa0 100644
 +	Clr *ret;
 +
 +	/* need at least two colors for a scheme */
-+    if (!drw || !clrnames || clrcount < 2 || !(ret = ecalloc(clrcount, sizeof(Clr))))
++	if (!drw || !clrnames || clrcount < 2 || !(ret = ecalloc(clrcount, sizeof(Clr))))
 +		return NULL;
 +
 +	for (i = 0; i < clrcount; i++)
@@ -2164,7 +2203,7 @@ index 65e9134..473aaa0 100644
 -    return ret;
 +	for (i = 0; i < clrcount; i++)
 +		drw_clr_free(drw, &scm[i]);
-+    free(scm);
++	free(scm);
  }
  
  void

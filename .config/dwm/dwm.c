@@ -27,6 +27,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <strings.h>
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -111,7 +112,7 @@ struct Client {
 	int basew, baseh, incw, inch, maxw, maxh, minw, minh, hintsvalid;
 	int bw, oldbw;
 	unsigned int tags;
-    int isfixed, isfloating, isurgent, neverfocus, oldstate, isfullscreen, issticky, isterminal, noswallow;
+    int isfixed, isfloating, isurgent, neverfocus, oldstate, isfullscreen, issticky, isterminal, noswallow, isbrowser;
     pid_t pid;
 	Client *next;
 	Client *snext;
@@ -205,6 +206,7 @@ static Monitor *numtomon(int num);
 static void drawbar(Monitor *m);
 static void drawbars(void);
 static int drawstatusbar(Monitor *m, int bh, char* text);
+static const char *weathercolor(const char *s);
 static void expose(XEvent *e);
 static void focus(Client *c);
 static void focusin(XEvent *e);
@@ -230,7 +232,6 @@ static Client *nexttiled(Client *c);
 static void pop(Client *c);
 static void propertynotify(XEvent *e);
 static void pushstack(const Arg *arg);
-static void quit(const Arg *arg);
 static Monitor *recttomon(int x, int y, int w, int h);
 static void resize(Client *c, int x, int y, int w, int h, int interact);
 static void resizeclient(Client *c, int x, int y, int w, int h);
@@ -247,18 +248,12 @@ static void setfocus(Client *c);
 static void setfullscreen(Client *c, int fullscreen);
 static void setsticky(Client *c, int sticky);
 static void setlayout(const Arg *arg);
-static void setcfact(const Arg *arg);
 static void setmfact(const Arg *arg);
 static void setup(void);
 static void seturgent(Client *c, int urg);
 static void shifttag(const Arg *arg);
-static void shifttagclients(const Arg *arg);
 static void shiftview(const Arg *arg);
 static void shiftviewclients(const Arg *arg);
-static void shiftboth(const Arg *arg);
-static void swaptags(const Arg *arg);
-static void shiftswaptags(const Arg *arg);
-static void setcfact(const Arg *arg);
 static void showhide(Client *c);
 static void sigstatusbar(const Arg *arg);
 static void spawn(const Arg *arg);
@@ -269,7 +264,6 @@ static void tagmon(const Arg *arg);
 static void tagmonview(const Arg *arg);
 static void tagnextmon(const Arg *arg);
 static void tagnewmon(const Arg *arg);
-static void tagnthmon(const Arg *arg);
 static void tagnthmonview(const Arg *arg);
 static void togglebar(const Arg *arg);
 static void togglebars(const Arg *arg);
@@ -286,6 +280,7 @@ static void updatebarpos(Monitor *m);
 static void updatebars(void);
 static void updateclientlist(void);
 static int updategeom(void);
+static void updatenetwmstate(Client *c);
 static void updatenumlockmask(void);
 static void updatesizehints(Client *c);
 static void updatestatus(void);
@@ -309,11 +304,7 @@ static Client *termforwin(const Client *c);
 static pid_t winpid(Window w);
 
 /* variables */
-static const char autostartblocksh[] = "autostart_blocking.sh";
-static const char autostartsh[] = "autostart.sh";
 static const char broken[] = "broken";
-static const char dwmdir[] = "dwm";
-static const char localshare[] = ".local/share";
 static char stext[1024];
 static int statussig;
 static int statusw;
@@ -371,6 +362,8 @@ applyrules(Client *c)
 	XGetClassHint(dpy, c->win, &ch);
 	class    = ch.res_class ? ch.res_class : broken;
 	instance = ch.res_name  ? ch.res_name  : broken;
+	/* firefox, Firefox, firefox-esr, ... (used by getgaps) */
+	c->isbrowser = !strncasecmp(class, "firefox", 7);
 
 	for (i = 0; i < LENGTH(rules); i++) {
 		r = &rules[i];
@@ -509,7 +502,7 @@ swallow(Client *p, Client *c)
 
 	if (c->noswallow || c->isterminal)
 		return;
-	if (c->noswallow && !swallowfloating && c->isfloating)
+	if (!swallowfloating && c->isfloating)
 		return;
 
 	detach(c);
@@ -524,6 +517,9 @@ swallow(Client *p, Client *c)
 	Window w = p->win;
 	p->win = c->win;
 	c->win = w;
+	int b = p->isbrowser;
+	p->isbrowser = c->isbrowser;
+	c->isbrowser = b;
 	updatetitle(p);
 	XMoveResizeWindow(dpy, p->win, p->x, p->y, p->w, p->h);
 	arrange(p->mon);
@@ -535,6 +531,7 @@ void
 unswallow(Client *c)
 {
 	c->win = c->swallowing->win;
+	c->isbrowser = c->swallowing->isbrowser;
 
 	free(c->swallowing);
 	c->swallowing = NULL;
@@ -583,9 +580,9 @@ buttonpress(XEvent *e)
 			arg.ui = 1 << i;
 		} else if (ev->x < x + TEXTW(selmon->ltsymbol))
 			click = ClkLtSymbol;
-        } else if (ev->x > selmon->ww - statusw) {
-            x = selmon->ww - statusw;
-            click = ClkStatusText;
+		else if (ev->x > selmon->ww - statusw) {
+			x = selmon->ww - statusw;
+			click = ClkStatusText;
 
 			char *text, *s, ch;
 			statussig = 0;
@@ -605,11 +602,14 @@ buttonpress(XEvent *e)
 					*s = '^';
 					if (*(++s) == 'f')
 						x += atoi(++s);
-					while (*(s++) != '^');
-					text = s;
-					s--;
+					while (*s && *s != '^')
+						s++;
+					if (!*s)
+						break; /* unterminated ^ code */
+					text = s + 1;
 				}
 			}
+		}
 	} else if ((c = wintoclient(ev->window))) {
 		if (focusonwheel || (ev->button != Button4 && ev->button != Button5))
 			focus(c);
@@ -653,6 +653,7 @@ cleanup(void)
 		drw_cur_free(drw, cursor[i]);
 	for (i = 0; i < LENGTH(colors); i++)
 		drw_scm_free(drw, scheme[i], 3);
+	drw_scm_free(drw, scheme[LENGTH(colors)], 3);
 	free(scheme);
 	XDestroyWindow(dpy, wmcheckwin);
 	drw_free(drw);
@@ -805,10 +806,10 @@ createmon(void)
 	Monitor *m;
 
 	m = ecalloc(1, sizeof(Monitor));
-    if (mons)
-        m->tagset[0] = m->tagset[1] = 2;
-    else
-        m->tagset[0] = m->tagset[1] = 1;
+	if (mons)
+		m->tagset[0] = m->tagset[1] = 2;
+	else
+		m->tagset[0] = m->tagset[1] = 1;
 	m->mfact = mfact;
 	m->nmaster = nmaster;
 	m->showbar = showbar;
@@ -885,22 +886,42 @@ numtomon(int num)
     return m;
 }
 
+/* Colour for the ^2^ weather block, from the temperature that follows the
+ * code in the status text (e.g. "+7°"): +20 and above is hot, below zero
+ * is cold */
+const char *
+weathercolor(const char *s)
+{
+    for (; *s && *s != '^' && (unsigned char)*s >= ' '; s++) {
+        if (*s == '+')
+            return atoi(s + 1) >= 20 ? col21 : col22;
+        if (*s == '-')
+            return col23;
+        if (*s >= '0' && *s <= '9')
+            break;
+    }
+    return col24;
+}
+
 int
 drawstatusbar(Monitor *m, int bh, char* stext)
 {
     int ret, i, w, x, len;
     short isCode = 0;
     char *text;
-    char *p;
-    FILE *ptr;
-    char ch;
-    int hotbool = 0;
+    char *p, *s;
 
     len = strlen(stext) + 1 ;
     if (!(text = (char*) malloc(sizeof(char)*len)))
         die("malloc");
-    p = text;
     memcpy(text, stext, len);
+
+    /* strip the signal bytes that mark clickable status blocks */
+    for (s = p = text; *s; s++)
+        if ((unsigned char)*s >= ' ')
+            *p++ = *s;
+    *p = '\0';
+    p = text;
 
     /* compute width of the status text */
     w = 0;
@@ -912,8 +933,10 @@ drawstatusbar(Monitor *m, int bh, char* stext)
                 text[i] = '\0';
                 w += TEXTW(text) - lrpad;
                 text[i] = '^';
-                if (text[++i] == 'f')
-                    w += atoi(text + ++i);
+                if (text[i + 1] == 'f') {
+                    i++;
+                    w += atoi(text + i + 1);
+                }
             } else {
                 isCode = 0;
                 text = text + i + 1;
@@ -949,36 +972,11 @@ drawstatusbar(Monitor *m, int bh, char* stext)
             drw_text(drw, x, 0, w, bh, 0, text, 0);
             x += w;
 
-            while (text[++i] != '^') {
+            while (text[++i] && text[i] != '^') {
                 if (text[i] == '2') {
-                    // Check if weather is hot or not
-                    ptr = fopen("/home/jonas/.local/share/weatherreport", "r");
-                    if (ptr == NULL) printf("Fail to read wr...");
-                    do{
-                        ch = fgetc(ptr);
-                        // Check if temp is above +20 (= hot)
-                        if (hotbool){
-                            if ((ch == '2' || ch == '3') && fgetc(ptr) <= '9'){
-                                drw_clr_create(drw, &drw->scheme[ColFg], col21);
-                                break;
-                            }else{
-                                drw_clr_create(drw, &drw->scheme[ColFg], col22);
-                                break;
-                            }
-                        }
-
-                        if (ch == '+'){
-                            hotbool = 1;
-                        }else if (ch == '-') {
-                            drw_clr_create(drw, &drw->scheme[ColFg], col23);
-                            break;
-                        }
-                        else{
-                            drw_clr_create(drw, &drw->scheme[ColFg], col24);
-                            break;
-                        }
-                    } while (ch != EOF);
-                    fclose(ptr);
+                    /* weather: colour by the temperature that follows */
+                    s = strchr(text + i, '^');
+                    drw_clr_create(drw, &drw->scheme[ColFg], weathercolor(s ? s + 1 : ""));
                 } else if (text[i] == '3') {
                     drw_clr_create(drw, &drw->scheme[ColFg], col3);
                 } else if (text[i] == '4') {
@@ -989,6 +987,8 @@ drawstatusbar(Monitor *m, int bh, char* stext)
                     drw_clr_create(drw, &drw->scheme[ColFg], col6);
                 }
             }
+            if (!text[i])
+                break; /* unterminated ^ code */
 
             text = text + i + 1;
             i=-1;
@@ -1011,8 +1011,6 @@ void
 drawbar(Monitor *m)
 {
 	int x, w, tw = 0;
-	int boxs = drw->fonts->h / 9;
-	int boxw = drw->fonts->h / 6 + 2;
 	unsigned int i, occ = 0, urg = 0;
 	Client *c;
 
@@ -1020,10 +1018,8 @@ drawbar(Monitor *m)
 		return;
 
 	/* draw status first so it can be overdrawn by tags later */
-	//if (m == selmon) { /* status is only drawn on selected monitor */
-    if (m == selmon || 1) { 
-		tw = statusw = m->ww - drawstatusbar(m, bh, stext);
-	}
+	/* status is drawn on every monitor, not just selmon */
+	tw = statusw = m->ww - drawstatusbar(m, bh, stext);
 
 	for (c = m->clients; c; c = c->next) {
 		occ |= c->tags == TAGMASK ? 0 : c->tags;
@@ -1130,7 +1126,7 @@ focusnthmon(const Arg *arg)
     if ((m = numtomon(arg->i)) == selmon)
         return;
     unfocus(selmon->sel, 0);
-    XWarpPointer(dpy, None, m->barwin, 0, 0, 0, 0, m->mw / 2, m->mh / 2);
+    XWarpPointer(dpy, None, root, 0, 0, 0, 0, m->wx + m->ww / 2, m->wy + m->wh / 2);
     selmon = m;
     focus(NULL);
 }
@@ -1141,7 +1137,7 @@ focusstack(const Arg *arg)
 	int i = stackpos(arg);
 	Client *c, *p;
 
-	if(i < 0)
+	if(i < 0 || (selmon->sel && selmon->sel->isfullscreen && lockfullscreen))
 		return;
 
 	for(p = NULL, c = selmon->clients; c && (i || !ISVISIBLE(c));
@@ -1563,7 +1559,7 @@ pushstack(const Arg *arg) {
 	int i = stackpos(arg);
 	Client *sel = selmon->sel, *c, *p;
 
-	if(i < 0)
+	if(i < 0 || !sel)
 		return;
 	else if(i == 0) {
 		detach(sel);
@@ -1579,12 +1575,6 @@ pushstack(const Arg *arg) {
 		c->next = sel;
 	}
 	arrange(selmon);
-}
-
-void
-quit(const Arg *arg)
-{
-	running = 0;
 }
 
 Monitor *
@@ -1723,83 +1713,6 @@ run(void)
 			handler[ev.type](&ev); /* call handler */
 }
 
-//void
-//runautostart(void)
-//{
-//	char *pathpfx;
-//	char *path;
-//	char *xdgdatahome;
-//	char *home;
-//	struct stat sb;
-//
-//	if ((home = getenv("HOME")) == NULL)
-//		/* this is almost impossible */
-//		return;
-//
-//	/* if $XDG_DATA_HOME is set and not empty, use $XDG_DATA_HOME/dwm,
-//	 * otherwise use ~/.local/share/dwm as autostart script directory
-//	 */
-//	xdgdatahome = getenv("XDG_DATA_HOME");
-//	if (xdgdatahome != NULL && *xdgdatahome != '\0') {
-//		/* space for path segments, separators and nul */
-//		pathpfx = ecalloc(1, strlen(xdgdatahome) + strlen(dwmdir) + 2);
-//
-//		if (sprintf(pathpfx, "%s/%s", xdgdatahome, dwmdir) <= 0) {
-//			free(pathpfx);
-//			return;
-//		}
-//	} else {
-//		/* space for path segments, separators and nul */
-//		pathpfx = ecalloc(1, strlen(home) + strlen(localshare)
-//		                     + strlen(dwmdir) + 3);
-//
-//		if (sprintf(pathpfx, "%s/%s/%s", home, localshare, dwmdir) < 0) {
-//			free(pathpfx);
-//			return;
-//		}
-//	}
-//
-//	/* check if the autostart script directory exists */
-//	if (! (stat(pathpfx, &sb) == 0 && S_ISDIR(sb.st_mode))) {
-//		/* the XDG conformant path does not exist or is no directory
-//		 * so we try ~/.dwm instead
-//		 */
-//		char *pathpfx_new = realloc(pathpfx, strlen(home) + strlen(dwmdir) + 3);
-//		if(pathpfx_new == NULL) {
-//			free(pathpfx);
-//			return;
-//		}
-//		pathpfx = pathpfx_new;
-//
-//		if (sprintf(pathpfx, "%s/.%s", home, dwmdir) <= 0) {
-//			free(pathpfx);
-//			return;
-//		}
-//	}
-//
-//	/* try the blocking script first */
-//	path = ecalloc(1, strlen(pathpfx) + strlen(autostartblocksh) + 2);
-//	if (sprintf(path, "%s/%s", pathpfx, autostartblocksh) <= 0) {
-//		free(path);
-//		free(pathpfx);
-//	}
-//
-//	if (access(path, X_OK) == 0)
-//		system(path);
-//
-//	/* now the non-blocking script */
-//	if (sprintf(path, "%s/%s", pathpfx, autostartsh) <= 0) {
-//		free(path);
-//		free(pathpfx);
-//	}
-//
-//	if (access(path, X_OK) == 0)
-//		system(strcat(path, " &"));
-//
-//	free(pathpfx);
-//	free(path);
-//}
-
 void
 runautostart(void)
 {
@@ -1842,7 +1755,9 @@ sendmon(Client *c, Monitor *m)
 	detach(c);
 	detachstack(c);
 	c->mon = m;
-	c->tags = m->tagset[m->seltags]; /* assign tags of target monitor */
+	/* assign tags of target monitor, without any visible scratchpad tags */
+	if (!(c->tags = m->tagset[m->seltags] & ~SPTAGMASK))
+		c->tags = 1;
 	attach(c);
 	attachstack(c);
 	if (c->isfullscreen)
@@ -1861,10 +1776,12 @@ sendmonview(Client *c, Monitor *m)
     detachstack(c);
     arrange(c->mon);
     c->mon = m;
-    c->tags = m->tagset[m->seltags]; /* assign tags of target monitor */
+    /* assign tags of target monitor, without any visible scratchpad tags */
+    if (!(c->tags = m->tagset[m->seltags] & ~SPTAGMASK))
+        c->tags = 1;
     attach(c);
     attachstack(c);
-    XWarpPointer(dpy, None, m->barwin, 0, 0, 0, 0, m->mw / 2, m->mh / 2);
+    XWarpPointer(dpy, None, root, 0, 0, 0, 0, m->wx + m->ww / 2, m->wy + m->wh / 2);
     arrange(m);
     focus(c);
     restack(m);
@@ -1918,9 +1835,8 @@ void
 setfullscreen(Client *c, int fullscreen)
 {
 	if (fullscreen && !c->isfullscreen) {
-		XChangeProperty(dpy, c->win, netatom[NetWMState], XA_ATOM, 32,
-			PropModeReplace, (unsigned char*)&netatom[NetWMFullscreen], 1);
 		c->isfullscreen = 1;
+		updatenetwmstate(c);
 		c->oldstate = c->isfloating;
 		c->oldbw = c->bw;
 		c->bw = 0;
@@ -1928,9 +1844,8 @@ setfullscreen(Client *c, int fullscreen)
 		resizeclient(c, c->mon->mx, c->mon->my, c->mon->mw, c->mon->mh);
 		XRaiseWindow(dpy, c->win);
 	} else if (!fullscreen && c->isfullscreen){
-		XChangeProperty(dpy, c->win, netatom[NetWMState], XA_ATOM, 32,
-			PropModeReplace, (unsigned char*)0, 0);
 		c->isfullscreen = 0;
+		updatenetwmstate(c);
 		c->isfloating = c->oldstate;
 		c->bw = c->oldbw;
 		c->x = c->oldx;
@@ -1943,21 +1858,17 @@ setfullscreen(Client *c, int fullscreen)
 }
 
 void
-	 setsticky(Client *c, int sticky)
-	 {
-
-		 if(sticky && !c->issticky) {
-			 XChangeProperty(dpy, c->win, netatom[NetWMState], XA_ATOM, 32,
-					 PropModeReplace, (unsigned char *) &netatom[NetWMSticky], 1);
-			 c->issticky = 1;
-		 } else if(!sticky && c->issticky){
-			 XChangeProperty(dpy, c->win, netatom[NetWMState], XA_ATOM, 32,
-					 PropModeReplace, (unsigned char *)0, 0);
-			 c->issticky = 0;
-			 arrange(c->mon);
-		 }
-	 }
-
+setsticky(Client *c, int sticky)
+{
+	if (sticky && !c->issticky) {
+		c->issticky = 1;
+		updatenetwmstate(c);
+	} else if (!sticky && c->issticky) {
+		c->issticky = 0;
+		updatenetwmstate(c);
+		arrange(c->mon);
+	}
+}
 
 void
 setlayout(const Arg *arg)
@@ -1972,40 +1883,6 @@ setlayout(const Arg *arg)
 	else
 		drawbar(selmon);
 }
-
-//void
-//shiftview(const Arg *arg) {
-//	Arg shifted;
-//
-//	if(arg->i > 0) /* left circular shift */
-//		shifted.ui = (selmon->tagset[selmon->seltags] << arg->i)
-//		   | (selmon->tagset[selmon->seltags] >> (LENGTH(tags) - arg->i));
-//
-//	else /* right circular shift */
-//		shifted.ui = selmon->tagset[selmon->seltags] >> (- arg->i)
-//		   | selmon->tagset[selmon->seltags] << (LENGTH(tags) + arg->i);
-//
-//	view(&shifted);
-//}
-//
-//void
-//shifttag(const Arg *arg) {
-//	Arg shifted;
-//	Client *c;
-//
-//	if (!selmon->sel)
-//		return;
-//	c = selmon->sel;
-//
-//	if (arg->i > 0) /* left circular shift */
-//		shifted.ui = (c->tags ^ (c->tags << arg->i)) 
-//			^ (c->tags >> (LENGTH(tags) - arg->i));
-//	else /* right circular shift */
-//		shifted.ui = (c->tags ^ (c->tags >> (-arg->i)))
-//			^ (c->tags << (LENGTH(tags) + arg->i));
-//
-//	toggletag(&shifted);
-//}
 
 // https://github.com/ornfelt/dwm/blob/bkp/shiftview.c
 // Or this (used below):
@@ -2023,35 +1900,6 @@ shifttag(const Arg *arg)
 		shifted.ui = ((shifted.ui << arg->i) | (shifted.ui >> (LENGTH(tags) - arg->i))) & ~SPTAGMASK;
 	else		/* right circular shift */
 		shifted.ui = (shifted.ui >> (- arg->i) | shifted.ui << (LENGTH(tags) + arg->i)) & ~SPTAGMASK;
-	tag(&shifted);
-}
-/* Sends a window to the next/prev tag that has a client, else it moves it to the next/prev one. */
-void
-shifttagclients(const Arg *arg)
-{
-
-	Arg shifted;
-	Client *c;
-	unsigned int tagmask = 0;
-	shifted.ui = selmon->tagset[selmon->seltags] & ~SPTAGMASK;
-
-	for (c = selmon->clients; c; c = c->next)
-		if (!(c->tags & SPTAGMASK))
-			tagmask = tagmask | c->tags;
-
-
-	if (arg->i > 0)	/* left circular shift */
-		do {
-			shifted.ui = (shifted.ui << arg->i)
-			   | (shifted.ui >> (LENGTH(tags) - arg->i));
-			shifted.ui &= ~SPTAGMASK;
-		} while (tagmask && !(shifted.ui & tagmask));
-	else		/* right circular shift */
-		do {
-			shifted.ui = (shifted.ui >> (- arg->i)
-			   | shifted.ui << (LENGTH(tags) + arg->i));
-			shifted.ui &= ~SPTAGMASK;
-		} while (tagmask && !(shifted.ui & tagmask));
 	tag(&shifted);
 }
 /* Navigate to the next/prev tag */
@@ -2097,80 +1945,6 @@ shiftviewclients(const Arg *arg)
 			shifted.ui &= ~SPTAGMASK;
 		} while (tagmask && !(shifted.ui & tagmask));
 	view(&shifted);
-}
-/* move the current active window to the next/prev tag and view it. More like following the window */
-void
-shiftboth(const Arg *arg)
-{
-	Arg shifted;
-	shifted.ui = selmon->tagset[selmon->seltags] & ~SPTAGMASK;
-
-	if (arg->i > 0)	/* left circular shift */
-		shifted.ui = ((shifted.ui << arg->i) | (shifted.ui >> (LENGTH(tags) - arg->i))) & ~SPTAGMASK;
-	else		/* right circular shift */
-		shifted.ui = ((shifted.ui >> (- arg->i) | shifted.ui << (LENGTH(tags) + arg->i))) & ~SPTAGMASK;
-	tag(&shifted);
-	view(&shifted);
-}
-//helper function for shiftswaptags found on:
-//https://github.com/moizifty/DWM-Build/blob/65379c62640788881486401a0d8c79333751b02f/config.h#L48
-// modified to work with scratchpad
-void
-swaptags(const Arg *arg)
-{
-	Client *c;
-	unsigned int newtag = arg->ui & TAGMASK;
-	unsigned int curtag = selmon->tagset[selmon->seltags] & ~SPTAGMASK;
-
-	if (newtag == curtag || !curtag || (curtag & (curtag-1)))
-		return;
-
-	for (c = selmon->clients; c != NULL; c = c->next) {
-		if ((c->tags & newtag) || (c->tags & curtag))
-			c->tags ^= curtag ^ newtag;
-
-		if (!c->tags)
-			c->tags = newtag;
-	}
-
-	//move to the swaped tag
-	//selmon->tagset[selmon->seltags] = newtag;
-
-	focus(NULL);
-	arrange(selmon);
-}
-/* swaps "tags" (all the clients) with the next/prev tag. */
-void
-shiftswaptags(const Arg *arg)
-{
-	Arg shifted;
-	shifted.ui = selmon->tagset[selmon->seltags] & ~SPTAGMASK;
-
-	if (arg->i > 0)	/* left circular shift */
-		shifted.ui = ((shifted.ui << arg->i) | (shifted.ui >> (LENGTH(tags) - arg->i))) & ~SPTAGMASK;
-	else		/* right circular shift */
-		shifted.ui = ((shifted.ui >> (- arg->i) | shifted.ui << (LENGTH(tags) + arg->i))) & ~SPTAGMASK;
-	swaptags(&shifted);
-	// uncomment if you also want to "go" (view) the tag where the the clients are going
-	//view(&shifted);
-}
-
-void
-setcfact(const Arg *arg) {
-	float f;
-	Client *c;
-
-	c = selmon->sel;
-
-	if(!arg || !c || !selmon->lt[selmon->sellt]->arrange)
-		return;
-	f = arg->f + c->cfact;
-	if(arg->f == 0.0)
-		f = 1.0;
-	else if(f < 0.25 || f > 4.0)
-		return;
-	c->cfact = f;
-	arrange(selmon);
 }
 
 /* arg > 1.0 will set mfact absolutely */
@@ -2368,34 +2142,6 @@ stackpos(const Arg *arg) {
 		return arg->i;
 }
 
-//void
-//tag(const Arg *arg)
-//{
-//    if (selmon->sel && arg->ui & TAGMASK) {
-//        if (mons && mons->next) {
-//            // Moving to even tag, selected mon != first mon
-//            if ((arg->ui & SCREEN_MASK) == 0 && selmon != mons) {
-//                selmon->sel->tags = arg->ui & TAGMASK;
-//                focus(NULL);
-//                arrange(selmon);
-//                // Moving to odd tag, selected mon == first mon
-//            } else if ((arg->ui & SCREEN_MASK) > 0 && selmon == mons) {
-//                selmon->sel->tags = arg->ui & TAGMASK;
-//                focus(NULL);
-//                arrange(selmon);
-//            } else {
-//                tagnextmon(arg);
-//            }
-//        } else {
-//            if (selmon->sel && arg->ui & TAGMASK) {
-//                selmon->sel->tags = arg->ui & TAGMASK;
-//                focus(NULL);
-//                arrange(selmon);
-//            }
-//        }
-//    }
-//}
-
 void
 tag(const Arg *arg)
 {
@@ -2491,14 +2237,6 @@ tagnewmon(const Arg *arg)
 }
 
 void
-tagnthmon(const Arg *arg)
-{
-    if (!selmon->sel || !mons->next)
-        return;
-    sendmon(selmon->sel, numtomon(arg->i));
-}
-
-void
 tagnthmonview(const Arg *arg)
 {
     if (!selmon->sel || !mons->next)
@@ -2519,8 +2257,10 @@ void
 togglebars(const Arg *arg)
 {
     Monitor *m;
+    int showbar = !selmon->showbar; /* keep all bars in sync */
+
     for (m = mons; m; m = m->next) {
-        m->showbar = !m->showbar;
+        m->showbar = showbar;
         updatebarpos(m);
         XMoveResizeWindow(dpy, m->barwin, m->wx, m->by, m->ww, bh);
         arrange(m);
@@ -2534,29 +2274,26 @@ togglefloating(const Arg *arg)
 		return;
 	if (selmon->sel->isfullscreen) /* no support for fullscreen windows */
 		return;
-	selmon->sel->isfloating = !selmon->sel->isfloating || selmon->sel->isfixed;
+	Client *c = selmon->sel;
 
-	if (selmon->sel->isfloating)
+	c->isfloating = !c->isfloating || c->isfixed;
+
+	if (c->isfloating) {
+		/* center if never floated, or if the stored geometry is on
+		 * another monitor (the client was moved since) */
+		if (!c->sfx || recttomon(c->sfx, c->sfy, c->sfw, c->sfh) != c->mon) {
+			c->sfx = c->mon->mx + (c->mon->mw - c->sfw - 2 * c->bw) / 2;
+			c->sfy = c->mon->my + (c->mon->mh - c->sfh - 2 * c->bw) / 2;
+		}
 		/* restore last known float dimensions */
-		resize(selmon->sel, selmon->sel->sfx, selmon->sel->sfy,
-		       selmon->sel->sfw, selmon->sel->sfh, False);
-	else {
+		resize(c, c->sfx, c->sfy, c->sfw, c->sfh, False);
+	} else {
 		/* save last known float dimensions */
-		selmon->sel->sfx = selmon->sel->x;
-		selmon->sel->sfy = selmon->sel->y;
-		selmon->sel->sfw = selmon->sel->w;
-		selmon->sel->sfh = selmon->sel->h;
+		c->sfx = c->x;
+		c->sfy = c->y;
+		c->sfw = c->w;
+		c->sfh = c->h;
 	}
-
- 	//if (selmon->sel->isfloating)
- 	//	resize(selmon->sel, selmon->sel->x, selmon->sel->y,
- 	//		//selmon->sel->w, selmon->sel->h, 0);
- 	//		900, 600, 0);
-
-    if (!selmon->sel->sfx) {
-        selmon->sel->x = selmon->sel->mon->mx + (selmon->sel->mon->mw - WIDTH(selmon->sel)) / 2;
-        selmon->sel->y = selmon->sel->mon->my + (selmon->sel->mon->mh - HEIGHT(selmon->sel)) / 2;
-    }
 
 	arrange(selmon);
 }
@@ -2758,7 +2495,7 @@ updategeom(void)
 	if (XineramaIsActive(dpy)) {
         int i, j, n, nn;
         Client *c, *next_client;
-        Monitor *m, *primary, *secondary, *current_monitor;
+        Monitor *m, *primary, *secondary;
         XineramaScreenInfo *info = XineramaQueryScreens(dpy, &nn);
         XineramaScreenInfo *unique = NULL;
 
@@ -2780,46 +2517,24 @@ updategeom(void)
 				mons = createmon();
 		}
 
-        /* Logic for moving clients */
-        if (nn == 2) {
-            /* Case with exactly two monitors: Move even-tagged clients */
+        /* Logic for moving clients: only when monitors were added.
+         * Odd tags live on the first monitor and even tags on the second,
+         * so with two or more monitors move even-tagged clients over. */
+        if (nn > n && nn >= 2) {
             primary = mons;         /* First monitor */
             secondary = mons->next; /* Second monitor */
 
-            if (primary && secondary) {
-                for (c = primary->clients; c; c = next_client) {
-                    next_client = c->next;
+            for (c = primary->clients; c; c = next_client) {
+                next_client = c->next;
 
-                    /* Check if the client belongs to an even tag */
-                    if (c->tags & 0b010101010) { /* Even tags: 2, 4, 6, 8 */
-                        detach(c);               /* Detach from primary monitor */
-                        detachstack(c);
-
-                        c->mon = secondary;     /* Assign to secondary monitor */
-                        attach(c);              /* Attach to secondary monitor */
-                        attachstack(c);
-                    }
-                }
-            }
-        } else if (nn > 2) {
-            /* Case with more than two monitors: Move clients cyclically */
-            for (m = mons; m; m = m->next) {
-                current_monitor = m; /* Start with the current monitor */
-
-                for (c = current_monitor->clients; c; c = next_client) {
-                    next_client = c->next;
-
-                    /* Determine the next monitor cyclically */
-                    Monitor *next_monitor = current_monitor->next ? current_monitor->next : mons;
-
-                    detach(c);               /* Detach client from current monitor */
+                /* Check if the client belongs to an even tag */
+                if (c->tags & 0x0AA) {   /* Even tags: 2, 4, 6, 8 */
+                    detach(c);           /* Detach from primary monitor */
                     detachstack(c);
 
-                    c->mon = next_monitor;   /* Assign client to the next monitor */
-                    attach(c);               /* Attach to the next monitor */
+                    c->mon = secondary;  /* Assign to secondary monitor */
+                    attach(c);           /* Attach to secondary monitor */
                     attachstack(c);
-
-                    current_monitor = next_monitor; /* Update current monitor */
                 }
             }
         }
@@ -2870,6 +2585,22 @@ updategeom(void)
 		selmon = wintomon(root);
 	}
 	return dirty;
+}
+
+/* Write the _NET_WM_STATE atoms dwm manages, so that setting one state
+ * does not clear the other */
+void
+updatenetwmstate(Client *c)
+{
+	Atom state[2];
+	int n = 0;
+
+	if (c->isfullscreen)
+		state[n++] = netatom[NetWMFullscreen];
+	if (c->issticky)
+		state[n++] = netatom[NetWMSticky];
+	XChangeProperty(dpy, c->win, netatom[NetWMState], XA_ATOM, 32,
+		PropModeReplace, (unsigned char *)state, n);
 }
 
 void
@@ -2937,7 +2668,7 @@ updatestatus(void)
 {
 	if (!gettextprop(root, XA_WM_NAME, stext, sizeof(stext)))
 		strcpy(stext, "dwm-"VERSION);
-	drawbar(selmon);
+	drawbars();
 }
 
 void
@@ -2987,14 +2718,14 @@ void
 view(const Arg *arg)
 {
     if (mons && mons->next) {
+        // GENIUS 101010101: odd tags on first mon, even tags on second
+        // Focus the target mon first so the check below uses its tagset.
+        // Arg {0} (previous tagset) stays on the current mon.
+        if (arg->ui & TAGMASK)
+            focusnthmon(&((Arg) { .i = (arg->ui & SCREEN_MASK) ? 0 : 1 }));
+
         if ((arg->ui & TAGMASK) == selmon->tagset[selmon->seltags])
             return;
-
-        // GENIUS 101010101
-        if ((arg->ui & SCREEN_MASK) == 0)
-            focusnthmon(&((Arg) { .i = 1 }));
-        else
-            focusnthmon(&((Arg) { .i = 0 }));
     } else {
         if ((arg->ui & TAGMASK) == selmon->tagset[selmon->seltags]) { 
             view(&((Arg) { .ui = 0 })); 
@@ -3024,8 +2755,10 @@ winpid(Window w)
 	xcb_res_query_client_ids_cookie_t c = xcb_res_query_client_ids(xcon, 1, &spec);
 	xcb_res_query_client_ids_reply_t *r = xcb_res_query_client_ids_reply(xcon, c, &e);
 
-	if (!r)
+	if (!r) {
+		free(e);
 		return (pid_t)0;
+	}
 
 	xcb_res_client_id_value_iterator_t i = xcb_res_query_client_ids_ids_iterator(r);
 	for (; i.rem; xcb_res_client_id_value_next(&i)) {
@@ -3069,13 +2802,15 @@ getparentprocess(pid_t p)
 
 #ifdef __linux__
 	FILE *f;
-	char buf[256];
+	char buf[256], *s;
 	snprintf(buf, sizeof(buf) - 1, "/proc/%u/stat", (unsigned)p);
 
 	if (!(f = fopen(buf, "r")))
 		return 0;
 
-	fscanf(f, "%*u %*s %*c %u", &v);
+	/* comm may contain spaces and ')', so parse after the last ')' */
+	if (fgets(buf, sizeof(buf), f) && (s = strrchr(buf, ')')))
+		sscanf(s + 1, " %*c %u", &v);
 	fclose(f);
 #endif /* __linux__*/
 
@@ -3240,7 +2975,9 @@ resource_load(XrmDatabase db, char *name, enum resource_type rtype, void *dst)
 	{
 		switch (rtype) {
 		case STRING:
-			strcpy(sdst, ret.addr);
+			/* all STRING resources are "#RRGGBB" char[8] buffers */
+			if (strlen(ret.addr) < 8)
+				strcpy(sdst, ret.addr);
 			break;
 		case INTEGER:
 			*idst = strtoul(ret.addr, NULL, 10);
@@ -3255,20 +2992,18 @@ resource_load(XrmDatabase db, char *name, enum resource_type rtype, void *dst)
 void
 load_xresources(void)
 {
-	Display *display;
 	char *resm;
 	XrmDatabase db;
 	ResourcePref *p;
 
-	display = XOpenDisplay(NULL);
-	resm = XResourceManagerString(display);
+	resm = XResourceManagerString(dpy);
 	if (!resm)
 		return;
 
 	db = XrmGetStringDatabase(resm);
 	for (p = resources; p < resources + LENGTH(resources); p++)
 		resource_load(db, p->name, p->type, p->dst);
-	XCloseDisplay(display);
+	XrmDestroyDatabase(db);
 }
 
 int

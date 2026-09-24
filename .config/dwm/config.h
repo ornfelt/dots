@@ -94,9 +94,9 @@ static const Rule rules[] = {
 static float mfact     = 0.55; /* factor of master area size [0.05..0.95] */
 static int nmaster     = 1;    /* number of clients in master area */
 static int resizehints = 0;    /* 1 means respect size hints in tiled resizals */
+static const int lockfullscreen = 1; /* 1 will force focus on the fullscreen window */
 static const int refreshrate = 120;  /* refresh rate (per second) for client move/resize */
 
-#define FORCE_VSPLIT 1  /* nrowgrid layout: force two clients to always split vertically */
 #include "vanitygaps.c"
 static const Layout layouts[] = {
     /* symbol       arrange function */
@@ -470,7 +470,7 @@ static const Button buttons[] = {
     { ClkStatusText,        ShiftMask,      Button1,        sigstatusbar,   {.i = 6} },
 #endif
     /* bind statustext-shift-button3: spawn nvim dwmblocks config */
-    { ClkStatusText,        ShiftMask,      Button3,        spawn,          SHCMD(TERMINAL " -e nvim ~/.config/dwmblocks/config.h") },
+    { ClkStatusText,        ShiftMask,      Button3,        spawn,          SHCMD(TERMINAL " -e nvim ~/.config/dwmblocks/blocks.h") },
     /* bind clientwin-mod-button1: movemouse */
     { ClkClientWin,         MODKEY,         Button1,        movemouse,      {0} },
     /* bind clientwin-mod-button2: defaultgaps */

@@ -26,6 +26,7 @@
 
 /* enums */
 enum { SchemeNorm, SchemeSel, SchemeOut, SchemeNormHighlight, SchemeSelHighlight, SchemeOutHighlight, SchemeLast }; /* color schemes */
+
 struct item {
 	char *text;
 	struct item *left, *right;
@@ -98,10 +99,9 @@ static int
 max_textw(void)
 {
 	int len = 0;
-	for (struct item *item = items; item && item->text; item++)
-		//len = MAX(TEXTW(item->text), len);
-        len = MIN(MAX(TEXTW(item->text), len), max_width);
-	return len;
+	for (struct item *item = items; item && item->text && len < max_width; item++)
+		len = MAX(TEXTW(item->text), len);
+	return MIN(len, max_width);
 }
 
 static void
@@ -109,8 +109,8 @@ cleanup(void)
 {
 	size_t i;
 
-    XUngrabKeyboard(dpy, CurrentTime);
-    for (i = 0; i < SchemeLast; i++)
+	XUngrabKeyboard(dpy, CurrentTime);
+	for (i = 0; i < SchemeLast; i++)
 		drw_scm_free(drw, scheme[i], 2);
 	for (i = 0; items && items[i].text; ++i)
 		free(items[i].text);
@@ -142,7 +142,12 @@ static void
 drawhighlights(struct item *item, int x, int y, int maxw)
 {
 	char restorechar, tokens[sizeof text], *highlight,  *token;
-	int indentx, highlightlen;
+	int indentx, highlightlen, highlightw, textw, ellipsisw, truncated;
+
+	/* width for the item text, and whether drw_text() cuts it with an ellipsis */
+	textw = maxw - lrpad / 2;
+	ellipsisw = TEXTW("...") - lrpad;
+	truncated = (int)TEXTW(item->text) - lrpad > textw;
 
 	drw_setscheme(drw, scheme[item == sel ? SchemeSelHighlight : item->out ? SchemeOutHighlight : SchemeNormHighlight]);
 	strcpy(tokens, text);
@@ -153,21 +158,28 @@ drawhighlights(struct item *item, int x, int y, int maxw)
 			highlightlen = highlight - item->text;
 			restorechar = *highlight;
 			item->text[highlightlen] = '\0';
-			indentx = TEXTW(item->text);
+			indentx = TEXTW(item->text) - lrpad;
 			item->text[highlightlen] = restorechar;
 
-			// Move highlight str end, draw highlight, & restore
+			// Hidden under the ellipsis, and so is every later match
+			if (truncated && indentx + ellipsisw > textw) break;
+
+			// Move highlight str end, calc width & restore
 			restorechar = highlight[strlen(token)];
 			highlight[strlen(token)] = '\0';
-			if (indentx - (lrpad / 2) - 1 < maxw)
-				drw_text(
-					drw,
-					x + indentx - (lrpad / 2) - 1,
-					y,
-					MIN(maxw - indentx, TEXTW(highlight) - lrpad),
-					bh, 0, highlight, 0
-				);
+			highlightw = TEXTW(highlight) - lrpad;
 			highlight[strlen(token)] = restorechar;
+
+			if (truncated && indentx + highlightw > textw - ellipsisw) {
+				// Runs into the ellipsis: draw the rest of the item text with the
+				// same right edge, so it gets cut exactly like in drawitem()
+				drw_text(drw, x + lrpad / 2 + indentx, y, textw - indentx, bh, 0, highlight, 0);
+			} else {
+				// Move highlight str end, draw highlight, & restore
+				highlight[strlen(token)] = '\0';
+				drw_text(drw, x + lrpad / 2 + indentx, y, highlightw, bh, 0, highlight, 0);
+				highlight[strlen(token)] = restorechar;
+			}
 
 			if (strlen(highlight) - strlen(token) < strlen(token)) break;
 			highlight = fstrstr(highlight + strlen(token), token);
@@ -661,7 +673,7 @@ run(void)
 static void
 setup(void)
 {
-	int x, y, i, j;
+	int x, y, i, j, bw2;
 	unsigned int du;
 	XSetWindowAttributes swa;
 	XIM xim;
@@ -674,6 +686,10 @@ setup(void)
 	int a, di, n, area = 0;
 #endif
 	/* init appearance */
+	/* highlight schemes use the background of their base scheme, so -nb/-sb/-ob apply */
+	colors[SchemeNormHighlight][ColBg] = colors[SchemeNorm][ColBg];
+	colors[SchemeSelHighlight][ColBg] = colors[SchemeSel][ColBg];
+	colors[SchemeOutHighlight][ColBg] = colors[SchemeOut][ColBg];
 	for (j = 0; j < SchemeLast; j++)
 		scheme[j] = drw_scm_create(drw, colors[j], 2);
 
@@ -685,6 +701,7 @@ setup(void)
 	lines = MAX(lines, 0);
 	mh = (lines + 1) * bh;
 	promptw = (prompt && *prompt) ? TEXTW(prompt) - lrpad / 4 : 0;
+	bw2 = 2 * border_width; /* the border is drawn outside of mw x mh */
 #ifdef XINERAMA
 	i = 0;
 	if (parentwin == root && (info = XineramaQueryScreens(dpy, &n))) {
@@ -717,14 +734,13 @@ setup(void)
 			i = 0;
 
 		if (centered) {
-			mw = MIN(MAX(max_textw() + promptw, min_width), info[i].width);
-            //mw = 900;
-			x = info[i].x_org + ((info[i].width  - mw) / 2);
-			y = info[i].y_org + ((info[i].height - mh) / menu_height_ratio);
+			mw = MIN(MAX(max_textw() + promptw, min_width), info[i].width - bw2);
+			x = info[i].x_org + ((info[i].width  - mw - bw2) / 2);
+			y = info[i].y_org + ((info[i].height - mh - bw2) / menu_height_ratio);
 		} else {
 			x = info[i].x_org;
-			y = info[i].y_org + (topbar ? 0 : info[i].height - mh);
-			mw = info[i].width;
+			y = info[i].y_org + (topbar ? 0 : info[i].height - mh - bw2);
+			mw = info[i].width - bw2;
 		}
 
 		XFree(info);
@@ -736,16 +752,15 @@ setup(void)
 			    parentwin);
 
 		if (centered) {
-			mw = MIN(MAX(max_textw() + promptw, min_width), wa.width);
-			x = (wa.width  - mw) / 2;
-			y = (wa.height - mh) / 2;
+			mw = MIN(MAX(max_textw() + promptw, min_width), wa.width - bw2);
+			x = (wa.width  - mw - bw2) / 2;
+			y = (wa.height - mh - bw2) / menu_height_ratio;
 		} else {
 			x = 0;
-			y = topbar ? 0 : wa.height - mh;
-			mw = wa.width;
+			y = topbar ? 0 : wa.height - mh - bw2;
+			mw = wa.width - bw2;
 		}
 	}
-	promptw = (prompt && *prompt) ? TEXTW(prompt) - lrpad / 4 : 0;
 	inputw = mw / 3; /* input width: ~33% of monitor width */
 	match();
 
@@ -785,8 +800,9 @@ setup(void)
 static void
 usage(void)
 {
-	die("usage: dmenu [-bfiv] [-l lines] [-p prompt] [-fn font] [-m monitor]\n"
-	    "             [-nb color] [-nf color] [-sb color] [-sf color] [-w windowid]");
+	die("usage: dmenu [-bcfiv] [-l lines] [-p prompt] [-fn font] [-m monitor]\n"
+	    "             [-nb color] [-nf color] [-sb color] [-sf color]\n"
+	    "             [-ob color] [-of color] [-bw width] [-w windowid]");
 }
 
 int
@@ -800,9 +816,10 @@ main(int argc, char *argv[])
 		if (!strcmp(argv[i], "-v")) {      /* prints version information */
 			puts("dmenu-"VERSION);
 			exit(0);
-		} else if (!strcmp(argv[i], "-b")) /* appears at the bottom of the screen */
+		} else if (!strcmp(argv[i], "-b")) { /* appears at the bottom of the screen */
 			topbar = 0;
-		else if (!strcmp(argv[i], "-f"))   /* grabs keyboard before reading stdin */
+			centered = 0;
+		} else if (!strcmp(argv[i], "-f"))   /* grabs keyboard before reading stdin */
 			fast = 1;
 		else if (!strcmp(argv[i], "-c"))   /* centers dmenu on screen */
 			centered = 1;
@@ -835,7 +852,7 @@ main(int argc, char *argv[])
 		else if (!strcmp(argv[i], "-w"))   /* embedding window id */
 			embed = argv[++i];
 		else if (!strcmp(argv[i], "-bw"))
-			border_width = atoi(argv[++i]); /* border width */
+			border_width = MAX(atoi(argv[++i]), 0); /* border width */
 		else
 			usage();
 

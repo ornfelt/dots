@@ -112,8 +112,6 @@ unsigned int tabspaces = 8;
 
 /* bg opacity */
 float alpha = 1.0;
-float alphaOffset = 0.0;
-float alphaUnfocus;
 
 /* Terminal colors (16 first used in escape sequence) */
 static const char *colorname[] = {
@@ -139,7 +137,6 @@ static const char *colorname[] = {
     "#555555", /* 257 -> rev cursor*/
     "#282828", /* 258 -> bg */
     "#ebdbb2", /* 259 -> fg */
-    "black", /* 260 -> alphaBg */
 };
 
 /*
@@ -148,8 +145,6 @@ static const char *colorname[] = {
  */
 unsigned int defaultfg = 259;
 unsigned int defaultbg = 258;
-unsigned int alphaBg = 260;
-unsigned int defaultAlphaBg = 258;
 unsigned int defaultcs = 256;
 unsigned int defaultrcs = 257;
 
@@ -216,8 +211,8 @@ ResourcePref resources[] = {
     { "cursorColor",  STRING,  &colorname[256] },
     { "termname",     STRING,  &termname },
     { "shell",        STRING,  &shell },
-    { "minlatency",   INTEGER, &minlatency },
-    { "maxlatency",   INTEGER, &maxlatency },
+    { "minlatency",   DOUBLE,  &minlatency },
+    { "maxlatency",   DOUBLE,  &maxlatency },
     { "blinktimeout", INTEGER, &blinktimeout },
     { "bellvolume",   INTEGER, &bellvolume },
     { "tabspaces",    INTEGER, &tabspaces },
@@ -225,7 +220,6 @@ ResourcePref resources[] = {
     { "cwscale",      FLOAT,   &cwscale },
     { "chscale",      FLOAT,   &chscale },
     { "alpha",        FLOAT,   &alpha },
-    { "alphaOffset",  FLOAT,   &alphaOffset },
 };
 
 /*
@@ -286,8 +280,6 @@ static Shortcut shortcuts[] = {
     { ShiftMask,            XK_Insert,      clippaste,      {.i =  0} },
     /* bind alt-v: clippaste */
     { MODKEY,               XK_v,           clippaste,      {.i =  0} },
-    /* bind shift-insert: selpaste */
-    { ShiftMask,            XK_Insert,      selpaste,       {.i =  0} },
     /* bind alt-shift-numlock: numlock */
     { TERMMOD,              XK_Num_Lock,    numlock,        {.i =  0} },
     /* bind shift-pageup: kscrollup -1 (scroll page up) */

@@ -17,7 +17,7 @@ config.h:
 
 st.o: config.h st.h win.h
 x.o: arg.h config.h st.h win.h hb.h
-hb.o: st.h
+hb.o: st.h hb.h
 
 $(OBJ): config.h config.mk
 

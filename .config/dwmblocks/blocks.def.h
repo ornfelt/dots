@@ -8,7 +8,7 @@ static const Block blocks[] = {
     {"^4^ ",        "~/.local/bin/statusbar/sb-volume",             0,                      10},
     /* {"^5^ ",        "~/.local/bin/statusbar/sb-internet",           5,                      3}, */
     {"^5^ ",        "~/.local/bin/statusbar/sb-battery",            5,                      3},
-    {"^6^  ",      "~/.local/bin/statusbar/sb-clock",              60,                     1},
+    {"^6^  ",      "~/.local/bin/statusbar/sb-clock",              5,                      1},
 };
 
 //sets delimiter between status commands. NULL character ('\0') means no delimiter.

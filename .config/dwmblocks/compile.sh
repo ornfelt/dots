@@ -17,8 +17,12 @@ CONFIG_FILE="./blocks.h"
 TEMP_FILE="./config_temp.h"
 BACKUP_FILE="./config_backup.h"
 
-# Backup original blocks.h
+# Backup original blocks.h and restore it on exit, even if the build fails
 cp "$CONFIG_FILE" "$BACKUP_FILE"
+restore_config() {
+    mv "$BACKUP_FILE" "$CONFIG_FILE"
+}
+trap restore_config EXIT
 
 # Check battery presence
 battery_present=false
@@ -40,15 +44,9 @@ if ! $battery_present; then
 fi
 
 # Compile
-sudo make clean install
-
-# If no battery was found, revert blocks.h to its original state
-if ! $battery_present; then
-    mv "$BACKUP_FILE" "$CONFIG_FILE"
-    echo "blocks.h reverted to its original state."
-fi
-
-rm -f "$BACKUP_FILE"
+make clean
+make
+sudo make install
 
 echo "Script execution completed."
 

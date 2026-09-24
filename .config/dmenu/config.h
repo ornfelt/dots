@@ -8,18 +8,19 @@ static int max_width = 1200;                   /* maximum width when centered */
 static const float menu_height_ratio = 4.0f;  /* This is the ratio used in the original calculation */
 /* -fn option overrides fonts[0]; default X11 font or font set */
 //static const char *fonts[] = {
-//	"monospace:size=10"
+//  "monospace:size=10"
 //};
 static const char *fonts[] = { "JetBrainsMono Nerd Font:size=11:style=bold" };
 static const char *prompt      = NULL;      /* -p  option; prompt to the left of input field */
 static const char *colors[SchemeLast][2] = {
-	/*     fg         bg       */
-	[SchemeNorm] = { "#ebdbb2", "#282828" },
-    [SchemeSel] = { "#ebdbb2", "#458588" },
-    [SchemeSelHighlight] = { "#d79921", "#458588" },
+    /*     fg         bg       */
+    /* the bg of the *Highlight schemes is taken from their base scheme */
+    [SchemeNorm] = { "#ebdbb2", "#282828" },
+    [SchemeSel] = { "#fbf1c7", "#076678" },
+    [SchemeSelHighlight] = { "#fabd2f", "#076678" },
     [SchemeNormHighlight] = { "#d79921", "#282828" },
-	[SchemeOut] = { "#ebdbb2", "#8ec07c" },
-    [SchemeOutHighlight] = { "#83a598", "#458588" },
+    [SchemeOut] = { "#282828", "#8ec07c" },
+    [SchemeOutHighlight] = { "#9d0006", "#8ec07c" },
 };
 
 /* -l option; if nonzero, dmenu uses vertical list with given number of lines */

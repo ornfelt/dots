@@ -23089,7 +23089,7 @@ Binary files a/themes/multicolor/icons/stop.png and /dev/null differ
 diff --git a/themes/multicolor/theme.lua b/themes/multicolor/theme.lua
 old mode 100755
 new mode 100644
-index 98793b2..e68ff81
+index 98793b2..2361a36
 --- a/themes/multicolor/theme.lua
 +++ b/themes/multicolor/theme.lua
 @@ -9,32 +9,34 @@ local gears = require("gears")
@@ -23599,21 +23599,21 @@ index 98793b2..e68ff81
 +
 +        --widget:set_markup(markup.fontfg(theme.font, "#e54c62", net_now.sent .. " "))
 +        --netdowninfo:set_markup(markup.fontfg(theme.font, "#87af5f", net_now.received .. " "))
-+        widget:set_markup(markup.fontfg(theme.font, "#fe8019", net_now.sent .. " "))
-+        netdowninfo:set_markup(markup.fontfg(theme.font, "#689d6a", net_now.received .. " "))
++        widget:set_markup(markup.fontfg(theme.font, "#689d6a", net_now.sent .. " "))
++        netdowninfo:set_markup(markup.fontfg(theme.font, "#b8bb26", net_now.received .. " "))
      end
  })
  
 +local netupicon = wibox.widget {
 +    widget = wibox.widget.textbox,
-+    markup = markup.fontfg(theme.font, "#fe8019", " "),
++    markup = markup.fontfg(theme.font, "#689d6a", " "),
 +    align = "center",
 +    valign = "center"
 +}
 +
 +local netdownicon = wibox.widget {
 +    widget = wibox.widget.textbox,
-+    markup = markup.fontfg(theme.font, "#689d6a", "  "),
++    markup = markup.fontfg(theme.font, "#b8bb26", "  "),
 +    align = "center",
 +    valign = "center"
 +}

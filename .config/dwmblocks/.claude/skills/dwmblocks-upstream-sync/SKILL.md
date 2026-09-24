@@ -108,8 +108,8 @@ Do not push. The user pushes.
 
 ## Verification
 
-Build with the `Makefile` (`compile.sh` wraps it in `sudo make clean install`). The existing binary is owned by root (from
-`sudo make clean install` via `compile.sh`), so do not build in place - build a throwaway copy:
+Build with the `Makefile` (`compile.sh` runs `make clean`, `make` and `sudo make install`). Do not build in place, since
+that would replace the user's built binary - build a throwaway copy:
 
 ```bash
 TMP=$(mktemp -d) && git ls-files -z | xargs -0 cp --parents -t "$TMP" && cp blocks.h "$TMP"/
@@ -118,7 +118,7 @@ rm -rf "$TMP"
 ```
 
 The build must pass with no new warnings from the changed code. Do not run `make install` or `./compile.sh`
-(it runs `sudo make clean install`); that is the user's call.
+(it runs `sudo make install`); that is the user's call.
 
 ## Report
 

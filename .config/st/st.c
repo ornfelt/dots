@@ -121,6 +121,7 @@ typedef struct {
 	Line *alt;    /* alternate screen */
 	Line hist[HISTSIZE]; /* history buffer */
 	int histi;    /* history index */
+	int histn;    /* number of lines in history */
 	int scr;      /* scroll back */
 	int *dirty;   /* dirtyness of lines */
 	TCursor c;    /* cursor */
@@ -193,7 +194,7 @@ static void tputtab(int);
 static void tputc(Rune);
 static void treset(void);
 static void tscrollup(int, int, int);
-static void tscrolldown(int, int, int);
+static void tscrolldown(int, int);
 static void tsetattr(const int *, int);
 static void tsetchar(Rune, const Glyph *, int, int);
 static void tsetdirt(int, int);
@@ -731,13 +732,13 @@ sigchld(int a)
 		_exit(1);
 
 	if (pid != p) {
-		if (p == 0 && wait(&stat) < 0)
-			_exit(1);
-
-		/* reinstall sigchld handler */
-		signal(SIGCHLD, sigchld);
-		errno = olderrno;
-		return;
+		/* reap other exited children, e.g. from externalpipe */
+		while ((p = waitpid(-1, &stat, WNOHANG)) > 0 && p != pid)
+			;
+		if (p != pid) {
+			errno = olderrno;
+			return;
+		}
 	}
 
 	if ((WIFEXITED(stat) && WEXITSTATUS(stat)) || WIFSIGNALED(stat))
@@ -1074,13 +1075,24 @@ tswapscreen(void)
 	term.line = term.alt;
 	term.alt = tmp;
 	term.mode ^= MODE_ALTSCREEN;
+	term.scr = 0;
 	tfulldirt();
+}
+
+int
+tisaltscr(void)
+{
+	return IS_SET(MODE_ALTSCREEN);
 }
 
 void
 kscrolldown(const Arg* a)
 {
 	int n = a->i;
+
+	/* the history belongs to the main screen */
+	if (IS_SET(MODE_ALTSCREEN))
+		return;
 
 	if (n < 0)
 		n = term.row + n;
@@ -1100,10 +1112,17 @@ kscrollup(const Arg* a)
 {
 	int n = a->i;
 
+	/* the history belongs to the main screen */
+	if (IS_SET(MODE_ALTSCREEN))
+		return;
+
 	if (n < 0)
 		n = term.row + n;
 
-	if (term.scr <= HISTSIZE-n) {
+	/* don't scroll past the oldest line in history */
+	n = MIN(n, term.histn - term.scr);
+
+	if (n > 0) {
 		term.scr += n;
 		selscroll(0, n);
 		tfulldirt();
@@ -1111,19 +1130,12 @@ kscrollup(const Arg* a)
 }
 
 void
-tscrolldown(int orig, int n, int copyhist)
+tscrolldown(int orig, int n)
 {
 	int i;
 	Line temp;
 
 	LIMIT(n, 0, term.bot-orig+1);
-
-	if (copyhist) {
-		term.histi = (term.histi - 1 + HISTSIZE) % HISTSIZE;
-		temp = term.hist[term.histi];
-		term.hist[term.histi] = term.line[term.bot];
-		term.line[term.bot] = temp;
-	}
 
 	tsetdirt(orig, term.bot-n);
 	tclearregion(0, term.bot-n+1, term.col-1, term.bot);
@@ -1146,15 +1158,17 @@ tscrollup(int orig, int n, int copyhist)
 
 	LIMIT(n, 0, term.bot-orig+1);
 
-	if (copyhist) {
+	if (copyhist && !IS_SET(MODE_ALTSCREEN)) {
 		term.histi = (term.histi + 1) % HISTSIZE;
 		temp = term.hist[term.histi];
 		term.hist[term.histi] = term.line[orig];
 		term.line[orig] = temp;
-	}
+		term.histn = MIN(term.histn + 1, HISTSIZE);
 
-	if (term.scr > 0 && term.scr < HISTSIZE)
-		term.scr = MIN(term.scr + n, HISTSIZE-1);
+		/* keep the scrolled back view on the same lines */
+		if (term.scr > 0 && term.scr < HISTSIZE)
+			term.scr = MIN(term.scr + n, HISTSIZE-1);
+	}
 
 	tclearregion(0, orig, term.col-1, orig+n-1);
 	tsetdirt(orig+n, term.bot);
@@ -1363,7 +1377,7 @@ void
 tinsertblankline(int n)
 {
 	if (BETWEEN(term.c.y, term.top, term.bot))
-		tscrolldown(term.c.y, n, 0);
+		tscrolldown(term.c.y, n);
 }
 
 void
@@ -1818,7 +1832,7 @@ csihandle(void)
 		break;
 	case 'T': /* SD -- Scroll <n> line down */
 		DEFAULT(csiescseq.arg[0], 1);
-		tscrolldown(term.top, csiescseq.arg[0], 0);
+		tscrolldown(term.top, csiescseq.arg[0]);
 		break;
 	case 'L': /* IL -- Insert <n> blank lines */
 		DEFAULT(csiescseq.arg[0], 1);
@@ -1882,11 +1896,11 @@ csihandle(void)
 		tcursor(CURSOR_SAVE);
 		break;
 	case 'u': /* DECRC -- Restore cursor position (ANSI.SYS) */
-        if (csiescseq.priv) {
-            goto unknown;
-        } else {
-            tcursor(CURSOR_LOAD);
-        }
+		if (csiescseq.priv) {
+			goto unknown;
+		} else {
+			tcursor(CURSOR_LOAD);
+		}
 		break;
 	case ' ':
 		switch (csiescseq.mode[1]) {
@@ -2042,8 +2056,6 @@ strhandle(void)
 				tfulldirt();
 			}
 			return;
-		}
-		break;
 		case 110: /* reset dynamic VT100 text foreground color */
 		case 111: /* reset dynamic VT100 text background color */
 		case 112: /* reset dynamic text cursor color */
@@ -2057,6 +2069,8 @@ strhandle(void)
 				tfulldirt();
 			}
 			return;
+		}
+		break;
 	case 'k': /* old title set compatibility */
 		xsettitle(strescseq.args[0]);
 		return;
@@ -2116,7 +2130,7 @@ externalpipe(const Arg *arg)
 		execvp(((char **)arg->v)[0], (char **)arg->v);
 		fprintf(stderr, "st: execvp %s\n", ((char **)arg->v)[0]);
 		perror("failed");
-		exit(0);
+		_exit(1);
 	}
 
 	close(to[0]);
@@ -2124,7 +2138,7 @@ externalpipe(const Arg *arg)
 	oldsigpipe = signal(SIGPIPE, SIG_IGN);
 	newline = 0;
 	for (n = 0; n < term.row; n++) {
-		bp = term.line[n];
+		bp = TLINE(n);
 		lastpos = MIN(tlinelen(n) + 1, term.col) - 1;
 		if (lastpos < 0)
 			break;
@@ -2132,7 +2146,7 @@ externalpipe(const Arg *arg)
 		for (; bp < end; ++bp)
 			if (xwrite(to[1], buf, utf8encode(bp->u, buf)) < 0)
 				break;
-		if ((newline = term.line[n][lastpos].mode & ATTR_WRAP))
+		if ((newline = TLINE(n)[lastpos].mode & ATTR_WRAP))
 			continue;
 		if (xwrite(to[1], "\n", 1) < 0)
 			break;
@@ -2473,7 +2487,7 @@ eschandle(uchar ascii)
 		break;
 	case 'M': /* RI -- Reverse index */
 		if (term.c.y == term.top) {
-			tscrolldown(term.top, 1, 1);
+			tscrolldown(term.top, 1);
 		} else {
 			tmoveto(term.c.x, term.c.y-1);
 		}
@@ -2715,8 +2729,17 @@ tresize(int col, int row)
 	 * memmove because we're freeing the earlier lines
 	 */
 	for (i = 0; i <= term.c.y - row; i++) {
-		free(term.line[i]);
-		free(term.alt[i]);
+		/* keep the lines slid off the main screen in history */
+		term.histi = (term.histi + 1) % HISTSIZE;
+		free(term.hist[term.histi]);
+		if (IS_SET(MODE_ALTSCREEN)) {
+			term.hist[term.histi] = term.alt[i];
+			free(term.line[i]);
+		} else {
+			term.hist[term.histi] = term.line[i];
+			free(term.alt[i]);
+		}
+		term.histn = MIN(term.histn + 1, HISTSIZE);
 	}
 	/* ensure that both src and dst are not NULL */
 	if (i > 0) {

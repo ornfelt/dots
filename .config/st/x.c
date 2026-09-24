@@ -51,7 +51,8 @@ typedef struct {
 enum resource_type {
 	STRING = 0,
 	INTEGER = 1,
-	FLOAT = 2
+	FLOAT = 2,
+	DOUBLE = 3
 };
 
 typedef struct {
@@ -75,7 +76,6 @@ static void zoomabs(const Arg *);
 static void zoomreset(const Arg *);
 static void ttysend(const Arg *);
 static void changealpha(const Arg *);
-static float clamp(float value, float lower, float upper);
 
 /* config.h for applying patches and the configuration. */
 #include "config.h"
@@ -174,6 +174,7 @@ static void cresize(int, int);
 static void xresize(int, int);
 static void xhints(void);
 static int xloadcolor(int, const char *, Color *);
+static void xapplyalpha(void);
 static int xloadfont(Font *, FcPattern *);
 static void xloadfonts(const char *, double);
 static int xloadsparefont(FcPattern *, int);
@@ -273,6 +274,7 @@ static char *opt_line  = NULL;
 static char *opt_name  = NULL;
 static char *opt_title = NULL;
 static char *opt_dir   = NULL;
+static char *opt_alpha = NULL;
 
 static uint buttons; /* bit field of pressed buttons */
 
@@ -480,6 +482,10 @@ mouseaction(XEvent *e, uint release)
 		    ms->button == e->xbutton.button &&
 		    (match(ms->mod, state) ||  /* exact or forced */
 		     match(ms->mod, state & ~forcemousemod))) {
+			/* let the alt screen app get the wheel instead */
+			if (tisaltscr() && (ms->func == kscrollup ||
+			    ms->func == kscrolldown))
+				continue;
 			ms->func(&(ms->arg));
 			return 1;
 		}
@@ -813,6 +819,18 @@ xloadcolor(int i, const char *name, Color *ncolor)
 	return XftColorAllocName(xw.dpy, xw.vis, xw.cmap, name, ncolor);
 }
 
+/* apply alpha to the background color, premultiplied */
+void
+xapplyalpha(void)
+{
+	dc.col[defaultbg].color.alpha = (unsigned short)(0xffff * alpha);
+	dc.col[defaultbg].pixel &= 0x00FFFFFF;
+	dc.col[defaultbg].pixel |= (unsigned char)(0xff * alpha) << 24;
+	dc.col[defaultbg].color.red   *= alpha;
+	dc.col[defaultbg].color.green *= alpha;
+	dc.col[defaultbg].color.blue  *= alpha;
+}
+
 void
 xloadcols(void)
 {
@@ -836,12 +854,7 @@ xloadcols(void)
 				die("could not allocate color %d\n", i);
 		}
 
-	dc.col[defaultbg].color.alpha = (unsigned short)(0xffff * alpha);
-	dc.col[defaultbg].pixel &= 0x00FFFFFF;
-	dc.col[defaultbg].pixel |= (unsigned char)(0xff * alpha) << 24;
-    dc.col[defaultbg].color.red   *= alpha;
-    dc.col[defaultbg].color.green *= alpha;
-    dc.col[defaultbg].color.blue  *= alpha;
+	xapplyalpha();
 	loaded = 1;
 }
 
@@ -854,6 +867,13 @@ xgetcolor(int x, unsigned char *r, unsigned char *g, unsigned char *b)
 	*r = dc.col[x].color.red >> 8;
 	*g = dc.col[x].color.green >> 8;
 	*b = dc.col[x].color.blue >> 8;
+
+	/* report defaultbg as configured, not premultiplied by alpha */
+	if (x == defaultbg && alpha > 0) {
+		*r = MIN(dc.col[x].color.red / alpha / 257 + 0.5, 255);
+		*g = MIN(dc.col[x].color.green / alpha / 257 + 0.5, 255);
+		*b = MIN(dc.col[x].color.blue / alpha / 257 + 0.5, 255);
+	}
 
 	return 0;
 }
@@ -872,14 +892,8 @@ xsetcolorname(int x, const char *name)
 	XftColorFree(xw.dpy, xw.vis, xw.cmap, &dc.col[x]);
 	dc.col[x] = ncolor;
 
-	if (x == defaultbg) {
-		dc.col[defaultbg].color.alpha = (unsigned short)(0xffff * alpha);
-		dc.col[defaultbg].pixel &= 0x00FFFFFF;
-		dc.col[defaultbg].pixel |= (unsigned char)(0xff * alpha) << 24;
-        dc.col[defaultbg].color.red   *= alpha;
-        dc.col[defaultbg].color.green *= alpha;
-        dc.col[defaultbg].color.blue  *= alpha;
-	}
+	if (x == defaultbg)
+		xapplyalpha();
 
 	return 0;
 }
@@ -1299,9 +1313,6 @@ xinit(int cols, int rows)
 	/* spare fonts */
 	xloadsparefonts();
 
-   /* Backup default alpha value */
-   //alpha_def = alpha;
-
 	/* colors */
 	xw.cmap = XCreateColormap(xw.dpy, parent, xw.vis, None);
 	xloadcols();
@@ -1425,7 +1436,7 @@ xmakeglyphfontspecs(XftGlyphFontSpec *specs, const Glyph *glyphs, int len, int x
 	FcFontSet *fcsets[] = { NULL };
 	FcCharSet *fccharset;
 	int i, f, length = 0, start = 0, numspecs = 0;
-	float cluster_xp = xp, cluster_yp = yp;
+	float cluster_xp, cluster_yp;
 	HbTransformData shaped = { 0 };
 
 	/* Initial values. */
@@ -1571,72 +1582,14 @@ xmakeglyphfontspecs(XftGlyphFontSpec *specs, const Glyph *glyphs, int len, int x
 	return numspecs;
 }
 
-//void
-//changealpha(const Arg *arg)
-//{
-//   if (arg->f == -1.0f && alpha >= 0.1f)
-//      alpha -= 0.1f;
-//   else if (arg->f == 1.0f && alpha < 1.0f)
-//      alpha += 0.1f;
-//   else if (arg->f == 0.0f)
-//      alpha = alpha_def;
-//   else
-//      return;
-//
-//   dc.col[defaultbg].color.alpha = (unsigned short)(0xFFFF * alpha);
-//   /* Required to remove artifacting from borderpx */
-//   cresize(0, 0);
-//   redraw();
-//}
-
-#include <stdio.h>
-#include <stdlib.h>
-void log_to_file(const char *message) {
-    const char *log_file_path = getenv("HOME"); // Get the home directory
-    if (log_file_path == NULL) {
-        return; // If HOME is not set, don't log
-    }
-
-    char file_path[256];
-    snprintf(file_path, sizeof(file_path), "%s/st_test.txt", log_file_path);
-
-    FILE *file = fopen(file_path, "a"); // Open the file in append mode
-    if (file != NULL) {
-        fprintf(file, "%s\n", message); // Write the message to the file
-        fclose(file);
-    }
-}
-
-float clamp(float value, float lower, float upper)
-{
-    if(value < lower)
-        return lower;
-    if(value > upper)
-        return upper;
-    return value;
-}
 void
 changealpha(const Arg *arg)
 {
-    if((alpha > 0 && arg->f < 0) || (alpha < 1 && arg->f > 0))
-        alpha += arg->f;
+	alpha += arg->f;
+	LIMIT(alpha, 0.0, 1.0);
 
-    //if (alpha < 0.03){
-    //    defaultbg = alphaBg;
-    //}else {
-    //    defaultbg = defaultAlphaBg;
-    //}
-
-    alpha = clamp(alpha, 0.0, 1.0);
-    alphaUnfocus = clamp(alpha-alphaOffset, 0.0, 1.0);
-
-    xloadcols();
-    redraw();
-
-    // Debug
-    //char log_message[128];
-    //snprintf(log_message, sizeof(log_message), "changealpha called, alpha: %.2f", alpha);
-    //log_to_file(log_message);
+	xloadcols();
+	redraw();
 }
 
 void
@@ -1787,10 +1740,6 @@ void
 xdrawcursor(int cx, int cy, Glyph g, int ox, int oy, Glyph og, Line line, int len)
 {
 	Color drawcol;
-
-	/* remove the old cursor */
-	if (selected(ox, oy))
-		og.mode ^= ATTR_REVERSE;
 
 	/* Redraw the line where cursor was previously.
 	 * It will restore the ligatures broken by the cursor. */
@@ -2296,6 +2245,7 @@ resource_load(XrmDatabase db, char *name, enum resource_type rtype, void *dst)
 	char **sdst = dst;
 	int *idst = dst;
 	float *fdst = dst;
+	double *ddst = dst;
 
 	char fullname[256];
 	char fullclass[256];
@@ -2322,6 +2272,9 @@ resource_load(XrmDatabase db, char *name, enum resource_type rtype, void *dst)
 	case FLOAT:
 		*fdst = strtof(ret.addr, NULL);
 		break;
+	case DOUBLE:
+		*ddst = strtod(ret.addr, NULL);
+		break;
 	}
 	return 0;
 }
@@ -2346,14 +2299,16 @@ config_init(void)
 void
 usage(void)
 {
-	die("usage: %s [-aiv] [-c class] [-d path] [-f font]"
-	    " [-g geometry] [-n name] [-o file]\n"
-	    "          [-T title] [-t title] [-w windowid]"
-	    " [[-e] command [args ...]]\n"
-	    "       %s [-aiv] [-c class] [-d path] [-f font]"
-	    " [-g geometry] [-n name] [-o file]\n"
-	    "          [-T title] [-t title] [-w windowid] -l line"
-	    " [stty_args ...]\n", argv0, argv0);
+	die("usage: %s [-aiv] [-A alpha] [-c class] [-d path] [-f font]"
+	    " [-g geometry]\n"
+	    "          [-n name] [-o file]"
+	    " [-T title] [-t title] [-w windowid]\n"
+	    "          [[-e] command [args ...]]\n"
+	    "       %s [-aiv] [-A alpha] [-c class] [-d path] [-f font]"
+	    " [-g geometry]\n"
+	    "          [-n name] [-o file] [-T title] [-t title]"
+	    " [-w windowid]\n"
+	    "          -l line [stty_args ...]\n", argv0, argv0);
 }
 
 int
@@ -2368,8 +2323,7 @@ main(int argc, char *argv[])
 		allowaltscreen = 0;
 		break;
 	case 'A':
-		alpha = strtof(EARGF(usage()), NULL);
-		LIMIT(alpha, 0.0, 1.0);
+		opt_alpha = EARGF(usage());
 		break;
 	case 'c':
 		opt_class = EARGF(usage());
@@ -2428,13 +2382,17 @@ run:
 		die("Can't open display\n");
 
 	config_init();
+	if (opt_alpha)
+		alpha = strtof(opt_alpha, NULL);
+	LIMIT(alpha, 0.0, 1.0);
 	cols = MAX(cols, 1);
 	rows = MAX(rows, 1);
 	tnew(cols, rows);
 	xinit(cols, rows);
 	xsetenv();
 	selinit();
-	chdir(opt_dir);
+	if (opt_dir && chdir(opt_dir) < 0)
+		fprintf(stderr, "chdir '%s' failed: %s\n", opt_dir, strerror(errno));
 	run();
 
 	return 0;

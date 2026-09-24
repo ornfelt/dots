@@ -86,6 +86,7 @@ void externalpipe(const Arg *);
 
 void kscrolldown(const Arg *);
 void kscrollup(const Arg *);
+int tisaltscr(void);
 void printscreen(const Arg *);
 void printsel(const Arg *);
 void sendbreak(const Arg *);
@@ -129,4 +130,3 @@ extern unsigned int tabspaces;
 extern unsigned int defaultfg;
 extern unsigned int defaultbg;
 extern unsigned int defaultcs;
-extern float alpha_def;

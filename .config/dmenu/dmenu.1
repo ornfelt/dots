@@ -3,7 +3,7 @@
 dmenu \- dynamic menu
 .SH SYNOPSIS
 .B dmenu
-.RB [ \-bfiv ]
+.RB [ \-bcfiv ]
 .RB [ \-l
 .IR lines ]
 .RB [ \-m
@@ -24,6 +24,8 @@ dmenu \- dynamic menu
 .IR color ]
 .RB [ \-of
 .IR color ]
+.RB [ \-bw
+.IR width ]
 .RB [ \-w
 .IR windowid ]
 .P
@@ -42,7 +44,7 @@ which lists programs in the user's $PATH and runs the result in their $SHELL.
 .SH OPTIONS
 .TP
 .B \-b
-dmenu appears at the bottom of the screen.
+dmenu appears at the bottom of the screen. This overrides centering.
 .TP
 .B \-c
 dmenu appears centered on the screen.
@@ -90,6 +92,10 @@ defines the outline foreground color (for multiple selection).
 .TP
 .B \-v
 prints version information to stdout, then exits.
+.TP
+.BI \-bw " width"
+sets the width of the window border in pixels. The border uses the selected
+background color.
 .TP
 .BI \-w " windowid"
 embed into windowid.

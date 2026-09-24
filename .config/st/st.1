@@ -4,6 +4,8 @@ st \- simple terminal
 .SH SYNOPSIS
 .B st
 .RB [ \-aiv ]
+.RB [ \-A
+.IR alpha ]
 .RB [ \-c
 .IR class ]
 .RB [ \-d
@@ -30,6 +32,8 @@ st \- simple terminal
 .PP
 .B st
 .RB [ \-aiv ]
+.RB [ \-A
+.IR alpha ]
 .RB [ \-c
 .IR class ]
 .RB [ \-d
@@ -59,8 +63,12 @@ is a simple terminal emulator.
 .B \-a
 disable alternate screens in terminal
 .TP
+.BI \-A " alpha"
+defines the background opacity, from 0.0 (transparent) to 1.0 (opaque).
+.TP
 .BI \-c " class"
-defines the window class (default $TERM).
+defines the window class (default St).
+It is also used as the class for Xresources lookups.
 .TP
 .BI \-d " path"
 changes the working directory to
@@ -81,7 +89,8 @@ for further details.
 will fixate the position given with the -g option.
 .TP
 .BI \-n " name"
-defines the window instance name (default $TERM).
+defines the window instance name (default st).
+It is also used as the name for Xresources lookups.
 .TP
 .BI \-o " iofile"
 writes all the I/O to

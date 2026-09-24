@@ -473,21 +473,21 @@ local netupinfo = lain.widget.net({
 
         --widget:set_markup(markup.fontfg(theme.font, "#e54c62", net_now.sent .. " "))
         --netdowninfo:set_markup(markup.fontfg(theme.font, "#87af5f", net_now.received .. " "))
-        widget:set_markup(markup.fontfg(theme.font, "#fe8019", net_now.sent .. " "))
-        netdowninfo:set_markup(markup.fontfg(theme.font, "#689d6a", net_now.received .. " "))
+        widget:set_markup(markup.fontfg(theme.font, "#689d6a", net_now.sent .. " "))
+        netdowninfo:set_markup(markup.fontfg(theme.font, "#b8bb26", net_now.received .. " "))
     end
 })
 
 local netupicon = wibox.widget {
     widget = wibox.widget.textbox,
-    markup = markup.fontfg(theme.font, "#fe8019", " "),
+    markup = markup.fontfg(theme.font, "#689d6a", " "),
     align = "center",
     valign = "center"
 }
 
 local netdownicon = wibox.widget {
     widget = wibox.widget.textbox,
-    markup = markup.fontfg(theme.font, "#689d6a", "  "),
+    markup = markup.fontfg(theme.font, "#b8bb26", "  "),
     align = "center",
     valign = "center"
 }
