@@ -64,6 +64,7 @@ rm -rf .config/awesome
 rm -rf .config/cava
 rm -rf .config/conky
 rm -rf .config/dmenu
+rm -rf .config/dunst
 rm -rf .config/dwm
 rm -rf .config/dwmblocks
 rm -rf .config/eww
@@ -109,6 +110,7 @@ cp -r $HOME/.config/alacritty .config/alacritty/
 cp -r $HOME/.config/cava .config/cava/
 cp -r $HOME/.config/conky .config/conky/
 cp -r $HOME/.config/dmenu .config/dmenu/
+cp -r $HOME/.config/dunst .config/dunst/
 cp -r $HOME/.config/dwm .config/dwm/
 cp -r $HOME/.config/dwmblocks .config/dwmblocks/
 cp -r $HOME/.config/eww .config/eww/
