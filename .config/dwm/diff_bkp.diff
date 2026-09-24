@@ -1625,7 +1625,7 @@ index 7feba78..d04bec6 100644
  .BR dmenu (1),
  .BR st (1)
 diff --git a/dwm.c b/dwm.c
-index 9086e16..ce6041b 100644
+index 9086e16..bad2d9f 100644
 --- a/dwm.c
 +++ b/dwm.c
 @@ -27,8 +27,10 @@
@@ -3037,8 +3037,18 @@ index 9086e16..ce6041b 100644
                  } else if (text[i] == '3') {
                      drw_clr_create(drw, &drw->scheme[ColFg], col3);
                  } else if (text[i] == '4') {
-@@ -969,6 +987,8 @@ drawstatusbar(Monitor *m, int bh, char* stext)
+@@ -967,8 +985,18 @@ drawstatusbar(Monitor *m, int bh, char* stext)
+                     drw_clr_create(drw, &drw->scheme[ColFg], col5);
+                 } else if (text[i] == '6') {
                      drw_clr_create(drw, &drw->scheme[ColFg], col6);
++                } else if (text[i] == 'c' && text[i + 1] == '#'
++                        && strspn(text + i + 2, "0123456789abcdefABCDEF") >= 6) {
++                    /* ^c#rrggbb^: any foreground colour */
++                    char hex[8];
++                    memcpy(hex, text + i + 1, 7);
++                    hex[7] = '\0';
++                    drw_clr_create(drw, &drw->scheme[ColFg], hex);
++                    i += 7;
                  }
              }
 +            if (!text[i])
@@ -3046,7 +3056,7 @@ index 9086e16..ce6041b 100644
  
              text = text + i + 1;
              i=-1;
-@@ -990,111 +1010,123 @@ drawstatusbar(Monitor *m, int bh, char* stext)
+@@ -990,111 +1018,123 @@ drawstatusbar(Monitor *m, int bh, char* stext)
  void
  drawbar(Monitor *m)
  {
@@ -3240,7 +3250,7 @@ index 9086e16..ce6041b 100644
      selmon = m;
      focus(NULL);
  }
-@@ -1102,622 +1134,587 @@ focusmon(const Arg *arg)
+@@ -1102,622 +1142,587 @@ focusmon(const Arg *arg)
  void
  focusstack(const Arg *arg)
  {
@@ -4308,7 +4318,7 @@ index 9086e16..ce6041b 100644
  {
      system("killall -q dwmblocks; dwmblocks &");
  }
-@@ -1725,44 +1722,48 @@ runAutostart(void)
+@@ -1725,44 +1730,48 @@ runAutostart(void)
  void
  scan(void)
  {
@@ -4390,7 +4400,7 @@ index 9086e16..ce6041b 100644
  }
  
  void
-@@ -1775,10 +1776,12 @@ sendmonview(Client *c, Monitor *m)
+@@ -1775,10 +1784,12 @@ sendmonview(Client *c, Monitor *m)
      detachstack(c);
      arrange(c->mon);
      c->mon = m;
@@ -4405,7 +4415,7 @@ index 9086e16..ce6041b 100644
      arrange(m);
      focus(c);
      restack(m);
-@@ -1787,318 +1790,443 @@ sendmonview(Client *c, Monitor *m)
+@@ -1787,318 +1798,443 @@ sendmonview(Client *c, Monitor *m)
  void
  setclientstate(Client *c, long state)
  {
@@ -5084,7 +5094,7 @@ index 9086e16..ce6041b 100644
  {
      if (selmon->sel && arg->ui & TAGMASK) {
          selmon->sel->tags = arg->ui & TAGMASK;
-@@ -2109,439 +2237,500 @@ tagview(const Arg *arg)
+@@ -2109,439 +2245,500 @@ tagview(const Arg *arg)
  }
  
  void
@@ -5889,7 +5899,7 @@ index 9086e16..ce6041b 100644
      }
  
      selmon->seltags ^= 1; /* toggle sel tagset */
-@@ -2554,135 +2743,165 @@ view(const Arg *arg)
+@@ -2554,135 +2751,165 @@ view(const Arg *arg)
  pid_t
  winpid(Window w)
  {
@@ -6136,7 +6146,7 @@ index 9086e16..ce6041b 100644
  }
  
  /* There's no way to check accesses to destroyed windows, thus those cases are
-@@ -2691,25 +2910,25 @@ wintomon(Window w)
+@@ -2691,25 +2918,25 @@ wintomon(Window w)
  int
  xerror(Display *dpy, XErrorEvent *ee)
  {
@@ -6176,7 +6186,7 @@ index 9086e16..ce6041b 100644
  }
  
  /* Startup Error handler to check if another window manager
-@@ -2717,107 +2936,103 @@ xerrordummy(Display *dpy, XErrorEvent *ee)
+@@ -2717,107 +2944,103 @@ xerrordummy(Display *dpy, XErrorEvent *ee)
  int
  xerrorstart(Display *dpy, XErrorEvent *ee)
  {

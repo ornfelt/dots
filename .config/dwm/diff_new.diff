@@ -609,7 +609,7 @@ index bdbf950..fbfec02 100644
  /* Cursor abstraction */
  Cur *drw_cur_create(Drw *drw, int shape);
 diff --git a/dwm.c b/dwm.c
-index 1ce4a38..ce6041b 100644
+index 1ce4a38..bad2d9f 100644
 --- a/dwm.c
 +++ b/dwm.c
 @@ -27,6 +27,7 @@
@@ -1058,8 +1058,18 @@ index 1ce4a38..ce6041b 100644
                  } else if (text[i] == '3') {
                      drw_clr_create(drw, &drw->scheme[ColFg], col3);
                  } else if (text[i] == '4') {
-@@ -1075,6 +987,8 @@ drawstatusbar(Monitor *m, int bh, char* stext)
+@@ -1073,8 +985,18 @@ drawstatusbar(Monitor *m, int bh, char* stext)
+                     drw_clr_create(drw, &drw->scheme[ColFg], col5);
+                 } else if (text[i] == '6') {
                      drw_clr_create(drw, &drw->scheme[ColFg], col6);
++                } else if (text[i] == 'c' && text[i + 1] == '#'
++                        && strspn(text + i + 2, "0123456789abcdefABCDEF") >= 6) {
++                    /* ^c#rrggbb^: any foreground colour */
++                    char hex[8];
++                    memcpy(hex, text + i + 1, 7);
++                    hex[7] = '\0';
++                    drw_clr_create(drw, &drw->scheme[ColFg], hex);
++                    i += 7;
                  }
              }
 +            if (!text[i])
@@ -1067,7 +1077,7 @@ index 1ce4a38..ce6041b 100644
  
              text = text + i + 1;
              i=-1;
-@@ -1093,136 +1007,10 @@ drawstatusbar(Monitor *m, int bh, char* stext)
+@@ -1093,136 +1015,10 @@ drawstatusbar(Monitor *m, int bh, char* stext)
      return ret;
  }
  
@@ -1204,7 +1214,7 @@ index 1ce4a38..ce6041b 100644
  	unsigned int i, occ = 0, urg = 0;
  	Client *c;
  
-@@ -1230,10 +1018,8 @@ drawbar(Monitor *m)
+@@ -1230,10 +1026,8 @@ drawbar(Monitor *m)
  		return;
  
  	/* draw status first so it can be overdrawn by tags later */
@@ -1217,7 +1227,7 @@ index 1ce4a38..ce6041b 100644
  
  	for (c = m->clients; c; c = c->next) {
  		occ |= c->tags == TAGMASK ? 0 : c->tags;
-@@ -1329,13 +1115,29 @@ focusmon(const Arg *arg)
+@@ -1329,13 +1123,29 @@ focusmon(const Arg *arg)
  	focus(NULL);
  }
  
@@ -1248,7 +1258,7 @@ index 1ce4a38..ce6041b 100644
  		return;
  
  	for(p = NULL, c = selmon->clients; c && (i || !ISVISIBLE(c));
-@@ -1347,14 +1149,15 @@ focusstack(const Arg *arg)
+@@ -1347,14 +1157,15 @@ focusstack(const Arg *arg)
  Atom
  getatomprop(Client *c, Atom prop)
  {
@@ -1268,7 +1278,7 @@ index 1ce4a38..ce6041b 100644
  		XFree(p);
  	}
  	return atom;
-@@ -1404,10 +1207,10 @@ getstate(Window w)
+@@ -1404,10 +1215,10 @@ getstate(Window w)
  	Atom real;
  
  	if (XGetWindowProperty(dpy, w, wmatom[WMState], 0L, 2L, False, wmatom[WMState],
@@ -1282,7 +1292,7 @@ index 1ce4a38..ce6041b 100644
  	XFree(p);
  	return result;
  }
-@@ -1671,7 +1474,7 @@ movemouse(const Arg *arg)
+@@ -1671,7 +1482,7 @@ movemouse(const Arg *arg)
  			handler[ev.type](&ev);
  			break;
  		case MotionNotify:
@@ -1291,7 +1301,7 @@ index 1ce4a38..ce6041b 100644
  				continue;
  			lasttime = ev.xmotion.time;
  
-@@ -1756,7 +1559,7 @@ pushstack(const Arg *arg) {
+@@ -1756,7 +1567,7 @@ pushstack(const Arg *arg) {
  	int i = stackpos(arg);
  	Client *sel = selmon->sel, *c, *p;
  
@@ -1300,7 +1310,7 @@ index 1ce4a38..ce6041b 100644
  		return;
  	else if(i == 0) {
  		detach(sel);
-@@ -1774,12 +1577,6 @@ pushstack(const Arg *arg) {
+@@ -1774,12 +1585,6 @@ pushstack(const Arg *arg) {
  	arrange(selmon);
  }
  
@@ -1313,7 +1323,7 @@ index 1ce4a38..ce6041b 100644
  Monitor *
  recttomon(int x, int y, int w, int h)
  {
-@@ -1814,8 +1611,8 @@ resizeclient(Client *c, int x, int y, int w, int h)
+@@ -1814,8 +1619,8 @@ resizeclient(Client *c, int x, int y, int w, int h)
  	if (((nexttiled(c->mon->clients) == c && !nexttiled(c->next))
  	    || &monocle == c->mon->lt[c->mon->sellt]->arrange)
  	    && !c->isfullscreen && !c->isfloating) {
@@ -1324,7 +1334,7 @@ index 1ce4a38..ce6041b 100644
  		wc.border_width = 0;
  	}
  	XConfigureWindow(dpy, c->win, CWX|CWY|CWWidth|CWHeight|CWBorderWidth, &wc);
-@@ -1852,7 +1649,7 @@ resizemouse(const Arg *arg)
+@@ -1852,7 +1657,7 @@ resizemouse(const Arg *arg)
  			handler[ev.type](&ev);
  			break;
  		case MotionNotify:
@@ -1333,7 +1343,7 @@ index 1ce4a38..ce6041b 100644
  				continue;
  			lasttime = ev.xmotion.time;
  
-@@ -1916,83 +1713,6 @@ run(void)
+@@ -1916,83 +1721,6 @@ run(void)
  			handler[ev.type](&ev); /* call handler */
  }
  
@@ -1417,7 +1427,7 @@ index 1ce4a38..ce6041b 100644
  void
  runautostart(void)
  {
-@@ -2035,9 +1755,13 @@ sendmon(Client *c, Monitor *m)
+@@ -2035,9 +1763,13 @@ sendmon(Client *c, Monitor *m)
  	detach(c);
  	detachstack(c);
  	c->mon = m;
@@ -1432,7 +1442,7 @@ index 1ce4a38..ce6041b 100644
  	focus(NULL);
  	arrange(NULL);
  }
-@@ -2052,10 +1776,12 @@ sendmonview(Client *c, Monitor *m)
+@@ -2052,10 +1784,12 @@ sendmonview(Client *c, Monitor *m)
      detachstack(c);
      arrange(c->mon);
      c->mon = m;
@@ -1447,7 +1457,7 @@ index 1ce4a38..ce6041b 100644
      arrange(m);
      focus(c);
      restack(m);
-@@ -2098,12 +1824,10 @@ sendevent(Client *c, Atom proto)
+@@ -2098,12 +1832,10 @@ sendevent(Client *c, Atom proto)
  void
  setfocus(Client *c)
  {
@@ -1463,7 +1473,7 @@ index 1ce4a38..ce6041b 100644
  	sendevent(c, wmatom[WMTakeFocus]);
  }
  
-@@ -2111,9 +1835,8 @@ void
+@@ -2111,9 +1843,8 @@ void
  setfullscreen(Client *c, int fullscreen)
  {
  	if (fullscreen && !c->isfullscreen) {
@@ -1474,7 +1484,7 @@ index 1ce4a38..ce6041b 100644
  		c->oldstate = c->isfloating;
  		c->oldbw = c->bw;
  		c->bw = 0;
-@@ -2121,9 +1844,8 @@ setfullscreen(Client *c, int fullscreen)
+@@ -2121,9 +1852,8 @@ setfullscreen(Client *c, int fullscreen)
  		resizeclient(c, c->mon->mx, c->mon->my, c->mon->mw, c->mon->mh);
  		XRaiseWindow(dpy, c->win);
  	} else if (!fullscreen && c->isfullscreen){
@@ -1485,7 +1495,7 @@ index 1ce4a38..ce6041b 100644
  		c->isfloating = c->oldstate;
  		c->bw = c->oldbw;
  		c->x = c->oldx;
-@@ -2136,21 +1858,17 @@ setfullscreen(Client *c, int fullscreen)
+@@ -2136,21 +1866,17 @@ setfullscreen(Client *c, int fullscreen)
  }
  
  void
@@ -1518,7 +1528,7 @@ index 1ce4a38..ce6041b 100644
  
  void
  setlayout(const Arg *arg)
-@@ -2166,22 +1884,67 @@ setlayout(const Arg *arg)
+@@ -2166,22 +1892,67 @@ setlayout(const Arg *arg)
  		drawbar(selmon);
  }
  
@@ -1598,7 +1608,7 @@ index 1ce4a38..ce6041b 100644
  }
  
  /* arg > 1.0 will set mfact absolutely */
-@@ -2382,17 +2145,45 @@ stackpos(const Arg *arg) {
+@@ -2382,17 +2153,45 @@ stackpos(const Arg *arg) {
  void
  tag(const Arg *arg)
  {
@@ -1649,7 +1659,7 @@ index 1ce4a38..ce6041b 100644
          selmon->sel->tags = arg->ui & TAGMASK;
          focus(NULL);
          arrange(selmon);
-@@ -2416,6 +2207,43 @@ tagmonview(const Arg *arg)
+@@ -2416,6 +2215,43 @@ tagmonview(const Arg *arg)
      sendmonview(selmon->sel, dirtomon(arg->i));
  }
  
@@ -1693,7 +1703,7 @@ index 1ce4a38..ce6041b 100644
  void
  togglebar(const Arg *arg)
  {
-@@ -2425,6 +2253,20 @@ togglebar(const Arg *arg)
+@@ -2425,6 +2261,20 @@ togglebar(const Arg *arg)
  	arrange(selmon);
  }
  
@@ -1714,7 +1724,7 @@ index 1ce4a38..ce6041b 100644
  void
  togglefloating(const Arg *arg)
  {
-@@ -2432,18 +2274,27 @@ togglefloating(const Arg *arg)
+@@ -2432,18 +2282,27 @@ togglefloating(const Arg *arg)
  		return;
  	if (selmon->sel->isfullscreen) /* no support for fullscreen windows */
  		return;
@@ -1751,7 +1761,7 @@ index 1ce4a38..ce6041b 100644
  	arrange(selmon);
  }
  
-@@ -2642,11 +2493,11 @@ updategeom(void)
+@@ -2642,11 +2501,11 @@ updategeom(void)
  
  #ifdef XINERAMA
  	if (XineramaIsActive(dpy)) {
@@ -1768,7 +1778,7 @@ index 1ce4a38..ce6041b 100644
  
  		for (n = 0, m = mons; m; m = m->next, n++);
  		/* only consider unique geometries as separate screens */
-@@ -2665,6 +2516,29 @@ updategeom(void)
+@@ -2665,6 +2524,29 @@ updategeom(void)
  			else
  				mons = createmon();
  		}
@@ -1798,7 +1808,7 @@ index 1ce4a38..ce6041b 100644
  		for (i = 0, m = mons; i < nn && m; m = m->next, i++)
  			if (i >= n
  			|| unique[i].x_org != m->mx || unique[i].y_org != m->my
-@@ -2713,6 +2587,22 @@ updategeom(void)
+@@ -2713,6 +2595,22 @@ updategeom(void)
  	return dirty;
  }
  
@@ -1821,7 +1831,7 @@ index 1ce4a38..ce6041b 100644
  void
  updatenumlockmask(void)
  {
-@@ -2778,7 +2668,7 @@ updatestatus(void)
+@@ -2778,7 +2676,7 @@ updatestatus(void)
  {
  	if (!gettextprop(root, XA_WM_NAME, stext, sizeof(stext)))
  		strcpy(stext, "dwm-"VERSION);
@@ -1830,7 +1840,7 @@ index 1ce4a38..ce6041b 100644
  }
  
  void
-@@ -2827,16 +2717,27 @@ updatewmhints(Client *c)
+@@ -2827,16 +2725,27 @@ updatewmhints(Client *c)
  void
  view(const Arg *arg)
  {
@@ -1866,7 +1876,7 @@ index 1ce4a38..ce6041b 100644
  }
  
  pid_t
-@@ -2854,8 +2755,10 @@ winpid(Window w)
+@@ -2854,8 +2763,10 @@ winpid(Window w)
  	xcb_res_query_client_ids_cookie_t c = xcb_res_query_client_ids(xcon, 1, &spec);
  	xcb_res_query_client_ids_reply_t *r = xcb_res_query_client_ids_reply(xcon, c, &e);
  
@@ -1878,7 +1888,7 @@ index 1ce4a38..ce6041b 100644
  
  	xcb_res_client_id_value_iterator_t i = xcb_res_query_client_ids_ids_iterator(r);
  	for (; i.rem; xcb_res_client_id_value_next(&i)) {
-@@ -2899,13 +2802,15 @@ getparentprocess(pid_t p)
+@@ -2899,13 +2810,15 @@ getparentprocess(pid_t p)
  
  #ifdef __linux__
  	FILE *f;
@@ -1896,7 +1906,7 @@ index 1ce4a38..ce6041b 100644
  	fclose(f);
  #endif /* __linux__*/
  
-@@ -3070,7 +2975,9 @@ resource_load(XrmDatabase db, char *name, enum resource_type rtype, void *dst)
+@@ -3070,7 +2983,9 @@ resource_load(XrmDatabase db, char *name, enum resource_type rtype, void *dst)
  	{
  		switch (rtype) {
  		case STRING:
@@ -1907,7 +1917,7 @@ index 1ce4a38..ce6041b 100644
  			break;
  		case INTEGER:
  			*idst = strtoul(ret.addr, NULL, 10);
-@@ -3085,20 +2992,18 @@ resource_load(XrmDatabase db, char *name, enum resource_type rtype, void *dst)
+@@ -3085,20 +3000,18 @@ resource_load(XrmDatabase db, char *name, enum resource_type rtype, void *dst)
  void
  load_xresources(void)
  {
