@@ -3,11 +3,12 @@
 # Lists git repos with work that isn't saved upstream yet: modified or untracked
 # files, staged but uncommitted changes, and commits that aren't pushed.
 #
-#   git_check_repos.sh [-f] [-a] [DIR...]
+#   git_check_repos.sh [-n] [-a] [DIR...]
 #
 #   DIR   where to look for repos, up to 4 levels deep (default: ~/.config)
-#   -f    fetch every repo first, so the ahead counts are current
-#         (without it they are as of the last fetch/pull/push)
+#   -n    don't fetch first (offline); the ahead counts are then as of the
+#         last fetch, and pushing to a URL (like git_push.sh does) doesn't
+#         update them, so pushed commits can still show as not pushed
 #   -a    also list the clean repos
 #
 # Exits with 1 if any repo has something to commit or push.
@@ -19,11 +20,11 @@ YELLOW='\033[33m'
 BLUE='\033[34m'
 DARKGRAY='\033[90m'
 
-fetch=false
+fetch=true
 show_all=false
-while getopts "fah" opt; do
+while getopts "nah" opt; do
     case $opt in
-        f) fetch=true ;;
+        n) fetch=false ;;
         a) show_all=true ;;
         *) sed -n '3,14p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
     esac
@@ -61,27 +62,37 @@ check_repo() {
     ((${#out[@]} > 0)) && printf '    %b\n' "${out[@]}"
 }
 
-dirty=0 total=0
+repos=()
 for dir in "$@"; do
     [ -d "$dir" ] || { printf "%b[warn] %s is not a directory%b\n" "$YELLOW" "$dir" "$RESET"; continue; }
-    while read -r gitdir; do
-        repo=${gitdir%/.git}
-        total=$((total + 1))
-        if $fetch && [ -n "$(git -C "$repo" remote)" ]; then
-            git -C "$repo" fetch --all --quiet 2>/dev/null ||
-                printf "%b[warn] fetch failed for %s%b\n" "$YELLOW" "${repo/#$HOME/\~}" "$RESET"
-        fi
-        report=$(check_repo "$repo")
-        name=${repo/#$HOME/\~}
-        if [ -n "$report" ]; then
-            dirty=$((dirty + 1))
-            printf "%b%s%b %b(%s)%b\n%s\n" "$BLUE" "$name" "$RESET" "$DARKGRAY" \
-                "$(git -C "$repo" rev-parse --abbrev-ref HEAD 2>/dev/null)" "$RESET" "$report"
-        elif $show_all; then
-            printf "%b%s%b %bclean%b\n" "$BLUE" "$name" "$RESET" "$GREEN" "$RESET"
-        fi
     # repos up to 4 levels deep, so their .git up to 5
+    while read -r gitdir; do
+        repos+=("${gitdir%/.git}")
     done < <(find "$dir" -maxdepth 5 -name .git \( -type d -o -type f \) -prune 2>/dev/null | LC_ALL=C sort)
+done
+
+# Fetch all repos in parallel, so the ahead counts match the remotes
+if $fetch; then
+    for repo in "${repos[@]}"; do
+        [ -n "$(git -C "$repo" remote)" ] || continue
+        (git -C "$repo" fetch --all --quiet 2>/dev/null ||
+            printf "%b[warn] fetch failed for %s%b\n" "$YELLOW" "${repo/#$HOME/\~}" "$RESET") &
+    done
+    wait
+fi
+
+dirty=0 total=0
+for repo in "${repos[@]}"; do
+    total=$((total + 1))
+    report=$(check_repo "$repo")
+    name=${repo/#$HOME/\~}
+    if [ -n "$report" ]; then
+        dirty=$((dirty + 1))
+        printf "%b%s%b %b(%s)%b\n%s\n" "$BLUE" "$name" "$RESET" "$DARKGRAY" \
+            "$(git -C "$repo" rev-parse --abbrev-ref HEAD 2>/dev/null)" "$RESET" "$report"
+    elif $show_all; then
+        printf "%b%s%b %bclean%b\n" "$BLUE" "$name" "$RESET" "$GREEN" "$RESET"
+    fi
 done
 
 if ((total == 0)); then
@@ -90,6 +101,6 @@ elif ((dirty == 0)); then
     printf "%bAll %d repo(s) are clean and pushed.%b\n" "$GREEN" "$total" "$RESET"
 else
     printf "\n%b%d of %d repo(s) have changes to commit or push.%b\n" "$YELLOW" "$dirty" "$total" "$RESET"
-    $fetch || printf "%bAhead counts are as of the last fetch, use -f to fetch first.%b\n" "$DARKGRAY" "$RESET"
+    $fetch || printf "%bNot fetched (-n), ahead counts are as of the last fetch.%b\n" "$DARKGRAY" "$RESET"
     exit 1
 fi
