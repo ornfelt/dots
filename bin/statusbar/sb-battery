@@ -4,11 +4,7 @@
 # to charge status (🔌 for plugged up, 🔋 for discharging on battery, etc.).
 
 case $BLOCK_BUTTON in
-	1) pamixer -t; kill -44 $(pidof dwmblocks) ;;
-	2) rofi -theme "~/.config/rofi/themes/gruvbox/gruvbox-dark.rasi" -e "Audio clicked 2" ;;
-	3) rofi -theme "~/.config/rofi/themes/gruvbox/gruvbox-dark.rasi" -e "Audio clicked 3" ;;
-	4) pamixer --allow-boost -i 1; kill -44 $(pidof dwmblocks) ;;
-	5) pamixer --allow-boost -d 1; kill -44 $(pidof dwmblocks) ;;
+	1) notify-send "Battery" "$(acpi -b)" ;;
 	6) "$TERMINAL" -e "$EDITOR" "$0" ;;
 esac
 
