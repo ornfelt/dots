@@ -17,7 +17,7 @@
 #define FILEX "yazi"
 
 /* appearance */
-static unsigned int borderpx    = 3;        /* border pixel of windows */
+static unsigned int borderpx    = 2;        /* border pixel of windows */
 static const unsigned int gappx = 10;       /* default gap between windows in pixels */
 static unsigned int snap        = 32;       /* snap pixel */
 static unsigned int gappih      = 20;       /* horiz inner gap between windows */

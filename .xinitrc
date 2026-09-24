@@ -66,20 +66,34 @@ xset s noblank
 xset -dpms
 xset -b
 
-#exec i3
-#exec awesome
+# Window manager to start: awesome | i3 | dwm (anything else falls back to dwm).
+# Override for one session without editing this file: WM=awesome startx
+WM="${WM:-dwm}"
+#WM="${WM:-awesome}"
+
 # To start with logging:
 # startx > $HOME/startx.log 2>&1
 # or:
 # startx >> ~/.startx_dwm.log 2>&1 &
 
-sh ~/.dwm/autostart.sh &
-#sh ~/.dwm/autostart.sh >> ~/.dwm/autostart.log 2>&1 &
+# The WM must be exec'd as the last, foreground command: quitting it ends the
+# X session.
+case "$WM" in
+  awesome|awesomewm)
+    # awesome starts picom etc. itself (run_once in rc.lua)
+    exec awesome
+    ;;
+  i3)
+    exec i3
+    ;;
+  *)
+    sh ~/.dwm/autostart.sh &
+    #sh ~/.dwm/autostart.sh >> ~/.dwm/autostart.log 2>&1 &
 
+    # -b: run picom in the background so the session is tied to dwm, not picom
+    picom -b
 
-# -b: run picom in the background so the session is tied to dwm, not picom
-picom -b
-
-# dwm must be the last, foreground command: quitting dwm ends the X session
-exec dwm
+    exec dwm
+    ;;
+esac
 

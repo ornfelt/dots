@@ -25,6 +25,10 @@ font pango:JetBrains Mono Medium 10
 # and nm-applet is a desktop environment-independent system tray GUI for it.
 #exec --no-startup-id nm-applet
 
+# Compositor (config: ~/.config/picom/picom.conf). `exec`, not `exec_always`,
+# so an i3 restart doesn't start a second picom.
+exec --no-startup-id picom -b
+
 # Use pactl to adjust volume in PulseAudio.
 set $refresh_i3status killall -SIGUSR1 i3status
 
