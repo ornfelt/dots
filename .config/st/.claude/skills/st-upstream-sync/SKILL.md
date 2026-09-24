@@ -23,7 +23,7 @@ repo - no separate clone is used.
 cd ~/.config/st
 git remote get-url upstream 2>/dev/null || git remote add upstream https://git.suckless.org/st
 git fetch upstream
-git status --short   # must be clean before starting - otherwise stop and ask
+git status --short -- . ':(exclude).claude'   # must be clean before starting (.claude/ itself is ignored) - otherwise stop and ask
 ```
 
 ## 2. Find where to start
