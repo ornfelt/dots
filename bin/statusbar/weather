@@ -31,7 +31,7 @@ fi
 if [[ "$WIFI_NAME" == *"nätet"* || "$WIFI_NAME" == *"telia"* ]]; then
     CITY="Stockholm"
 else
-    data=$(curl -s https://ipinfo.io/json)
+    data=$(curl -s --max-time 2 https://ipinfo.io/json)
     CITY=$(echo "$data" | jq -r '.city')
 fi
 
