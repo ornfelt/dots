@@ -34,6 +34,7 @@ local ICON = "✻" -- Claude's logo glyph (awesome draws it)
 local TERMINAL = os.getenv("TERMINAL") or "wezterm"
 local FONT = "JetBrainsMono Nerd Font 10" -- the bar font
 local POPUP_WIDTH = 380
+local POPUP_SHIFT = -100 -- px left of centred under the mouse
 local script_dir = (arg[0] or ""):match("^(.*)/") or "."
 local runtime_dir = os.getenv("XDG_RUNTIME_DIR") or "/tmp"
 local POPUP_PID = runtime_dir .. "/sb-claude-popup.pid"
@@ -97,7 +98,7 @@ local function show_popup(markup)
 		css:write(string.format("window, window * { background-color: %s; color: %s; }\n", c.bg, c.fg))
 		css:close()
 	end
-	local p = io.popen(sh_quote(script_dir .. "/sb-popup-pos") .. " " .. POPUP_WIDTH .. " mouse 2>/dev/null")
+	local p = io.popen(sh_quote(script_dir .. "/sb-popup-pos") .. " " .. POPUP_WIDTH .. " mouse " .. POPUP_SHIFT .. " 2>/dev/null")
 	local x, y = (p and p:read("l") or ""):match("^(%-?%d+) (%-?%d+)$")
 	if p then
 		p:close()

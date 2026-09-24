@@ -6,11 +6,13 @@
 #
 #   sb-popup-pos WIDTH [mouse]   centred under the mouse
 #   sb-popup-pos WIDTH right     in the top right corner
+#   sb-popup-pos WIDTH mouse -60 60px left of centred under the mouse
 #
 # Exits with 1 (printing nothing) if the monitor can't be found.
 
-width=${1:?usage: sb-popup-pos WIDTH [mouse|right]}
+width=${1:?usage: sb-popup-pos WIDTH [mouse|right] [SHIFT]}
 anchor=${2:-mouse}
+shift=${3:-0}
 border=3 # dwm's borderpx
 gap=10
 
@@ -36,6 +38,7 @@ if [ "$anchor" = right ]; then
 else
 	x=$((X - total / 2))
 fi
+x=$((x + shift))
 # keep it on the monitor
 ((x > mx + mw - total - gap)) && x=$((mx + mw - total - gap))
 ((x < mx + gap)) && x=$((mx + gap))
