@@ -44,6 +44,8 @@ xhost si:localuser:root
 dbus-update-activation-environment --systemd DISPLAY XAUTHORITY
 
 # set some env vars
+# Terminal for the statusbar scripts' click actions (dwmblocks inherits it via dwm)
+export TERMINAL="wezterm"
 export my_notes_path="$HOME/Documents/my_notes"
 export code_root_dir="$HOME"
 
