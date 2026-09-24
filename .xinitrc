@@ -68,7 +68,6 @@ xset -b
 
 #exec i3
 #exec awesome
-exec dwm &
 # To start with logging:
 # startx > $HOME/startx.log 2>&1
 # or:
@@ -78,9 +77,9 @@ sh ~/.dwm/autostart.sh &
 #sh ~/.dwm/autostart.sh >> ~/.dwm/autostart.log 2>&1 &
 
 
-if picom --help | grep -q "\-\-animations"; then
-    picom --animations
-else
-    picom
-fi
+# -b: run picom in the background so the session is tied to dwm, not picom
+picom -b
+
+# dwm must be the last, foreground command: quitting dwm ends the X session
+exec dwm
 

@@ -67,7 +67,7 @@ local function run_once(cmd_arr)
 end
 
 --run_once({ "urxvtd", "unclutter -root" }) -- comma-separated entries
-run_once({ "picom", "--animations" })
+run_once({ "picom" })
 run_once({ "xfce4-power-manager" })
 
 -- Keep the screen from blanking. xfce4-power-manager re-applies its own
