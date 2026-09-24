@@ -67,6 +67,7 @@ rm -rf .config/dmenu
 rm -rf .config/dunst
 rm -rf .config/dwm
 rm -rf .config/dwmblocks
+rm -rf .config/dwmr
 rm -rf .config/eww
 rm -rf .config/hypr
 rm -rf .config/i3
@@ -113,6 +114,7 @@ cp -r $HOME/.config/dmenu .config/dmenu/
 cp -r $HOME/.config/dunst .config/dunst/
 cp -r $HOME/.config/dwm .config/dwm/
 cp -r $HOME/.config/dwmblocks .config/dwmblocks/
+cp -r $HOME/.config/dwmr .config/dwmr/
 cp -r $HOME/.config/eww .config/eww/
 cp -r $HOME/.config/hypr .config/hypr/
 cp -r $HOME/.config/i3 .config/i3/
