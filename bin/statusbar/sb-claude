@@ -26,11 +26,18 @@ local opts = config.resolve({
 	show_glyph = false, -- the widget draws its icon instead of the text glyph
 	colors = { normal = ORANGE, icon = ORANGE, warn = "#E39B3A", crit = "#C8442E", error = "#9C9A93" },
 })
--- Popup colours from the awesome popup
+-- Popup colours from the awesome popup, on gruvbox dark like the rest of the bar
 local c = opts.popup_colors
+c.bg, c.fg, c.muted, c.track = "#282828", "#ebdbb2", "#a89984", "#504945"
 
 local ICON = "✻" -- Claude's logo glyph (awesome draws it)
 local TERMINAL = os.getenv("TERMINAL") or "wezterm"
+local FONT = "JetBrainsMono Nerd Font 10" -- the bar font
+local POPUP_WIDTH = 380
+local script_dir = (arg[0] or ""):match("^(.*)/") or "."
+local runtime_dir = os.getenv("XDG_RUNTIME_DIR") or "/tmp"
+local POPUP_PID = runtime_dir .. "/sb-claude-popup.pid"
+local POPUP_CSS = runtime_dir .. "/sb-claude-popup.css"
 
 local function sh_quote(s)
 	return "'" .. tostring(s):gsub("'", "'\\''") .. "'"
@@ -58,7 +65,49 @@ local function bar_text(st)
 	return string.format("^c%s^%s ^c%s^%s ", opts.colors.icon, ICON, color, format.bar_text(st, opts))
 end
 
--- Popup (dunst notification with pango markup) ----------------------------
+-- Popup (a yad window with pango markup) ----------------------------------
+
+-- Closes the popup if it is open, returns whether it was
+local function close_popup()
+	local f = io.open(POPUP_PID, "r")
+	if not f then
+		return false
+	end
+	local pid = tonumber(f:read("l") or "")
+	f:close()
+	os.remove(POPUP_PID)
+	local comm = pid and io.open("/proc/" .. pid .. "/comm", "r")
+	if not comm then
+		return false
+	end
+	local name = comm:read("l")
+	comm:close()
+	if name ~= "yad" then
+		return false -- stale pid file
+	end
+	os.execute("kill " .. pid)
+	return true
+end
+
+-- Shows the markup under the mouse, below the bar (see sb-popup-pos). It closes
+-- when another window gets the focus, on Escape or on another click on the block.
+local function show_popup(markup)
+	local css = io.open(POPUP_CSS, "w")
+	if css then
+		css:write(string.format("window, window * { background-color: %s; color: %s; }\n", c.bg, c.fg))
+		css:close()
+	end
+	local p = io.popen(sh_quote(script_dir .. "/sb-popup-pos") .. " " .. POPUP_WIDTH .. " mouse 2>/dev/null")
+	local x, y = (p and p:read("l") or ""):match("^(%-?%d+) (%-?%d+)$")
+	if p then
+		p:close()
+	end
+	local pos = x and string.format(" --posx=%s --posy=%s", x, y) or " --mouse"
+	os.execute(string.format(
+		"sh -c 'echo $$ >\"$0\"; exec yad \"$@\"' %s --text=%s --no-buttons --undecorated --close-on-unfocus"
+			.. " --skip-taskbar --borders=14 --width=%d --gtkrc=%s%s >/dev/null 2>&1",
+		sh_quote(POPUP_PID), sh_quote(markup), POPUP_WIDTH, sh_quote(POPUP_CSS), pos))
+end
 
 local function esc(s)
 	return (tostring(s):gsub("&", "&amp;"):gsub("<", "&lt;"):gsub(">", "&gt;"))
@@ -77,7 +126,7 @@ local function level_color(level)
 	return c.accent
 end
 
-local BAR_CELLS = 32
+local BAR_CELLS = 44 -- fills the popup width (8px per cell)
 
 -- Progress bar with the pace marker, like bar.lua's
 local function progress(percent, color, pace)
@@ -129,6 +178,7 @@ local function popup(st)
 		body[#body + 1] = line
 	end
 
+	add(span(ICON, c.accent, ' size="x-large"') .. "  " .. span(rows.title, c.fg, ' size="large" font_weight="bold"'))
 	if rows.subtitle and rows.subtitle ~= "" then
 		add(span(rows.subtitle, c.muted))
 	end
@@ -201,15 +251,15 @@ local function popup(st)
 		end
 	end
 
-	-- the stack tag replaces the previous popup instead of stacking a new one
-	os.execute(string.format("notify-send -h string:x-dunst-stack-tag:claude-usage %s %s",
-		sh_quote(ICON .. " " .. rows.title), sh_quote(table.concat(body, "\n"))))
+	show_popup(string.format('<span font="%s">%s</span>', FONT, table.concat(body, "\n")))
 end
 
 -- Mouse buttons, like the awesome widget: the popup takes the place of hovering
 local button = os.getenv("BLOCK_BUTTON")
 if button == "1" then
-	popup(get_state())
+	if not close_popup() then
+		popup(get_state())
+	end
 elseif button == "2" then
 	os.execute(sh_quote(TERMINAL) .. " -e claude >/dev/null 2>&1 &")
 elseif button == "3" then
