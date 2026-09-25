@@ -15,6 +15,10 @@
 # signal runs its command with BLOCK_BUTTON=<button> set.
 # Icons and output may contain status2d codes like ^2^ or ^c#rrggbb^, which
 # dwm draws. Glyphs can be written as \uXXXX escapes.
+# `battery = true` keeps a block only when there is a battery
+# (/sys/class/power_supply/BAT*), `battery = false` only when there is none;
+# without it the block is always shown. Here sb-internet takes sb-battery's
+# place on a machine without a battery, like dwmblocks' compile.sh.
 blocks = [
     #  icon                    command                                                      update interval  update signal
     #{ icon = "^c1^",          command = "~/.local/bin/my_scripts/spotify_dwmblocks.sh", interval = 5,    signal = 12 },
@@ -23,8 +27,8 @@ blocks = [
     { icon = "^2^  ",    command = "~/.local/bin/statusbar/weather",               interval = 1800, signal = 5 },
     { icon = "^3^  ",    command = "~/.local/bin/statusbar/cputemp",               interval = 5,    signal = 4 },
     { icon = "^4^ ",           command = "~/.local/bin/statusbar/sb-volume",             interval = 0,    signal = 10 },
-    #{ icon = "^5^ ",          command = "~/.local/bin/statusbar/sb-internet",           interval = 5,    signal = 3 },
-    { icon = "^5^ ",           command = "~/.local/bin/statusbar/sb-battery",            interval = 5,    signal = 3 },
+    { icon = "^5^ ",           command = "~/.local/bin/statusbar/sb-internet",           interval = 5,    signal = 3, battery = false },
+    { icon = "^5^ ",           command = "~/.local/bin/statusbar/sb-battery",            interval = 5,    signal = 3, battery = true },
     { icon = "^6^  ",    command = "~/.local/bin/statusbar/sb-clock",              interval = 5,    signal = 1 },
 ]
 

@@ -42,6 +42,12 @@ xhost si:localuser:root
 # the X display, otherwise they can't open it. Arch does this in xinitrc.d,
 # Debian doesn't.
 dbus-update-activation-environment --systemd DISPLAY XAUTHORITY
+# (Re)start dunst on this X server. When X restarts (e.g. switching dwm/dwmr),
+# a notification sent in between can D-Bus-start dunst before the new display
+# is up; it then fails ("Cannot open X11 display") and the statusbar popups'
+# notify-send --wait hang, so weather/battery/cputemp clicks show nothing.
+systemctl --user reset-failed dunst.service 2>/dev/null
+systemctl --user restart dunst.service &
 
 # set some env vars
 # Terminal for the statusbar scripts' click actions (dwmblocks inherits it via dwm)
@@ -68,8 +74,8 @@ xset -b
 
 # Window manager to start: awesome | i3 | dwmr | dwm (anything else falls back to dwm).
 # Override for one session without editing this file: WM=awesome startx
-WM="${WM:-dwm}"
-#WM="${WM:-dwmr}"
+#WM="${WM:-dwm}"
+WM="${WM:-dwmr}"
 #WM="${WM:-awesome}"
 
 # To start with logging:
