@@ -51,7 +51,7 @@ DARKGRAY = "\033[90m"
 RESET = "\033[0m"
 
 # Levels: good, warn, bad, or None (not judged yet)
-ANSI = {"good": GREEN, "warn": YELLOW, "bad": RED, None: ""}
+ANSI = {"good": GREEN, "warn": YELLOW, "bad": RED, None: DARKGRAY}  # None: gray, not judged yet
 # chart axes by level (gruvbox green, yellow, red)
 AXIS = {"good": (184, 187, 38), "warn": (215, 153, 33), "bad": (251, 73, 52), None: FG}
 # growth lines by level, a lighter and a darker shade so RSS and anon differ
@@ -278,7 +278,8 @@ def header(targets, missing, interval):
             f"  anon {c(cur['anon'], level(cur['anon'], good, warn), '7.2f')} MiB"
             f"  anon {c(grow, level(grow, ggood, gwarn), '+.2f')} MiB"
             f" ({c(rate, rate_level(rate, el), '+.2f')}/h)"
-            f"  {DARKGRAY}{fmt_elapsed(el)}{RESET}")
+            f"  {DARKGRAY}{fmt_elapsed(el)}"
+            + (f", rate judged in {fmt_elapsed(600 - el)}" if el < 600 else "") + RESET)
     for m in missing:
         lines.append(f"  {YELLOW}{m}{RESET}")
     return "\n".join(lines)

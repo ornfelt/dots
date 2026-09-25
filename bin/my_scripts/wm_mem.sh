@@ -35,8 +35,9 @@ else
 fi
 write_err() { echo "${RED}${1}${RESET}"; }
 write_info() { echo "${CYAN}${1}${RESET}"; }
-# Colour of a table cell's level: g(ood), w(arning), b(ad), n(eutral), p(rocess)
-declare -A LEVEL=([g]=$GREEN [w]=$YELLOW [b]=$RED [n]= [p]=$MAGENTA)
+# Colour of a table cell's level: g(ood), w(arning), b(ad), n(eutral),
+# p(rocess), d (not judged yet)
+declare -A LEVEL=([g]=$GREEN [w]=$YELLOW [b]=$RED [n]= [p]=$MAGENTA [d]=$DARKGRAY)
 
 interval=5 plot= want_wm= want_bar= pids_only=
 while [ $# -gt 0 ]; do
@@ -142,10 +143,10 @@ growth_level() {
 }
 
 # rate_level DELTA ELAPSED: kB over seconds; fine up to 0.25 MiB/h, a warning
-# up to 2 MiB/h; neutral for the first 10 minutes, when it is mostly noise
+# up to 2 MiB/h; not judged (d) for the first 10 minutes, when it is mostly noise
 rate_level() {
 	awk -v d="$1" -v t="$2" 'BEGIN {
-		if (t < 600) { print "n"; exit }
+		if (t < 600) { print "d"; exit }
 		r = d / 1024 * 3600 / t
 		print (r <= 0.25 ? "g" : r <= 2 ? "w" : "b") }'
 }
@@ -258,6 +259,13 @@ while true; do
 	done
 	echo
 	echo "  ${GREEN}fine${RESET}  ${YELLOW}worth a look${RESET}  ${RED}likely a problem${RESET}"
+	# the growth rates are gray until they are judged, say so and for how long
+	warm=0
+	for t in wm bar; do
+		[ -n "${pid[$t]}" ] && (($(date +%s) - start[$t] < 600)) &&
+			warm=$((600 - ($(date +%s) - start[$t])))
+	done
+	((warm > 0)) && echo "  ${DARKGRAY}Growth rates are judged after 10 minutes ($((warm / 60))m $((warm % 60))s to go).${RESET}"
 	echo "${DARKGRAY}  Anon/private dirty that keeps growing while you do the same things is a leak;"
 	echo "  file/shmem go up and down with libraries and shared buffers.${RESET}"
 
