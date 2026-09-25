@@ -613,12 +613,12 @@ claude_usage = require("claude_usage").new({
 
     spend_in_bar = claude_show_spend,
 
-    -- no chip: icon and numbers drawn in Claude orange, amber/red at the thresholds
+    -- no chip: icon and numbers drawn in Claude orange, red at the crit threshold
     style  = "bare",
     colors = {
         normal = claude_orange,
         icon   = claude_orange,
-        warn   = "#E39B3A",
+        warn   = claude_orange,  -- same as normal, so the text always matches the icon
         crit   = "#C8442E",
         error  = "#9C9A93",
     },

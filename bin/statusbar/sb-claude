@@ -24,7 +24,8 @@ local ORANGE = "#D97757"
 local opts = config.resolve({
 	spend_in_bar = false,
 	show_glyph = false, -- the widget draws its icon instead of the text glyph
-	colors = { normal = ORANGE, icon = ORANGE, warn = "#E39B3A", crit = "#C8442E", error = "#9C9A93" },
+	-- warn = ORANGE: the text keeps the icon's orange until crit, like the widget
+	colors = { normal = ORANGE, icon = ORANGE, warn = ORANGE, crit = "#C8442E", error = "#9C9A93" },
 })
 -- Popup colours from the awesome popup, on gruvbox dark like the rest of the bar
 local c = opts.popup_colors
