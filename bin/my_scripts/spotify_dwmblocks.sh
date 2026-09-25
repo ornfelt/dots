@@ -33,7 +33,7 @@ case $BLOCK_BUTTON in
 	1) exec 9>"${XDG_RUNTIME_DIR:-/tmp}/sb-spotify.lock"; flock -n 9 || exit 0
 	   notify-send --wait "Spotify" "$(main "%title%\n%artist%\n%album%")" ;;
 	2) player PlayPause ;;
-	3) pkill -RTMIN+12 dwmblocks ;;
+	3) pkill -RTMIN+12 -x 'dwmblocksr?' ;;
 	4) player Previous; sleep 0.5 ;;
 	5) player Next; sleep 0.5 ;;
 	6) "$TERMINAL" -e "$EDITOR" "$0" ;;

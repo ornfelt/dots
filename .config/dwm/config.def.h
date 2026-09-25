@@ -15,6 +15,8 @@ static const int focusonwheel       = 0;
 static char font[]            = "monospace:size=10";
 static char dmenufont[]       = "monospace:size=10";
 static const char *fonts[]          = { font };
+/* bigger font for status text between ^B^ and ^N^, e.g. a block's icon */
+static const char *statusbigfonts[] = { "monospace:size=14" };
 static char normbgcolor[]           = "#222222";
 static char normbordercolor[]       = "#444444";
 static char normfgcolor[]           = "#bbbbbb";

@@ -207,6 +207,7 @@ static Monitor *numtomon(int num);
 static void drawbar(Monitor *m);
 static void drawbars(void);
 static int drawstatusbar(Monitor *m, int bh, char* text);
+static void statusfontcode(const char *code);
 static const char *weathercolor(const char *s);
 static void expose(XEvent *e);
 static void focus(Client *c);
@@ -336,6 +337,7 @@ static Cur *cursor[CurLast];
 static Clr **scheme;
 static Display *dpy;
 static Drw *drw;
+static Fnt *normalfont, *statusbigfont; /* ^N^ and ^B^ in the status text */
 static Monitor *mons, *selmon;
 static Window root, wmcheckwin;
 
@@ -601,6 +603,7 @@ buttonpress(XEvent *e)
 					*s = '\0';
 					x += TEXTW(text) - lrpad;
 					*s = '^';
+					statusfontcode(s + 1);
 					if (*(++s) == 'f')
 						x += atoi(++s);
 					while (*s && *s != '^')
@@ -610,6 +613,7 @@ buttonpress(XEvent *e)
 					text = s + 1;
 				}
 			}
+			drw_setfontset(drw, normalfont);
 		}
 	} else if ((c = wintoclient(ev->window))) {
 		if (focusonwheel || (ev->button != Button4 && ev->button != Button5))
@@ -657,6 +661,7 @@ cleanup(void)
 	drw_scm_free(drw, scheme[LENGTH(colors)], 3);
 	free(scheme);
 	XDestroyWindow(dpy, wmcheckwin);
+	drw_fontset_free(statusbigfont);
 	drw_free(drw);
 	XSync(dpy, False);
 	XSetInputFocus(dpy, PointerRoot, RevertToPointerRoot, CurrentTime);
@@ -904,6 +909,17 @@ weathercolor(const char *s)
     return col24;
 }
 
+/* ^B^ switches the status text to the big font (e.g. for a block's icon),
+ * ^N^ back to the normal one; code points just past the opening '^' */
+void
+statusfontcode(const char *code)
+{
+    if (code[0] == 'B' && code[1] == '^' && statusbigfont)
+        drw_setfontset(drw, statusbigfont);
+    else if (code[0] == 'N' && code[1] == '^')
+        drw_setfontset(drw, normalfont);
+}
+
 int
 drawstatusbar(Monitor *m, int bh, char* stext)
 {
@@ -934,6 +950,7 @@ drawstatusbar(Monitor *m, int bh, char* stext)
                 text[i] = '\0';
                 w += TEXTW(text) - lrpad;
                 text[i] = '^';
+                statusfontcode(text + i + 1);
                 if (text[i + 1] == 'f') {
                     i++;
                     w += atoi(text + i + 1);
@@ -950,6 +967,7 @@ drawstatusbar(Monitor *m, int bh, char* stext)
     else
         isCode = 0;
     text = p;
+    drw_setfontset(drw, normalfont);
 
     w += 2; /* 1px padding on both sides */
     ret = x = m->ww - w;
@@ -972,6 +990,7 @@ drawstatusbar(Monitor *m, int bh, char* stext)
             w = TEXTW(text) - lrpad;
             drw_text(drw, x, 0, w, bh, 0, text, 0);
             x += w;
+            statusfontcode(text + i + 1);
 
             while (text[++i] && text[i] != '^') {
                 if (text[i] == '2') {
@@ -1011,6 +1030,7 @@ drawstatusbar(Monitor *m, int bh, char* stext)
     }
 
     drw_setscheme(drw, scheme[SchemeNorm]);
+    drw_setfontset(drw, normalfont);
     free(p);
 
     return ret;
@@ -1998,6 +2018,10 @@ setup(void)
 		die("no fonts could be loaded.");
 	lrpad = drw->fonts->h;
 	bh = drw->fonts->h + 2;
+	/* creating a font set makes it the current one, so switch back */
+	normalfont = drw->fonts;
+	statusbigfont = drw_fontset_create(drw, statusbigfonts, LENGTH(statusbigfonts));
+	drw_setfontset(drw, normalfont);
 	updategeom();
 	/* init atoms */
 	utf8string = XInternAtom(dpy, "UTF8_STRING", False);

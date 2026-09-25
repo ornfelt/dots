@@ -1,0 +1,463 @@
+# See LICENSE file for copyright and license details.
+#
+# dwmr configuration: ~/.config/dwmr/config.toml
+#
+# This file is my config.h. The compiled-in defaults are dwm's config.def.h,
+# so any key you leave out keeps that default. If the file fails to parse,
+# dwmr prints the error on stderr and starts with the defaults.
+#
+# Integer masks may be written like in C: "1 << 8", "~0", "0x1ff", "1 | 2".
+# Key names are X keysym names without the XK_ prefix (see /usr/include/X11/keysymdef.h
+# and XF86keysym.h for the XF86 media keys).
+# Modifiers: MODKEY, ShiftMask, ControlMask, LockMask, Mod1Mask .. Mod5Mask, joined with "|".
+#
+# The commands below expand config.h's constants:
+#	TERMINAL "wezterm", TERMCLASS "wezterm", SECTERMINAL "st",
+#	FILES "thunar", FILEX "yazi"
+
+# appearance
+borderpx = 2          # border pixel of windows
+gappih = 20           # horiz inner gap between windows
+gappiv = 20           # vert inner gap between windows
+gappoh = 20           # horiz outer gap between windows and screen edge
+gappov = 20           # vert outer gap between windows and screen edge
+smartgaps = false     # true means no outer gap when there is only one window
+browsergaps = false   # false means no outer gap when there is only one window and it is firefox
+snap = 32             # snap pixel
+swallowfloating = false # true means swallow floating windows by default
+showbar = true        # false means no bar
+topbar = true         # false means bottom bar
+focusonwheel = false  # false allows the user to scroll window without changing focus
+fonts = ["JetBrainsMono Nerd Font:size=11:style=bold"]
+# bigger font for status text between ^B^ and ^N^, e.g. a block's icon; [] for none
+statusbigfonts = ["JetBrainsMono Nerd Font:size=15:style=bold"]
+#              fg         bg         border
+colors.norm = ["#ebdbb2", "#282828", "#282828"]
+colors.sel  = ["#ebdbb2", "#282828", "#ebdbb2"]
+# status text colours (status2d): the text starts in col1; ^3^..^6^ switch to
+# col3..col6, ^c#rrggbb^ to any colour and ^2^ to the weather colour from the
+# temperature after it: +20 and above col21, below +20 col22, negative col23,
+# no sign col24
+statuscolors.col1  = "#98971a"
+statuscolors.col21 = "#fb4934"
+statuscolors.col22 = "#ebdbb2"
+statuscolors.col23 = "#458588"
+statuscolors.col24 = "#ebdbb2"
+statuscolors.col3  = "#fabd2f"
+statuscolors.col4  = "#83a598"
+statuscolors.col5  = "#d3869b"
+statuscolors.col6  = "#8ec07c"
+
+# tagging
+tags = ["1", "2", "3", "4", "5", "6", "7", "8", "9"]
+
+# Scratchpads: each has its own tag bit above the normal tags, SPTAG(i), and
+# a command that togglescratch spawns when no window has that tag yet. The
+# tags and the scratchpads together must not exceed 31.
+scratchpads = [
+	#  name              cmd
+	{ name = "spterm",   cmd = ["st", "-n", "spterm", "-e", "python3"] },
+	{ name = "spcalc",   cmd = ["st", "-n", "spcalc"] },
+]
+
+# xprop(1):
+#	WM_CLASS(STRING) = instance, class
+#	WM_NAME(STRING) = title
+# class, instance and title are substring matches; omit one to match anything.
+rules = [
+	#  class / instance / title              tags mask            isfloating          isterminal          noswallow          monitor
+	{ class = "wezterm",                     tags = 0,            isfloating = false, isterminal = true,  noswallow = false, monitor = -1 }, # TERMCLASS
+	{ title = "Event Tester",                tags = 0,            isfloating = false, isterminal = false, noswallow = true,  monitor = -1 }, # xev
+	{ instance = "spterm",                   tags = "SPTAG(0)",   isfloating = true,  isterminal = true,  noswallow = true,  monitor = -1 },
+	{ instance = "spcalc",                   tags = "SPTAG(1)",   isfloating = true,  isterminal = true,  noswallow = false, monitor = -1 },
+	{ instance = "gnome-calculator",         tags = 0,            isfloating = true,  isterminal = false, noswallow = false, monitor = -1 },
+	{ instance = "gnome-calendar",           tags = 0,            isfloating = true,  isterminal = false, noswallow = false, monitor = -1 },
+	{ instance = "yad",                      tags = 0,            isfloating = true,  isterminal = false, noswallow = false, monitor = -1 },
+	{ instance = "nm-connection-editor",     tags = 0,            isfloating = true,  isterminal = false, noswallow = false, monitor = -1 },
+]
+
+# layout(s)
+mfact = 0.55          # factor of master area size [0.05..0.95]
+nmaster = 1           # number of clients in master area
+resizehints = false   # true means respect size hints in tiled resizals
+lockfullscreen = true # true will force focus on the fullscreen window
+refreshrate = 120     # refresh rate (per second) for client move/resize
+
+layouts = [
+	#  symbol          arrange function
+	{ symbol = "[@]",  arrange = "spiral" },                 # Default: Fibonacci spiral
+	{ symbol = "[]=",  arrange = "tile" },                   # Master on left, slaves on right
+	{ symbol = "TTT",  arrange = "bstack" },                 # Master on top, slaves on bottom
+	{ symbol = "[\\]", arrange = "dwindle" },                # Decreasing in size right and leftward
+	{ symbol = "[D]",  arrange = "deck" },                   # Master on left, slaves in monocle-like mode on right
+	{ symbol = "[M]",  arrange = "monocle" },                # All windows on top of eachother
+	{ symbol = "|M|",  arrange = "centeredmaster" },         # Master in middle, slaves on sides
+	{ symbol = ">M>",  arrange = "centeredfloatingmaster" }, # Same but master floats
+	{ symbol = "><>",  arrange = "none" },                   # no layout function means floating behavior
+]
+
+# key definitions
+modkey = "Mod4Mask"   # MODKEY; MODKEY1 (Mod1Mask) is written out for Tab
+
+# commands
+# The argument after "-m" in dmenucmd is replaced with the selected monitor's
+# number by spawn(), like dmenumon in dwm. SHCMD(cmd) is ["/bin/sh", "-c", cmd].
+commands.dmenucmd = ["dmenu_run", "-m", "0", "-fn", "JetBrainsMono Nerd Font:size=11:style=bold"]
+commands.termcmd  = ["wezterm"]
+commands.dmenulibertinecmd = ["/bin/sh", "-c", "dmenu_run -fn 'Linux Libertine Mono'"]
+commands.lockcmd           = ["/bin/sh", "-c", "i3lock"]
+commands.lockwallpapercmd  = ["/bin/sh", "-c", "i3lock -i ~/Downloads/lock-wallpaper.png"]
+commands.filexcmd          = ["/bin/sh", "-c", "wezterm -e yazi ~/"]
+commands.fileexplorerwdcmd = ["/bin/sh", "-c", "~/.local/bin/my_scripts/file_explorer_wd.sh wezterm yazi"]
+commands.powermenucmd      = ["/bin/sh", "-c", "~/.local/bin/my_scripts/alert_exit.sh && ~/.config/polybar/forest/scripts/powermenu.sh"]
+commands.screenclipcmd     = ["/bin/sh", "-c", "import png:- | xclip -selection clipboard -t image/png"]
+commands.ocrcmd            = ["/bin/sh", "-c", "~/.local/bin/my_scripts/tesseract_ocr.sh"]
+commands.roficmd           = ["/bin/sh", "-c", "rofi -show run -theme ~/.config/rofi/themes/gruvbox/gruvbox-dark.rasi"]
+commands.dmenulistcmd      = ["/bin/sh", "-c", "dmenu_run -i -l 20"]
+commands.rofilaunchercmd   = ["/bin/sh", "-c", "rofi -show run -theme ~/.config/polybar/forest/scripts/rofi/launcher.rasi"]
+commands.scriptcopycmd     = ["/bin/sh", "-c", "~/.local/bin/my_scripts/script_copy.sh"]
+commands.scripthelpercmd   = ["/bin/sh", "-c", "~/.local/bin/my_scripts/script_helper.sh wezterm"]
+commands.codenewcmd        = ["/bin/sh", "-c", "~/.local/bin/my_scripts/code_helper.sh new wezterm"]
+commands.codeoldcmd        = ["/bin/sh", "-c", "~/.local/bin/my_scripts/code_helper.sh old wezterm"]
+commands.fzfopencmd        = ["/bin/sh", "-c", "~/.local/bin/my_scripts/fzf_open.sh wezterm"]
+commands.termcalccmd       = ["/bin/sh", "-c", "~/.local/bin/my_scripts/term_calc.sh wezterm"]
+commands.calendarcmd       = ["/bin/sh", "-c", "yad --calendar --no-buttons"]
+commands.htopcmd           = ["/bin/sh", "-c", "wezterm -e htop"]
+commands.bashtopcmd        = ["/bin/sh", "-c", "wezterm -e bashtop"]
+commands.ytopcmd           = ["/bin/sh", "-c", "wezterm -e ytop"]
+commands.xrandrcmd         = ["/bin/sh", "-c", "~/.local/bin/my_scripts/xrandr_helper.sh"]
+commands.fileswdcmd        = ["/bin/sh", "-c", "~/.local/bin/my_scripts/files_wd.sh"]
+commands.filescmd          = ["/bin/sh", "-c", "thunar"]
+commands.notes1cmd         = ["/bin/sh", "-c", "~/.local/bin/my_scripts/open_notes.sh 1 wezterm"]
+commands.nmeditorcmd       = ["/bin/sh", "-c", "nm-connection-editor"]
+commands.spotifycmd        = ["/bin/sh", "-c", "spotify"]
+commands.notes2cmd         = ["/bin/sh", "-c", "~/.local/bin/my_scripts/open_notes.sh 2 wezterm"]
+commands.suspendcmd        = ["/bin/sh", "-c", "~/.local/bin/my_scripts/alert_exit.sh && ~/.local/bin/my_scripts/suspend.sh"]
+commands.suspendmutecmd    = ["/bin/sh", "-c", "~/.local/bin/my_scripts/alert_exit.sh && ~/.local/bin/my_scripts/suspend_mute.sh"]
+commands.locksuspendcmd    = ["/bin/sh", "-c", "i3lock && ~/.local/bin/my_scripts/alert_exit.sh && systemctl suspend"]
+commands.cliphistorycmd    = ["/bin/sh", "-c", "~/.local/bin/my_scripts/clip_history.sh greenclip"]
+commands.qrclipcmd         = ["/bin/sh", "-c", "~/.local/bin/my_scripts/qr_clip.sh"]
+commands.progrmhelpercmd   = ["/bin/sh", "-c", "~/.local/bin/my_scripts/progrm_helper.sh wezterm"]
+commands.emojipickcmd      = ["/bin/sh", "-c", "~/.local/bin/my_scripts/emojipick/emojipick"]
+commands.tmuxattachcmd     = ["/bin/sh", "-c", "~/.local/bin/my_scripts/tmux_attach.sh wezterm"]
+commands.transdeccmd       = ["/bin/sh", "-c", "picom-trans -c -5"]
+commands.transinccmd       = ["/bin/sh", "-c", "picom-trans -c +5"]
+commands.ewwcmd            = ["/bin/sh", "-c", "~/.local/bin/my_scripts/loadEww.sh"]
+commands.termwdcmd         = ["/bin/sh", "-c", "~/.local/bin/my_scripts/term_wd.sh wezterm"]
+commands.sectermwdcmd      = ["/bin/sh", "-c", "~/.local/bin/my_scripts/term_wd.sh st"]
+commands.showkeysdwmcmd    = ["/bin/sh", "-c", "~/.local/bin/my_scripts/show_keys.sh dwm wezterm"]
+commands.showkeysvimcmd    = ["/bin/sh", "-c", "~/.local/bin/my_scripts/show_keys.sh vim wezterm"]
+commands.mutecmd           = ["/bin/sh", "-c", "pactl set-sink-mute @DEFAULT_SINK@ toggle ; kill -44 $(pidof dwmblocksr)"]
+commands.voldowncmd        = ["/bin/sh", "-c", "pactl set-sink-volume @DEFAULT_SINK@ -5%; kill -44 $(pidof dwmblocksr)"]
+commands.volupcmd          = ["/bin/sh", "-c", "pactl set-sink-volume @DEFAULT_SINK@ +5%; kill -44 $(pidof dwmblocksr)"]
+commands.screenselectcmd   = ["/bin/sh", "-c", "~/.local/bin/my_scripts/screenshot_select.sh"]
+commands.screenshotcmd     = ["/bin/sh", "-c", "~/.local/bin/my_scripts/screenshot.sh"]
+commands.screenocrcmd      = ["/bin/sh", "-c", "~/.local/bin/my_scripts/screenshot_ocr.sh"]
+commands.brightupcmd       = ["/bin/sh", "-c", "~/.local/bin/my_scripts/brightness.sh +10"]
+commands.brightdowncmd     = ["/bin/sh", "-c", "~/.local/bin/my_scripts/brightness.sh -10"]
+commands.blocksconfcmd     = ["/bin/sh", "-c", "wezterm -e nvim ~/.config/dwmblocksr/config.toml"]
+
+# the status bar program, e.g. dwmblocksr or dwmblocks, found by process name.
+# A click on a status block that starts with a signal byte runs sigstatusbar,
+# which sends that block's signal to the program with the button as the value
+# (statuscmd). "" disables the clicks
+statusbar = "dwmblocksr"
+
+# the command dwmr runs once at startup, after the existing windows have been
+# taken over; here it (re)starts the status bar. [] runs none
+autostart = ["sh", "-c", "killall -q dwmblocksr; dwmblocksr &"]
+
+# There is no quit binding: exit through the powermenu (mod-shift-e).
+keys = [
+	#  modifier                         key               function                  argument
+	# focusstack/pushstack take a stack position (stacker): "INC(n)" is
+	# relative to the focused window, 0 is the top, -1 the bottom.
+	# STACKKEYS(MODKEY, focus)
+	# /* bind mod-j: focusstack +1 (focus next window) */
+	{ mod = "MODKEY",                   key = "j",        func = "focusstack",      arg = { i = "INC(+1)" } },
+	# /* bind mod-k: focusstack -1 (focus previous window) */
+	{ mod = "MODKEY",                   key = "k",        func = "focusstack",      arg = { i = "INC(-1)" } },
+	# /* bind mod-ctrl-j: focusstack -1 (focus bottom of stack) */
+	{ mod = "MODKEY|ControlMask",       key = "j",        func = "focusstack",      arg = { i = -1 } },
+	# /* bind mod-ctrl-k: focusstack 0 (focus top of stack) */
+	{ mod = "MODKEY|ControlMask",       key = "k",        func = "focusstack",      arg = { i = 0 } },
+	# STACKKEYS(MODKEY|ShiftMask, push)
+	# /* bind mod-shift-j: pushstack +1 (move window down stack) */
+	{ mod = "MODKEY|ShiftMask",         key = "j",        func = "pushstack",       arg = { i = "INC(+1)" } },
+	# /* bind mod-shift-k: pushstack -1 (move window up stack) */
+	{ mod = "MODKEY|ShiftMask",         key = "k",        func = "pushstack",       arg = { i = "INC(-1)" } },
+	# /* bind mod-shift-ctrl-j: pushstack -1 (move window to bottom) */
+	{ mod = "MODKEY|ShiftMask|ControlMask", key = "j",    func = "pushstack",       arg = { i = -1 } },
+	# /* bind mod-shift-ctrl-k: pushstack 0 (move window to top) */
+	{ mod = "MODKEY|ShiftMask|ControlMask", key = "k",    func = "pushstack",       arg = { i = 0 } },
+	# /* bind mod-grave: spawn dmenu_run */
+	{ mod = "MODKEY",                   key = "grave",    func = "spawn",           arg = { v = "dmenulibertinecmd" } },
+	# TAGKEYS(KEY, TAG): MODKEY+key views the tag, +Control tags the window,
+	# +Shift tags the window and views the tag, +Control+Shift toggles the
+	# view. With two monitors the odd tags live on the first and the even
+	# tags on the second: view and tag switch to the tag's monitor.
+	# /* bind mod-[1-9]: view tag [0-8] */
+	# /* bind mod-ctrl-[1-9]: tag window to [0-8] */
+	# /* bind mod-shift-[1-9]: tagview [0-8] */
+	# /* bind mod-ctrl-shift-[1-9]: toggleview [0-8] */
+	{ tagkeys = "1",                    tag = 0 },
+	{ tagkeys = "2",                    tag = 1 },
+	{ tagkeys = "3",                    tag = 2 },
+	{ tagkeys = "4",                    tag = 3 },
+	{ tagkeys = "5",                    tag = 4 },
+	{ tagkeys = "6",                    tag = 5 },
+	{ tagkeys = "7",                    tag = 6 },
+	{ tagkeys = "8",                    tag = 7 },
+	{ tagkeys = "9",                    tag = 8 },
+	# /* bind mod-0: view all tags */
+	{ mod = "MODKEY",                   key = "0",        func = "view",            arg = { ui = "~0" } },
+	# /* bind mod-shift-0: tag window to all tags */
+	{ mod = "MODKEY|ShiftMask",         key = "0",        func = "tag",             arg = { ui = "~0" } },
+
+	# Layouts
+	# /* bind mod-shift-less: togglesticky */
+	{ mod = "MODKEY|ShiftMask",         key = "less",     func = "togglesticky" },
+	# /* bind mod-less: setlayout spiral */
+	{ mod = "MODKEY",                   key = "less",     func = "setlayout",       arg = { v = "layouts[0]" } },
+	# /* bind mod-s: setlayout bstack */
+	{ mod = "MODKEY",                   key = "s",        func = "setlayout",       arg = { v = "layouts[2]" } },
+	# /* bind mod-ctrl-t: setlayout tile */
+	{ mod = "MODKEY|ControlMask",       key = "t",        func = "setlayout",       arg = { v = "layouts[1]" } },
+	# /* bind mod-ctrl-y: setlayout dwindle */
+	{ mod = "MODKEY|ControlMask",       key = "y",        func = "setlayout",       arg = { v = "layouts[3]" } },
+	# /* bind mod-ctrl-u: setlayout deck */
+	{ mod = "MODKEY|ControlMask",       key = "u",        func = "setlayout",       arg = { v = "layouts[4]" } },
+	# /* bind mod-ctrl-i: setlayout monocle */
+	{ mod = "MODKEY|ControlMask",       key = "i",        func = "setlayout",       arg = { v = "layouts[5]" } },
+	# /* bind mod-ctrl-o: setlayout centeredmaster */
+	{ mod = "MODKEY|ControlMask",       key = "o",        func = "setlayout",       arg = { v = "layouts[6]" } },
+	# /* bind mod-ctrl-p: setlayout centeredfloatingmaster */
+	{ mod = "MODKEY|ControlMask",       key = "p",        func = "setlayout",       arg = { v = "layouts[7]" } },
+	# /* bind mod-ctrl-aring: setlayout floating */
+	{ mod = "MODKEY|ControlMask",       key = "aring",    func = "setlayout",       arg = { v = "layouts[8]" } },
+	# /* bind mod-f: togglefullscr */
+	{ mod = "MODKEY",                   key = "f",        func = "togglefullscr" },
+	# /* bind mod-space: togglefloating */
+	{ mod = "MODKEY",                   key = "space",    func = "togglefloating" },
+	# /* bind mod-shift-space: zoom (swap with master) */
+	{ mod = "MODKEY|ShiftMask",         key = "space",    func = "zoom" },
+	# /* bind mod-y: setmfact -0.05 (shrink master) */
+	{ mod = "MODKEY",                   key = "y",        func = "setmfact",        arg = { f = -0.05 } },
+	# /* bind mod-o: setmfact +0.05 (grow master) */
+	{ mod = "MODKEY",                   key = "o",        func = "setmfact",        arg = { f = 0.05 } },
+	# /* bind mod-shift-u: incnmaster +1 */
+	{ mod = "MODKEY|ShiftMask",         key = "u",        func = "incnmaster",      arg = { i = 1 } },
+	# /* bind mod-shift-i: incnmaster -1 */
+	{ mod = "MODKEY|ShiftMask",         key = "i",        func = "incnmaster",      arg = { i = -1 } },
+	# /* bind mod-shift-y: shifttag +1 (move window to next tag) */
+	{ mod = "MODKEY|ShiftMask",         key = "y",        func = "shifttag",        arg = { i = 1 } },
+	# /* bind mod-shift-o: shifttag -1 (move window to prev tag) */
+	{ mod = "MODKEY|ShiftMask",         key = "o",        func = "shifttag",        arg = { i = -1 } },
+	# /* bind mod-x: defaultgaps */
+	{ mod = "MODKEY",                   key = "x",        func = "defaultgaps" },
+	# /* bind mod-z: togglegaps */
+	{ mod = "MODKEY",                   key = "z",        func = "togglegaps" },
+	# /* bind mod-ctrl-z: togglebgaps */
+	{ mod = "MODKEY|ControlMask",       key = "z",        func = "togglebgaps" },
+	# /* bind mod-plus: incrgaps +3 */
+	{ mod = "MODKEY",                   key = "plus",     func = "incrgaps",        arg = { i = 3 } },
+	# /* bind mod-minus: incrgaps -3 */
+	{ mod = "MODKEY",                   key = "minus",    func = "incrgaps",        arg = { i = -3 } },
+	# /* bind mod-shift-plus: incrgaps +1 */
+	{ mod = "MODKEY|ShiftMask",         key = "plus",     func = "incrgaps",        arg = { i = 1 } },
+	# /* bind mod-shift-minus: incrgaps -1 */
+	{ mod = "MODKEY|ShiftMask",         key = "minus",    func = "incrgaps",        arg = { i = -1 } },
+	# /* bind alt-tab: shiftviewclients +1 (next occupied tag) */
+	{ mod = "Mod1Mask",                 key = "Tab",      func = "shiftviewclients", arg = { i = 1 } },
+	# /* bind alt-shift-tab: shiftviewclients -1 (prev occupied tag) */
+	{ mod = "Mod1Mask|ShiftMask",       key = "Tab",      func = "shiftviewclients", arg = { i = -1 } },
+	# /* bind mod-q: killclient */
+	{ mod = "MODKEY",                   key = "q",        func = "killclient" },
+	# togglebars toggles the bar on every monitor, togglebar on the focused one
+	# /* bind mod-shift-p: togglebars */
+	{ mod = "MODKEY|ShiftMask",         key = "p",        func = "togglebars" },
+	# /* bind mod-ctrl-shift-p: togglebar */
+	{ mod = "MODKEY|ControlMask|ShiftMask", key = "p",    func = "togglebar" },
+	# focusmon/tagmon focus/move to the previous or next monitor; tagmonview
+	# also views the target monitor; focusnthmon/tagnthmonview take a monitor
+	# number (0 is the first, too large is the last)
+	# /* bind mod-h: focusmon -1 (focus left monitor) */
+	{ mod = "MODKEY",                   key = "h",        func = "focusmon",        arg = { i = -1 } },
+	# /* bind mod-shift-h: tagmonview -1 (move window and view left monitor) */
+	{ mod = "MODKEY|ShiftMask",         key = "h",        func = "tagmonview",      arg = { i = -1 } },
+	# /* bind mod-ctrl-h: tagmon -1 (move window to left monitor) */
+	{ mod = "MODKEY|ControlMask",       key = "h",        func = "tagmon",          arg = { i = -1 } },
+	# /* bind mod-l: focusmon +1 (focus right monitor) */
+	{ mod = "MODKEY",                   key = "l",        func = "focusmon",        arg = { i = 1 } },
+	# /* bind mod-shift-l: tagmonview +1 (move window and view right monitor) */
+	{ mod = "MODKEY|ShiftMask",         key = "l",        func = "tagmonview",      arg = { i = 1 } },
+	# /* bind mod-ctrl-l: tagmon +1 (move window to right monitor) */
+	{ mod = "MODKEY|ControlMask",       key = "l",        func = "tagmon",          arg = { i = 1 } },
+	# /* bind mod-left: focusmon -1 */
+	{ mod = "MODKEY",                   key = "Left",     func = "focusmon",        arg = { i = -1 } },
+	# /* bind mod-shift-left: tagmon -1 */
+	{ mod = "MODKEY|ShiftMask",         key = "Left",     func = "tagmon",          arg = { i = -1 } },
+	# /* bind mod-right: focusmon +1 */
+	{ mod = "MODKEY",                   key = "Right",    func = "focusmon",        arg = { i = 1 } },
+	# /* bind mod-shift-right: tagmon +1 */
+	{ mod = "MODKEY|ShiftMask",         key = "Right",    func = "tagmon",          arg = { i = 1 } },
+	# /* bind mod-apostrophe: togglescratch spterm */
+	{ mod = "MODKEY",                   key = "apostrophe", func = "togglescratch", arg = { ui = 0 } },
+	# /* bind mod-shift-apostrophe: togglescratch spcalc */
+	{ mod = "MODKEY|ShiftMask",         key = "apostrophe", func = "togglescratch", arg = { ui = 1 } },
+
+	# /* bind mod-shift-x: spawn i3lock */
+	{ mod = "MODKEY|ShiftMask",         key = "x",        func = "spawn",           arg = { v = "lockcmd" } },
+	# /* bind mod-ctrl-x: spawn i3lock with wallpaper */
+	{ mod = "MODKEY|ControlMask",       key = "x",        func = "spawn",           arg = { v = "lockwallpapercmd" } },
+	# /* bind mod-w: spawn yazi ~/ */
+	{ mod = "MODKEY",                   key = "w",        func = "spawn",           arg = { v = "filexcmd" } },
+	# /* bind mod-e: spawn file_explorer_wd.sh */
+	{ mod = "MODKEY",                   key = "e",        func = "spawn",           arg = { v = "fileexplorerwdcmd" } },
+	# /* bind mod-shift-e: spawn powermenu.sh */
+	{ mod = "MODKEY|ShiftMask",         key = "e",        func = "spawn",           arg = { v = "powermenucmd" } },
+	# /* bind mod-shift-s: spawn screenshot to clipboard */
+	{ mod = "MODKEY|ShiftMask",         key = "s",        func = "spawn",           arg = { v = "screenclipcmd" } },
+	# /* bind mod-ctrl-s: spawn tesseract_ocr.sh */
+	{ mod = "MODKEY|ControlMask",       key = "s",        func = "spawn",           arg = { v = "ocrcmd" } },
+	# /* bind mod-d: spawn rofi */
+	{ mod = "MODKEY",                   key = "d",        func = "spawn",           arg = { v = "roficmd" } },
+	# /* bind mod-r: spawn dmenu_run */
+	{ mod = "MODKEY",                   key = "r",        func = "spawn",           arg = { v = "dmenulistcmd" } },
+	# /* bind mod-shift-r: spawn rofi launcher */
+	{ mod = "MODKEY|ShiftMask",         key = "r",        func = "spawn",           arg = { v = "rofilaunchercmd" } },
+	# /* bind mod-t: spawn script_copy.sh */
+	{ mod = "MODKEY",                   key = "t",        func = "spawn",           arg = { v = "scriptcopycmd" } },
+	# /* bind mod-shift-t: spawn script_helper.sh */
+	{ mod = "MODKEY|ShiftMask",         key = "t",        func = "spawn",           arg = { v = "scripthelpercmd" } },
+	# /* bind mod-shift-c: spawn code_helper.sh new */
+	{ mod = "MODKEY|ShiftMask",         key = "c",        func = "spawn",           arg = { v = "codenewcmd" } },
+	# /* bind mod-shift-d: spawn code_helper.sh old */
+	{ mod = "MODKEY|ShiftMask",         key = "d",        func = "spawn",           arg = { v = "codeoldcmd" } },
+	# /* bind mod-g: spawn fzf_open.sh */
+	{ mod = "MODKEY",                   key = "g",        func = "spawn",           arg = { v = "fzfopencmd" } },
+	# /* bind mod-c: spawn term_calc.sh */
+	{ mod = "MODKEY",                   key = "c",        func = "spawn",           arg = { v = "termcalccmd" } },
+	# /* bind mod-ctrl-c: spawn yad calendar */
+	{ mod = "MODKEY|ControlMask",       key = "c",        func = "spawn",           arg = { v = "calendarcmd" } },
+	# /* bind mod-b: spawn htop */
+	{ mod = "MODKEY",                   key = "b",        func = "spawn",           arg = { v = "htopcmd" } },
+	# /* bind mod-shift-b: spawn bashtop */
+	{ mod = "MODKEY|ShiftMask",         key = "b",        func = "spawn",           arg = { v = "bashtopcmd" } },
+	# /* bind mod-ctrl-b: spawn ytop */
+	{ mod = "MODKEY|ControlMask",       key = "b",        func = "spawn",           arg = { v = "ytopcmd" } },
+	# /* bind mod-p: spawn xrandr_helper.sh */
+	{ mod = "MODKEY",                   key = "p",        func = "spawn",           arg = { v = "xrandrcmd" } },
+	# /* bind mod-n: spawn files_wd.sh */
+	{ mod = "MODKEY",                   key = "n",        func = "spawn",           arg = { v = "fileswdcmd" } },
+	# /* bind mod-shift-n: spawn thunar */
+	{ mod = "MODKEY|ShiftMask",         key = "n",        func = "spawn",           arg = { v = "filescmd" } },
+	# /* bind mod-ctrl-n: spawn open_notes.sh 1 */
+	{ mod = "MODKEY|ControlMask",       key = "n",        func = "spawn",           arg = { v = "notes1cmd" } },
+	# /* bind mod-m: spawn nm-connection-editor */
+	{ mod = "MODKEY",                   key = "m",        func = "spawn",           arg = { v = "nmeditorcmd" } },
+	# /* bind mod-shift-m: spawn spotify */
+	{ mod = "MODKEY|ShiftMask",         key = "m",        func = "spawn",           arg = { v = "spotifycmd" } },
+	# /* bind mod-ctrl-m: spawn open_notes.sh 2 */
+	{ mod = "MODKEY|ControlMask",       key = "m",        func = "spawn",           arg = { v = "notes2cmd" } },
+	# /* bind mod-shift-comma: spawn suspend.sh */
+	{ mod = "MODKEY|ShiftMask",         key = "comma",    func = "spawn",           arg = { v = "suspendcmd" } },
+	# /* bind mod-ctrl-comma: spawn suspend_mute.sh */
+	{ mod = "MODKEY|ControlMask",       key = "comma",    func = "spawn",           arg = { v = "suspendmutecmd" } },
+	# /* bind mod-shift-period: spawn i3lock + suspend */
+	{ mod = "MODKEY|ShiftMask",         key = "period",   func = "spawn",           arg = { v = "locksuspendcmd" } },
+	# /* bind mod-v: spawn clip_history.sh greenclip */
+	{ mod = "MODKEY",                   key = "v",        func = "spawn",           arg = { v = "cliphistorycmd" } },
+	# /* bind mod-shift-v: spawn qr_clip.sh */
+	{ mod = "MODKEY|ShiftMask",         key = "v",        func = "spawn",           arg = { v = "qrclipcmd" } },
+	# /* bind mod-comma: spawn progrm_helper.sh */
+	{ mod = "MODKEY",                   key = "comma",    func = "spawn",           arg = { v = "progrmhelpercmd" } },
+	# /* bind mod-period: spawn emojipick */
+	{ mod = "MODKEY",                   key = "period",   func = "spawn",           arg = { v = "emojipickcmd" } },
+	# /* bind mod-a: spawn tmux_attach.sh */
+	{ mod = "MODKEY",                   key = "a",        func = "spawn",           arg = { v = "tmuxattachcmd" } },
+	# /* bind mod-shift-a: spawn picom-trans -5 */
+	{ mod = "MODKEY|ShiftMask",         key = "a",        func = "spawn",           arg = { v = "transdeccmd" } },
+	# /* bind mod-ctrl-a: spawn picom-trans +5 */
+	{ mod = "MODKEY|ControlMask",       key = "a",        func = "spawn",           arg = { v = "transinccmd" } },
+	# /* bind mod-section: spawn loadEww.sh */
+	{ mod = "MODKEY",                   key = "section",  func = "spawn",           arg = { v = "ewwcmd" } },
+	# /* bind mod-return: spawn term_wd.sh */
+	{ mod = "MODKEY",                   key = "Return",   func = "spawn",           arg = { v = "termwdcmd" } },
+	# /* bind mod-shift-return: spawn terminal */
+	{ mod = "MODKEY|ShiftMask",         key = "Return",   func = "spawn",           arg = { v = "termcmd" } },
+	# /* bind mod-ctrl-return: spawn term_wd.sh st */
+	{ mod = "MODKEY|ControlMask",       key = "Return",   func = "spawn",           arg = { v = "sectermwdcmd" } },
+
+	# /* bind F1: spawn show_keys.sh dwm */
+	{ mod = "0",                        key = "F1",       func = "spawn",           arg = { v = "showkeysdwmcmd" } },
+	# /* bind shift-F1: spawn show_keys.sh vim */
+	{ mod = "ShiftMask",                key = "F1",       func = "spawn",           arg = { v = "showkeysvimcmd" } },
+	# /* bind F10: spawn pactl toggle mute */
+	{ mod = "0",                        key = "F10",      func = "spawn",           arg = { v = "mutecmd" } },
+	# /* bind F11: spawn pactl volume -5% */
+	{ mod = "0",                        key = "F11",      func = "spawn",           arg = { v = "voldowncmd" } },
+	# /* bind F12: spawn pactl volume +5% */
+	{ mod = "0",                        key = "F12",      func = "spawn",           arg = { v = "volupcmd" } },
+	# /* bind Print: spawn screenshot_select.sh */
+	{ mod = "0",                        key = "Print",    func = "spawn",           arg = { v = "screenselectcmd" } },
+	# /* bind shift-Print: spawn screenshot.sh */
+	{ mod = "ShiftMask",                key = "Print",    func = "spawn",           arg = { v = "screenshotcmd" } },
+	# /* bind ctrl-Print: spawn screenshot_ocr.sh */
+	{ mod = "ControlMask",              key = "Print",    func = "spawn",           arg = { v = "screenocrcmd" } },
+
+	# /* bind XF86AudioMute: spawn pactl toggle mute */
+	{ mod = "0",                        key = "XF86AudioMute",        func = "spawn", arg = { v = "mutecmd" } },
+	# /* bind XF86AudioRaiseVolume: spawn pactl volume +5% */
+	{ mod = "0",                        key = "XF86AudioRaiseVolume", func = "spawn", arg = { v = "volupcmd" } },
+	# /* bind XF86AudioLowerVolume: spawn pactl volume -5% */
+	{ mod = "0",                        key = "XF86AudioLowerVolume", func = "spawn", arg = { v = "voldowncmd" } },
+	# /* bind XF86MonBrightnessUp: spawn brightness.sh +10 */
+	{ mod = "0",                        key = "XF86MonBrightnessUp",  func = "spawn", arg = { v = "brightupcmd" } },
+	# /* bind XF86MonBrightnessDown: spawn brightness.sh -10 */
+	{ mod = "0",                        key = "XF86MonBrightnessDown", func = "spawn", arg = { v = "brightdowncmd" } },
+]
+
+# button definitions
+# click can be ClkTagBar, ClkLtSymbol, ClkStatusText, ClkClientWin, or ClkRootWin
+buttons = [
+	#  click                    event mask         button               function                  argument
+	# /* bind statustext-button1: sigstatusbar 1 */
+	{ click = "ClkStatusText",  mask = "0",        button = "Button1",  func = "sigstatusbar",    arg = { i = 1 } },
+	# /* bind statustext-button2: sigstatusbar 2 */
+	{ click = "ClkStatusText",  mask = "0",        button = "Button2",  func = "sigstatusbar",    arg = { i = 2 } },
+	# /* bind statustext-button3: sigstatusbar 3 */
+	{ click = "ClkStatusText",  mask = "0",        button = "Button3",  func = "sigstatusbar",    arg = { i = 3 } },
+	# /* bind statustext-button4: sigstatusbar 4 (scroll up) */
+	{ click = "ClkStatusText",  mask = "0",        button = "Button4",  func = "sigstatusbar",    arg = { i = 4 } },
+	# /* bind statustext-button5: sigstatusbar 5 (scroll down) */
+	{ click = "ClkStatusText",  mask = "0",        button = "Button5",  func = "sigstatusbar",    arg = { i = 5 } },
+	# /* bind statustext-shift-button1: sigstatusbar 6 */
+	{ click = "ClkStatusText",  mask = "ShiftMask", button = "Button1", func = "sigstatusbar",    arg = { i = 6 } },
+	# /* bind statustext-shift-button3: spawn nvim dwmblocksr config */
+	{ click = "ClkStatusText",  mask = "ShiftMask", button = "Button3", func = "spawn",           arg = { v = "blocksconfcmd" } },
+	# /* bind clientwin-mod-button1: movemouse */
+	{ click = "ClkClientWin",   mask = "MODKEY",   button = "Button1",  func = "movemouse" },
+	# /* bind clientwin-mod-button2: defaultgaps */
+	{ click = "ClkClientWin",   mask = "MODKEY",   button = "Button2",  func = "defaultgaps" },
+	# /* bind clientwin-mod-button3: resizemouse */
+	{ click = "ClkClientWin",   mask = "MODKEY",   button = "Button3",  func = "resizemouse" },
+	# /* bind clientwin-mod-button4: incrgaps +1 (scroll up) */
+	{ click = "ClkClientWin",   mask = "MODKEY",   button = "Button4",  func = "incrgaps",        arg = { i = 1 } },
+	# /* bind clientwin-mod-button5: incrgaps -1 (scroll down) */
+	{ click = "ClkClientWin",   mask = "MODKEY",   button = "Button5",  func = "incrgaps",        arg = { i = -1 } },
+	# /* bind tagbar-button1: view */
+	{ click = "ClkTagBar",      mask = "0",        button = "Button1",  func = "view" },
+	# /* bind tagbar-button3: toggleview */
+	{ click = "ClkTagBar",      mask = "0",        button = "Button3",  func = "toggleview" },
+	# /* bind tagbar-mod-button1: tag */
+	{ click = "ClkTagBar",      mask = "MODKEY",   button = "Button1",  func = "tag" },
+	# /* bind tagbar-mod-button3: toggletag */
+	{ click = "ClkTagBar",      mask = "MODKEY",   button = "Button3",  func = "toggletag" },
+	# /* bind tagbar-button4: shiftview -1 (scroll up) */
+	{ click = "ClkTagBar",      mask = "0",        button = "Button4",  func = "shiftview",       arg = { i = -1 } },
+	# /* bind tagbar-button5: shiftview +1 (scroll down) */
+	{ click = "ClkTagBar",      mask = "0",        button = "Button5",  func = "shiftview",       arg = { i = 1 } },
+	# /* bind rootwin-button2: togglebar */
+	{ click = "ClkRootWin",     mask = "0",        button = "Button2",  func = "togglebar" },
+]

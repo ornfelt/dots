@@ -313,6 +313,13 @@ end, { desc = 'Copy current file path to clipboard' })
 local VERIFY_PATH_EXISTS = true
 
 local function open_path_in_tab(path)
+  -- ":tabe ~/x" expands the '~' itself, but filereadable() and isdirectory()
+  -- take it literally, so "~/.dwm/autostart.sh" was refused as missing while
+  -- "$HOME/.dwm/autostart.sh" opened. Spell out the home directory here, so
+  -- the check and the command look at the same file.
+  if path == "~" or path:match("^~/") then
+    path = myconfig.normalize_path(vim.fn.expand("~")) .. path:sub(2)
+  end
   if VERIFY_PATH_EXISTS then
     -- Undo the '#' escaping (done for the vim command) before testing the path
     local test_path = path:gsub("\\#", "#")

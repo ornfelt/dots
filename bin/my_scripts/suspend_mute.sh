@@ -1,4 +1,4 @@
 #! /bin/bash
 amixer set Master mute
-kill -44 $(pidof dwmblocks)
+pkill -44 -x 'dwmblocksr?'
 systemctl suspend

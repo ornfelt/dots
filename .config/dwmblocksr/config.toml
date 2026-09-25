@@ -1,0 +1,39 @@
+# See LICENSE file for copyright and license details.
+#
+# dwmblocksr configuration: ~/.config/dwmblocksr/config.toml
+#
+# This file mirrors dwmblocks' blocks.def.h and every value below is also the
+# compiled-in default, so any key you leave out keeps its default. If the file
+# fails to parse, dwmblocksr prints the error on stderr and starts with the
+# defaults. Restart dwmblocksr after changing it.
+
+# Modify this list to change what commands output to your statusbar.
+# Each command runs with `/bin/sh -c`, so ~ and shell syntax work; only the
+# first line of its output is used. A block is updated every `interval`
+# seconds (0 means only on its signal) and on the signal SIGRTMIN+`signal`
+# (0 means none), e.g. `pkill -RTMIN+10 dwmblocksr`. A click on a block with a
+# signal runs its command with BLOCK_BUTTON=<button> set.
+# Icons and output may contain status2d codes like ^2^ or ^c#rrggbb^, which
+# dwm draws. Glyphs can be written as \uXXXX escapes.
+blocks = [
+    #  icon                    command                                                      update interval  update signal
+    #{ icon = "^c1^",          command = "~/.local/bin/my_scripts/spotify_dwmblocks.sh", interval = 5,    signal = 12 },
+    { icon = "",               command = "~/.local/bin/my_scripts/spotify_dwmblocks.sh", interval = 5,    signal = 12 },
+    { icon = "",               command = "~/.local/bin/statusbar/sb-claude",             interval = 30,   signal = 6 },
+    { icon = "^2^  ",    command = "~/.local/bin/statusbar/weather",               interval = 1800, signal = 5 },
+    { icon = "^3^  ",    command = "~/.local/bin/statusbar/cputemp",               interval = 5,    signal = 4 },
+    { icon = "^4^ ",           command = "~/.local/bin/statusbar/sb-volume",             interval = 0,    signal = 10 },
+    #{ icon = "^5^ ",          command = "~/.local/bin/statusbar/sb-internet",           interval = 5,    signal = 3 },
+    { icon = "^5^ ",           command = "~/.local/bin/statusbar/sb-battery",            interval = 5,    signal = 3 },
+    { icon = "^6^  ",    command = "~/.local/bin/statusbar/sb-clock",              interval = 5,    signal = 1 },
+]
+
+# sets delimiter between status commands. "" means no delimiter.
+delim = " "
+# at most this many bytes of the delimiter are used
+delimlen = 5
+
+# true runs the block commands in parallel, so a slow command (e.g. one
+# waiting on the network) can't hold up the other blocks, signals and clicks.
+# false runs them one at a time like upstream dwmblocks.
+async = true

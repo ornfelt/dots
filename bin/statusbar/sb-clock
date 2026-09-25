@@ -51,7 +51,7 @@ case $BLOCK_BUTTON in
 	1) calendar ;;
 	2) zenity --question --text="Arg2" ;;
 	# 3) zenity --question --text="Arg3" ;;
-	3) pkill -RTMIN+1 dwmblocks ;;
+	3) pkill -RTMIN+1 -x 'dwmblocksr?' ;;
 	4) zenity --question --text="Arg4" ;;
 	5) zenity --question --text="Arg5" ;;
 	6) zenity --question --text="Arg6" ;;
