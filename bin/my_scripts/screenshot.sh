@@ -1,6 +1,6 @@
 #! /usr/bin/bash
 
-export DISPLAY=:0
+[ -z "$WAYLAND_DISPLAY" ] && export DISPLAY=:0
 target_dir="$HOME/Pictures/Screenshots"
 
 #if [ -n "$(ls -A /mnt/new 2>/dev/null)" ]; then
@@ -20,5 +20,9 @@ fi
 
 #maim /home/jonas/Pictures/Screenshots/Screenshot-$(date --iso-8601=seconds).png 2> /home/jonas/screen_err
 screenshot_file="$target_dir/Screenshot-$(date --iso-8601=seconds).png"
-maim "$screenshot_file" 2> $HOME/screen_err
+if [ -n "$WAYLAND_DISPLAY" ]; then
+    grim "$screenshot_file" 2> $HOME/screen_err
+else
+    maim "$screenshot_file" 2> $HOME/screen_err
+fi
 

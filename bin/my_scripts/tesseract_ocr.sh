@@ -14,7 +14,13 @@ export TESSDATA_PREFIX=/usr/local/share/tessdata
 #import /home/jonas/Pictures/Screenshots/ocr.png && python3 /home/jonas/.local/bin/my_scripts/pytess.py
 # maim -s selects with slop, which cancels on Escape (exits non-zero, so the
 # OCR below is skipped); -u leaves the mouse cursor out of the capture
-maim -s -u /home/jonas/Pictures/Screenshots/ocr.png &&python3 /home/jonas/.local/bin/my_scripts/pytess.py
+# pyperclip picks wl-copy by itself under Wayland, so pytess.py needs no branch
+if [ -n "$WAYLAND_DISPLAY" ]; then
+    # slurp exits non-zero on Escape, same as maim -s
+    region=$(slurp) && grim -g "$region" /home/jonas/Pictures/Screenshots/ocr.png && python3 /home/jonas/.local/bin/my_scripts/pytess.py
+else
+    maim -s -u /home/jonas/Pictures/Screenshots/ocr.png &&python3 /home/jonas/.local/bin/my_scripts/pytess.py
+fi
 #sed -i 's/^M//g'  ocr.txt
 #sed -i 's/[[:space:]]*$//' ocr.txt
 #sed -i 's/\n//' ocr.txt
