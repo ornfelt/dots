@@ -12,6 +12,8 @@ alias ls='ls --color=auto'
 alias vim >/dev/null 2>&1 || alias vim='nvim'
 alias lua='lua5.4'
 alias python='python3'
+alias .tmux >/dev/null 2>&1 || alias .tmux='$HOME/.local/bin/my_scripts/tmux_sessions.py'
+alias .tmuxk >/dev/null 2>&1 || alias .tmuxk='$HOME/.local/bin/my_scripts/tmux_kill.py'
 #alias config='/usr/bin/git --git-dir=/home/jonas/.cfg/ --work-tree=/home/jonas'
 # alias grep='grep -ri --color'
 
