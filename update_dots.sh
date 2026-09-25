@@ -61,6 +61,7 @@ fi
 
 rm -rf .config/alacritty
 rm -rf .config/awesome
+rm -rf .config/somewm
 rm -rf .config/cava
 rm -rf .config/conky
 rm -rf .config/dmenu
@@ -108,6 +109,7 @@ log_ok "Removed files..."
 sleep 0.5
 
 cp -r $HOME/.config/awesome .config/awesome/
+cp -r $HOME/.config/somewm .config/somewm/
 cp -r $HOME/.config/alacritty .config/alacritty/
 cp -r $HOME/.config/cava .config/cava/
 cp -r $HOME/.config/conky .config/conky/
@@ -195,6 +197,7 @@ rm --f .config/st/*.o
 
 sudo rm -r --f .config/dwmblocks/build
 sudo rm -r --f .config/awesome/.git
+sudo rm -r --f .config/somewm/.git
 
 # Remove .git dirs from dmenu, dwm and st
 dirs=(

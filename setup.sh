@@ -48,6 +48,7 @@ mkdir -p $HOME/Code/c $HOME/Code/c++ $HOME/Code/c# $HOME/Code/go $HOME/Code/ml $
 
 # Copy stuff
 cp -r .config/awesome/ $HOME/.config/
+cp -r .config/somewm/ $HOME/.config/
 cp -r .config/cava/ $HOME/.config/
 cp -r .config/conky/ $HOME/.config/
 cp -r .config/dmenu/ $HOME/.config/
