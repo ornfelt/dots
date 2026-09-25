@@ -312,7 +312,7 @@ globalkeys = mytable.join(
               {description = "Launch terminal", group = "awesome"}),
     -- bind mod-ctrl-return: spawn term_wd.sh alacritty
     awful.key({ modkey, ctrlkey }, "Return", function () awful.spawn.with_shell( "~/.local/bin/my_scripts/term_wd.sh " .. secterminal ) end,
-              {description = "Launch terminal", group = "awesome"}),
+              {description = "Launch secondary terminal wd", group = "awesome"}),
 
     -- bind mod-ctrl-r: awesome.restart
     awful.key({ modkey, ctrlkey }, "r", awesome.restart,
@@ -391,12 +391,12 @@ globalkeys = mytable.join(
     -- bind mod-w: spawn yazi ~/
     awful.key({ modkey },            "w",     function ()
     awful.util.spawn(terminal.. " -e " .. filex .. " ~/")    end,
-              {description = "run ranger", group = "launcher"}),
+              {description = "run file explorer", group = "launcher"}),
 
     -- bind mod-e: spawn file_explorer_wd.sh
     awful.key({ modkey },            "e",        function ()
     awful.util.spawn("/home/jonas/.local/bin/my_scripts/file_explorer_wd.sh " .. terminal .. " " .. filex )   end,
-              {description = "run ranger in wd", group = "launcher"}),
+              {description = "run file explorer in wd", group = "launcher"}),
 
     -- bind mod-shift-e: spawn sysmenu_awsm.sh
     awful.key({ modkey, "Shift"     },            "e",        function ()
@@ -448,10 +448,10 @@ globalkeys = mytable.join(
     awful.util.spawn(terminal.. " -e sudo htop")    end,
               {description = "Htop", group = "launcher"}),
 
-    -- bind mod-shift-b: spawn bashtop
+    -- bind mod-shift-b: spawn btop
     awful.key({ modkey, "Shift"    },            "b",     function ()
-    awful.util.spawn(terminal.. " -e sudo bashtop") end,
-              {description = "Bashtop", group = "launcher"}),
+    awful.util.spawn(terminal.. " -e sudo btop") end,
+              {description = "Btop", group = "launcher"}),
 
     -- bind mod-ctrl-b: spawn ytop
     awful.key({ modkey, "Control"    },            "b",     function ()
@@ -471,7 +471,7 @@ globalkeys = mytable.join(
     -- bind mod-ctrl-n: spawn open_notes.sh 1
     awful.key({ modkey, "Control"    },            "n",     function ()
     awful.util.spawn("/home/jonas/.local/bin/my_scripts/open_notes.sh 1 "..terminal)    end,
-              {description = "Ytop", group = "launcher"}),
+              {description = "Open notes 1", group = "launcher"}),
 
     -- bind mod-m: spawn nm-connection-editor
     awful.key({modkey},            "m",     function ()
@@ -486,7 +486,7 @@ globalkeys = mytable.join(
     -- bind mod-ctrl-m: spawn open_notes.sh 2
     awful.key({ modkey, "Control"    },            "m",     function ()
     awful.util.spawn("/home/jonas/.local/bin/my_scripts/open_notes.sh 2 "..terminal)   end,
-              {description = "Ytop", group = "launcher"}),
+              {description = "Open notes 2", group = "launcher"}),
 
     -- bind mod-p: spawn xrandr_helper.sh
     awful.key({modkey},            "p",     function ()
@@ -507,10 +507,6 @@ globalkeys = mytable.join(
     awful.key({modkey },            "section",     function ()
     awful.util.spawn("sh /home/jonas/.local/bin/my_scripts/loadEww.sh")  end,
               {description = "Load Eww", group = "launcher"}),
-
-    -- bind mod-shift-section: dashboard_show
-    awful.key({modkey, "Shift" }, 'section', function() _G.dashboard_show() end,
-              {description = 'toggle dashboard', group = 'awesome'}),
 
     -- bind shift-F1: spawn show_keys.sh vim
     awful.key({ "Shift" },            "F1",     function ()
@@ -550,11 +546,11 @@ globalkeys = mytable.join(
 
     -- bind alt-tab: lain.util.tag_view_nonempty -1 (previous nonempty)
      awful.key({ altkey }, "Tab", function () lain.util.tag_view_nonempty(-1) end,
-               {description = "view  previous nonempty", group = "tag"}),
+               {description = "view previous nonempty", group = "tag"}),
 
     -- bind alt-shift-tab: lain.util.tag_view_nonempty +1 (next nonempty)
      awful.key({ altkey, "Shift" }, "Tab", function () lain.util.tag_view_nonempty(1) end,
-               {description = "view  previous nonempty", group = "tag"}),
+               {description = "view next nonempty", group = "tag"}),
 
     -- bind mod-j: awful.client.focus.byidx +1 (focus next)
     awful.key({ modkey,         }, "j", function () awful.client.focus.byidx( 1) end,
@@ -714,11 +710,11 @@ globalkeys = mytable.join(
     -- bind XF86MonBrightnessUp: spawn brightness.sh +10
     awful.key({ },  "XF86MonBrightnessUp", function ()
       awful.spawn("/home/jonas/.local/bin/my_scripts/brightness.sh +10") end,
-      {description = "Screenshot", group = "launcher"}),
+      {description = "Brightness +10%", group = "hotkeys"}),
     -- bind XF86MonBrightnessDown: spawn brightness.sh -10
     awful.key({ },  "XF86MonBrightnessDown", function ()
       awful.spawn("/home/jonas/.local/bin/my_scripts/brightness.sh -10") end,
-      {description = "Screenshot", group = "launcher"}),
+      {description = "Brightness -10%", group = "hotkeys"}),
 
     -- ALSA volume control
     --awful.key({ ctrlkey }, "Up",
@@ -809,7 +805,7 @@ clientkeys = mytable.join(
     awful.key({ modkey, "Shift"}, "h",
         function ()
             local c = client.focus
-            if c then c:move_to_screen(c.screen.index-1) end
+            if c then c:move_to_screen((c.screen.index - 2) % screen.count() + 1) end
         end, {description = "move client to prev screen", group = "client"}),
 
     -- awful.key({ modkey,         }, "n",
@@ -914,6 +910,7 @@ end
 
 local function switch_to_tag_move(tag_index)
   local num_screens = screen:count()
+  if not client.focus then return end
 
   if num_screens == 2 then
     local primary_screen = screen[1]
@@ -931,8 +928,8 @@ local function switch_to_tag_move(tag_index)
       local target_tag = secondary_screen.tags[tag_index]
       if target_tag then
         focused_client:move_to_tag(target_tag)
+        target_tag:view_only()
       end
-      target_tag:view_only()
       client.focus = focused_client
       focused_client:raise()
 
@@ -943,8 +940,8 @@ local function switch_to_tag_move(tag_index)
       local target_tag = primary_screen.tags[tag_index]
       if target_tag then
         focused_client:move_to_tag(target_tag)
+        target_tag:view_only()
       end
-      target_tag:view_only()
       client.focus = focused_client
       focused_client:raise()
 
@@ -977,6 +974,7 @@ end
 
 local function switch_to_tag_stay(tag_index)
   local num_screens = screen:count()
+  if not client.focus then return end
 
   if num_screens == 2 then
     local primary_screen = screen[1]
@@ -1109,7 +1107,7 @@ root.keys(globalkeys)
 -- Rules to apply to new clients (through the "manage" signal).
 awful.rules.rules = {
     {
-        rule = { class = "firefox", "firefox-esr" },
+        rule_any = { class = { "firefox", "firefox-esr" } },
         properties = {
             --maximized = false, -- Ensure Firefox is not always maximized
             floating = false,  -- Ensure it respects tiled layouts

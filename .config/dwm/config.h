@@ -140,7 +140,7 @@ static const Layout layouts[] = {
 static char dmenumon[2] = "0"; /* component of dmenucmd, manipulated in spawn() */
 static const char *termcmd[]  = { TERMINAL, NULL };
 //static const char *dmenucmd[] = { "dmenu_run", "-m", dmenumon, "-fn", dmenufont, "-nb", col_gray1, "-nf", col_gray3, "-sb", col_cyan, "-sf", col_gray4, NULL };
-static const char *dmenucmd[] = { "dmenu_run", "-m", dmenumon, "-fn JetBrainsMono Nerd Font:size=11:style=bold", NULL };
+static const char *dmenucmd[] = { "dmenu_run", "-m", dmenumon, "-fn", "JetBrainsMono Nerd Font:size=11:style=bold", NULL };
 
 /*
  * Xresources preferences to load at startup
@@ -206,21 +206,21 @@ static const Key keys[] = {
         /* bind mod-shift-less: togglesticky */
         { MODKEY|ShiftMask,         XK_less,            togglesticky,       {0} },
         /* bind mod-less: setlayout spiral */
-        { MODKEY,                   XK_less,            setlayout,          {.v = &layouts[0]} }, /* Fibonacci spiral */
+        { MODKEY,                   XK_less,            setlayout,          {.v = &layouts[0]} },
         /* bind mod-s: setlayout bstack */
-        { MODKEY,                   XK_s,               setlayout,          {.v = &layouts[2]} }, /* centeredmaster */
+        { MODKEY,                   XK_s,               setlayout,          {.v = &layouts[2]} },
         /* bind mod-ctrl-t: setlayout tile */
-        { MODKEY|ControlMask,       XK_t,               setlayout,          {.v = &layouts[1]} }, /* tile */
+        { MODKEY|ControlMask,       XK_t,               setlayout,          {.v = &layouts[1]} },
         /* bind mod-ctrl-y: setlayout dwindle */
-        { MODKEY|ControlMask,       XK_y,               setlayout,          {.v = &layouts[3]} }, /* dwindle */
+        { MODKEY|ControlMask,       XK_y,               setlayout,          {.v = &layouts[3]} },
         /* bind mod-ctrl-u: setlayout deck */
-        { MODKEY|ControlMask,       XK_u,               setlayout,          {.v = &layouts[4]} }, /* bstack */
+        { MODKEY|ControlMask,       XK_u,               setlayout,          {.v = &layouts[4]} },
         /* bind mod-ctrl-i: setlayout monocle */
-        { MODKEY|ControlMask,       XK_i,               setlayout,          {.v = &layouts[5]} }, /* deck*/
+        { MODKEY|ControlMask,       XK_i,               setlayout,          {.v = &layouts[5]} },
         /* bind mod-ctrl-o: setlayout centeredmaster */
-        { MODKEY|ControlMask,       XK_o,               setlayout,          {.v = &layouts[6]} }, /* monocle */
+        { MODKEY|ControlMask,       XK_o,               setlayout,          {.v = &layouts[6]} },
         /* bind mod-ctrl-p: setlayout centeredfloatingmaster */
-        { MODKEY|ControlMask,       XK_p,               setlayout,          {.v = &layouts[7]} }, /* centeredfloatingmaster */
+        { MODKEY|ControlMask,       XK_p,               setlayout,          {.v = &layouts[7]} },
         /* bind mod-ctrl-aring: setlayout floating */
         { MODKEY|ControlMask,       XK_aring,           setlayout,          {.v = &layouts[8]} },
         /* bind mod-f: togglefullscr */
@@ -305,7 +305,7 @@ static const Key keys[] = {
         /* bind mod-shift-e: spawn powermenu.sh */
         { MODKEY|ShiftMask,         XK_e,               spawn,              SHCMD("~/.local/bin/my_scripts/alert_exit.sh && ~/.config/polybar/forest/scripts/powermenu.sh") },
         /* bind mod-shift-s: spawn screenshot to clipboard */
-        { MODKEY|ShiftMask,         XK_s,               spawn,              SHCMD("import png:- | xclip -selection clipboard -t image/png") },
+        { MODKEY|ShiftMask,         XK_s,               spawn,              SHCMD("f=$(mktemp --suffix=.png) && maim -s -u \"$f\" && xclip -selection clipboard -t image/png -i \"$f\"; rm -f \"$f\"") },
         /* bind mod-ctrl-s: spawn tesseract_ocr.sh */
         { MODKEY|ControlMask,       XK_s,               spawn,              SHCMD("~/.local/bin/my_scripts/tesseract_ocr.sh") },
         /* bind mod-d: spawn rofi */
@@ -330,8 +330,8 @@ static const Key keys[] = {
         { MODKEY|ControlMask,       XK_c,               spawn,              SHCMD("yad --calendar --no-buttons") },
         /* bind mod-b: spawn htop */
         { MODKEY,                   XK_b,               spawn,              SHCMD(TERMINAL " -e htop") },
-        /* bind mod-shift-b: spawn bashtop */
-        { MODKEY|ShiftMask,         XK_b,               spawn,              SHCMD(TERMINAL " -e bashtop") },
+        /* bind mod-shift-b: spawn btop */
+        { MODKEY|ShiftMask,         XK_b,               spawn,              SHCMD(TERMINAL " -e btop") },
         /* bind mod-ctrl-b: spawn ytop */
         { MODKEY|ControlMask,       XK_b,               spawn,              SHCMD(TERMINAL " -e ytop") },
         /* bind mod-p: spawn xrandr_helper.sh */
@@ -450,8 +450,6 @@ static const Key keys[] = {
         /* { 0, XF86XK_TouchpadOff,                        spawn,              SHCMD("synclient TouchpadOff=1") }, */
         /* { 0, XF86XK_TouchpadOn,                         spawn,              SHCMD("synclient TouchpadOff=0") }, */
 };
-
-#define STATUSBAR "dwmblocks"
 
 /* button definitions */
 /* click can be ClkTagBar, ClkLtSymbol, ClkStatusText, ClkClientWin, or ClkRootWin */

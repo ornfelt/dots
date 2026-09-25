@@ -110,7 +110,7 @@ commands.lockwallpapercmd  = ["/bin/sh", "-c", "i3lock -i ~/Downloads/lock-wallp
 commands.filexcmd          = ["/bin/sh", "-c", "wezterm -e yazi ~/"]
 commands.fileexplorerwdcmd = ["/bin/sh", "-c", "~/.local/bin/my_scripts/file_explorer_wd.sh wezterm yazi"]
 commands.powermenucmd      = ["/bin/sh", "-c", "~/.local/bin/my_scripts/alert_exit.sh && ~/.config/polybar/forest/scripts/powermenu.sh"]
-commands.screenclipcmd     = ["/bin/sh", "-c", "import png:- | xclip -selection clipboard -t image/png"]
+commands.screenclipcmd     = ["/bin/sh", "-c", "f=$(mktemp --suffix=.png) && maim -s -u \"$f\" && xclip -selection clipboard -t image/png -i \"$f\"; rm -f \"$f\""]
 commands.ocrcmd            = ["/bin/sh", "-c", "~/.local/bin/my_scripts/tesseract_ocr.sh"]
 commands.roficmd           = ["/bin/sh", "-c", "rofi -show run -theme ~/.config/rofi/themes/gruvbox/gruvbox-dark.rasi"]
 commands.dmenulistcmd      = ["/bin/sh", "-c", "dmenu_run -i -l 20"]
@@ -123,7 +123,7 @@ commands.fzfopencmd        = ["/bin/sh", "-c", "~/.local/bin/my_scripts/fzf_open
 commands.termcalccmd       = ["/bin/sh", "-c", "~/.local/bin/my_scripts/term_calc.sh wezterm"]
 commands.calendarcmd       = ["/bin/sh", "-c", "yad --calendar --no-buttons"]
 commands.htopcmd           = ["/bin/sh", "-c", "wezterm -e htop"]
-commands.bashtopcmd        = ["/bin/sh", "-c", "wezterm -e bashtop"]
+commands.btopcmd           = ["/bin/sh", "-c", "wezterm -e btop"]
 commands.ytopcmd           = ["/bin/sh", "-c", "wezterm -e ytop"]
 commands.xrandrcmd         = ["/bin/sh", "-c", "~/.local/bin/my_scripts/xrandr_helper.sh"]
 commands.fileswdcmd        = ["/bin/sh", "-c", "~/.local/bin/my_scripts/files_wd.sh"]
@@ -342,8 +342,8 @@ keys = [
 	{ mod = "MODKEY|ControlMask",       key = "c",        func = "spawn",           arg = { v = "calendarcmd" } },
 	# /* bind mod-b: spawn htop */
 	{ mod = "MODKEY",                   key = "b",        func = "spawn",           arg = { v = "htopcmd" } },
-	# /* bind mod-shift-b: spawn bashtop */
-	{ mod = "MODKEY|ShiftMask",         key = "b",        func = "spawn",           arg = { v = "bashtopcmd" } },
+	# /* bind mod-shift-b: spawn btop */
+	{ mod = "MODKEY|ShiftMask",         key = "b",        func = "spawn",           arg = { v = "btopcmd" } },
 	# /* bind mod-ctrl-b: spawn ytop */
 	{ mod = "MODKEY|ControlMask",       key = "b",        func = "spawn",           arg = { v = "ytopcmd" } },
 	# /* bind mod-p: spawn xrandr_helper.sh */
