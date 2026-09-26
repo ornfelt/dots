@@ -72,10 +72,11 @@ xset s noblank
 xset -dpms
 xset -b
 
-# Window manager to start: awesome | i3 | dwmr | dwm (anything else falls back to dwm).
+# Window manager to start: awesome | i3 | dwmr | dwmc | dwm (anything else falls back to dwm).
 # Override for one session without editing this file: WM=awesome startx
 #WM="${WM:-dwm}"
 WM="${WM:-dwmr}"
+#WM="${WM:-dwmc}"
 #WM="${WM:-awesome}"
 
 # To start with logging:
@@ -98,6 +99,13 @@ case "$WM" in
     sh ~/.dwm/autostart.sh &
     picom -b
     exec dwmr
+    ;;
+  dwmc)
+    # dwmc: the C port of dwmr (config compiled in from ~/.config/dwmc/config.h);
+    # it starts dwmblocksc itself (autostart in config.h)
+    sh ~/.dwm/autostart.sh &
+    picom -b
+    exec dwmc
     ;;
   *)
     sh ~/.dwm/autostart.sh &
