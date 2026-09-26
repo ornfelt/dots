@@ -10,7 +10,8 @@
 #   sb-network --check    one internet check (the block starts it in the
 #                         background every CHECK_EVERY seconds)
 # Clicks (BLOCK_BUTTON, also from the awesome widget): left shows the
-# details, middle restarts NetworkManager, right opens wifi_menu.sh.
+# details, middle restarts NetworkManager (after a No/Yes menu), right opens
+# wifi_menu.sh.
 #
 # The block itself only reads /sys and /proc, so it never waits on the
 # network. The check pings 1.1.1.1 and 8.8.8.8 and falls back to an HTTP
@@ -224,7 +225,21 @@ info() {
     fi
     awk '$1 == "nameserver" { s = s " " $2 } END { if (s) print "DNS" s }' /etc/resolv.conf 2>/dev/null
     echo
-    echo "Right click: wifi menu, middle click: restart $(wifi_service || echo NetworkManager)"
+    echo "Right click: wifi menu, middle click: restart $(wifi_service || echo NetworkManager) (asks first)"
+}
+
+# Middle click: a No/Yes menu like sysmenu.sh's (menu_lib.sh: dmenu or
+# rofi), then the restart
+confirm_restart() {
+    local svc ans
+    . ~/.local/bin/my_scripts/menu_lib.sh
+    menu_need
+    . "$LIB"
+    svc=$(wifi_service) || svc=NetworkManager
+    ans=$(printf 'No\nYes\n' | menu "Restart $svc?" "" -selected-row 0)
+    [ "$ans" = Yes ] || return
+    load; S[restarting_until]=$(( $(now) + 20 )); save; refresh
+    restart_service ""
 }
 
 case $BLOCK_BUTTON in
@@ -233,8 +248,9 @@ case $BLOCK_BUTTON in
         body=$(info)
         notify-send --wait -a network -h string:x-dunst-stack-tag:sb-network-info "Network" "$(printf '%s' "$body" | sed 's/&/\&amp;/g; s/</\&lt;/g; s/>/\&gt;/g')"
         exit 0 ;;
-    2)  load; S[restarting_until]=$(( $(now) + 20 )); save; refresh
-        restart_service ""; exit 0 ;;
+    2)  # asks first, in the background so the bar doesn't wait for the menu
+        confirm_restart </dev/null >/dev/null 2>&1 &
+        disown; exit 0 ;;
     3)  setsid -f ~/.local/bin/my_scripts/wifi_menu.sh >/dev/null 2>&1 </dev/null; exit 0 ;;
     ?*) exit 0 ;;
 esac
