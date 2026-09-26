@@ -198,6 +198,11 @@ fi
 # would keep saying the branch is ahead. Update it after a successful push,
 # like pushing to origin does.
 syncCommand="git update-ref refs/remotes/origin/${currentBranch} refs/heads/${currentBranch}"
+# A URL push never sets an upstream either, and without one git status doesn't
+# compare the branch with origin at all. Set it once origin/<branch> exists.
+if ! git rev-parse -q --verify '@{u}' >/dev/null 2>&1; then
+  syncCommand+=" && git branch --set-upstream-to=origin/${currentBranch}"
+fi
 
 pushCommandActual="git push https://${tokenValue}@github.com/${repoOwner}/${repoName} ${currentBranch} && ${syncCommand}"
 pushCommandDisplay="git push https://\$${tokenEnvVarName}@github.com/${repoOwner}/${repoName} ${currentBranch} && ${syncCommand}"

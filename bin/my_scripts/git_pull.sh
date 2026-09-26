@@ -69,8 +69,18 @@ if [[ -z "$tokenValue" ]]; then
   exit 1
 fi
 
-pullCommandActual="git pull https://${tokenValue}@github.com/${repoOwner}/${repoName} ${currentBranch}"
-pullCommandDisplay="git pull https://\$${tokenEnvVarName}@github.com/${repoOwner}/${repoName} ${currentBranch}"
+# Pulling from a URL instead of from origin doesn't update origin/<branch>, so
+# git would say the branch is ahead by the pulled commits. Point it at what was
+# fetched (FETCH_HEAD) after a successful pull, like pulling from origin does.
+syncCommand="git update-ref refs/remotes/origin/${currentBranch} FETCH_HEAD"
+# A URL pull never sets an upstream either, and without one git status doesn't
+# compare the branch with origin at all. Set it once origin/<branch> exists.
+if ! git rev-parse -q --verify '@{u}' >/dev/null 2>&1; then
+  syncCommand+=" && git branch --set-upstream-to=origin/${currentBranch}"
+fi
+
+pullCommandActual="git pull https://${tokenValue}@github.com/${repoOwner}/${repoName} ${currentBranch} && ${syncCommand}"
+pullCommandDisplay="git pull https://\$${tokenEnvVarName}@github.com/${repoOwner}/${repoName} ${currentBranch} && ${syncCommand}"
 
 if [[ -n "$OutputOnly" ]]; then
   echo "$pullCommandDisplay"
