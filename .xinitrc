@@ -80,8 +80,8 @@ xset -b
 # Override for one session without editing this file: WM=awesome startx
 #WM="${WM:-dwm}"
 #WM="${WM:-dwmr}"
-#WM="${WM:-dwmc}"
-WM="${WM:-awesome}"
+WM="${WM:-dwmc}"
+#WM="${WM:-awesome}"
 
 # To start with logging:
 # startx > $HOME/startx.log 2>&1

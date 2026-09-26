@@ -80,12 +80,14 @@ rules = [
 mfact = 0.55          # factor of master area size [0.05..0.95]
 nmaster = 1           # number of clients in master area
 resizehints = false   # true means respect size hints in tiled resizals
+layoutalltags = true  # true: setlayout sets every tag's (and monitor's) layout, false: each tag has its own
 lockfullscreen = true # true will force focus on the fullscreen window
 refreshrate = 120     # refresh rate (per second) for client move/resize
 
 layouts = [
 	#  symbol          arrange function
-	{ symbol = "[@]",  arrange = "spiral" },                 # Default: Fibonacci spiral
+	{ symbol = "[Φ]",  arrange = "spiral" },                 # Default: Fibonacci spiral
+	# { symbol = "[@]",  arrange = "spiral" },               # the old symbol
 	{ symbol = "[]=",  arrange = "tile" },                   # Master on left, slaves on right
 	{ symbol = "TTT",  arrange = "bstack" },                 # Master on top, slaves on bottom
 	{ symbol = "[\\]", arrange = "dwindle" },                # Decreasing in size right and leftward
@@ -153,6 +155,9 @@ commands.brightupcmd       = ["/bin/sh", "-c", "~/.local/bin/my_scripts/brightne
 commands.brightdowncmd     = ["/bin/sh", "-c", "~/.local/bin/my_scripts/brightness.sh -10"]
 commands.blocksconfcmd     = ["/bin/sh", "-c", "wezterm -e nvim ~/.config/dwmblocksr/config.toml"]
 commands.sysinfocmd        = ["/bin/sh", "-c", "~/.local/bin/statusbar/sb-sysinfo toggle"]
+# layoutmenu: prints the index of the chosen layout, takes layouts' arrange
+# functions in the same order
+commands.layoutmenucmd     = ["/bin/sh", "-c", "~/.local/bin/my_scripts/layout_menu.sh spiral tile bstack dwindle deck monocle centeredmaster centeredfloatingmaster floating"]
 
 # the status bar program, e.g. dwmblocksr or dwmblocks, found by process name.
 # A click on a status block that starts with a signal byte runs sigstatusbar,
@@ -230,6 +235,10 @@ keys = [
 	{ mod = "MODKEY|Mod1Mask",          key = "p",        func = "setlayout",       arg = { v = "layouts[7]" } },
 	# /* bind mod-ctrl-aring: setlayout floating */
 	{ mod = "MODKEY|ControlMask",       key = "aring",    func = "setlayout",       arg = { v = "layouts[8]" } },
+	# /* bind mod-r: layoutmenu (pick a layout from layout_menu.sh) */
+	{ mod = "MODKEY",                   key = "r",        func = "layoutmenu",      arg = { v = "layoutmenucmd" } },
+	# /* bind mod-shift-r: togglelayoutalltags (layouts for all tags / per tag) */
+	{ mod = "MODKEY|ShiftMask",         key = "r",        func = "togglelayoutalltags" },
 	# /* bind mod-f: togglefullscr */
 	{ mod = "MODKEY",                   key = "f",        func = "togglefullscr" },
 	# /* bind mod-space: togglefloating */
@@ -419,6 +428,12 @@ keys = [
 # click can be ClkTagBar, ClkLtSymbol, ClkStatusText, ClkClientWin, or ClkRootWin
 buttons = [
 	#  click                    event mask         button               function                  argument
+	# /* bind ltsymbol-button1: layoutmenu (pick a layout from layout_menu.sh) */
+	{ click = "ClkLtSymbol",    mask = "0",        button = "Button1",  func = "layoutmenu",      arg = { v = "layoutmenucmd" } },
+	# /* bind ltsymbol-button4: cyclelayout +1 (scroll up) */
+	{ click = "ClkLtSymbol",    mask = "0",        button = "Button4",  func = "cyclelayout",     arg = { i = 1 } },
+	# /* bind ltsymbol-button5: cyclelayout -1 (scroll down) */
+	{ click = "ClkLtSymbol",    mask = "0",        button = "Button5",  func = "cyclelayout",     arg = { i = -1 } },
 	# /* bind statustext-button1: sigstatusbar 1 */
 	{ click = "ClkStatusText",  mask = "0",        button = "Button1",  func = "sigstatusbar",    arg = { i = 1 } },
 	# /* bind statustext-button2: sigstatusbar 2 */

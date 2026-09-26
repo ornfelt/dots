@@ -56,6 +56,8 @@ cp -r .config/dwm/ $HOME/.config/
 cp -r .config/dwmblocks/ $HOME/.config/
 cp -r .config/dwmr/ $HOME/.config/
 cp -r .config/dwmblocksr/ $HOME/.config/
+cp -r .config/dwmc/ $HOME/.config/
+cp -r .config/dwmblocksc/ $HOME/.config/
 cp -r .config/eww/ $HOME/.config/
 cp -r .config/hypr/ $HOME/.config/
 cp -r .config/i3/ $HOME/.config/

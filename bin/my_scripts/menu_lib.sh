@@ -7,7 +7,7 @@
 # export LAUNCHER=rofi.
 #
 #   menu PROMPT [LINES [ROFI_ARGS...]]  pick a line from stdin, print it.
-#                                       LINES: dmenu -l (default 20); rofi
+#                                       LINES: dmenu -l (default 15, rofi's); rofi
 #                                       keeps its theme's count when empty
 #   menu_msg TEXT [ROFI_ARGS...]        show TEXT (rofi -e, a dmenu list)
 #   menu_need                           exit with a message if $MENU is
@@ -60,7 +60,7 @@ menu() {
     if [ "$MENU" = rofi ]; then
         rofi -dmenu -i -theme "$MENU_ROFI_THEME" -p "$_menu_prompt" ${_menu_lines:+-l "$_menu_lines"} "$@"
     else
-        dmenu -i -l "${_menu_lines:-20}" ${_menu_prompt:+-p "$_menu_prompt"}
+        dmenu -i -l "${_menu_lines:-15}" ${_menu_prompt:+-p "$_menu_prompt"}
     fi
 }
 

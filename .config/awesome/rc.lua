@@ -123,19 +123,28 @@ local filex       = "yazi"
 -- quits awesome straight away
 local quit_uses_sysmenu = true
 
+-- true: switching layout applies it to every tag (on all screens), false:
+-- only the current tag changes (awesome's default per-tag layouts).
+-- mod-shift-r toggles it at runtime
+local layout_applies_to_all_tags = true
+
 awful.util.terminal = terminal
 awful.util.tagnames = { "1", "2", "3", "4", "5", "6", "7", "8", "9" }
+-- In dwm's layouts[] order (without deck and centeredfloatingmaster), then
+-- awesome's extra tile variants: scrolling on the layoutbox cycles them and
+-- the layout menu (mod-r) lists them in this order
 awful.layout.layouts = {
     awful.layout.suit.spiral,
-    awful.layout.suit.floating,
     awful.layout.suit.tile,
-    awful.layout.suit.tile.left,
     awful.layout.suit.tile.bottom,
+    awful.layout.suit.spiral.dwindle,
+    awful.layout.suit.max,
+    lain.layout.centerwork,
+    awful.layout.suit.floating,
+    awful.layout.suit.tile.left,
     awful.layout.suit.tile.top,
     --awful.layout.suit.fair,
     --awful.layout.suit.fair.horizontal,
-    --awful.layout.suit.spiral.dwindle,
-    --awful.layout.suit.max,
     --awful.layout.suit.max.fullscreen,
     --awful.layout.suit.magnifier,
     --awful.layout.suit.corner.nw,
@@ -144,7 +153,6 @@ awful.layout.layouts = {
     --awful.layout.suit.corner.se,
     --lain.layout.cascade,
     --lain.layout.cascade.tile,
-    --lain.layout.centerwork,
     --lain.layout.centerwork.horizontal,
     --lain.layout.termfair,
     --lain.layout.termfair.center
@@ -159,6 +167,51 @@ lain.layout.cascade.tile.offset_y      = 32
 lain.layout.cascade.tile.extra_padding = 5
 lain.layout.cascade.tile.nmaster       = 5
 lain.layout.cascade.tile.ncol          = 2
+
+-- Pick a layout for the focused screen's tag from layout_menu.sh (rofi, with
+-- an ascii preview of each). Run by mod-r and a click on the layoutbox.
+awful.util.layout_menu = function()
+    local layouts = awful.layout.layouts
+    local cur = gears.table.hasitem(layouts, awful.layout.get()) or 1
+    local cmd = { "env", "LAYOUT_MENU_CURRENT=" .. (cur - 1),
+                  os.getenv("HOME") .. "/.local/bin/my_scripts/layout_menu.sh" }
+    for _, l in ipairs(layouts) do
+        table.insert(cmd, awful.layout.getname(l))
+    end
+    awful.spawn.easy_async(cmd, function(out)
+        local i = tonumber(out)
+        if i and layouts[i + 1] then
+            awful.layout.set(layouts[i + 1])
+        end
+    end)
+end
+
+-- Mirror a layout change on one tag to all other tags while
+-- layout_applies_to_all_tags is on. Hooks the tag signal rather than the
+-- keybindings, so layoutbox clicks and awful.layout.inc are covered too. The
+-- guard stops the other tags' own property::layout signals from propagating
+-- again.
+local syncing_layout = false
+local function sync_layout(t)
+    if syncing_layout or not layout_applies_to_all_tags then return end
+    syncing_layout = true
+    for _, other in ipairs(root.tags()) do
+        if other ~= t and other.layout ~= t.layout then
+            other.layout = t.layout
+        end
+    end
+    syncing_layout = false
+end
+tag.connect_signal("property::layout", sync_layout)
+
+-- Switch between one layout for all tags and a layout per tag; switching
+-- back to all tags gives every tag the current one (like dwm's mod-shift-r)
+local function toggle_layout_all_tags()
+    layout_applies_to_all_tags = not layout_applies_to_all_tags
+    local t = awful.screen.focused().selected_tag
+    if t then sync_layout(t) end
+    naughty.notify { text = layout_applies_to_all_tags and "layout: all tags" or "layout: per tag", timeout = 2 }
+end
 
 -- https://awesomewm.org/doc/api/classes/client.html
 awful.util.taglist_buttons = mytable.join(
@@ -748,6 +801,12 @@ globalkeys = mytable.join(
     -- bind mod-ctrl-aring: layout floating
     awful.key({ modkey, ctrlkey }, "aring", function () awful.layout.set(awful.layout.suit.floating) end,
         {description = "layout: floating", group = "layout"}),
+    -- bind mod-r: layout menu (layout_menu.sh, like dwm)
+    awful.key({ modkey }, "r", function () awful.util.layout_menu() end,
+        {description = "layout menu", group = "layout"}),
+    -- bind mod-shift-r: toggle layouts for all tags / per tag
+    awful.key({ modkey, "Shift" }, "r", toggle_layout_all_tags,
+        {description = "toggle layout for all tags / per tag", group = "layout"}),
     -- bind mod-shift-u: one more client in the master area
     awful.key({ modkey, "Shift" }, "u", function () awful.tag.incnmaster( 1, nil, true) end,
         {description = "increase the number of master clients", group = "layout"}),

@@ -15,7 +15,7 @@ menu_need
 
 case $MENU in
     dmenu)
-        exec dmenu_run -i -l 20
+        exec dmenu_run -i -l 15
         ;;
     rofi)
         exec rofi -show run -theme "$MENU_ROFI_THEME"

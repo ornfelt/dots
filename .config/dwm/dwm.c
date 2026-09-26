@@ -199,6 +199,7 @@ static void configure(Client *c);
 static void configurenotify(XEvent *e);
 static void configurerequest(XEvent *e);
 static Monitor *createmon(void);
+static void cyclelayout(const Arg *arg);
 static void destroynotify(XEvent *e);
 static void detach(Client *c);
 static void detachstack(Client *c);
@@ -226,6 +227,7 @@ static void grabkeys(void);
 static void incnmaster(const Arg *arg);
 static void keypress(XEvent *e);
 static void killclient(const Arg *arg);
+static void layoutmenu(const Arg *arg);
 static void manage(Window w, XWindowAttributes *wa);
 static void mappingnotify(XEvent *e);
 static void maprequest(XEvent *e);
@@ -271,6 +273,7 @@ static void tagnthmonview(const Arg *arg);
 static void togglebar(const Arg *arg);
 static void togglebars(const Arg *arg);
 static void togglefloating(const Arg *arg);
+static void togglelayoutalltags(const Arg *arg);
 static void togglescratch(const Arg *arg);
 static void togglesticky(const Arg *arg);
 static void togglefullscr(const Arg *arg);
@@ -349,6 +352,9 @@ static xcb_connection_t *xcon;
 
 /* compile-time check if all tags fit into an unsigned int bit array. */
 struct NumTags { char limitexceeded[LENGTH(tags) > 31 ? -1 : 1]; };
+
+/* the index in layouts[] of each tag's layout, used when !layoutalltags */
+static unsigned int taglayouts[LENGTH(tags)];
 
 /* function implementations */
 void
@@ -481,6 +487,14 @@ arrange(Monitor *m)
 void
 arrangemon(Monitor *m)
 {
+	unsigned int i;
+
+	/* a layout per tag: the one of the first viewed tag */
+	for (i = 0; !layoutalltags && running && i < LENGTH(tags); i++)
+		if (m->tagset[m->seltags] & 1 << i) {
+			m->lt[m->sellt] = &layouts[taglayouts[i]];
+			break;
+		}
 	strncpy(m->ltsymbol, m->lt[m->sellt]->symbol, sizeof m->ltsymbol);
 	if (m->lt[m->sellt]->arrange)
 		m->lt[m->sellt]->arrange(m);
@@ -1929,13 +1943,68 @@ setsticky(Client *c, int sticky)
 	}
 }
 
+/* Set the layout arg->i places after the current one in layouts[],
+ * wrapping around (dwm's cyclelayouts patch) */
+void
+cyclelayout(const Arg *arg)
+{
+	int n = LENGTH(layouts) - 1, i; /* without the { NULL, NULL } end */
+
+	for (i = 0; i < n && &layouts[i] != selmon->lt[selmon->sellt]; i++);
+	if (i == n) /* not one of layouts[], e.g. fullscreen's: from the first */
+		i = 0;
+	setlayout(&((Arg) { .v = &layouts[((i + arg->i) % n + n) % n] }));
+}
+
+/* Run arg->v, a shell command that prints the index in layouts[] of the
+ * layout to set, with the current one's index in LAYOUT_MENU_CURRENT
+ * (dwm's layoutmenu patch). dwm waits for it to exit, like for a menu. */
+void
+layoutmenu(const Arg *arg)
+{
+	int n = LENGTH(layouts) - 1, i; /* without the { NULL, NULL } end */
+	char cmd[1024], out[16], *end = out;
+	struct sigaction sa, oldsa;
+	FILE *p;
+
+	for (i = 0; i < n && &layouts[i] != selmon->lt[selmon->sellt]; i++);
+	snprintf(cmd, sizeof cmd, "LAYOUT_MENU_CURRENT=%d %s", i == n ? 0 : i, (const char *)arg->v);
+	/* the command must not inherit dwm's ignored SIGCHLD */
+	sigemptyset(&sa.sa_mask);
+	sa.sa_flags = 0;
+	sa.sa_handler = SIG_DFL;
+	sigaction(SIGCHLD, &sa, &oldsa);
+	if ((p = popen(cmd, "r"))) {
+		if (fgets(out, sizeof out, p))
+			i = strtol(out, &end, 10);
+		pclose(p);
+	}
+	sigaction(SIGCHLD, &oldsa, NULL);
+	/* reap the children that exited meanwhile */
+	while (waitpid(-1, NULL, WNOHANG) > 0);
+	if (end != out && i >= 0 && i < n)
+		setlayout(&((Arg) { .v = &layouts[i] }));
+}
+
 void
 setlayout(const Arg *arg)
 {
+	unsigned int i;
+	Monitor *m;
+
 	if (!arg || !arg->v || arg->v != selmon->lt[selmon->sellt])
 		selmon->sellt ^= 1;
 	if (arg && arg->v)
 		selmon->lt[selmon->sellt] = (Layout *)arg->v;
+	/* every tag and monitor takes it (layoutalltags), else the viewed tags */
+	for (i = 0; i < LENGTH(tags); i++)
+		if (layoutalltags || selmon->tagset[selmon->seltags] & 1 << i)
+			taglayouts[i] = selmon->lt[selmon->sellt] - layouts;
+	for (m = mons; layoutalltags && m; m = m->next)
+		if (m != selmon) {
+			m->lt[m->sellt] = selmon->lt[selmon->sellt];
+			arrange(m);
+		}
 	strncpy(selmon->ltsymbol, selmon->lt[selmon->sellt]->symbol, sizeof selmon->ltsymbol);
 	if (selmon->sel)
 		arrange(selmon);
@@ -2359,6 +2428,18 @@ togglefloating(const Arg *arg)
 	}
 
 	arrange(selmon);
+}
+
+/* Toggle between one layout for every tag and monitor and a layout per
+ * tag (layoutalltags) */
+void
+togglelayoutalltags(const Arg *arg)
+{
+	layoutalltags = !layoutalltags;
+	if (layoutalltags) /* every tag takes the current layout */
+		setlayout(&((Arg) { .v = selmon->lt[selmon->sellt] }));
+	spawn(&((Arg) { .v = (const char *[]){ "notify-send", "-t", "2000", "dwm",
+		layoutalltags ? "layout: all tags" : "layout: per tag", NULL } }));
 }
 
 void

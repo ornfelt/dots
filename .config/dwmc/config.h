@@ -1,24 +1,16 @@
 /* See LICENSE file for copyright and license details. */
+/* Mirrors dwmr/config/config.toml */
 
 /* Constants */
-/* #define TERMINAL "st" */
-/* #define TERMCLASS "St" */
-/* #define TERMINAL "urxvt" */
-/* #define TERMCLASS "Urxvt" */
-/* #define TERMINAL "alacritty" */
-/* #define TERMCLASS "alacritty" */
 #define TERMINAL "wezterm"
 #define TERMCLASS "wezterm"
 #define SECTERMINAL "st"
 
 #define FILES "thunar"
-//#define FILEX "ranger"
-//#define FILEX "lf"
 #define FILEX "yazi"
 
 /* appearance */
 static unsigned int borderpx    = 2;        /* border pixel of windows */
-static const unsigned int gappx = 10;       /* default gap between windows in pixels */
 static unsigned int snap        = 32;       /* snap pixel */
 static unsigned int gappih      = 20;       /* horiz inner gap between windows */
 static unsigned int gappiv      = 20;       /* vert inner gap between windows */
@@ -29,18 +21,21 @@ static int smartgaps            = 0;        /* 1 means no outer gap when there i
 static int browsergaps          = 0;        /* 0 means no outer gap when there is only one window and it is firefox */
 static int showbar              = 1;        /* 0 means no bar */
 static int topbar               = 1;        /* 0 means bottom bar */
-static const int focusonwheel       = 0;
-/* static char *fonts[]            = { "Linux Libertine Mono:size=12", "Mono:pixelsize=12:antialias=true:autohint=true", "FontAwesome:size=15","FontAwesome5Brands:size=13:antialias:true", "FontAwesome5Free:size=13:antialias:true", "FontAwesome5Free:style=Solid:size=13:antialias:true","JetBrainsMono Nerd Font:size=12:style=bold:antialias=true:autohint=true", "Nerd Font Complete Mono:size=13", "JoyPixels:pixelsize=10:antialias=true:autohint=true", "Inconsolata Nerd Font:size=15", "Nerd Font Complete Mono:size=13" }; */
-/* static const char *fonts[]      = { "JetBrainsMono Nerd Font:size=11:style=bold:antialias=true:autohint=true", "JoyPixels:pixelsize=13:antialias=true:autohint=true" }; */
+static const int focusonwheel   = 0;        /* 0 allows the user to scroll window without changing focus */
 static const char *fonts[]      = { "JetBrainsMono Nerd Font:size=11:style=bold" };
 /* bigger font for status text between ^B^ and ^N^, e.g. a block's icon */
 static const char *statusbigfonts[] = { "JetBrainsMono Nerd Font:size=15:style=bold" };
+/* "#RRGGBB": the resources[] below are written into them */
 static char normbgcolor[]       = "#282828";
 static char normbordercolor[]   = "#282828";
 static char normfgcolor[]       = "#ebdbb2";
 static char selfgcolor[]        = "#ebdbb2";
 static char selbordercolor[]    = "#ebdbb2";
 static char selbgcolor[]        = "#282828";
+/* status text colors (status2d): the text starts in col1; ^3^..^6^ switch to
+ * col3..col6, ^c#rrggbb^ to any color and ^2^ to the weather color from the
+ * temperature after it: +20 and above col21, below +20 col22, negative col23,
+ * no sign col24 */
 static const char col1[]        = "#98971a";
 static const char col21[]       = "#fb4934";
 static const char col22[]       = "#ebdbb2";
@@ -50,22 +45,18 @@ static const char col3[]        = "#fabd2f";
 static const char col4[]        = "#83a598";
 static const char col5[]        = "#d3869b";
 static const char col6[]        = "#8ec07c";
-static char *colors[][3]        = {
+static const char *colors[][3]  = {
     /*               fg              bg              border   */
     [SchemeNorm] = { normfgcolor,   normbgcolor,    normbordercolor },
     [SchemeSel]  = { selfgcolor,    selbgcolor,     selbordercolor },
 };
 
-typedef struct {
-    const char *name;
-    const void *cmd;
-} Sp;
-//const char *spcmd1[] = {"st", "-n", "spterm", "-g", "30x30", "-e", "python3", NULL };
-//const char *spcmd2[] = {"st", "-n", "spcalc", "-g", "30x30", NULL };
-const char *spcmd1[] = {"st", "-n", "spterm", "-e", "python3", NULL };
-const char *spcmd2[] = {"st", "-n", "spcalc", NULL };
-/* const char *spcmd2[] = {"st", "-n", "spcalc", "-f", "monospace:size=16", "-g", "50x20", "-e", "bc", "-lq", NULL }; */
-static Sp scratchpads[] = {
+/* Scratchpads: each has its own tag bit above the normal tags, SPTAG(i), and
+ * a command that togglescratch spawns when no window has that tag yet. The
+ * tags and the scratchpads together must not exceed 31. */
+static const char *spcmd1[] = {"st", "-n", "spterm", "-e", "python3", NULL };
+static const char *spcmd2[] = {"st", "-n", "spcalc", NULL };
+static const Sp scratchpads[] = {
     /* name          cmd  */
     {"spterm",      spcmd1},
     {"spcalc",      spcmd2},
@@ -73,7 +64,6 @@ static Sp scratchpads[] = {
 
 /* tagging */
 static const char *tags[] = { "1", "2", "3", "4", "5", "6", "7", "8", "9" };
-/* static const char *tags[] = { "", "", "", "", "", "", "", "", "" }; */
 
 static const Rule rules[] = {
     /* xprop(1):
@@ -81,9 +71,8 @@ static const Rule rules[] = {
      *    WM_NAME(STRING) = title
      */
     /* class        instance                title               tags mask       isfloating   isterminal noswallow   monitor */
-    /* { "Gimp",       NULL,                   NULL,               1 << 8,         0,           0,         0,          -1 }, */
     { TERMCLASS,    NULL,                   NULL,               0,              0,           1,         0,          -1 },
-    { NULL,         NULL,                   "Event Tester",     0,              0,           0,         1,          -1 },
+    { NULL,         NULL,                   "Event Tester",     0,              0,           0,         1,          -1 }, /* xev */
     { NULL,         "spterm",               NULL,               SPTAG(0),       1,           1,         1,          -1 },
     { NULL,         "spcalc",               NULL,               SPTAG(1),       1,           1,         0,          -1 },
     { NULL,         "gnome-calculator",     NULL,               0,              1,           0,         0,          -1 },
@@ -100,7 +89,6 @@ static int layoutalltags = 1;  /* 1: setlayout sets every tag's (and monitor's) 
 static const int lockfullscreen = 1; /* 1 will force focus on the fullscreen window */
 static const int refreshrate = 120;  /* refresh rate (per second) for client move/resize */
 
-#include "vanitygaps.c"
 static const Layout layouts[] = {
     /* symbol       arrange function */
     { "[Φ]",        spiral },                   /* Default: Fibonacci spiral */
@@ -113,47 +101,56 @@ static const Layout layouts[] = {
     { "|M|",        centeredmaster },           /* Master in middle, slaves on sides */
     { ">M>",        centeredfloatingmaster },   /* Same but master floats */
     { "><>",        NULL },                     /* no layout function means floating behavior */
-    { NULL,         NULL },
 };
-/* layoutmenu: prints the index of the chosen layout, takes layouts[]'s arrange
- * function names in the same order */
-static const char layoutmenucmd[] = "~/.local/bin/my_scripts/layout_menu.sh spiral tile bstack dwindle deck monocle centeredmaster centeredfloatingmaster floating";
 
 /* key definitions */
 #define MODKEY Mod4Mask
 #define MODKEY1 Mod1Mask
+/* TAGKEYS(KEY, TAG): MODKEY+key views the tag, +Control tags the window,
+ * +Shift tags the window and views the tag, +Control+Shift toggles the
+ * view. With two monitors the odd tags live on the first and the even
+ * tags on the second: view and tag switch to the tag's monitor. */
 #define TAGKEYS(KEY,TAG) \
 { MODKEY,                       KEY,      view,         {.ui = 1 << TAG} }, \
 { MODKEY|ControlMask,           KEY,      tag,          {.ui = 1 << TAG} }, \
 { MODKEY|ShiftMask,             KEY,      tagview,      {.ui = 1 << TAG} }, \
 { MODKEY|ControlMask|ShiftMask, KEY,      toggleview,   {.ui = 1 << TAG} },
-/* { MODKEY|ControlMask|ShiftMask, KEY,      toggletag,    {.ui = 1 << TAG} }, */
+/* focusstack/pushstack take a stack position (stacker): INC(n) is relative
+ * to the focused window, 0 is the top, -1 the bottom */
 #define STACKKEYS(MOD,ACTION) \
 { MOD,                  XK_j,    ACTION##stack,    {.i = INC(+1) } }, \
 { MOD,                  XK_k,    ACTION##stack,    {.i = INC(-1) } }, \
 { MOD|ControlMask,      XK_j,    ACTION##stack,    {.i = -1 } }, \
-{ MOD|ControlMask,      XK_k,    ACTION##stack,    {.i = 0 } }, \
-/* { MOD,                  XK_h,    ACTION##stack,    {.i = INC(+1) } }, \ */
-/* { MOD,                  XK_l,    ACTION##stack,    {.i = INC(-1) } }, \ */
+{ MOD|ControlMask,      XK_k,    ACTION##stack,    {.i = 0 } },
 
 /* helper for spawning shell commands in the pre dwm-5.0 fashion */
 #define SHCMD(cmd) { .v = (const char*[]){ "/bin/sh", "-c", cmd, NULL } }
 
-#define STATUSBAR "dwmblocks"
+/* the status bar program, e.g. dwmblocksc or dwmblocks, found by process name.
+ * A click on a status block that starts with a signal byte runs sigstatusbar,
+ * which sends that block's signal to the program with the button as the value
+ * (statuscmd). "" disables the clicks */
+static const char statusbar[] = "dwmblocksc";
+
+/* the command dwmc runs once at startup, after the existing windows have been
+ * taken over; here it (re)starts the status bar. { NULL } runs none */
+static const char *autostart[] = { "sh", "-c", "killall -q dwmblocksc; dwmblocksc &", NULL };
 
 /* commands */
 static char dmenumon[2] = "0"; /* component of dmenucmd, manipulated in spawn() */
 static const char *termcmd[]  = { TERMINAL, NULL };
-//static const char *dmenucmd[] = { "dmenu_run", "-m", dmenumon, "-fn", dmenufont, "-nb", col_gray1, "-nf", col_gray3, "-sb", col_cyan, "-sf", col_gray4, NULL };
 static const char *dmenucmd[] = { "dmenu_run", "-m", dmenumon, "-fn", "JetBrainsMono Nerd Font:size=11:style=bold", NULL };
+/* layoutmenu: prints the index of the chosen layout, takes layouts[]'s arrange
+ * functions in the same order */
+static const char *layoutmenucmd[] = { "/bin/sh", "-c", "~/.local/bin/my_scripts/layout_menu.sh spiral tile bstack dwindle deck monocle centeredmaster centeredfloatingmaster floating", NULL };
 
 /*
- * Xresources preferences to load at startup
+ * Xresources preferences to load at startup; the same resource may set
+ * several values, and sel's fg/bg are deliberately inverted
  */
-ResourcePref resources[] = {
+static const ResourcePref resources[] = {
     { "color0",             STRING,     &normbordercolor },
     { "foreground",         STRING,     &selbordercolor },
-    /* { "color8",             STRING,     &selbordercolor }, */
     { "color0",             STRING,     &normbgcolor },
     { "foreground",         STRING,     &normfgcolor },
     { "color0",             STRING,     &selfgcolor },
@@ -175,6 +172,7 @@ ResourcePref resources[] = {
 
 #include <X11/XF86keysym.h>
 
+/* There is no quit binding: mod-shift-e and mod-shift-q open the power menu (sysmenu.sh), which exits. */
 static const Key keys[] = {
     /*  modifier                    key                 function            argument */
         /* bind mod-j: focusstack +1 (focus next window) */
@@ -263,21 +261,23 @@ static const Key keys[] = {
         /* bind mod-shift-minus: incrgaps -1 */
         { MODKEY|ShiftMask,         XK_minus,           incrgaps,           {.i = -1 } },
         /* bind alt-tab: shiftviewclients +1 (next occupied tag) */
-        { MODKEY1,                  XK_Tab,             shiftviewclients,          { .i = +1 } },
+        { MODKEY1,                  XK_Tab,             shiftviewclients,   { .i = +1 } },
         /* bind alt-shift-tab: shiftviewclients -1 (prev occupied tag) */
-        { MODKEY1|ShiftMask,        XK_Tab,             shiftviewclients,          { .i = -1 } },
-        /* { MODKEY,                   XK_Tab,             view,               {0} }, */
-        /* { MODKEY,                   XK_Tab,             view,               {0} }, */
+        { MODKEY1|ShiftMask,        XK_Tab,             shiftviewclients,   { .i = -1 } },
         /* bind mod-q: killclient */
         { MODKEY,                   XK_q,               killclient,         {0} },
         /* bind mod-u: focusurgent (jump to urgent window) */
         { MODKEY,                   XK_u,               focusurgent,        {0} },
+        /* togglebars toggles the bar on every monitor, togglebar on the focused one */
         /* bind mod-shift-p: togglebars */
-        { MODKEY|ShiftMask,         XK_p,               togglebars,          {0} },
+        { MODKEY|ShiftMask,         XK_p,               togglebars,         {0} },
         /* bind mod-ctrl-shift-p: togglebar */
         { MODKEY|ControlMask|ShiftMask,     XK_p,       togglebar,          {0} },
         /* bind mod-ctrl-p: sb-sysinfo toggle (show/hide the net, memory and cpu blocks) */
         { MODKEY|ControlMask,       XK_p,               spawn,              SHCMD("~/.local/bin/statusbar/sb-sysinfo toggle") },
+        /* focusmon/tagmon focus/move to the previous or next monitor; tagmonview
+         * also views the target monitor; focusnthmon/tagnthmonview take a monitor
+         * number (0 is the first, too large is the last) */
         /* bind mod-h: focusmon -1 (focus left monitor) */
         { MODKEY,                   XK_h,               focusmon,           { .i = -1 } },
         /* bind mod-shift-h: tagmonview -1 (move window and view left monitor) */
@@ -304,8 +304,6 @@ static const Key keys[] = {
         { MODKEY|ShiftMask,         XK_apostrophe,      togglescratch,      { .ui = 1 } },
         /* bind mod-F12: togglescratch spcalc (like awesome's dropdown terminal) */
         { MODKEY,                   XK_F12,             togglescratch,      { .ui = 1 } },
-        /* { MODKEY,                   XK_semicolon,       shiftview,          { .i = 1 } }, */
-        /* { MODKEY|ShiftMask,         XK_semicolon,       shifttag,           { .i = 1 } }, */
 
         /* bind mod-shift-x: spawn i3lock */
         { MODKEY|ShiftMask,         XK_x,               spawn,              SHCMD("i3lock") },
@@ -381,8 +379,6 @@ static const Key keys[] = {
         { MODKEY|ControlMask,       XK_a,               spawn,              SHCMD("picom-trans -c +5")},
         /* bind mod-section: spawn loadEww.sh */
         { MODKEY,                   XK_section,         spawn,              SHCMD("~/.local/bin/my_scripts/loadEww.sh") },
-        /* { MODKEY,                   XK_BackSpace,       spawn,              SHCMD("sysact") }, */
-        /* { MODKEY|ShiftMask,         XK_BackSpace,       spawn,              SHCMD("sysact") }, */
         /* bind mod-return: spawn term_wd.sh */
         { MODKEY,                   XK_Return,          spawn,              SHCMD("~/.local/bin/my_scripts/term_wd.sh " TERMINAL) },
         /* bind mod-shift-return: spawn terminal */
@@ -390,33 +386,14 @@ static const Key keys[] = {
         /* bind mod-ctrl-return: spawn term_wd.sh st */
         { MODKEY|ControlMask,       XK_Return,          spawn,              SHCMD("~/.local/bin/my_scripts/term_wd.sh " SECTERMINAL) },
 
-        /* { MODKEY,                   XK_bracketleft,     spawn,              SHCMD("mpc seek -10") }, */
-        /* { MODKEY|ShiftMask,         XK_bracketleft,     spawn,              SHCMD("mpc seek -60") }, */
-        /* { MODKEY,                   XK_bracketright,    spawn,              SHCMD("mpc seek +10") }, */
-        /* { MODKEY|ShiftMask,         XK_bracketright,    spawn,              SHCMD("mpc seek +60") }, */
-        /* { MODKEY,                   XK_Page_Up,         shiftview,          { .i = -1 } }, */
-        /* { MODKEY|ShiftMask,         XK_Page_Up,         shifttag,           { .i = -1 } }, */
-        /* { MODKEY,                   XK_Page_Down,       shiftview,          { .i = +1 } }, */
-        /* { MODKEY|ShiftMask,         XK_Page_Down,       shifttag,           { .i = +1 } }, */
-        /* { MODKEY,                   XK_backslash,       view,               {0} }, */
-        /* { MODKEY,                   XK_F1,              spawn,              SHCMD("groff -mom /usr/local/share/dwm/larbs.mom -Tpdf | zathura -") }, */
-
         /* bind F1: spawn show_keys.sh dwm */
         { 0,                        XK_F1,              spawn,              SHCMD("~/.local/bin/my_scripts/show_keys.sh dwm " TERMINAL) },
-        /* { MODKEY,                   XK_F2,              spawn,              SHCMD("tutorialvids") }, */
-        /* { MODKEY,                   XK_F3,              spawn,              SHCMD("displayselect") }, */
-        /* { MODKEY,                   XK_F4,              spawn,              SHCMD(TERMINAL " -e pulsemixer; kill -44 $(pidof dwmblocks)") }, */
-        /* { MODKEY,                   XK_F5,              xrdb,               {.v = NULL } }, */
-        /* { MODKEY,                   XK_F6,              spawn,              SHCMD("torwrap") }, */
-        /* { MODKEY,                   XK_F7,              spawn,              SHCMD("td-toggle") }, */
-        /* { MODKEY,                   XK_F8,              spawn,              SHCMD("mw -Y") }, */
-        /* { MODKEY,                   XK_F9,              spawn,              SHCMD("dmenumount") }, */
         /* bind F10: spawn pactl toggle mute */
-        { 0,                        XK_F10,             spawn,              SHCMD("pactl set-sink-mute @DEFAULT_SINK@ toggle ; kill -44 $(pidof dwmblocks)") },
+        { 0,                        XK_F10,             spawn,              SHCMD("pactl set-sink-mute @DEFAULT_SINK@ toggle ; kill -44 $(pidof dwmblocksc)") },
         /* bind F11: spawn pactl volume -5% */
-        { 0,                        XK_F11,             spawn,              SHCMD("pactl set-sink-volume @DEFAULT_SINK@ -5%; kill -44 $(pidof dwmblocks)") },
+        { 0,                        XK_F11,             spawn,              SHCMD("pactl set-sink-volume @DEFAULT_SINK@ -5%; kill -44 $(pidof dwmblocksc)") },
         /* bind F12: spawn pactl volume +5% */
-        { 0,                        XK_F12,             spawn,              SHCMD("pactl set-sink-volume @DEFAULT_SINK@ +5%; kill -44 $(pidof dwmblocks)") },
+        { 0,                        XK_F12,             spawn,              SHCMD("pactl set-sink-volume @DEFAULT_SINK@ +5%; kill -44 $(pidof dwmblocksc)") },
         /* bind Print: spawn screenshot_select.sh */
         { 0,                        XK_Print,           spawn,              SHCMD("~/.local/bin/my_scripts/screenshot_select.sh") },
         /* bind shift-Print: spawn screenshot.sh */
@@ -424,47 +401,28 @@ static const Key keys[] = {
         /* bind ctrl-Print: spawn screenshot_ocr.sh */
         { ControlMask,              XK_Print,           spawn,              SHCMD("~/.local/bin/my_scripts/screenshot_ocr.sh") },
 
-        /* { MODKEY, XK_Insert,                            spawn,              SHCMD("xdotool type $(grep -v '^#' ~/.local/share/larbs/snippets | dmenu -i -l 50 | cut -d' ' -f1)") }, */
         /* bind XF86AudioMute: spawn pactl toggle mute */
-        { 0, XF86XK_AudioMute,                          spawn,              SHCMD("pactl set-sink-mute @DEFAULT_SINK@ toggle ; kill -44 $(pidof dwmblocks)") },
+        { 0, XF86XK_AudioMute,                          spawn,              SHCMD("pactl set-sink-mute @DEFAULT_SINK@ toggle ; kill -44 $(pidof dwmblocksc)") },
         /* bind XF86AudioRaiseVolume: spawn pactl volume +5% */
-        { 0, XF86XK_AudioRaiseVolume,                   spawn,              SHCMD("pactl set-sink-volume @DEFAULT_SINK@ +5%; kill -44 $(pidof dwmblocks)") },
+        { 0, XF86XK_AudioRaiseVolume,                   spawn,              SHCMD("pactl set-sink-volume @DEFAULT_SINK@ +5%; kill -44 $(pidof dwmblocksc)") },
         /* bind XF86AudioLowerVolume: spawn pactl volume -5% */
-        { 0, XF86XK_AudioLowerVolume,                   spawn,              SHCMD("pactl set-sink-volume @DEFAULT_SINK@ -5%; kill -44 $(pidof dwmblocks)") },
+        { 0, XF86XK_AudioLowerVolume,                   spawn,              SHCMD("pactl set-sink-volume @DEFAULT_SINK@ -5%; kill -44 $(pidof dwmblocksc)") },
         /* bind XF86MonBrightnessUp: spawn brightness.sh +10 */
         { 0, XF86XK_MonBrightnessUp,                    spawn,              SHCMD("~/.local/bin/my_scripts/brightness.sh +10") },
         /* bind XF86MonBrightnessDown: spawn brightness.sh -10 */
         { 0, XF86XK_MonBrightnessDown,                  spawn,              SHCMD("~/.local/bin/my_scripts/brightness.sh -10") },
-        /* { 0, XF86XK_AudioPrev,                          spawn,              SHCMD("mpc prev") }, */
-        /* { 0, XF86XK_AudioNext,                          spawn,              SHCMD("mpc next") }, */
-        /* { 0, XF86XK_AudioPause,                         spawn,              SHCMD("mpc pause") }, */
-        /* { 0, XF86XK_AudioPlay,                          spawn,              SHCMD("mpc play") }, */
-        /* { 0, XF86XK_AudioStop,                          spawn,              SHCMD("mpc stop") }, */
-        /* { 0, XF86XK_AudioRewind,                        spawn,              SHCMD("mpc seek -10") }, */
-        /* { 0, XF86XK_AudioForward,                       spawn,              SHCMD("mpc seek +10") }, */
-        /* { 0, XF86XK_AudioMedia,                         spawn,              SHCMD(TERMINAL " -e ncmpcpp") }, */
-        /* { 0, XF86XK_AudioMicMute,                       spawn,              SHCMD("pactl set-source-mute @DEFAULT_SOURCE@ toggle") }, */
-        /* { 0, XF86XK_PowerOff,                           spawn,              SHCMD("sysact") }, */
-        /* { 0, XF86XK_Calculator,                         spawn,              SHCMD(TERMINAL " -e bc -l") }, */
-        /* { 0, XF86XK_Sleep,                              spawn,              SHCMD("sudo -A zzz") }, */
-        /* { 0, XF86XK_WWW,                                spawn,              SHCMD("$BROWSER") }, */
-        /* { 0, XF86XK_DOS,                                spawn,              SHCMD(TERMINAL) }, */
-        /* { 0, XF86XK_ScreenSaver,                        spawn,              SHCMD("slock & xset dpms force off; mpc pause; pauseallmpv") }, */
-        /* { 0, XF86XK_TaskPane,                           spawn,              SHCMD(TERMINAL " -e htop") }, */
-        /* { 0, XF86XK_Mail,                               spawn,              SHCMD(TERMINAL " -e neomutt ; pkill -RTMIN+12 dwmblocks") }, */
-        /* { 0, XF86XK_MyComputer,                         spawn,              SHCMD(TERMINAL " -e lf /") }, */
-        /* { 0, XF86XK_Battery,                            spawn,              SHCMD("") }, */
-        /* { 0, XF86XK_Launch1,                            spawn,              SHCMD("xset dpms force off") }, */
-        /* { 0, XF86XK_TouchpadToggle,                     spawn,              SHCMD("(synclient | grep 'TouchpadOff.*1' && synclient TouchpadOff=0) || synclient TouchpadOff=1") }, */
-        /* { 0, XF86XK_TouchpadOff,                        spawn,              SHCMD("synclient TouchpadOff=1") }, */
-        /* { 0, XF86XK_TouchpadOn,                         spawn,              SHCMD("synclient TouchpadOff=0") }, */
 };
 
 /* button definitions */
 /* click can be ClkTagBar, ClkLtSymbol, ClkStatusText, ClkClientWin, or ClkRootWin */
 static const Button buttons[] = {
     /* click                event mask      button          function        argument */
-#ifndef __OpenBSD__
+    /* bind ltsymbol-button1: layoutmenu (pick a layout from layout_menu.sh) */
+    { ClkLtSymbol,          0,              Button1,        layoutmenu,     {.v = layoutmenucmd} },
+    /* bind ltsymbol-button4: cyclelayout +1 (scroll up) */
+    { ClkLtSymbol,          0,              Button4,        cyclelayout,    {.i = +1} },
+    /* bind ltsymbol-button5: cyclelayout -1 (scroll down) */
+    { ClkLtSymbol,          0,              Button5,        cyclelayout,    {.i = -1} },
     /* bind statustext-button1: sigstatusbar 1 */
     { ClkStatusText,        0,              Button1,        sigstatusbar,   {.i = 1} },
     /* bind statustext-button2: sigstatusbar 2 */
@@ -477,15 +435,8 @@ static const Button buttons[] = {
     { ClkStatusText,        0,              Button5,        sigstatusbar,   {.i = 5} },
     /* bind statustext-shift-button1: sigstatusbar 6 */
     { ClkStatusText,        ShiftMask,      Button1,        sigstatusbar,   {.i = 6} },
-#endif
-    /* bind ltsymbol-button1: layoutmenu (pick a layout from layout_menu.sh) */
-    { ClkLtSymbol,          0,              Button1,        layoutmenu,     {.v = layoutmenucmd} },
-    /* bind ltsymbol-button4: cyclelayout +1 (scroll up) */
-    { ClkLtSymbol,          0,              Button4,        cyclelayout,    {.i = +1} },
-    /* bind ltsymbol-button5: cyclelayout -1 (scroll down) */
-    { ClkLtSymbol,          0,              Button5,        cyclelayout,    {.i = -1} },
-    /* bind statustext-shift-button3: spawn nvim dwmblocks config */
-    { ClkStatusText,        ShiftMask,      Button3,        spawn,          SHCMD(TERMINAL " -e nvim ~/.config/dwmblocks/blocks.h") },
+    /* bind statustext-shift-button3: spawn nvim dwmblocksc config */
+    { ClkStatusText,        ShiftMask,      Button3,        spawn,          SHCMD(TERMINAL " -e nvim ~/.config/dwmblocksc/blocks.h") },
     /* bind clientwin-mod-button1: movemouse */
     { ClkClientWin,         MODKEY,         Button1,        movemouse,      {0} },
     /* bind clientwin-mod-button2: defaultgaps */

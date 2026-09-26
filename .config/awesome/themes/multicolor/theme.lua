@@ -67,7 +67,8 @@ theme.layout_txt_tilebottom                     = "[b]"
 theme.layout_txt_tiletop                        = "[tt]"
 theme.layout_txt_fairv                          = "[fv]"
 theme.layout_txt_fairh                          = "[fh]"
-theme.layout_txt_spiral                         = "[@]"
+theme.layout_txt_spiral                         = "[Φ]"
+--theme.layout_txt_spiral                       = "[@]" -- the old symbol
 theme.layout_txt_dwindle                        = "[d]"
 theme.layout_txt_centerwork                     = "|M|"
 theme.layout_txt_max                            = "[m]"
@@ -800,7 +801,7 @@ function theme.at_screen_connect(s)
     awful.tag.attached_connect_signal(s, "property::selected", function () update_txt_layoutbox(s) end)
     awful.tag.attached_connect_signal(s, "property::layout", function () update_txt_layoutbox(s) end)
     s.mytxtlayoutbox:buttons(my_table.join(
-                           awful.button({}, 1, function() awful.layout.inc(1) end),
+                           awful.button({}, 1, function() awful.util.layout_menu() end),
                            awful.button({}, 2, function () awful.layout.set( awful.layout.layouts[1] ) end),
                            awful.button({}, 3, function() awful.layout.inc(-1) end),
                            awful.button({}, 4, function() awful.layout.inc(1) end),

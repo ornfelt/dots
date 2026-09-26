@@ -1,1 +1,6 @@
 @theme "/usr/share/rofi/themes/gruvbox-dark.rasi"
+
+configuration {
+    /* the same font as dmenu, dwm's bar and awesome's */
+    font: "JetBrainsMono Nerd Font Bold 11";
+}

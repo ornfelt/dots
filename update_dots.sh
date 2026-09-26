@@ -70,6 +70,8 @@ rm -rf .config/dwm
 rm -rf .config/dwmblocks
 rm -rf .config/dwmr
 rm -rf .config/dwmblocksr
+rm -rf .config/dwmc
+rm -rf .config/dwmblocksc
 rm -rf .config/eww
 rm -rf .config/hypr
 rm -rf .config/i3
@@ -119,6 +121,8 @@ cp -r $HOME/.config/dwm .config/dwm/
 cp -r $HOME/.config/dwmblocks .config/dwmblocks/
 cp -r $HOME/.config/dwmr .config/dwmr/
 cp -r $HOME/.config/dwmblocksr .config/dwmblocksr/
+cp -r $HOME/.config/dwmc .config/dwmc/
+cp -r $HOME/.config/dwmblocksc .config/dwmblocksc/
 cp -r $HOME/.config/eww .config/eww/
 cp -r $HOME/.config/hypr .config/hypr/
 cp -r $HOME/.config/i3 .config/i3/
