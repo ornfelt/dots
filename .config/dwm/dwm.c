@@ -214,6 +214,7 @@ static void focus(Client *c);
 static void focusin(XEvent *e);
 static void focusmon(const Arg *arg);
 static void focusnthmon(const Arg *arg);
+static void focusurgent(const Arg *arg);
 static void focusstack(const Arg *arg);
 static Atom getatomprop(Client *c, Atom prop);
 static int getrootptr(int *x, int *y);
@@ -1158,6 +1159,35 @@ focusnthmon(const Arg *arg)
     XWarpPointer(dpy, None, root, 0, 0, 0, 0, m->wx + m->ww / 2, m->wy + m->wh / 2);
     selmon = m;
     focus(NULL);
+}
+
+/* Jump to the first urgent client on any monitor: view its tag on its own
+ * monitor and focus it. The tagset is set here instead of calling view(),
+ * whose odd/even split would pick the monitor from the tag, not the client. */
+void
+focusurgent(const Arg *arg)
+{
+	Monitor *m;
+	Client *c = NULL;
+	unsigned int i;
+
+	for (m = mons; m && !c; m = m->next)
+		for (c = m->clients; c && !(c->isurgent && (c->tags & TAGBITS)); c = c->next);
+	if (!c)
+		return;
+	if (c->mon != selmon) {
+		unfocus(selmon->sel, 0);
+		selmon = c->mon;
+		XWarpPointer(dpy, None, root, 0, 0, 0, 0, selmon->wx + selmon->ww / 2, selmon->wy + selmon->wh / 2);
+	}
+	if (!ISVISIBLE(c)) {
+		for (i = 0; !(c->tags & 1 << i); i++);
+		selmon->seltags ^= 1;
+		selmon->tagset[selmon->seltags] = 1 << i;
+		arrange(selmon);
+	}
+	focus(c);
+	restack(selmon); /* also drops the EnterNotify from the pointer warp */
 }
 
 void

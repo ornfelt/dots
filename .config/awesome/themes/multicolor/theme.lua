@@ -60,7 +60,7 @@ theme.widget_clock                              = theme.confdir .. "/icons/clock
 --theme.taglist_squares_unsel                     = theme.confdir .. "/icons/square_b.png"
 theme.tasklist_plain_task_name                  = true
 theme.tasklist_disable_icon                     = true
-theme.useless_gap                               = 8
+theme.useless_gap                               = 10
 theme.layout_txt_tile                           = "[t]"
 theme.layout_txt_tileleft                       = "[l]"
 theme.layout_txt_tilebottom                     = "[b]"
@@ -69,6 +69,7 @@ theme.layout_txt_fairv                          = "[fv]"
 theme.layout_txt_fairh                          = "[fh]"
 theme.layout_txt_spiral                         = " [@]"
 theme.layout_txt_dwindle                        = "[d]"
+theme.layout_txt_centerwork                     = "|M|"
 theme.layout_txt_max                            = "[m]"
 theme.layout_txt_fullscreen                     = "[F]"
 theme.layout_txt_magnifier                      = "[M]"
@@ -730,7 +731,14 @@ end
 
 function theme.at_screen_connect(s)
     -- Quake application
-    s.quake = lain.util.quake({ app = awful.util.terminal })
+    -- lain finds the dropdown by its instance name; wezterm has no flag to set
+    -- it (lain's default "-name %s" makes wezterm exit), so use st's -n
+    s.quake = lain.util.quake({ app = "st", argname = "-n %s" })
+    -- Scratchpads like dwm's spterm (python3) and spcalc (plain st)
+    s.quake_py = lain.util.quake({ app = "st", argname = "-n %s", name = "spterm",
+        extra = "-e python3", width = 0.5, height = 0.5, vert = "center", horiz = "center" })
+    s.quake_calc = lain.util.quake({ app = "st", argname = "-n %s", name = "spcalc",
+        width = 0.5, height = 0.5, vert = "center", horiz = "center" })
 
     -- If wallpaper is a function, call it with the screen
     local wallpaper = theme.wallpaper

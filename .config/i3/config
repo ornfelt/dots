@@ -58,10 +58,9 @@ bindsym $mod+Control+Return exec --no-startup-id st
 # Kill focused window
 bindsym $mod+q kill
 
-# Start dmenu
-#bindsym $mod+r exec --no-startup-id dmenu_run -fn 'Linux Libertine Mono'
-bindsym $mod+r exec --no-startup-id dmenu_run -i -l 20
-bindsym $mod+d exec --no-startup-id rofi -show run -theme ~/.config/rofi/themes/gruvbox/gruvbox-dark.rasi
+# Start the launcher: launcher.sh runs dmenu, or rofi with LAUNCHER=rofi
+# (same mod-d as awesome and dwm; mod-r was dmenu_run -i -l 20)
+bindsym $mod+d exec --no-startup-id ~/.local/bin/my_scripts/launcher.sh
 # There's also the (new) i3-dmenu-desktop which only displays applications
 # shipping a .desktop file. It is a wrapper around dmenu, so you need that
 # installed.
@@ -224,8 +223,7 @@ bindsym $mod+t exec ~/.local/bin/my_scripts/script_copy.sh
 bindsym $mod+Shift+t exec ~/.local/bin/my_scripts/script_helper.sh 
 bindsym $mod+Shift+c exec ~/.local/bin/my_scripts/code_helper.sh new 
 bindsym $mod+Shift+d exec ~/.local/bin/my_scripts/code_helper.sh old 
-bindsym F1 exec --no-startup-id ~/.local/bin/my_scripts/show_keys.sh i3
-bindsym Shift+F1 exec --no-startup-id ~/.local/bin/my_scripts/show_keys.sh vim
+bindsym F1 exec --no-startup-id ~/.local/bin/my_scripts/show_keys.sh i3 wezterm
 # Reload config
 bindsym $mod+Control+r reload
 # Restart i3 inplace (preserves layout/session, can be used to upgrade i3)
@@ -240,7 +238,7 @@ mode "exit: [l]ogout, [r]eboot, [s]hutdown" {
   bindsym Return mode "default"
 }
 #bindsym $mod+Shift+e mode "exit: [l]ogout, [r]eboot, [s]hutdown"; exec ~/.local/bin/my_scripts/alert_exit.sh
-bindsym $mod+Shift+e exec --no-startup-id ~/.local/bin/my_scripts/alert_exit.sh; exec ~/.config/polybar/forest/scripts/powermenu.sh
+bindsym $mod+Shift+e exec --no-startup-id ~/.local/bin/my_scripts/sysmenu.sh
 bindsym $mod+p exec --no-startup-id ~/.local/bin/my_scripts/xrandr_helper.sh
 bindsym $mod+shift+p exec --no-startup-id ~/.local/bin/my_scripts/toggle_polybar.sh
 
@@ -328,7 +326,7 @@ bindsym $mod+Shift+period exec --no-startup-id i3lock-fancy; exec --no-startup-i
 
 # Open FZF in neovim
 #bindsym $mod+g exec urxvt -e bash -c 'nvim -c "FZF ~"'
-bindsym $mod+g exec --no-startup-id ~/.local/bin/my_scripts/fzf_open.sh wezterm
+bindsym $mod+g exec --no-startup-id ~/.local/bin/my_scripts/nvim_fzf.sh wezterm
 
 # Settings
 focus_follows_mouse no

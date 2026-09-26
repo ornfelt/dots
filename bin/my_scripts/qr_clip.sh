@@ -1,33 +1,34 @@
 #!/bin/bash
 #
-# This script will output a QR Code made with whatever you have loaded on your clipboard
-# You need qrencode C Library and xclip for this script to work
-#
-function err {
-		echo -e "[ERROR] in line ${BASH_LINENO[0]}"
-			[[ $1 ]] && echo "[ MSG ] $1"
-				exit 1
-			}
+# Show a QR code of the clipboard contents (or of the arguments, if given).
+# Needs qrencode, xclip and feh.
 
-		function printBold {
-				echo -e "\n$(tput bold)\"$1\"$(tput sgr0)\n"
-			}
+# Print to stderr and, since this usually runs from a keybind with no
+# terminal, also show it as a notification
+err() {
+    echo "qr_clip: $1" >&2
+    command -v notify-send >/dev/null && notify-send "qr_clip" "$1"
+    exit 1
+}
 
-		hash qrencode || err "qrencode not found."
-		hash xclip || err "xclip not found."
+missing=()
+for cmd in qrencode xclip feh; do
+    command -v "$cmd" >/dev/null || missing+=("$cmd")
+done
+if [ ${#missing[@]} -gt 0 ]; then
+    err "missing: ${missing[*]}. Install with: sudo apt install ${missing[*]}"
+fi
 
-		if [[ ! -z $1 ]]; then
-				# if given, use arguments as target
-					TARGET="$@"
-				else
-						# per default, get target from clipboard.
-							TARGET="$( xclip -selection c -o )" || err
-								[[ ! -z $TARGET ]] || err "clipboard empty."
-		fi
+if [ -n "$1" ]; then
+    target="$*"
+else
+    target="$(xclip -selection clipboard -o)" || err "could not read the clipboard."
+    [ -n "$target" ] || err "clipboard empty."
+fi
 
-		qrencode "$TARGET" -o temp_code.png
-		feh --scale-down --auto-zoom temp_code.png
+# Temp file instead of temp_code.png in whatever directory this runs from
+img=$(mktemp --suffix=.png) || err "could not create a temp file."
+trap 'rm -f "$img"' EXIT
 
-		# Optionally remove the file immediately
-		rm temp_code.png
-
+qrencode "$target" -o "$img" || err "qrencode failed (text too long?)."
+feh --scale-down --auto-zoom "$img"

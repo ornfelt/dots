@@ -5,10 +5,14 @@
 ## Github  : @adi1090x
 ## Twitter : @adi1090x
 
-dir="~/.config/polybar/forest/scripts/rofi"
+# System menu (lock/sleep/logout/restart/shutdown) for every WM's mod-shift-e.
+# Was ~/.config/polybar/forest/scripts/powermenu.sh, wrapped by sysmenu_awsm.sh
+
+# Clear the login greeting stamp (see hello.sh), as the wrapper did
+sh ~/.local/bin/my_scripts/alert_exit.sh &
+
 uptime=$(uptime -p | sed -e 's/up //g')
 
-# rofi_command="rofi -theme $dir/powermenu.rasi"
 rofi_command="rofi -i -theme ~/.config/rofi/themes/gruvbox/gruvbox-dark.rasi"
 
 # Options

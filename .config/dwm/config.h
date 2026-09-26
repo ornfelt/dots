@@ -182,8 +182,6 @@ static const Key keys[] = {
         /* bind mod-shift-ctrl-j: pushstack -1 (move window to bottom) */
         /* bind mod-shift-ctrl-k: pushstack 0 (move window to top) */
         STACKKEYS(MODKEY|ShiftMask,                     push)
-        /* bind mod-grave: spawn dmenu_run */
-        { MODKEY,                   XK_grave,           spawn,              SHCMD("dmenu_run -fn 'Linux Libertine Mono'") },
         /* bind mod-[1-9]: view tag [0-8] */
         /* bind mod-ctrl-[1-9]: tag window to [0-8] */
         /* bind mod-shift-[1-9]: tagview [0-8] */
@@ -219,8 +217,8 @@ static const Key keys[] = {
         { MODKEY|ControlMask,       XK_i,               setlayout,          {.v = &layouts[5]} },
         /* bind mod-ctrl-o: setlayout centeredmaster */
         { MODKEY|ControlMask,       XK_o,               setlayout,          {.v = &layouts[6]} },
-        /* bind mod-ctrl-p: setlayout centeredfloatingmaster */
-        { MODKEY|ControlMask,       XK_p,               setlayout,          {.v = &layouts[7]} },
+        /* bind mod-alt-p: setlayout centeredfloatingmaster */
+        { MODKEY|MODKEY1,           XK_p,               setlayout,          {.v = &layouts[7]} },
         /* bind mod-ctrl-aring: setlayout floating */
         { MODKEY|ControlMask,       XK_aring,           setlayout,          {.v = &layouts[8]} },
         /* bind mod-f: togglefullscr */
@@ -263,6 +261,8 @@ static const Key keys[] = {
         /* { MODKEY,                   XK_Tab,             view,               {0} }, */
         /* bind mod-q: killclient */
         { MODKEY,                   XK_q,               killclient,         {0} },
+        /* bind mod-u: focusurgent (jump to urgent window) */
+        { MODKEY,                   XK_u,               focusurgent,        {0} },
         /* bind mod-shift-p: togglebars */
         { MODKEY|ShiftMask,         XK_p,               togglebars,          {0} },
         /* bind mod-ctrl-shift-p: togglebar */
@@ -279,18 +279,20 @@ static const Key keys[] = {
         { MODKEY|ShiftMask,         XK_l,               tagmonview,         { .i = +1 } },
         /* bind mod-ctrl-l: tagmon +1 (move window to right monitor) */
         { MODKEY|ControlMask,       XK_l,               tagmon,             { .i = +1 } },
-        /* bind mod-left: focusmon -1 */
-        { MODKEY,                   XK_Left,            focusmon,           { .i = -1 } },
+        /* bind mod-left: shiftview -1 (view prev tag) */
+        { MODKEY,                   XK_Left,            shiftview,          { .i = -1 } },
         /* bind mod-shift-left: tagmon -1 */
         { MODKEY|ShiftMask,         XK_Left,            tagmon,             { .i = -1 } },
-        /* bind mod-right: focusmon +1 */
-        { MODKEY,                   XK_Right,           focusmon,           { .i = +1 } },
+        /* bind mod-right: shiftview +1 (view next tag) */
+        { MODKEY,                   XK_Right,           shiftview,          { .i = +1 } },
         /* bind mod-shift-right: tagmon +1 */
         { MODKEY|ShiftMask,         XK_Right,           tagmon,             { .i = +1 } },
         /* bind mod-apostrophe: togglescratch spterm */
         { MODKEY,                   XK_apostrophe,      togglescratch,      { .ui = 0 } },
         /* bind mod-shift-apostrophe: togglescratch spcalc */
         { MODKEY|ShiftMask,         XK_apostrophe,      togglescratch,      { .ui = 1 } },
+        /* bind mod-F12: togglescratch spcalc (like awesome's dropdown terminal) */
+        { MODKEY,                   XK_F12,             togglescratch,      { .ui = 1 } },
         /* { MODKEY,                   XK_semicolon,       shiftview,          { .i = 1 } }, */
         /* { MODKEY|ShiftMask,         XK_semicolon,       shifttag,           { .i = 1 } }, */
 
@@ -302,18 +304,16 @@ static const Key keys[] = {
         { MODKEY,                   XK_w,               spawn,              SHCMD(TERMINAL " -e " FILEX " " "~/") },
         /* bind mod-e: spawn file_explorer_wd.sh */
         { MODKEY,                   XK_e,               spawn,              SHCMD("~/.local/bin/my_scripts/file_explorer_wd.sh " TERMINAL " " FILEX) },
-        /* bind mod-shift-e: spawn powermenu.sh */
-        { MODKEY|ShiftMask,         XK_e,               spawn,              SHCMD("~/.local/bin/my_scripts/alert_exit.sh && ~/.config/polybar/forest/scripts/powermenu.sh") },
+        /* bind mod-shift-e: spawn sysmenu.sh */
+        { MODKEY|ShiftMask,         XK_e,               spawn,              SHCMD("~/.local/bin/my_scripts/sysmenu.sh") },
+        /* bind mod-shift-q: spawn sysmenu.sh (quit through the power menu, like awesome) */
+        { MODKEY|ShiftMask,         XK_q,               spawn,              SHCMD("~/.local/bin/my_scripts/sysmenu.sh") },
         /* bind mod-shift-s: spawn screenshot to clipboard */
-        { MODKEY|ShiftMask,         XK_s,               spawn,              SHCMD("f=$(mktemp --suffix=.png) && maim -s -u \"$f\" && xclip -selection clipboard -t image/png -i \"$f\"; rm -f \"$f\"") },
+        { MODKEY|ShiftMask,         XK_s,               spawn,              SHCMD("~/.local/bin/my_scripts/win_screenshot_awsm.sh") },
         /* bind mod-ctrl-s: spawn tesseract_ocr.sh */
         { MODKEY|ControlMask,       XK_s,               spawn,              SHCMD("~/.local/bin/my_scripts/tesseract_ocr.sh") },
-        /* bind mod-d: spawn rofi */
-        { MODKEY,                   XK_d,               spawn,              SHCMD("rofi -show run -theme ~/.config/rofi/themes/gruvbox/gruvbox-dark.rasi") },
-        /* bind mod-r: spawn dmenu_run */
-        { MODKEY,                   XK_r,               spawn,              SHCMD("dmenu_run -i -l 20") },
-        /* bind mod-shift-r: spawn rofi launcher */
-        { MODKEY|ShiftMask,         XK_r,               spawn,              SHCMD("rofi -show run -theme ~/.config/polybar/forest/scripts/rofi/launcher.rasi") },
+        /* bind mod-d: spawn launcher.sh (dmenu, or rofi with LAUNCHER=rofi) */
+        { MODKEY,                   XK_d,               spawn,              SHCMD("~/.local/bin/my_scripts/launcher.sh") },
         /* bind mod-t: spawn script_copy.sh */
         { MODKEY,                   XK_t,               spawn,              SHCMD("~/.local/bin/my_scripts/script_copy.sh") },
         /* bind mod-shift-t: spawn script_helper.sh */
@@ -322,8 +322,8 @@ static const Key keys[] = {
         { MODKEY|ShiftMask,         XK_c,               spawn,              SHCMD("~/.local/bin/my_scripts/code_helper.sh new " TERMINAL) },
         /* bind mod-shift-d: spawn code_helper.sh old */
         { MODKEY|ShiftMask,         XK_d,               spawn,              SHCMD("~/.local/bin/my_scripts/code_helper.sh old " TERMINAL) },
-        /* bind mod-g: spawn fzf_open.sh */
-        { MODKEY,                   XK_g,               spawn,              SHCMD("~/.local/bin/my_scripts/fzf_open.sh " TERMINAL)},
+        /* bind mod-g: spawn nvim_fzf.sh */
+        { MODKEY,                   XK_g,               spawn,              SHCMD("~/.local/bin/my_scripts/nvim_fzf.sh " TERMINAL)},
         /* bind mod-c: spawn term_calc.sh */
         { MODKEY,                   XK_c,               spawn,              SHCMD("~/.local/bin/my_scripts/term_calc.sh " TERMINAL) },
         /* bind mod-ctrl-c: spawn yad calendar */
@@ -332,8 +332,8 @@ static const Key keys[] = {
         { MODKEY,                   XK_b,               spawn,              SHCMD(TERMINAL " -e htop") },
         /* bind mod-shift-b: spawn btop */
         { MODKEY|ShiftMask,         XK_b,               spawn,              SHCMD(TERMINAL " -e btop") },
-        /* bind mod-ctrl-b: spawn ytop */
-        { MODKEY|ControlMask,       XK_b,               spawn,              SHCMD(TERMINAL " -e ytop") },
+        /* bind mod-ctrl-b: spawn sudo btop */
+        { MODKEY|ControlMask,       XK_b,               spawn,              SHCMD(TERMINAL " -e sudo btop") },
         /* bind mod-p: spawn xrandr_helper.sh */
         { MODKEY,                   XK_p,               spawn,              SHCMD("~/.local/bin/my_scripts/xrandr_helper.sh") },
         /* bind mod-n: spawn files_wd.sh */
@@ -348,12 +348,12 @@ static const Key keys[] = {
         { MODKEY|ShiftMask,         XK_m,               spawn,              SHCMD("spotify") },
         /* bind mod-ctrl-m: spawn open_notes.sh 2 */
         { MODKEY|ControlMask,       XK_m,               spawn,              SHCMD("~/.local/bin/my_scripts/open_notes.sh 2 " TERMINAL) },
-        /* bind mod-shift-comma: spawn suspend.sh */
-        { MODKEY|ShiftMask,         XK_comma,           spawn,              SHCMD("~/.local/bin/my_scripts/alert_exit.sh && ~/.local/bin/my_scripts/suspend.sh")},
+        /* bind mod-shift-comma: spawn suspend_awsm.sh */
+        { MODKEY|ShiftMask,         XK_comma,           spawn,              SHCMD("~/.local/bin/my_scripts/suspend_awsm.sh")},
         /* bind mod-ctrl-comma: spawn suspend_mute.sh */
         { MODKEY|ControlMask,       XK_comma,           spawn,              SHCMD("~/.local/bin/my_scripts/alert_exit.sh && ~/.local/bin/my_scripts/suspend_mute.sh")},
-        /* bind mod-shift-period: spawn i3lock + suspend */
-        { MODKEY|ShiftMask,         XK_period,          spawn,              SHCMD("i3lock && ~/.local/bin/my_scripts/alert_exit.sh && systemctl suspend")},
+        /* bind mod-shift-period: spawn suspend_awsm_lock.sh (lock, mute, suspend) */
+        { MODKEY|ShiftMask,         XK_period,          spawn,              SHCMD("~/.local/bin/my_scripts/suspend_awsm_lock.sh")},
         /* bind mod-v: spawn clip_history.sh greenclip */
         { MODKEY,                   XK_v,               spawn,              SHCMD("~/.local/bin/my_scripts/clip_history.sh greenclip") },
         /* bind mod-shift-v: spawn qr_clip.sh */
@@ -392,8 +392,6 @@ static const Key keys[] = {
 
         /* bind F1: spawn show_keys.sh dwm */
         { 0,                        XK_F1,              spawn,              SHCMD("~/.local/bin/my_scripts/show_keys.sh dwm " TERMINAL) },
-        /* bind shift-F1: spawn show_keys.sh vim */
-        { ShiftMask,                XK_F1,              spawn,              SHCMD("~/.local/bin/my_scripts/show_keys.sh vim " TERMINAL) },
         /* { MODKEY,                   XK_F2,              spawn,              SHCMD("tutorialvids") }, */
         /* { MODKEY,                   XK_F3,              spawn,              SHCMD("displayselect") }, */
         /* { MODKEY,                   XK_F4,              spawn,              SHCMD(TERMINAL " -e pulsemixer; kill -44 $(pidof dwmblocks)") }, */

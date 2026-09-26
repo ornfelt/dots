@@ -1551,6 +1551,7 @@ libqmi-glib5
 libqmi-proxy
 libqmi-utils
 libqrcodegencpp1
+libqrencode4
 libqrtr-glib0
 libqt5concurrent5t64
 libqt5core5t64
@@ -2930,6 +2931,7 @@ qml6-module-qttest
 qml6-module-qtwebchannel
 qml6-module-qtwebengine
 qml6-module-qtwebengine-controlsdelegates
+qrencode
 qt5-gtk-platformtheme
 qt5-qmake
 qt5-qmake-bin

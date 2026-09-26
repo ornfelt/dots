@@ -104,27 +104,24 @@ modkey = "Mod4Mask"   # MODKEY; MODKEY1 (Mod1Mask) is written out for Tab
 # number by spawn(), like dmenumon in dwm. SHCMD(cmd) is ["/bin/sh", "-c", cmd].
 commands.dmenucmd = ["dmenu_run", "-m", "0", "-fn", "JetBrainsMono Nerd Font:size=11:style=bold"]
 commands.termcmd  = ["wezterm"]
-commands.dmenulibertinecmd = ["/bin/sh", "-c", "dmenu_run -fn 'Linux Libertine Mono'"]
 commands.lockcmd           = ["/bin/sh", "-c", "i3lock"]
 commands.lockwallpapercmd  = ["/bin/sh", "-c", "i3lock -i ~/Downloads/lock-wallpaper.png"]
 commands.filexcmd          = ["/bin/sh", "-c", "wezterm -e yazi ~/"]
 commands.fileexplorerwdcmd = ["/bin/sh", "-c", "~/.local/bin/my_scripts/file_explorer_wd.sh wezterm yazi"]
-commands.powermenucmd      = ["/bin/sh", "-c", "~/.local/bin/my_scripts/alert_exit.sh && ~/.config/polybar/forest/scripts/powermenu.sh"]
-commands.screenclipcmd     = ["/bin/sh", "-c", "f=$(mktemp --suffix=.png) && maim -s -u \"$f\" && xclip -selection clipboard -t image/png -i \"$f\"; rm -f \"$f\""]
+commands.powermenucmd      = ["/bin/sh", "-c", "~/.local/bin/my_scripts/sysmenu.sh"]
+commands.screenclipcmd     = ["/bin/sh", "-c", "~/.local/bin/my_scripts/win_screenshot_awsm.sh"]
 commands.ocrcmd            = ["/bin/sh", "-c", "~/.local/bin/my_scripts/tesseract_ocr.sh"]
-commands.roficmd           = ["/bin/sh", "-c", "rofi -show run -theme ~/.config/rofi/themes/gruvbox/gruvbox-dark.rasi"]
-commands.dmenulistcmd      = ["/bin/sh", "-c", "dmenu_run -i -l 20"]
-commands.rofilaunchercmd   = ["/bin/sh", "-c", "rofi -show run -theme ~/.config/polybar/forest/scripts/rofi/launcher.rasi"]
+commands.launchercmd       = ["/bin/sh", "-c", "~/.local/bin/my_scripts/launcher.sh"]
 commands.scriptcopycmd     = ["/bin/sh", "-c", "~/.local/bin/my_scripts/script_copy.sh"]
 commands.scripthelpercmd   = ["/bin/sh", "-c", "~/.local/bin/my_scripts/script_helper.sh wezterm"]
 commands.codenewcmd        = ["/bin/sh", "-c", "~/.local/bin/my_scripts/code_helper.sh new wezterm"]
 commands.codeoldcmd        = ["/bin/sh", "-c", "~/.local/bin/my_scripts/code_helper.sh old wezterm"]
-commands.fzfopencmd        = ["/bin/sh", "-c", "~/.local/bin/my_scripts/fzf_open.sh wezterm"]
+commands.nvimfzfcmd        = ["/bin/sh", "-c", "~/.local/bin/my_scripts/nvim_fzf.sh wezterm"]
 commands.termcalccmd       = ["/bin/sh", "-c", "~/.local/bin/my_scripts/term_calc.sh wezterm"]
 commands.calendarcmd       = ["/bin/sh", "-c", "yad --calendar --no-buttons"]
 commands.htopcmd           = ["/bin/sh", "-c", "wezterm -e htop"]
 commands.btopcmd           = ["/bin/sh", "-c", "wezterm -e btop"]
-commands.ytopcmd           = ["/bin/sh", "-c", "wezterm -e ytop"]
+commands.sudobtopcmd       = ["/bin/sh", "-c", "wezterm -e sudo btop"]
 commands.xrandrcmd         = ["/bin/sh", "-c", "~/.local/bin/my_scripts/xrandr_helper.sh"]
 commands.fileswdcmd        = ["/bin/sh", "-c", "~/.local/bin/my_scripts/files_wd.sh"]
 commands.filescmd          = ["/bin/sh", "-c", "thunar"]
@@ -132,9 +129,9 @@ commands.notes1cmd         = ["/bin/sh", "-c", "~/.local/bin/my_scripts/open_not
 commands.nmeditorcmd       = ["/bin/sh", "-c", "nm-connection-editor"]
 commands.spotifycmd        = ["/bin/sh", "-c", "spotify"]
 commands.notes2cmd         = ["/bin/sh", "-c", "~/.local/bin/my_scripts/open_notes.sh 2 wezterm"]
-commands.suspendcmd        = ["/bin/sh", "-c", "~/.local/bin/my_scripts/alert_exit.sh && ~/.local/bin/my_scripts/suspend.sh"]
+commands.suspendcmd        = ["/bin/sh", "-c", "~/.local/bin/my_scripts/suspend_awsm.sh"]
 commands.suspendmutecmd    = ["/bin/sh", "-c", "~/.local/bin/my_scripts/alert_exit.sh && ~/.local/bin/my_scripts/suspend_mute.sh"]
-commands.locksuspendcmd    = ["/bin/sh", "-c", "i3lock && ~/.local/bin/my_scripts/alert_exit.sh && systemctl suspend"]
+commands.locksuspendcmd    = ["/bin/sh", "-c", "~/.local/bin/my_scripts/suspend_awsm_lock.sh"]
 commands.cliphistorycmd    = ["/bin/sh", "-c", "~/.local/bin/my_scripts/clip_history.sh greenclip"]
 commands.qrclipcmd         = ["/bin/sh", "-c", "~/.local/bin/my_scripts/qr_clip.sh"]
 commands.progrmhelpercmd   = ["/bin/sh", "-c", "~/.local/bin/my_scripts/progrm_helper.sh wezterm"]
@@ -146,7 +143,6 @@ commands.ewwcmd            = ["/bin/sh", "-c", "~/.local/bin/my_scripts/loadEww.
 commands.termwdcmd         = ["/bin/sh", "-c", "~/.local/bin/my_scripts/term_wd.sh wezterm"]
 commands.sectermwdcmd      = ["/bin/sh", "-c", "~/.local/bin/my_scripts/term_wd.sh st"]
 commands.showkeysdwmcmd    = ["/bin/sh", "-c", "~/.local/bin/my_scripts/show_keys.sh dwm wezterm"]
-commands.showkeysvimcmd    = ["/bin/sh", "-c", "~/.local/bin/my_scripts/show_keys.sh vim wezterm"]
 commands.mutecmd           = ["/bin/sh", "-c", "pactl set-sink-mute @DEFAULT_SINK@ toggle ; kill -44 $(pidof dwmblocksr)"]
 commands.voldowncmd        = ["/bin/sh", "-c", "pactl set-sink-volume @DEFAULT_SINK@ -5%; kill -44 $(pidof dwmblocksr)"]
 commands.volupcmd          = ["/bin/sh", "-c", "pactl set-sink-volume @DEFAULT_SINK@ +5%; kill -44 $(pidof dwmblocksr)"]
@@ -167,7 +163,7 @@ statusbar = "dwmblocksr"
 # taken over; here it (re)starts the status bar. [] runs none
 autostart = ["sh", "-c", "killall -q dwmblocksr; dwmblocksr &"]
 
-# There is no quit binding: exit through the powermenu (mod-shift-e).
+# There is no quit binding: mod-shift-e and mod-shift-q open the power menu (sysmenu.sh), which exits.
 keys = [
 	#  modifier                         key               function                  argument
 	# focusstack/pushstack take a stack position (stacker): "INC(n)" is
@@ -190,8 +186,6 @@ keys = [
 	{ mod = "MODKEY|ShiftMask|ControlMask", key = "j",    func = "pushstack",       arg = { i = -1 } },
 	# /* bind mod-shift-ctrl-k: pushstack 0 (move window to top) */
 	{ mod = "MODKEY|ShiftMask|ControlMask", key = "k",    func = "pushstack",       arg = { i = 0 } },
-	# /* bind mod-grave: spawn dmenu_run */
-	{ mod = "MODKEY",                   key = "grave",    func = "spawn",           arg = { v = "dmenulibertinecmd" } },
 	# TAGKEYS(KEY, TAG): MODKEY+key views the tag, +Control tags the window,
 	# +Shift tags the window and views the tag, +Control+Shift toggles the
 	# view. With two monitors the odd tags live on the first and the even
@@ -231,8 +225,8 @@ keys = [
 	{ mod = "MODKEY|ControlMask",       key = "i",        func = "setlayout",       arg = { v = "layouts[5]" } },
 	# /* bind mod-ctrl-o: setlayout centeredmaster */
 	{ mod = "MODKEY|ControlMask",       key = "o",        func = "setlayout",       arg = { v = "layouts[6]" } },
-	# /* bind mod-ctrl-p: setlayout centeredfloatingmaster */
-	{ mod = "MODKEY|ControlMask",       key = "p",        func = "setlayout",       arg = { v = "layouts[7]" } },
+	# /* bind mod-alt-p: setlayout centeredfloatingmaster */
+	{ mod = "MODKEY|Mod1Mask",          key = "p",        func = "setlayout",       arg = { v = "layouts[7]" } },
 	# /* bind mod-ctrl-aring: setlayout floating */
 	{ mod = "MODKEY|ControlMask",       key = "aring",    func = "setlayout",       arg = { v = "layouts[8]" } },
 	# /* bind mod-f: togglefullscr */
@@ -273,6 +267,8 @@ keys = [
 	{ mod = "Mod1Mask|ShiftMask",       key = "Tab",      func = "shiftviewclients", arg = { i = -1 } },
 	# /* bind mod-q: killclient */
 	{ mod = "MODKEY",                   key = "q",        func = "killclient" },
+	# /* bind mod-u: focusurgent (jump to urgent window) */
+	{ mod = "MODKEY",                   key = "u",        func = "focusurgent" },
 	# togglebars toggles the bar on every monitor, togglebar on the focused one
 	# /* bind mod-shift-p: togglebars */
 	{ mod = "MODKEY|ShiftMask",         key = "p",        func = "togglebars" },
@@ -293,18 +289,20 @@ keys = [
 	{ mod = "MODKEY|ShiftMask",         key = "l",        func = "tagmonview",      arg = { i = 1 } },
 	# /* bind mod-ctrl-l: tagmon +1 (move window to right monitor) */
 	{ mod = "MODKEY|ControlMask",       key = "l",        func = "tagmon",          arg = { i = 1 } },
-	# /* bind mod-left: focusmon -1 */
-	{ mod = "MODKEY",                   key = "Left",     func = "focusmon",        arg = { i = -1 } },
+	# /* bind mod-left: shiftview -1 (view prev tag) */
+	{ mod = "MODKEY",                   key = "Left",     func = "shiftview",       arg = { i = -1 } },
 	# /* bind mod-shift-left: tagmon -1 */
 	{ mod = "MODKEY|ShiftMask",         key = "Left",     func = "tagmon",          arg = { i = -1 } },
-	# /* bind mod-right: focusmon +1 */
-	{ mod = "MODKEY",                   key = "Right",    func = "focusmon",        arg = { i = 1 } },
+	# /* bind mod-right: shiftview +1 (view next tag) */
+	{ mod = "MODKEY",                   key = "Right",    func = "shiftview",       arg = { i = 1 } },
 	# /* bind mod-shift-right: tagmon +1 */
 	{ mod = "MODKEY|ShiftMask",         key = "Right",    func = "tagmon",          arg = { i = 1 } },
 	# /* bind mod-apostrophe: togglescratch spterm */
 	{ mod = "MODKEY",                   key = "apostrophe", func = "togglescratch", arg = { ui = 0 } },
 	# /* bind mod-shift-apostrophe: togglescratch spcalc */
 	{ mod = "MODKEY|ShiftMask",         key = "apostrophe", func = "togglescratch", arg = { ui = 1 } },
+	# /* bind mod-F12: togglescratch spcalc (like awesome's dropdown terminal) */
+	{ mod = "MODKEY",                   key = "F12",      func = "togglescratch", arg = { ui = 1 } },
 
 	# /* bind mod-shift-x: spawn i3lock */
 	{ mod = "MODKEY|ShiftMask",         key = "x",        func = "spawn",           arg = { v = "lockcmd" } },
@@ -314,18 +312,16 @@ keys = [
 	{ mod = "MODKEY",                   key = "w",        func = "spawn",           arg = { v = "filexcmd" } },
 	# /* bind mod-e: spawn file_explorer_wd.sh */
 	{ mod = "MODKEY",                   key = "e",        func = "spawn",           arg = { v = "fileexplorerwdcmd" } },
-	# /* bind mod-shift-e: spawn powermenu.sh */
+	# /* bind mod-shift-e: spawn sysmenu.sh */
 	{ mod = "MODKEY|ShiftMask",         key = "e",        func = "spawn",           arg = { v = "powermenucmd" } },
+	# /* bind mod-shift-q: spawn sysmenu.sh (quit through the power menu, like awesome) */
+	{ mod = "MODKEY|ShiftMask",         key = "q",        func = "spawn",           arg = { v = "powermenucmd" } },
 	# /* bind mod-shift-s: spawn screenshot to clipboard */
 	{ mod = "MODKEY|ShiftMask",         key = "s",        func = "spawn",           arg = { v = "screenclipcmd" } },
 	# /* bind mod-ctrl-s: spawn tesseract_ocr.sh */
 	{ mod = "MODKEY|ControlMask",       key = "s",        func = "spawn",           arg = { v = "ocrcmd" } },
-	# /* bind mod-d: spawn rofi */
-	{ mod = "MODKEY",                   key = "d",        func = "spawn",           arg = { v = "roficmd" } },
-	# /* bind mod-r: spawn dmenu_run */
-	{ mod = "MODKEY",                   key = "r",        func = "spawn",           arg = { v = "dmenulistcmd" } },
-	# /* bind mod-shift-r: spawn rofi launcher */
-	{ mod = "MODKEY|ShiftMask",         key = "r",        func = "spawn",           arg = { v = "rofilaunchercmd" } },
+	# /* bind mod-d: spawn launcher.sh (dmenu, or rofi with LAUNCHER=rofi) */
+	{ mod = "MODKEY",                   key = "d",        func = "spawn",           arg = { v = "launchercmd" } },
 	# /* bind mod-t: spawn script_copy.sh */
 	{ mod = "MODKEY",                   key = "t",        func = "spawn",           arg = { v = "scriptcopycmd" } },
 	# /* bind mod-shift-t: spawn script_helper.sh */
@@ -334,8 +330,8 @@ keys = [
 	{ mod = "MODKEY|ShiftMask",         key = "c",        func = "spawn",           arg = { v = "codenewcmd" } },
 	# /* bind mod-shift-d: spawn code_helper.sh old */
 	{ mod = "MODKEY|ShiftMask",         key = "d",        func = "spawn",           arg = { v = "codeoldcmd" } },
-	# /* bind mod-g: spawn fzf_open.sh */
-	{ mod = "MODKEY",                   key = "g",        func = "spawn",           arg = { v = "fzfopencmd" } },
+	# /* bind mod-g: spawn nvim_fzf.sh */
+	{ mod = "MODKEY",                   key = "g",        func = "spawn",           arg = { v = "nvimfzfcmd" } },
 	# /* bind mod-c: spawn term_calc.sh */
 	{ mod = "MODKEY",                   key = "c",        func = "spawn",           arg = { v = "termcalccmd" } },
 	# /* bind mod-ctrl-c: spawn yad calendar */
@@ -344,8 +340,8 @@ keys = [
 	{ mod = "MODKEY",                   key = "b",        func = "spawn",           arg = { v = "htopcmd" } },
 	# /* bind mod-shift-b: spawn btop */
 	{ mod = "MODKEY|ShiftMask",         key = "b",        func = "spawn",           arg = { v = "btopcmd" } },
-	# /* bind mod-ctrl-b: spawn ytop */
-	{ mod = "MODKEY|ControlMask",       key = "b",        func = "spawn",           arg = { v = "ytopcmd" } },
+	# /* bind mod-ctrl-b: spawn sudo btop */
+	{ mod = "MODKEY|ControlMask",       key = "b",        func = "spawn",           arg = { v = "sudobtopcmd" } },
 	# /* bind mod-p: spawn xrandr_helper.sh */
 	{ mod = "MODKEY",                   key = "p",        func = "spawn",           arg = { v = "xrandrcmd" } },
 	# /* bind mod-n: spawn files_wd.sh */
@@ -360,11 +356,11 @@ keys = [
 	{ mod = "MODKEY|ShiftMask",         key = "m",        func = "spawn",           arg = { v = "spotifycmd" } },
 	# /* bind mod-ctrl-m: spawn open_notes.sh 2 */
 	{ mod = "MODKEY|ControlMask",       key = "m",        func = "spawn",           arg = { v = "notes2cmd" } },
-	# /* bind mod-shift-comma: spawn suspend.sh */
+	# /* bind mod-shift-comma: spawn suspend_awsm.sh */
 	{ mod = "MODKEY|ShiftMask",         key = "comma",    func = "spawn",           arg = { v = "suspendcmd" } },
 	# /* bind mod-ctrl-comma: spawn suspend_mute.sh */
 	{ mod = "MODKEY|ControlMask",       key = "comma",    func = "spawn",           arg = { v = "suspendmutecmd" } },
-	# /* bind mod-shift-period: spawn i3lock + suspend */
+	# /* bind mod-shift-period: spawn suspend_awsm_lock.sh (lock, mute, suspend) */
 	{ mod = "MODKEY|ShiftMask",         key = "period",   func = "spawn",           arg = { v = "locksuspendcmd" } },
 	# /* bind mod-v: spawn clip_history.sh greenclip */
 	{ mod = "MODKEY",                   key = "v",        func = "spawn",           arg = { v = "cliphistorycmd" } },
@@ -391,8 +387,6 @@ keys = [
 
 	# /* bind F1: spawn show_keys.sh dwm */
 	{ mod = "0",                        key = "F1",       func = "spawn",           arg = { v = "showkeysdwmcmd" } },
-	# /* bind shift-F1: spawn show_keys.sh vim */
-	{ mod = "ShiftMask",                key = "F1",       func = "spawn",           arg = { v = "showkeysvimcmd" } },
 	# /* bind F10: spawn pactl toggle mute */
 	{ mod = "0",                        key = "F10",      func = "spawn",           arg = { v = "mutecmd" } },
 	# /* bind F11: spawn pactl volume -5% */
