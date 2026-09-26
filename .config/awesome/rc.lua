@@ -483,9 +483,9 @@ globalkeys = mytable.join(
     awful.spawn("/home/jonas/.local/bin/my_scripts/suspend_awsm_lock.sh")    end,
               {description = "Lock, mute and suspend", group = "launcher"}),
 
-    -- bind mod-v: spawn clip_history.sh greenclip
+    -- bind mod-v: spawn clip_history.sh
     awful.key({modkey},            "v",        function ()
-    awful.spawn("/home/jonas/.local/bin/my_scripts/clip_history.sh greenclip")   end,
+    awful.spawn("/home/jonas/.local/bin/my_scripts/clip_history.sh")   end,
               {description = "clip_history", group = "launcher"}),
 
     -- bind mod-shift-v: spawn qr_clip.sh

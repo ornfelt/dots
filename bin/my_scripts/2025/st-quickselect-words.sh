@@ -3,6 +3,10 @@
 # Replicates wezterm QuickSelectArgs word pattern.
 # Usage: pipe terminal content to this script, e.g. via st external pipe.
 
+# dmenu or rofi: --dmenu / --rofi, else $LAUNCHER, else dmenu (menu_lib.sh)
+. "$HOME/.local/bin/my_scripts/menu_lib.sh"
+menu_need
+
 wordregex='[^│\s]\S*?(?=:\d|[>"'"'"']|$)|[^│\s]\S{2,}?(?=[>"'"'"']|$| )'
 
 words="$(cat | tr -d '\n' |
@@ -11,8 +15,7 @@ words="$(cat | tr -d '\n' |
 
 [ -z "$words" ] && exit 1
 
-chosen="$(echo "$words" | rofi -theme 'gruvbox-dark.rasi' -p 'Copy which word?' -dmenu -i -l 20)"
-#chosen="$(echo "$words" | dmenu -i -p 'Copy which word?' -l 20)"
+chosen="$(echo "$words" | menu 'Copy which word?' 20)"
 
 [ -z "$chosen" ] && exit 1
 

@@ -8,6 +8,10 @@
 
 # Quick-select paths from terminal output and copy to clipboard.
 
+# dmenu or rofi: --dmenu / --rofi, else $LAUNCHER, else dmenu (menu_lib.sh)
+. "$HOME/.local/bin/my_scripts/menu_lib.sh"
+menu_need
+
 tmpfile=$(mktemp /tmp/st-quick-paths.XXXXXX)
 trap 'rm -f "$tmpfile"' 0 1 15
 
@@ -33,10 +37,7 @@ matches=$(printf '%s\n' "$matches" | sort -u)
 
 [ -z "$matches" ] && exit 1
 
-# rofi
-#choice=$(printf '%s\n' "$matches" | rofi -theme 'gruvbox-dark.rasi' -p 'Copy which path?' -dmenu -i -l 10)
-# dmenu
-choice=$(printf '%s\n' "$matches" | dmenu -p "Copy which path?" -i -l 10)
+choice=$(printf '%s\n' "$matches" | menu "Copy which path?" 10)
 
 [ -z "$choice" ] && exit 1
 

@@ -4,6 +4,10 @@
 # Read from stdin for compatability with st externalpipe scripts or via tmux
 # capture-pane.
 
+# dmenu or rofi: --dmenu / --rofi, else $LAUNCHER, else dmenu (menu_lib.sh)
+. "$HOME/.local/bin/my_scripts/menu_lib.sh"
+menu_need
+
 # Usage:
 # hook into st:
 # { MODKEY|ShiftMask, XK_w, externalpipe, { .v = (const char*[]){ "st-quickselect-words", NULL } } },
@@ -32,10 +36,7 @@ matches=$(grep -aEo '[^[:space:]│][^[:space:]│]{2,}' "$tmpfile" \
 
 [ -z "$matches" ] && exit 1
 
-# rofi
-#choice=$(printf '%s\n' "$matches" | rofi -theme 'gruvbox-dark.rasi' -p 'Copy which word?' -dmenu -i -l 10)
-# dmenu
-choice=$(printf '%s\n' "$matches" | dmenu -p "Copy which word?" -i -l 10)
+choice=$(printf '%s\n' "$matches" | menu "Copy which word?" 10)
 
 [ -z "$choice" ] && exit 1
 

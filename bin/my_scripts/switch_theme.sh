@@ -1,15 +1,17 @@
 #!/usr/bin/env bash
-rofi_command="rofi -theme ~/.config/rofi/themes/gruvbox/gruvbox-dark.rasi"
+# dmenu or rofi: --dmenu / --rofi, else $LAUNCHER, else dmenu (menu_lib.sh)
+. ~/.local/bin/my_scripts/menu_lib.sh
+menu_need
 
 # Options
 theme1="gruvbox"
 theme2="catpuccin"
 theme3="hybrid"
 
-# Variable passed to rofi
+# Variable passed to the menu
 options="$theme1\n$theme2\n$theme3"
 
-chosen="$(echo -e "$options" | $rofi_command -p "Choose a command" -dmenu -selected-row 0)"
+chosen="$(echo -e "$options" | menu "Choose a command" "" -selected-row 0)"
 case $chosen in
     $theme1)
 		if [ -e ~/.Xresources_gruv ]; then

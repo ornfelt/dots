@@ -132,7 +132,7 @@ commands.notes2cmd         = ["/bin/sh", "-c", "~/.local/bin/my_scripts/open_not
 commands.suspendcmd        = ["/bin/sh", "-c", "~/.local/bin/my_scripts/suspend_awsm.sh"]
 commands.suspendmutecmd    = ["/bin/sh", "-c", "~/.local/bin/my_scripts/alert_exit.sh && ~/.local/bin/my_scripts/suspend_mute.sh"]
 commands.locksuspendcmd    = ["/bin/sh", "-c", "~/.local/bin/my_scripts/suspend_awsm_lock.sh"]
-commands.cliphistorycmd    = ["/bin/sh", "-c", "~/.local/bin/my_scripts/clip_history.sh greenclip"]
+commands.cliphistorycmd    = ["/bin/sh", "-c", "~/.local/bin/my_scripts/clip_history.sh"]
 commands.qrclipcmd         = ["/bin/sh", "-c", "~/.local/bin/my_scripts/qr_clip.sh"]
 commands.progrmhelpercmd   = ["/bin/sh", "-c", "~/.local/bin/my_scripts/progrm_helper.sh wezterm"]
 commands.emojipickcmd      = ["/bin/sh", "-c", "~/.local/bin/my_scripts/emojipick/emojipick"]
@@ -362,7 +362,7 @@ keys = [
 	{ mod = "MODKEY|ControlMask",       key = "comma",    func = "spawn",           arg = { v = "suspendmutecmd" } },
 	# /* bind mod-shift-period: spawn suspend_awsm_lock.sh (lock, mute, suspend) */
 	{ mod = "MODKEY|ShiftMask",         key = "period",   func = "spawn",           arg = { v = "locksuspendcmd" } },
-	# /* bind mod-v: spawn clip_history.sh greenclip */
+	# /* bind mod-v: spawn clip_history.sh */
 	{ mod = "MODKEY",                   key = "v",        func = "spawn",           arg = { v = "cliphistorycmd" } },
 	# /* bind mod-shift-v: spawn qr_clip.sh */
 	{ mod = "MODKEY|ShiftMask",         key = "v",        func = "spawn",           arg = { v = "qrclipcmd" } },

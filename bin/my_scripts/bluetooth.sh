@@ -7,7 +7,7 @@
 #
 # Author: Nick Clyde (clydedroid)
 #
-# A script that generates a rofi menu that uses bluetoothctl to
+# A script that generates a dmenu or rofi menu that uses bluetoothctl to
 # connect to bluetooth devices and display status info.
 #
 # Inspired by networkmanager-dmenu (https://github.com/firecat53/networkmanager-dmenu)
@@ -15,6 +15,9 @@
 #
 # Depends on:
 #   Arch repositories: rofi, bluez-utils (contains bluetoothctl)
+
+# dmenu or rofi: --dmenu / --rofi, else $LAUNCHER, else dmenu (menu_lib.sh)
+. ~/.local/bin/my_scripts/menu_lib.sh
 
 # Constants
 divider="---------"
@@ -225,8 +228,8 @@ device_menu() {
     trusted=$(device_trusted $mac)
     options="$connected\n$paired\n$trusted\n$divider\n$goback\nExit"
 
-    # Open rofi menu, read chosen option
-    chosen="$(echo -e "$options" | $rofi_command "$device_name")"
+    # Open the menu, read chosen option
+    chosen="$(echo -e "$options" | menu "$device_name" "" $rofi_args)"
 
     # Match chosen option to command
     case $chosen in
@@ -270,8 +273,8 @@ show_menu() {
         options="$power\nExit"
     fi
 
-    # Open rofi menu, read chosen option
-    chosen="$(echo -e "$options" | $rofi_command "Bluetooth")"
+    # Open the menu, read chosen option
+    chosen="$(echo -e "$options" | menu "Bluetooth" "" $rofi_args)"
 
     # Match chosen option to command
     case $chosen in
@@ -298,14 +301,15 @@ show_menu() {
     esac
 }
 
-# Rofi command to pipe into, can add any options here
-rofi_command="rofi -dmenu -no-fixed-num-lines -yoffset -200 -i -p"
+# Extra rofi options for every menu (dmenu ignores them)
+rofi_args="-no-fixed-num-lines -yoffset -200"
 
 case "$1" in
     --status)
         print_status
         ;;
     *)
+        menu_need
         show_menu
         ;;
 esac

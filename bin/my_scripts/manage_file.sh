@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# dmenu or rofi: --dmenu / --rofi, else $LAUNCHER, else dmenu (menu_lib.sh)
+. ~/.local/bin/my_scripts/menu_lib.sh
+menu_need
+
 show_menu() {
     local options=$(cat <<-EOF
 [1] chmod +x
@@ -10,16 +14,11 @@ show_menu() {
 [6] Exit
 EOF
 )
-    if [[ -n "$2" ]]; then
-        echo "$options" | rofi -dmenu -p "Choose a command for the files"
-    else
-        #echo "$options" | dmenu -i -l 20 -p "Choose a command for the files"
-        echo "$options" | dmenu -i -l 20
-    fi
+    echo "$options" | menu "Choose a command for the files"
 }
 
 if [[ -z "$1" ]]; then
-    echo "Usage: $0 <file_or_directory_paths> [use_rofi]"
+    echo "Usage: $0 [--dmenu|--rofi] <file_or_directory_paths>"
     exit 1
 fi
 
@@ -62,7 +61,7 @@ for path in "${paths[@]}"; do
     fi
 done
 
-choice=$(show_menu "$path" "$2" | awk '{print $1}' | tr -d '[]')
+choice=$(show_menu | awk '{print $1}' | tr -d '[]')
 
 for path in "${paths[@]}"; do
     case "$choice" in

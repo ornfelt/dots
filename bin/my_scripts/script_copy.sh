@@ -1,15 +1,19 @@
 #!/bin/bash
 
-# Pick a oneliner from the notes with rofi and copy it to the clipboard.
+# Pick a oneliner from the notes with dmenu or rofi and copy it to the
+# clipboard.
 # With any argument (e.g. `script_copy.sh type`) the command is typed into the
 # focused window instead of copied.
 
-theme="/home/jonas/.config/rofi/themes/gruvbox/gruvbox-dark.rasi"
+# dmenu or rofi: --dmenu / --rofi, else $LAUNCHER, else dmenu (menu_lib.sh)
+. ~/.local/bin/my_scripts/menu_lib.sh
+menu_need
+
 input_file="/home/jonas/Documents/my_notes/linux/oneliners_raw.txt"
 
-# Get user selection via Rofi from the input file. Lines are shown whole: the
+# Get user selection via the menu from the input file. Lines are shown whole: the
 # old `cut -d ';' -f1` chopped every oneliner containing a ';' (for loops etc.)
-chosen=$(rofi -theme "$theme" -p "Choose a command to copy" -dmenu -i -l 30 < "$input_file" | sed "s/\r//")
+chosen=$(menu "Choose a command to copy" 30 < "$input_file" | sed "s/\r//")
 
 # Exit if nothing chosen
 [ -z "$chosen" ] && exit

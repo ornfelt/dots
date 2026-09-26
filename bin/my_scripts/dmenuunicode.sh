@@ -2,8 +2,12 @@
 
 # The famous "get a menu of emojis to copy" script.
 
-# Get user selection via dmenu from emoji file.
-chosen=$(cut -d ';' -f1 emojipick/chars/* | dmenu -i -l 30 | sed "s/ .*//")
+# dmenu or rofi: --dmenu / --rofi, else $LAUNCHER, else dmenu (menu_lib.sh)
+. "$HOME/.local/bin/my_scripts/menu_lib.sh"
+menu_need
+
+# Get user selection via the menu from emoji file.
+chosen=$(cut -d ';' -f1 emojipick/chars/* | menu "Emoji" 30 | sed "s/ .*//")
 
 # Exit if none chosen.
 [ -z "$chosen" ] && exit

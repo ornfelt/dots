@@ -3,6 +3,10 @@
 # Replicates wezterm QuickSelectArgs path patterns.
 # Usage: pipe terminal content to this script, e.g. via st external pipe.
 
+# dmenu or rofi: --dmenu / --rofi, else $LAUNCHER, else dmenu (menu_lib.sh)
+. "$HOME/.local/bin/my_scripts/menu_lib.sh"
+menu_need
+
 # Each pattern on its own grep pass, then combine + deduplicate.
 input="$(cat | sed 's/│//g')"
 
@@ -21,8 +25,7 @@ paths="$(printf '%s' "$paths" | sort -u)"
 
 [ -z "$paths" ] && exit 1
 
-chosen="$(printf '%s' "$paths" | rofi -theme 'gruvbox-dark.rasi' -p 'Copy which path?' -dmenu -i -l 20)"
-#chosen="$(printf '%s' "$paths" | dmenu -i -p 'Copy which path?' -l 20)"
+chosen="$(printf '%s' "$paths" | menu 'Copy which path?' 20)"
 
 [ -z "$chosen" ] && exit 1
 

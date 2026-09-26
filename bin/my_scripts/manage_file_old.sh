@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# dmenu or rofi: --dmenu / --rofi, else $LAUNCHER, else dmenu (menu_lib.sh)
+. ~/.local/bin/my_scripts/menu_lib.sh
+menu_need
+
 show_menu() {
     local options=$(cat <<-EOF
 [1] chmod +x "$1"
@@ -10,17 +14,12 @@ show_menu() {
 [6] exit
 EOF
 )
-    if [[ -n "$2" ]]; then
-        echo "$options" | rofi -dmenu -p "Choose a command for $1"
-    else
-        #echo "$options" | dmenu -i -l 20 -p "Choose a command for $1:"
-        echo "$options" | dmenu -i -l 20
-    fi
+    echo "$options" | menu "Choose a command for $1"
 }
 
 # Validate arguments
 if [[ -z "$1" ]]; then
-    echo "Usage: $0 <file_or_directory_path> [use_rofi]"
+    echo "Usage: $0 [--dmenu|--rofi] <file_or_directory_path>"
     exit 1
 fi
 
@@ -33,7 +32,7 @@ if [[ ! -e "$path" ]]; then
 fi
 
 # Display the menu and capture the choice
-choice=$(show_menu "$path" "$2" | awk '{print $1}' | tr -d '[]')
+choice=$(show_menu "$path" | awk '{print $1}' | tr -d '[]')
 
 # Execute the chosen command based on the number
 case "$choice" in

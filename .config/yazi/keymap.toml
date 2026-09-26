@@ -335,8 +335,8 @@ desc = "Copy selection to clipboard"
 on = [" ", " "]
 run = [
     #shell '/home/jonas/.local/bin/my_scripts/manage_file.sh "$@"' --confirm
-	#shell '/home/jonas/.local/bin/my_scripts/manage_file.sh "$@" 1' --confirm
-    #shell 'echo "$@" | sed "s/ /,/g" | xargs -I {} /home/jonas/.local/bin/my_scripts/manage_file.sh "{}" 1' --confirm
+	#shell '/home/jonas/.local/bin/my_scripts/manage_file.sh --rofi "$@"' --confirm
+    #shell 'echo "$@" | sed "s/ /,/g" | xargs -I {} /home/jonas/.local/bin/my_scripts/manage_file.sh --rofi "{}"' --confirm
  '''
     shell 'echo "$@" | sed "s/ /,/g" | xargs -I {} /home/jonas/.local/bin/my_scripts/manage_file.sh "{}"' --confirm
 '''

@@ -332,10 +332,10 @@ map <space>_ copy_path_arg
 # Manage file
 cmd manage_file ${{
     #/home/jonas/.local/bin/my_scripts/manage_file.sh "$fx"
-    #/home/jonas/.local/bin/my_scripts/manage_file.sh "$fx" 1 # Rofi
+    #/home/jonas/.local/bin/my_scripts/manage_file.sh --rofi "$fx" # Rofi
 
     echo "$fx" | tr '\n' ' ' | sed 's/ /,/g' | xargs -I {} /home/jonas/.local/bin/my_scripts/manage_file.sh {}
-    #echo "$fx" | tr '\n' ' ' | sed 's/ /,/g' | xargs -I {} /home/jonas/.local/bin/my_scripts/manage_file.sh {} 1 # Rofi
+    #echo "$fx" | tr '\n' ' ' | sed 's/ /,/g' | xargs -I {} /home/jonas/.local/bin/my_scripts/manage_file.sh --rofi {} # Rofi
 }}
 
 # bind space-space: manage_file

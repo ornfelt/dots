@@ -13,7 +13,9 @@ sh ~/.local/bin/my_scripts/alert_exit.sh &
 
 uptime=$(uptime -p | sed -e 's/up //g')
 
-rofi_command="rofi -i -theme ~/.config/rofi/themes/gruvbox/gruvbox-dark.rasi"
+# dmenu or rofi: --dmenu / --rofi, else $LAUNCHER, else dmenu (menu_lib.sh)
+. ~/.local/bin/my_scripts/menu_lib.sh
+menu_need
 
 # Options
 shutdown=" Shutdown"
@@ -26,21 +28,18 @@ logout=" Logout"
 confirm_exit() {
 	# "No" first so an accidental Enter is harmless; lowercase so typed
 	# answers like "Y" still match the checks below
-	echo -e "No\nYes" | rofi -theme ~/.config/rofi/themes/gruvbox/gruvbox-dark.rasi -dmenu\
-		-i\
-		-p "Are You Sure?"\
-		-selected-row 0 | tr '[:upper:]' '[:lower:]'
+	echo -e "No\nYes" | menu "Are You Sure?" "" -selected-row 0 | tr '[:upper:]' '[:lower:]'
 }
 
 # Message
 msg() {
-	rofi -i -theme "~/.config/rofi/themes/gruvbox/gruvbox-dark.rasi" -e "Available Options  -  yes / y / no / n"
+	menu_msg "Available Options  -  yes / y / no / n"
 }
 
-# Variable passed to rofi
+# Variable passed to the menu
 options="$lock\n$suspend\n$logout\n$reboot\n$shutdown"
 
-chosen="$(echo -e "$options" | $rofi_command -p "Uptime: $uptime" -dmenu -selected-row 0)"
+chosen="$(echo -e "$options" | menu "Uptime: $uptime" "" -selected-row 0)"
 case $chosen in
     $shutdown)
 		ans=$(confirm_exit &)
