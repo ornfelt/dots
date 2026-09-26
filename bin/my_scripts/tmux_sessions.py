@@ -5,11 +5,13 @@ tmux_sessions.py - pick a tmux session to attach to, or start a new one.
 With no tmux sessions running this just runs `tmux` (a new default session).
 Otherwise it lists every session in fzf with a preview (info, windows and the
 active pane's contents) and attaches to the picked one. Inside tmux it
-switches the current client instead of nesting.
+switches the current client instead of nesting. The cursor starts on the most
+recently active session with at least BUSY_WINDOWS windows, if there is one.
 
 Keys in the picker:
     enter    attach to the session (or create one on "+ new session")
-    ctrl-n   new named session: the typed query is the name, or you are asked
+    ctrl-n/p move down / up in the list
+    alt-n    new named session: the typed query is the name, or you are asked
     ctrl-/   toggle the preview
     esc      cancel
 
@@ -44,11 +46,13 @@ TMUX_BIN         = os.environ.get("TMSESS_TMUX", "tmux")
 FZF_BIN          = os.environ.get("TMSESS_FZF", "fzf")
 PREVIEW_WINDOW   = "right,60%,border-left"
 FZF_OPTS         = ["--height=90%", "--reverse", "--border", "--info=inline", "--cycle",
-                    "--bind=ctrl-/:toggle-preview,ctrl-u:preview-half-page-up,"
-                    "ctrl-d:preview-half-page-down"]
+                    "--bind=ctrl-n:down,ctrl-p:up,ctrl-/:toggle-preview,"
+                    "ctrl-u:preview-half-page-up,ctrl-d:preview-half-page-down"]
 NAME_COL         = 16       # width of the session name column in the list
 PREVIEW_PANE     = 40       # max pane lines in the preview (fewer if it doesn't fit)
 NEW_KEY          = ":new"   # row key for "+ new session"; ':' can't be in a session name
+NAME_KEY         = "alt-n"  # fzf key for "new session named after the query"
+BUSY_WINDOWS     = 3        # preselect the first session with at least this many windows
 
 # ── ANSI colors ──────────────────────────────────────────────────────────────
 RED = "\033[31m"
@@ -171,16 +175,24 @@ def build_rows(sessions: list[dict]) -> list[tuple[str, str]]:
     return rows
 
 
+def default_row(sessions: list[dict]) -> int:
+    """Row index (into build_rows) of the first session with BUSY_WINDOWS+ windows, else 0."""
+    for i, s in enumerate(sessions):
+        if s["windows"] >= BUSY_WINDOWS:
+            return i + 1                    # row 0 is "+ new session"
+    return 0
+
+
 # ── Preview ──────────────────────────────────────────────────────────────────
 def render_new_preview() -> str:
     return "\n".join([
         f"{BOLD}{GREEN}+ new session{RESET}",
         "",
         f"  {CYAN}enter{RESET}   start a new session with the default name",
-        f"  {CYAN}ctrl-n{RESET}  start a new session named after the query,",
+        f"  {CYAN}{NAME_KEY:<6}{RESET}  start a new session named after the query,",
         f"          or asks for a name when the query is empty",
         "",
-        f"{DIM}  ctrl-n works on any row, not only this one.{RESET}",
+        f"{DIM}  {NAME_KEY} works on any row, not only this one.{RESET}",
     ])
 
 
@@ -229,12 +241,15 @@ def fzf_available() -> bool:
     return shutil.which(FZF_BIN) is not None
 
 
-def pick_fzf(rows: list[tuple[str, str]], preview: bool) -> tuple[str, str, str]:
-    """Returns (key pressed, picked session key, typed query)."""
-    header = "enter attach  ·  ctrl-n new named session  ·  ctrl-/ preview  ·  esc cancel"
+def pick_fzf(rows: list[tuple[str, str]], preview: bool, start: int = 0) -> tuple[str, str, str]:
+    """Returns (key pressed, picked session key, typed query). start = initial cursor row."""
+    header = f"enter attach  ·  {NAME_KEY} new named session  ·  ctrl-/ preview  ·  esc cancel"
     cmd = [FZF_BIN, "--prompt", "tmux > ", "--header", header, "--ansi", "--no-multi",
            "--delimiter", "\t", "--with-nth", "1", "--nth", "1",
-           "--print-query", "--expect", "ctrl-n"] + FZF_OPTS
+           "--print-query", "--expect", NAME_KEY] + FZF_OPTS
+    if start:
+        # --sync: wait for all rows before "start" fires; pos() is 1-based.
+        cmd += ["--sync", "--bind", f"start:pos({start + 1})"]
     if preview:
         argv = [sys.executable, os.path.abspath(__file__), "--preview"]
         if not RESET:
@@ -247,7 +262,7 @@ def pick_fzf(rows: list[tuple[str, str]], preview: bool) -> tuple[str, str, str]
     query = lines[0] if lines else ""
     key = lines[1] if len(lines) > 1 else ""
     picked = lines[2].split("\t")[-1].strip() if len(lines) > 2 and lines[2] else ""
-    # 1 = no match (fine for ctrl-n with a fresh name), 130 = esc / ctrl-c.
+    # 1 = no match (fine for NAME_KEY with a fresh name), 130 = esc / ctrl-c.
     if proc.returncode not in (0, 1):
         return "", "", ""
     return key, picked, query
@@ -269,7 +284,7 @@ def pick_python(rows: list[tuple[str, str]]) -> tuple[str, str, str]:
         if raw in ("q", "Q", ""):
             return "", "", ""
         if raw == "n" or raw.startswith("n "):
-            return "ctrl-n", "", raw[2:].strip()
+            return NAME_KEY, "", raw[2:].strip()
         if raw.isdigit() and int(raw) < len(rows):
             return "", rows[int(raw)][1], ""
         err(f"not a choice: {raw}")
@@ -336,8 +351,9 @@ def print_list(sessions: list[dict]) -> None:
 def parse_args(argv: list[str]) -> argparse.Namespace:
     ap = argparse.ArgumentParser(prog="tmux_sessions.py",
                                  description="Pick a tmux session to attach to, or start a new one.",
-                                 epilog="keys: enter attach, ctrl-n new named session, "
-                                        "ctrl-/ toggle preview, esc cancel")
+                                 epilog=f"keys: enter attach, ctrl-n/p down/up, "
+                                        f"{NAME_KEY} new named session, "
+                                        f"ctrl-/ toggle preview, esc cancel")
     ap.add_argument("-l", "--list", action="store_true", help="print the sessions and exit")
     ap.add_argument("--picker", choices=["fzf", "python", "auto"], default="auto",
                     help="which picker to use (default: fzf when installed)")
@@ -390,11 +406,11 @@ def main(argv: list[str]) -> int:
 
     rows = build_rows(sessions)
     if picker == "fzf":
-        key, picked, query = pick_fzf(rows, args.show_preview)
+        key, picked, query = pick_fzf(rows, args.show_preview, default_row(sessions))
     else:
         key, picked, query = pick_python(rows)
 
-    if key == "ctrl-n":
+    if key == NAME_KEY:
         name = query.strip()
         if not name:
             name = ask_name()
