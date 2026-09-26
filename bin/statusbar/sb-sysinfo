@@ -10,7 +10,14 @@
 #
 # The state is kept across restarts as dwm_bar_toggled in ~/.config/my_config.txt,
 # like awesome's awsm_bar_toggled: true means hidden, no entry means shown.
-# The blocks share signal 7, so toggle updates them all at once.
+# The blocks have signals 13 (net), 14 (mem) and 15 (cpu); toggle sends all
+# three. They need a signal each, since dwmblocks runs a click on every block
+# with the clicked block's signal.
+#
+# A left click (BLOCK_BUTTON=1, also from the awesome widgets) shows a
+# notification with details: the interfaces with their addresses and traffic,
+# memory use and the processes using the most, or the CPU, its load and the
+# processes using it right now. The other buttons do nothing.
 #
 # net and cpu are rates, so they keep their last sample in $XDG_RUNTIME_DIR.
 # They keep sampling while hidden, so the first value after showing them is
@@ -20,11 +27,8 @@
 
 CONFIG="$HOME/.config/my_config.txt"
 KEY="dwm_bar_toggled"
-SIGNAL=7
+SIGNALS="13 14 15"
 STATE="${XDG_RUNTIME_DIR:-/tmp}/sb-sysinfo"
-
-# The blocks do nothing on a click; dwmblocks updates them afterwards
-[ -n "$BLOCK_BUTTON" ] && exit 0
 
 # True if the blocks are hidden. Read like awesome's read_config(): "key: value"
 # lines, the value compared case-insensitively.
@@ -88,7 +92,7 @@ net() {
 				if (last && dt > 0) { rx = drx / dt / 1024; tx = dtx / dt / 1024 }
 			}
 			if (show)
-				printf "^c#b8bb26^\357\252\232 %.1f ^c#689d6a^\356\252\241 %.1f\n", rx, tx
+				printf "^c#b8bb26^\356\252\232 %.1f ^c#689d6a^\356\252\241 %.1f\n", rx, tx
 			if (save) {
 				tmp = state ".tmp"
 				printf "t %s\nrate %s %s\n%s", now, rx, tx, devs > tmp
@@ -109,7 +113,7 @@ mem() {
 		$1 == "Buffers:" { buf = mib($2) }
 		$1 == "Cached:" { cache = mib($2) }
 		$1 == "SReclaimable:" { srec = mib($2) }
-		END { printf "^c#fabd2f^\363\260\215\233 %dM\n", total - free - buf - cache - srec }
+		END { printf " ^c#fabd2f^\357\224\236 %dM\n", total - free - buf - cache - srec }
 	' /proc/meminfo
 }
 
@@ -147,7 +151,7 @@ cpu() {
 				}
 			}
 			if (show)
-				printf "^c#b16286^\357\222\274 %d%%\n", usage
+				printf " ^c#b16286^\357\222\274 %d%% \n", usage
 			if (save) {
 				tmp = state ".tmp"
 				printf "t %s\ncpu %s %s\nusage %d\n", now, active, total, usage > tmp
@@ -158,6 +162,81 @@ cpu() {
 		}'
 }
 
+# Sizes in KiB, as /proc/meminfo and ps give them
+HUMAN='function human(k) { return k >= 1048576 ? sprintf("%.1f GiB", k / 1048576) : sprintf("%d MiB", k / 1024) }'
+
+# Every interface but the loopback one: its connection, addresses (without
+# the link-local ones) and the traffic since boot
+netinfo() {
+	for d in /sys/class/net/*; do
+		[ "$(cat "$d/type")" = 772 ] && continue
+		dev=${d##*/}
+		conn=$(nmcli -g GENERAL.CONNECTION device show "$dev" 2>/dev/null)
+		[ "$conn" = "$dev" ] && conn=
+		signal=$(awk -v dev="$dev:" '$1 == dev { printf "%d%%", $3 * 100 / 70 }' /proc/net/wireless)
+		printf '%s (%s)%s%s\n' "$dev" "$(cat "$d/operstate")" "${conn:+  $conn}" "${signal:+, $signal signal}"
+		ip -br addr show dev "$dev" 2>/dev/null | awk '{ for (i = 3; i <= NF; i++) if ($i !~ /^fe80:/) print "  " $i }'
+		printf '  \342\206\223 %s  \342\206\221 %s since boot\n' \
+			"$(numfmt --to=iec-i --suffix=B < "$d/statistics/rx_bytes")" \
+			"$(numfmt --to=iec-i --suffix=B < "$d/statistics/tx_bytes")"
+	done
+}
+
+# Memory as the block counts it, swap, and the programs using the most
+# (all processes of a program added up)
+meminfo() {
+	awk "$HUMAN"'
+		{ m[$1] = $2 }
+		END {
+			used = m["MemTotal:"] - m["MemFree:"] - m["Buffers:"] - m["Cached:"] - m["SReclaimable:"]
+			printf "Used %s of %s, %s available\n", human(used), human(m["MemTotal:"]), human(m["MemAvailable:"])
+			printf "Cache %s, swap %s of %s\n", human(m["Cached:"] + m["SReclaimable:"] + m["Buffers:"]),
+				human(m["SwapTotal:"] - m["SwapFree:"]), human(m["SwapTotal:"])
+		}' /proc/meminfo
+	echo
+	echo "Top processes:"
+	ps -eo rss=,comm= | awk "$HUMAN"'
+		{ k = $1; $1 = ""; sub(/^ /, ""); rss[$0] += k; n[$0]++ }
+		END { for (c in rss) printf "%d\t%s\n", rss[c], (n[c] > 1 ? c " (" n[c] ")" : c) }' |
+		sort -rn | head -5 | awk -F '\t' "$HUMAN"'{ printf "%-24s %s\n", $2, human($1) }'
+}
+
+# The CPU, its load, and the programs using it over the next half second
+# (all processes of a program added up; 100% is one core)
+cpuinfo() {
+	awk -F ': ' '
+		$1 ~ /^model name/ && !model { model = $2 }
+		$1 ~ /^cpu MHz/ { mhz += $2; n++ }
+		END { print model; printf "%d threads, %.1f GHz average\n", n, n ? mhz / n / 1000 : 0 }' /proc/cpuinfo
+	awk '{ printf "Load %s %s %s\n", $1, $2, $3 }' /proc/loadavg
+	echo
+	echo "Top processes:"
+	LC_ALL=C top -b -n 2 -d 0.5 -o %CPU -w 512 | awk '
+		/^ *PID / { frame++; next }
+		frame == 2 && NF >= 12 {
+			c = $12; for (i = 13; i <= NF; i++) c = c " " $i
+			if (c != "top") { cpu[c] += $9; n[c]++ }
+		}
+		END { for (c in cpu) printf "%.1f\t%s\n", cpu[c], (n[c] > 1 ? c " (" n[c] ")" : c) }' |
+		sort -rn | head -5 | awk -F '\t' '{ printf "%-24s %s%%\n", $2, $1 }'
+}
+
+# Left click: one notification at a time, clicks are ignored while it is
+# loading or shown (the lock is held until notify-send --wait returns);
+# dwmblocks updates the block afterwards
+if [ -n "$BLOCK_BUTTON" ]; then
+	[ "$BLOCK_BUTTON" = 1 ] || exit 0
+	case $1 in
+		net) title="Network" ;;
+		mem) title="Memory" ;;
+		cpu) title="CPU" ;;
+		*) exit 0 ;;
+	esac
+	exec 9>"$STATE-$1.lock"; flock -n 9 || exit 0
+	notify-send --wait -h string:x-dunst-stack-tag:sb-sysinfo "$title" "$("${1}info")"
+	exit 0
+fi
+
 show=1
 hidden && show=0
 
@@ -167,7 +246,9 @@ case $1 in
 	mem) [ "$show" = 1 ] && mem ;;
 	toggle)
 		if [ "$show" = 1 ]; then setconfig true; else setconfig false; fi
-		pkill -RTMIN+$SIGNAL -x 'dwmblocks[cr]?' ;;
+		for s in $SIGNALS; do
+			pkill -RTMIN+$s -x 'dwmblocks[cr]?'
+		done ;;
 	*) echo "usage: ${0##*/} net|mem|cpu|toggle" >&2; exit 1 ;;
 esac
 exit 0

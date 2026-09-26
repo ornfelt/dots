@@ -573,13 +573,39 @@ insert:
 			calcoffsets();
 		}
 		break;
-	case XK_Tab:
+	case XK_Tab: /* select next item, wrapping to the first */
 		if (!sel)
 			return;
-		cursor = strnlen(sel->text, sizeof text - 1);
-		memcpy(text, sel->text, cursor);
-		text[cursor] = '\0';
-		match();
+		if (sel->right) {
+			if ((sel = sel->right) == next) {
+				curr = next;
+				calcoffsets();
+			}
+			break;
+		}
+		sel = curr = matches;
+		calcoffsets();
+		break;
+	case XK_ISO_Left_Tab: /* shift-tab: select previous item, wrapping to the last */
+		if (!sel)
+			return;
+		if (sel->left) {
+			if ((sel = sel->left)->right == curr) {
+				curr = prev;
+				calcoffsets();
+			}
+			break;
+		}
+		if (next) {
+			/* jump to end of list and position items in reverse */
+			curr = matchend;
+			calcoffsets();
+			curr = prev;
+			calcoffsets();
+			while (next && (curr = curr->right))
+				calcoffsets();
+		}
+		sel = matchend;
 		break;
 	}
 
