@@ -341,8 +341,13 @@ screen.connect_signal("property::geometry", function(s)
     end
 end)
 
--- Maximize a lone firefox (like dwm's browser gaps); mod-ctrl-z toggles it
+-- Maximize a lone firefox (like dwm's browser gaps); mod-ctrl-z toggles it.
+-- With other tiled clients on the tag, firefox follows the layout (gaps and
+-- all) however it got maximized: awesome keeps a maximized state across
+-- restarts and firefox restores its own. Only a maximize with
+-- mod-shift-ctrl-m is left alone (manual_maximized, kept across restarts).
 local firefox_auto_max = true
+awful.client.property.persist("manual_maximized", "boolean")
 
 -- No borders when rearranging only 1 non-floating or maximized client
 screen.connect_signal("arrange", function (s)
@@ -355,20 +360,18 @@ screen.connect_signal("arrange", function (s)
         end
     end
 
-  -- Maximize firefox when it's the only client. Only un-maximize the ones
-  -- maximized here, so a manual maximize (mod-shift-ctrl-m) is kept
-  local clients = s.clients
-  for _, c in ipairs(clients) do
-    if c.class == "firefox" or c.class == "firefox-esr" then
-      if #clients == 1 and firefox_auto_max then
-        if not c.maximized then
-          c.auto_maximized = true
-          c.maximized = true
-        end
-      elseif c.auto_maximized then
-        c.auto_maximized = false
-        c.maximized = false
-      end
+  -- Maximize firefox when it's the only client the layout arranges (a
+  -- maximized one counts, floating and minimized ones don't), else let the
+  -- layout place it
+  local ntiled = 0
+  for _, c in ipairs(s.clients) do
+    if not c.floating and not c.minimized then ntiled = ntiled + 1 end
+  end
+  for _, c in ipairs(s.clients) do
+    if (c.class == "firefox" or c.class == "firefox-esr")
+       and not awful.client.property.get(c, "manual_maximized") then
+      local lone = ntiled == 1 and not c.floating and firefox_auto_max
+      if c.maximized ~= lone then c.maximized = lone end
     end
   end
 
@@ -668,8 +671,12 @@ globalkeys = mytable.join(
     spawn("/home/jonas/.local/bin/my_scripts/script_helper.sh "..terminal)      end,
               {description = "Script_helper", group = "launcher"}),
 
-    -- bind mod-section: spawn loadEww.sh
+    -- bind mod-section: spawn sysfetch.sh (system info notification, like neofetch)
     awful.key({modkey },            "section",     function ()
+    spawn("/home/jonas/.local/bin/my_scripts/sysfetch.sh")  end,
+              {description = "System info", group = "launcher"}),
+    -- bind mod-shift-section: spawn loadEww.sh (#49: shift-section is onehalf on the Swedish layout)
+    awful.key({modkey, "Shift" },   "#49",         function ()
     spawn("sh /home/jonas/.local/bin/my_scripts/loadEww.sh")  end,
               {description = "Load Eww", group = "launcher"}),
 
@@ -1119,6 +1126,8 @@ clientkeys = mytable.join(
      awful.key({ modkey, "Shift", ctrlkey           }, "m",
          function (c)
              c.maximized = not c.maximized
+             -- so the lone firefox rule leaves a manual maximize alone
+             awful.client.property.set(c, "manual_maximized", c.maximized)
              c:raise()
          end ,
      {description = "maximize", group = "client"})

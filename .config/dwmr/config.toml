@@ -145,6 +145,7 @@ commands.transresetcmd      = ["/bin/sh", "-c", "~/.local/bin/my_scripts/picom_t
 commands.transalldeccmd     = ["/bin/sh", "-c", "~/.local/bin/my_scripts/picom_trans.sh --all -5"]
 commands.transallinccmd     = ["/bin/sh", "-c", "~/.local/bin/my_scripts/picom_trans.sh --all +5"]
 commands.ewwcmd            = ["/bin/sh", "-c", "~/.local/bin/my_scripts/loadEww.sh"]
+commands.sysfetchcmd       = ["/bin/sh", "-c", "~/.local/bin/my_scripts/sysfetch.sh"]
 commands.termwdcmd         = ["/bin/sh", "-c", "~/.local/bin/my_scripts/term_wd.sh wezterm"]
 commands.sectermwdcmd      = ["/bin/sh", "-c", "~/.local/bin/my_scripts/term_wd.sh st"]
 commands.showkeysdwmcmd    = ["/bin/sh", "-c", "~/.local/bin/my_scripts/show_keys.sh dwm wezterm"]
@@ -399,8 +400,10 @@ keys = [
 	{ mod = "MODKEY|Mod1Mask|ShiftMask", key = "a",        func = "spawn",           arg = { v = "transalldeccmd" } },
 	# /* bind mod-alt-ctrl-a: spawn picom_trans.sh --all +5 (all windows more opaque) */
 	{ mod = "MODKEY|Mod1Mask|ControlMask", key = "a",      func = "spawn",           arg = { v = "transallinccmd" } },
-	# /* bind mod-section: spawn loadEww.sh */
-	{ mod = "MODKEY",                   key = "section",  func = "spawn",           arg = { v = "ewwcmd" } },
+	# /* bind mod-section: spawn sysfetch.sh (system info notification, like neofetch) */
+	{ mod = "MODKEY",                   key = "section",  func = "spawn",           arg = { v = "sysfetchcmd" } },
+	# /* bind mod-shift-section: spawn loadEww.sh */
+	{ mod = "MODKEY|ShiftMask",         key = "section",  func = "spawn",           arg = { v = "ewwcmd" } },
 	# /* bind mod-return: spawn term_wd.sh */
 	{ mod = "MODKEY",                   key = "Return",   func = "spawn",           arg = { v = "termwdcmd" } },
 	# /* bind mod-shift-return: spawn terminal */

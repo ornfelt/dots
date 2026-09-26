@@ -385,8 +385,10 @@ static const Key keys[] = {
         { MODKEY|MODKEY1|ShiftMask, XK_a,               spawn,              SHCMD("~/.local/bin/my_scripts/picom_trans.sh --all -5")},
         /* bind mod-alt-ctrl-a: spawn picom_trans.sh --all +5 (all windows more opaque) */
         { MODKEY|MODKEY1|ControlMask, XK_a,              spawn,              SHCMD("~/.local/bin/my_scripts/picom_trans.sh --all +5")},
-        /* bind mod-section: spawn loadEww.sh */
-        { MODKEY,                   XK_section,         spawn,              SHCMD("~/.local/bin/my_scripts/loadEww.sh") },
+        /* bind mod-section: spawn sysfetch.sh (system info notification, like neofetch) */
+        { MODKEY,                   XK_section,         spawn,              SHCMD("~/.local/bin/my_scripts/sysfetch.sh") },
+        /* bind mod-shift-section: spawn loadEww.sh */
+        { MODKEY|ShiftMask,         XK_section,         spawn,              SHCMD("~/.local/bin/my_scripts/loadEww.sh") },
         /* bind mod-return: spawn term_wd.sh */
         { MODKEY,                   XK_Return,          spawn,              SHCMD("~/.local/bin/my_scripts/term_wd.sh " TERMINAL) },
         /* bind mod-shift-return: spawn terminal */

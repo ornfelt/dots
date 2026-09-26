@@ -31,7 +31,8 @@
 
     # The height of a single notification, excluding the frame.
     # dynamic height from 0 to 300
-    height = (0, 300)
+    # (0, 600): room for about 30 lines (sysfetch.sh has 17; 300 cut it off)
+    height = (0, 600)
     # constant height of 300
     # height = 300
     # NOTE: Dunst from version 1.11 and older don't support dynamic height

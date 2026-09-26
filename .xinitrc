@@ -79,8 +79,8 @@ xset -b
 # Window manager to start: awesome | i3 | dwmr | dwmc | dwm (anything else falls back to dwm).
 # Override for one session without editing this file: WM=awesome startx
 #WM="${WM:-dwm}"
-#WM="${WM:-dwmr}"
-WM="${WM:-dwmc}"
+WM="${WM:-dwmr}"
+#WM="${WM:-dwmc}"
 #WM="${WM:-awesome}"
 
 # To start with logging:
