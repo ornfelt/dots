@@ -55,9 +55,9 @@ export TERMINAL="wezterm"
 export my_notes_path="$HOME/Documents/my_notes"
 export code_root_dir="$HOME"
 
-# Program launcher for mod-d (~/.local/bin/my_scripts/launcher.sh): rofi or dmenu
-export LAUNCHER=rofi
-#export LAUNCHER=dmenu
+# Program launcher for my scripts: rofi or dmenu
+#export LAUNCHER=rofi
+export LAUNCHER=dmenu
 
 # Opt the wezterm integrations (nvim_server.lua, bg_status.lua) into linux; must be session-level, not .zshrc
 export WEZ_ENABLE_ON_LINUX=0
@@ -79,8 +79,8 @@ xset -b
 # Window manager to start: awesome | i3 | dwmr | dwmc | dwm (anything else falls back to dwm).
 # Override for one session without editing this file: WM=awesome startx
 #WM="${WM:-dwm}"
-#WM="${WM:-dwmr}"
-WM="${WM:-dwmc}"
+WM="${WM:-dwmr}"
+#WM="${WM:-dwmc}"
 #WM="${WM:-awesome}"
 
 # To start with logging:

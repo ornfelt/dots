@@ -267,6 +267,8 @@ static const Key keys[] = {
         { MODKEY|ShiftMask,         XK_p,               togglebars,          {0} },
         /* bind mod-ctrl-shift-p: togglebar */
         { MODKEY|ControlMask|ShiftMask,     XK_p,       togglebar,          {0} },
+        /* bind mod-ctrl-p: sb-sysinfo toggle (show/hide the net, memory and cpu blocks) */
+        { MODKEY|ControlMask,       XK_p,               spawn,              SHCMD("~/.local/bin/statusbar/sb-sysinfo toggle") },
         /* bind mod-h: focusmon -1 (focus left monitor) */
         { MODKEY,                   XK_h,               focusmon,           { .i = -1 } },
         /* bind mod-shift-h: tagmonview -1 (move window and view left monitor) */

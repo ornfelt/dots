@@ -34,7 +34,8 @@ local function factory(args)
     function net.get_devices()
         net.iface = {} -- reset at every call
         helpers.line_callback("ip link", function(line)
-            net.iface[#net.iface + 1] = not string.match(line, "LOOPBACK") and string.match(line, "(%w+): <") or nil
+            -- the name up to ':' or '@', so br-1a2b and veth0@if2 are read whole
+            net.iface[#net.iface + 1] = not string.match(line, "LOOPBACK") and string.match(line, "^%d+: ([^:@%s]+)[:@]") or nil
         end)
     end
 
@@ -51,15 +52,17 @@ local function factory(args)
 
         for _, dev in ipairs(net.iface) do
             local dev_now    = {}
-            local dev_before = net.devices[dev] or { last_t = 0, last_r = 0 }
             local now_t      = tonumber(helpers.first_line(string.format("/sys/class/net/%s/statistics/tx_bytes", dev)) or 0)
             local now_r      = tonumber(helpers.first_line(string.format("/sys/class/net/%s/statistics/rx_bytes", dev)) or 0)
+            -- The first sample has nothing to compare with: 0, not the bytes since boot
+            local dev_before = net.devices[dev] or { last_t = now_t, last_r = now_r }
 
             dev_now.carrier  = helpers.first_line(string.format("/sys/class/net/%s/carrier", dev)) or "0"
             dev_now.state    = helpers.first_line(string.format("/sys/class/net/%s/operstate", dev)) or "down"
 
-            dev_now.sent     = (now_t - dev_before.last_t) / timeout / units
-            dev_now.received = (now_r - dev_before.last_r) / timeout / units
+            -- Counters that went back (the interface is gone or was recreated) count 0
+            dev_now.sent     = math.max(now_t - dev_before.last_t, 0) / timeout / units
+            dev_now.received = math.max(now_r - dev_before.last_r, 0) / timeout / units
 
             net_now.sent     = net_now.sent + dev_now.sent
             net_now.received = net_now.received + dev_now.received

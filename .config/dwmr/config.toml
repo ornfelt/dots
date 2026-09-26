@@ -152,6 +152,7 @@ commands.screenocrcmd      = ["/bin/sh", "-c", "~/.local/bin/my_scripts/screensh
 commands.brightupcmd       = ["/bin/sh", "-c", "~/.local/bin/my_scripts/brightness.sh +10"]
 commands.brightdowncmd     = ["/bin/sh", "-c", "~/.local/bin/my_scripts/brightness.sh -10"]
 commands.blocksconfcmd     = ["/bin/sh", "-c", "wezterm -e nvim ~/.config/dwmblocksr/config.toml"]
+commands.sysinfocmd        = ["/bin/sh", "-c", "~/.local/bin/statusbar/sb-sysinfo toggle"]
 
 # the status bar program, e.g. dwmblocksr or dwmblocks, found by process name.
 # A click on a status block that starts with a signal byte runs sigstatusbar,
@@ -274,6 +275,8 @@ keys = [
 	{ mod = "MODKEY|ShiftMask",         key = "p",        func = "togglebars" },
 	# /* bind mod-ctrl-shift-p: togglebar */
 	{ mod = "MODKEY|ControlMask|ShiftMask", key = "p",    func = "togglebar" },
+	# /* bind mod-ctrl-p: sb-sysinfo toggle (show/hide the net, memory and cpu blocks) */
+	{ mod = "MODKEY|ControlMask",       key = "p",        func = "spawn",           arg = { v = "sysinfocmd" } },
 	# focusmon/tagmon focus/move to the previous or next monitor; tagmonview
 	# also views the target monitor; focusnthmon/tagnthmonview take a monitor
 	# number (0 is the first, too large is the last)

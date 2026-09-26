@@ -1,0 +1,173 @@
+#!/bin/sh
+
+# Network down/up, memory and CPU usage for dwmblocks, the same as the awesome
+# bar widgets that mod-ctrl-p shows and hides (themes/multicolor/theme.lua,
+# which uses lain's net, mem and cpu widgets): same numbers, glyphs and colours.
+#
+#	sb-sysinfo net|mem|cpu	prints that block, or nothing while hidden,
+#				which leaves the block out of the bar
+#	sb-sysinfo toggle	shows/hides the three blocks (mod-ctrl-p)
+#
+# The state is kept across restarts as dwm_bar_toggled in ~/.config/my_config.txt,
+# like awesome's awsm_bar_toggled: true means hidden, no entry means shown.
+# The blocks share signal 7, so toggle updates them all at once.
+#
+# net and cpu are rates, so they keep their last sample in $XDG_RUNTIME_DIR.
+# They keep sampling while hidden, so the first value after showing them is
+# a fresh one. Like the widgets they run every 2 seconds.
+#
+# Uses dwm's ^c#rrggbb^ status colour code.
+
+CONFIG="$HOME/.config/my_config.txt"
+KEY="dwm_bar_toggled"
+SIGNAL=7
+STATE="${XDG_RUNTIME_DIR:-/tmp}/sb-sysinfo"
+
+# The blocks do nothing on a click; dwmblocks updates them afterwards
+[ -n "$BLOCK_BUTTON" ] && exit 0
+
+# True if the blocks are hidden. Read like awesome's read_config(): "key: value"
+# lines, the value compared case-insensitively.
+hidden() {
+	[ -r "$CONFIG" ] || return 1
+	awk -v key="$KEY" '
+		/^[ \t]*[^ \t:]+[ \t]*:[ \t]*[^ \t]+[ \t]*$/ {
+			k = $0; sub(/^[ \t]*/, "", k); sub(/[ \t]*:.*/, "", k)
+			v = $0; sub(/^[^:]*:[ \t]*/, "", v); sub(/[ \t]*$/, "", v)
+			if (k == key) val = tolower(v)
+		}
+		END { exit val != "true" }' "$CONFIG"
+}
+
+# Like awesome's write_config(): replaces the key's line, or appends it
+setconfig() {
+	tmp="$CONFIG.tmp.$$"
+	{ [ -r "$CONFIG" ] && cat "$CONFIG"; } | awk -v key="$KEY" -v val="$1" '
+		{ k = $0; sub(/^[ \t]*/, "", k); sub(/[ \t]*:.*/, "", k) }
+		index($0, ":") && k == key { print key ": " val; found = 1; next }
+		{ print }
+		END { if (!found) print key ": " val }' > "$tmp" && mv "$tmp" "$CONFIG"
+}
+
+# The sample runs even while hidden; $1 is 1 to print it
+net() {
+	# every interface but the loopback one (type 772), like lain's `ip link`
+	awk -v state="$STATE-net" -v show="$1" '
+		function first(f,   l) { l = ""; getline l < f; close(f); return l }
+		BEGIN {
+			split(first("/proc/uptime"), u, " "); now = u[1] + 0
+			while ((getline l < state) > 0) {
+				split(l, f, " ")
+				if (f[1] == "t") last = f[2] + 0
+				else if (f[1] == "rate") { rx = f[2] + 0; tx = f[3] + 0 }
+				else if (f[1] == "dev") { oldrx[f[2]] = f[3] + 0; oldtx[f[2]] = f[4] + 0 }
+			}
+			close(state)
+			dt = now - last
+			if (last && dt >= 0 && dt < 1) {
+				# updated just now (a signal): keep the sample, so the next
+				# one spans a whole interval, and print the last rate
+				save = 0
+			} else {
+				save = 1; drx = dtx = 0; devs = ""
+				for (i = 1; i < ARGC; i++) {
+					d = ARGV[i]; dev = d; sub(/.*\//, "", dev)
+					if (first(d "/type") + 0 == 772)
+						continue
+					r = first(d "/statistics/rx_bytes"); t = first(d "/statistics/tx_bytes")
+					if (r == "" || t == "")
+						continue
+					devs = devs "dev " dev " " r " " t "\n"
+					# a new interface, or counters that went back, count 0
+					if ((dev in oldrx) && r + 0 >= oldrx[dev] && t + 0 >= oldtx[dev]) {
+						drx += r - oldrx[dev]; dtx += t - oldtx[dev]
+					}
+				}
+				# KiB/s like lain (units 1024); 0 on the first sample
+				rx = tx = 0
+				if (last && dt > 0) { rx = drx / dt / 1024; tx = dtx / dt / 1024 }
+			}
+			if (show)
+				printf "^c#b8bb26^\357\252\232 %.1f ^c#689d6a^\356\252\241 %.1f\n", rx, tx
+			if (save) {
+				tmp = state ".tmp"
+				printf "t %s\nrate %s %s\n%s", now, rx, tx, devs > tmp
+				close(tmp)
+				system("mv \"" tmp "\" \"" state "\"")
+			}
+			exit
+		}' /sys/class/net/*
+}
+
+# Used memory in MiB, as lain computes it (total - free - buffers - cached -
+# reclaimable slab, each rounded to MiB)
+mem() {
+	awk '
+		function mib(v) { return int(v / 1024 + 0.5) }
+		$1 == "MemTotal:" { total = mib($2) }
+		$1 == "MemFree:" { free = mib($2) }
+		$1 == "Buffers:" { buf = mib($2) }
+		$1 == "Cached:" { cache = mib($2) }
+		$1 == "SReclaimable:" { srec = mib($2) }
+		END { printf "^c#fabd2f^\363\260\215\233 %dM\n", total - free - buf - cache - srec }
+	' /proc/meminfo
+}
+
+# CPU usage in percent over all cores, as lain computes it (idle is idle +
+# iowait, the total is the sum of all fields, rounded up); the first sample
+# is the usage since boot
+cpu() {
+	awk -v state="$STATE-cpu" -v show="$1" '
+		function first(f,   l) { l = ""; getline l < f; close(f); return l }
+		BEGIN {
+			split(first("/proc/uptime"), u, " "); now = u[1] + 0
+			while ((getline l < state) > 0) {
+				split(l, f, " ")
+				if (f[1] == "t") last = f[2] + 0
+				else if (f[1] == "cpu") { lastactive = f[2] + 0; lasttotal = f[3] + 0 }
+				else if (f[1] == "usage") usage = f[2] + 0
+			}
+			close(state)
+			dt = now - last
+			save = !(last && dt >= 0 && dt < 1)
+			if (dt < 0)	# a reboot restarted the counters
+				lastactive = lasttotal = 0
+			if (save) {
+				n = split(first("/proc/stat"), s, " ")
+				idle = s[5] + s[6]; total = 0
+				for (i = 2; i <= n; i++)
+					total += s[i]
+				active = total - idle
+				# unchanged counters keep the last usage, like lain
+				if (total != lasttotal) {
+					x = (active - lastactive) / (total - lasttotal) * 100
+					if (x < 0)
+						x = -x
+					usage = int(x); if (usage < x) usage++
+				}
+			}
+			if (show)
+				printf "^c#b16286^\357\222\274 %d%%\n", usage
+			if (save) {
+				tmp = state ".tmp"
+				printf "t %s\ncpu %s %s\nusage %d\n", now, active, total, usage > tmp
+				close(tmp)
+				system("mv \"" tmp "\" \"" state "\"")
+			}
+			exit
+		}'
+}
+
+show=1
+hidden && show=0
+
+case $1 in
+	net) net "$show" ;;
+	cpu) cpu "$show" ;;
+	mem) [ "$show" = 1 ] && mem ;;
+	toggle)
+		if [ "$show" = 1 ]; then setconfig true; else setconfig false; fi
+		pkill -RTMIN+$SIGNAL -x 'dwmblocks[cr]?' ;;
+	*) echo "usage: ${0##*/} net|mem|cpu|toggle" >&2; exit 1 ;;
+esac
+exit 0

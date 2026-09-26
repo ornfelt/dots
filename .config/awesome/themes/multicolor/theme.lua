@@ -695,38 +695,35 @@ local function write_config(key, value)
   file:close()
 end
 
--- Modified toggle_widget_visibility function
-function toggle_widget_visibility(update_config)
-  update_config = update_config == nil or update_config -- Default to true if not specified
+local widgets_to_toggle = {
+  netdownicon,
+  netdowninfo,
+  netupicon,
+  netupinfo.widget,
+  memicon,
+  memory.widget,
+  cpuicon,
+  cpu.widget,
+}
 
-  local widgets_to_toggle = {
-    netdownicon,
-    netdowninfo,
-    netupicon,
-    netupinfo.widget,
-    memicon,
-    memory.widget,
-    cpuicon,
-    cpu.widget,
-  }
-
+local function set_widget_visibility(visible)
   for _, widget in ipairs(widgets_to_toggle) do
-    widget.visible = not widget.visible
+    widget.visible = visible
   end
+end
 
-  if update_config then
-    local my_config = read_config()
-    local current_state = (my_config and my_config["awsm_bar_toggled"] == "true") or false
-    write_config("awsm_bar_toggled", tostring(not current_state))
-  end
+-- Shows/hides the widgets and saves it as awsm_bar_toggled (true is hidden).
+-- The saved state is the new visibility, not the file's value flipped, so the
+-- two cannot drift apart.
+function toggle_widget_visibility()
+  local hide = netdownicon.visible
+  set_widget_visibility(not hide)
+  write_config("awsm_bar_toggled", tostring(hide))
 end
 
 function check_toggle_widget_visibility()
   local my_config = read_config()
-
-  if my_config and my_config["awsm_bar_toggled"] == "true" then
-    toggle_widget_visibility(false) -- Do not update the file at startup
-  end
+  set_widget_visibility(not (my_config and my_config["awsm_bar_toggled"] == "true"))
 end
 
 function theme.at_screen_connect(s)

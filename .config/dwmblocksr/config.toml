@@ -24,6 +24,10 @@ blocks = [
     #{ icon = "^c1^",          command = "~/.local/bin/my_scripts/spotify_dwmblocks.sh", interval = 5,    signal = 12 },
     { icon = "",               command = "~/.local/bin/my_scripts/spotify_dwmblocks.sh", interval = 5,    signal = 12 },
     { icon = "",               command = "~/.local/bin/statusbar/sb-claude",             interval = 30,   signal = 6 },
+    # net down/up, memory and cpu, shown/hidden with mod-ctrl-p (sb-sysinfo toggle)
+    { icon = "",               command = "~/.local/bin/statusbar/sb-sysinfo net",        interval = 2,    signal = 7 },
+    { icon = "",               command = "~/.local/bin/statusbar/sb-sysinfo mem",        interval = 2,    signal = 7 },
+    { icon = "",               command = "~/.local/bin/statusbar/sb-sysinfo cpu",        interval = 2,    signal = 7 },
     { icon = "^2^  ",    command = "~/.local/bin/statusbar/weather",               interval = 1800, signal = 5 },
     { icon = "^3^  ",    command = "~/.local/bin/statusbar/cputemp",               interval = 5,    signal = 4 },
     { icon = "^4^ ",           command = "~/.local/bin/statusbar/sb-volume",             interval = 0,    signal = 10 },

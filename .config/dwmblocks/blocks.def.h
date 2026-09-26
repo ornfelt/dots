@@ -4,6 +4,10 @@ static const Block blocks[] = {
     /* {"^c1^",        "~/.local/bin/my_scripts/spotify_dwmblocks.sh", 5,                      12}, */
     {"",            "~/.local/bin/my_scripts/spotify_dwmblocks.sh", 5,                      12},
     {"",            "~/.local/bin/statusbar/sb-claude",             30,                     6},
+    /* net down/up, memory and cpu, shown/hidden with mod-ctrl-p (sb-sysinfo toggle) */
+    {"",            "~/.local/bin/statusbar/sb-sysinfo net",        2,                      7},
+    {"",            "~/.local/bin/statusbar/sb-sysinfo mem",        2,                      7},
+    {"",            "~/.local/bin/statusbar/sb-sysinfo cpu",        2,                      7},
     {"^2^  ",      "~/.local/bin/statusbar/weather",               1800,                   5},
     {"^3^  ",      "~/.local/bin/statusbar/cputemp",               5,                      4},
     {"^4^ ",        "~/.local/bin/statusbar/sb-volume",             0,                      10},
