@@ -12,8 +12,8 @@
 //dwm draws.
 //HasBattery keeps a block only when there is a battery
 //(/sys/class/power_supply/BAT*), NoBattery only when there is none;
-//without it the block is always shown. Here sb-internet takes sb-battery's
-//place on a machine without a battery, like dwmblocks' compile.sh.
+//without it the block is always shown. Here sb-battery is only shown on a
+//machine with a battery.
 static const Block blocks[] = {
     /*Icon*/        /*Command*/                                     /*Update Interval*/     /*Update Signal*/   /*Battery*/
     /* {"^c1^",        "~/.local/bin/my_scripts/spotify_dwmblocks.sh", 5,                      12}, */
@@ -23,10 +23,11 @@ static const Block blocks[] = {
     {"",            "~/.local/bin/statusbar/sb-sysinfo net",        2,                      13},
     {"",            "~/.local/bin/statusbar/sb-sysinfo mem",        2,                      14},
     {"",            "~/.local/bin/statusbar/sb-sysinfo cpu",        2,                      15},
+    /* network: wifi/ethernet, cyan online, red offline, orange while restarting NetworkManager; clicks: details, restart, wifi menu */
+    {"",            "~/.local/bin/statusbar/sb-network",            3,                      16},
     {"^2^  ",      "~/.local/bin/statusbar/weather",               1800,                   5},
     {"^3^  ",      "~/.local/bin/statusbar/cputemp",               5,                      4},
     {"^4^ ",        "~/.local/bin/statusbar/sb-volume",             0,                      10},
-    {"^5^ ",        "~/.local/bin/statusbar/sb-internet",           5,                      3,                  NoBattery},
     {"^5^ ",        "~/.local/bin/statusbar/sb-battery",            5,                      3,                  HasBattery},
     {"^6^  ",      "~/.local/bin/statusbar/sb-clock",              5,                      1},
 };

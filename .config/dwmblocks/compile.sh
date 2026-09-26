@@ -33,12 +33,12 @@ for battery in /sys/class/power_supply/BAT?*; do
     fi
 done
 
-# If no battery is found, use internet cmd in statusbar instead
+# If no battery is found, leave the battery block out (sb-network, always
+# shown, replaced the sb-internet block that took its place)
 if ! $battery_present; then
     echo "No battery found. Modifying blocks.h..."
 
     sed 's/\(^.*sb-battery.*$\)/\/\* \1 \*\//' "$CONFIG_FILE" > "$TEMP_FILE"
-    sed -i 's/\/\* \(.*sb-internet.*\) \*\//\1/' "$TEMP_FILE"
 
     mv "$TEMP_FILE" "$CONFIG_FILE"
 fi

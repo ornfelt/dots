@@ -552,6 +552,24 @@ set_buttons({ netdownicon, netdowninfo, netupicon, netupinfo.widget },
 set_buttons({ memicon, memory.widget }, my_table.join(block_click("sb-sysinfo mem", 1)))
 set_buttons({ cpuicon, cpu.widget }, my_table.join(block_click("sb-sysinfo cpu", 1)))
 
+-- Network, like dwm's sb-network block: a wifi or ethernet icon, cyan online,
+-- red offline, orange while restarting NetworkManager, gray unknown. Always
+-- shown (not one of the mod-ctrl-p widgets). Left click: details, middle:
+-- restart NetworkManager, right: wifi menu (wifi_menu.sh)
+local netstatus = wibox.widget.textbox()
+local function update_netstatus()
+    awful.spawn.easy_async({ statusbar_dir .. "sb-network", "--awesome" }, function(out)
+        local color, icon = out:match("^(#%x+) (.-)%s*$")
+        if not color then color, icon = "#928374", "\u{f05aa}" end
+        netstatus:set_markup(markup.fontfg(theme.font, color, icon .. " "))
+    end)
+end
+gears.timer({ timeout = 3, autostart = true, call_now = true, callback = update_netstatus })
+set_buttons({ netstatus }, my_table.join(
+    block_click("sb-network", 1, update_netstatus),
+    block_click("sb-network", 2, update_netstatus),
+    block_click("sb-network", 3, update_netstatus)))
+
 -- MPD
 local mpdicon = wibox.widget.imagebox()
 theme.mpd = lain.widget.mpd({
@@ -910,6 +928,7 @@ function theme.at_screen_connect(s)
             cpu.widget,
             --fsicon,
             --theme.fs.widget,
+            netstatus,
             weathericon,
             --theme.weather.widget,
             weather_widget,

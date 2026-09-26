@@ -29,6 +29,13 @@ while IFS=: read -r uuid type; do
 	rows+=("$ssid"$'\t'"$sec"$'\t'"$pass")
 done < <(nmcli -t -f UUID,TYPE connection show)
 
+# --tsv: SSID<TAB>SECURITY<TAB>PASSWORD lines without a header, for scripts
+# (wifi_preset_add.sh --import)
+if [ "$1" = --tsv ]; then
+	[ ${#rows[@]} -gt 0 ] && printf '%s\n' "${rows[@]}"
+	exit 0
+fi
+
 [ ${#rows[@]} -gt 0 ] || { echo "No saved wifi networks"; exit 0; }
 
 {

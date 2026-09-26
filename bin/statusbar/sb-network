@@ -1,0 +1,294 @@
+#!/usr/bin/env bash
+# Network block for dwmblocks and the awesome bar: a wifi or ethernet icon
+#   cyan    connected, internet works
+#   red     not connected, or no internet
+#   orange  restarting NetworkManager (or iwd) to get the internet back
+#   gray    unknown: no data yet, or neither ping nor curl to check with
+#
+#   sb-network            the block, with dwm's ^c#rrggbb^ color code
+#   sb-network --awesome  "COLOR ICON" for the awesome widget
+#   sb-network --check    one internet check (the block starts it in the
+#                         background every CHECK_EVERY seconds)
+# Clicks (BLOCK_BUTTON, also from the awesome widget): left shows the
+# details, middle restarts NetworkManager, right opens wifi_menu.sh.
+#
+# The block itself only reads /sys and /proc, so it never waits on the
+# network. The check pings 1.1.1.1 and 8.8.8.8 and falls back to an HTTP
+# request (some networks block ping), and keeps its result in STATE.
+# Automatic restarts (AUTO_RESTART): when wifi stays connected without
+# internet for FAILS_TO_RESTART checks in a row, it restarts the backend's
+# service with sudo -n. It then waits RESTART_GRACE seconds for wifi to come
+# back (checks in that time don't count) and needs FAILS_TO_RESTART failed
+# checks after it before the next restart; at most RESTARTS of them, then it
+# pauses for THROTTLE seconds. Not being connected to any wifi never counts,
+# except after one of its restarts (wifi that doesn't reconnect). Each restart,
+# the pause and the internet coming back show a notification.
+
+# false turns the automatic NetworkManager restarts off (the block and the
+# middle click restart still work)
+AUTO_RESTART=true
+# true shows the wifi signal after the icon (57%), or for ethernet the link
+# speed (1G, 100M: a slower speed than usual points to a bad cable or port)
+SHOW_STRENGTH=true
+
+STATE_DIR="${XDG_RUNTIME_DIR:-/tmp}/sb-network"
+STATE="$STATE_DIR/state"
+CHECK_EVERY=5
+STALE=30 # a check older than this doesn't count
+FAILS_TO_RESTART=3
+RESTARTS=3
+RESTART_GRACE=90 # after a restart, time for wifi to reconnect
+THROTTLE=1800
+SIGNAL=16
+
+CYAN="#8ec07c" RED="#fb4934" ORANGE="#fe8019" GRAY="#928374"
+ICON_WIFI=$'\U000f05a9' ICON_WIFI_OFF=$'\U000f05aa'
+ICON_ETH=$'\U000f0200' ICON_ETH_OFF=$'\U000f0202'
+
+LIB=~/.local/bin/my_scripts/wifi_lib.sh
+
+mkdir -p "$STATE_DIR" 2>/dev/null
+
+# state: key=value lines
+declare -A S
+load() {
+    local k v
+    [ -r "$STATE" ] || return
+    while IFS== read -r k v; do
+        [ -n "$k" ] && S[$k]=$v
+    done < "$STATE"
+}
+save() {
+    local k tmp="$STATE.tmp.$$"
+    for k in "${!S[@]}"; do printf '%s=%s\n' "$k" "${S[$k]}"; done > "$tmp" && mv "$tmp" "$STATE"
+}
+
+now() { printf '%(%s)T' -1; }
+
+# IFACE, KIND (wifi/ethernet/none) and UP (1 if it's connected): the
+# interface of the default route, else the first physical one that is up,
+# else the first wifi (or ethernet) device, down
+link() {
+    local d i best=
+    IFACE= KIND=none UP=0
+    i=$(awk '$2 == "00000000" { print $1; exit }' /proc/net/route 2>/dev/null)
+    # a VPN's default route: look at the physical interfaces instead
+    if [ -n "$i" ] && [ -e "/sys/class/net/$i/device" ]; then
+        best=$i
+    else
+        for d in /sys/class/net/*; do
+            [ -e "$d/device" ] || continue
+            [ "$(cat "$d/operstate" 2>/dev/null)" = up ] && { best=${d##*/}; break; }
+        done
+    fi
+    if [ -z "$best" ]; then
+        for d in /sys/class/net/*; do
+            [ -e "$d/device" ] || continue
+            if [ -d "$d/wireless" ] || [ -e "$d/phy80211" ]; then best=${d##*/}; break; fi
+            [ -z "$best" ] && best=${d##*/}
+        done
+    fi
+    [ -n "$best" ] || return
+    IFACE=$best
+    if [ -d "/sys/class/net/$IFACE/wireless" ] || [ -e "/sys/class/net/$IFACE/phy80211" ]; then KIND=wifi; else KIND=ethernet; fi
+    [ "$(cat "/sys/class/net/$IFACE/operstate" 2>/dev/null)" = up ] && [ -n "$i" ] && UP=1
+}
+
+have_checker() { command -v ping >/dev/null || command -v curl >/dev/null; }
+
+online() {
+    if command -v ping >/dev/null; then
+        ping -n -q -c 1 -W 2 1.1.1.1 >/dev/null 2>&1 && return 0
+        ping -n -q -c 1 -W 2 8.8.8.8 >/dev/null 2>&1 && return 0
+    fi
+    command -v curl >/dev/null &&
+        curl -s -o /dev/null --max-time 4 http://connectivitycheck.gstatic.com/generate_204
+}
+
+notify() {
+    command -v notify-send >/dev/null && notify-send -a network -h string:x-dunst-stack-tag:sb-network "$@"
+}
+
+refresh() { pkill -RTMIN+$SIGNAL -x 'dwmblocks[cr]?' 2>/dev/null; }
+
+# Restart the backend's service; $1 is the attempt ("" for a manual one)
+restart_service() {
+    local svc err
+    . "$LIB"
+    svc=$(wifi_service) || svc=NetworkManager
+    notify -u normal "Network" "Restarting $svc${1:+ to get the internet back (attempt $1/$RESTARTS)}..."
+    if ! err=$(timeout 45 sudo -n systemctl restart "$svc" 2>&1); then
+        notify -u critical "Network: couldn't restart $svc" "$(printf '%s' "${err:-timed out}" | tail -n 1)"
+        return 1
+    fi
+}
+
+check() {
+    local t ok
+    exec 9>"$STATE_DIR/check.lock"
+    flock -n 9 || return
+    load
+    t=$(now)
+    S[checked]=$t
+    link
+    if ! have_checker; then
+        S[online]=unknown; save; return
+    fi
+    if [ "$UP" = 1 ] && online; then ok=1; else ok=0; fi
+    load # the block may have changed nothing, but a manual restart may have
+    S[checked]=$t
+    if [ $ok = 1 ]; then
+        if [ "${S[attempts]:-0}" -gt 0 ]; then
+            notify "Network" "The internet is back"
+        fi
+        S[online]=yes S[fails]=0 S[attempts]=0 S[restarting_until]=0
+        save; refresh; return
+    fi
+    S[online]=no
+    [ "$AUTO_RESTART" = true ] || { S[fails]=0; save; refresh; return; }
+    # count only a connected wifi without internet, or a wifi that doesn't
+    # come back after one of our restarts; not a network that's switched off,
+    # and not while waiting for a restart to take effect
+    if [ "$t" -lt "${S[restarting_until]:-0}" ]; then
+        S[fails]=0
+    elif [ "$KIND" = wifi ] && { [ "$UP" = 1 ] || [ "${S[attempts]:-0}" -gt 0 ]; }; then
+        S[fails]=$(( ${S[fails]:-0} + 1 ))
+    else
+        S[fails]=0
+    fi
+    if [ "${S[fails]}" -ge $FAILS_TO_RESTART ] && [ "$t" -ge "${S[restarting_until]:-0}" ] &&
+        [ "$t" -ge "${S[throttle_until]:-0}" ]; then
+        if [ "${S[attempts]:-0}" -lt $RESTARTS ]; then
+            S[attempts]=$(( ${S[attempts]:-0} + 1 ))
+            S[restarting_until]=$(( t + RESTART_GRACE ))
+            S[fails]=0
+            save; refresh
+            restart_service "${S[attempts]}" || { S[throttle_until]=$(( t + THROTTLE )); S[restarting_until]=0; }
+        else
+            S[throttle_until]=$(( t + THROTTLE )) S[attempts]=0 S[fails]=0
+            notify -u critical "Network: still no internet" \
+                "Restarted it $RESTARTS times; trying again at $(date -d "@${S[throttle_until]}" +%H:%M)"
+        fi
+    fi
+    save; refresh
+}
+
+# The details for a left click
+info() {
+    local t age svc line
+    load; link; t=$(now)
+    . "$LIB"
+    age=$(( t - ${S[checked]:-0} ))
+    if ! have_checker; then
+        echo "Status: can't check the internet: no ping or curl"
+        echo "  $(pkg_tip iputils-ping iputils)"
+    elif [ "$t" -lt "${S[restarting_until]:-0}" ]; then
+        echo "Status: restarting $(wifi_service || echo NetworkManager) (attempt ${S[attempts]:-0}/$RESTARTS)"
+    elif [ "$UP" != 1 ]; then
+        echo "Status: not connected"
+    elif [ "$age" -gt $STALE ]; then
+        echo "Status: not checked yet"
+    elif [ "${S[online]}" = yes ]; then
+        echo "Status: online (checked ${age}s ago)"
+    else
+        echo "Status: no internet (${S[fails]:-0} failed check(s))"
+    fi
+    if [ "$AUTO_RESTART" != true ]; then
+        echo "Automatic restarts: off (AUTO_RESTART in $0)"
+    elif [ "$t" -lt "${S[throttle_until]:-0}" ]; then
+        echo "Automatic restarts paused until $(date -d "@${S[throttle_until]}" +%H:%M)"
+    fi
+    case $(wifi_backend) in
+        nm) echo "Backend: NetworkManager" ;;
+        iwd) echo "Backend: iwd" ;;
+        *) echo "Backend: none ($(pkg_tip network-manager networkmanager))" ;;
+    esac
+    echo
+    for d in /sys/class/net/*; do
+        [ -e "$d/device" ] || [ "${d##*/}" = "$IFACE" ] || continue
+        i=${d##*/}
+        line="$i ($(cat "$d/operstate" 2>/dev/null))"
+        if [ -d "$d/wireless" ] || [ -e "$d/phy80211" ]; then
+            ssid=$(wifi_current 2>/dev/null)
+            signal=$(awk -v dev="$i:" '$1 == dev { printf "%d%%", $3 * 100 / 70 }' /proc/net/wireless)
+            line="$line wifi${ssid:+  $ssid}${signal:+, $signal signal}"
+        else
+            line="$line ethernet"
+        fi
+        echo "$line"
+        command -v ip >/dev/null &&
+            ip -br addr show dev "$i" 2>/dev/null | awk '{ for (k = 3; k <= NF; k++) if ($k !~ /^fe80:/) print "  " $k }'
+    done
+    if command -v ip >/dev/null; then
+        ip route show default 2>/dev/null | awk '{ for (k = 1; k < NF; k++) if ($k == "via") { print "Gateway " $(k + 1) " (" $5 ")"; exit } }'
+    fi
+    awk '$1 == "nameserver" { s = s " " $2 } END { if (s) print "DNS" s }' /etc/resolv.conf 2>/dev/null
+    echo
+    echo "Right click: wifi menu, middle click: restart $(wifi_service || echo NetworkManager)"
+}
+
+case $BLOCK_BUTTON in
+    1)  # one notification at a time (the lock is held until it's closed)
+        exec 8>"$STATE_DIR/info.lock"; flock -n 8 || exit 0
+        body=$(info)
+        notify-send --wait -a network -h string:x-dunst-stack-tag:sb-network-info "Network" "$(printf '%s' "$body" | sed 's/&/\&amp;/g; s/</\&lt;/g; s/>/\&gt;/g')"
+        exit 0 ;;
+    2)  load; S[restarting_until]=$(( $(now) + 20 )); save; refresh
+        restart_service ""; exit 0 ;;
+    3)  setsid -f ~/.local/bin/my_scripts/wifi_menu.sh >/dev/null 2>&1 </dev/null; exit 0 ;;
+    ?*) exit 0 ;;
+esac
+
+if [ "$1" = --check ]; then
+    check
+    exit 0
+fi
+
+load
+link
+t=$(now)
+# a new check in the background, not holding the bar's pipe
+if [ $(( t - ${S[checked]:-0} )) -ge $CHECK_EVERY ]; then
+    "$0" --check </dev/null >/dev/null 2>&1 &
+    disown
+fi
+
+if [ "$KIND" = ethernet ]; then icon=$ICON_ETH off=$ICON_ETH_OFF; else icon=$ICON_WIFI off=$ICON_WIFI_OFF; fi
+if [ "$KIND" = none ] || ! have_checker; then
+    color=$GRAY; [ "$KIND" = none ] && icon=$off
+elif [ "$t" -lt "${S[restarting_until]:-0}" ]; then
+    color=$ORANGE
+elif [ "$UP" != 1 ]; then
+    color=$RED icon=$off
+elif [ $(( t - ${S[checked]:-0} )) -gt $STALE ] || [ -z "${S[online]}" ] || [ "${S[online]}" = unknown ]; then
+    color=$GRAY
+elif [ "${S[online]}" = yes ]; then
+    color=$CYAN
+else
+    color=$RED
+fi
+
+# the wifi signal (link quality out of 70, like the details) or the ethernet
+# link speed in Mb/s (-1 or unreadable while there's no link)
+if [ "$SHOW_STRENGTH" = true ] && [ "$UP" = 1 ]; then
+    if [ "$KIND" = wifi ]; then
+        q=$(awk -v dev="$IFACE:" '$1 == dev { print int($3 * 100 / 70) }' /proc/net/wireless 2>/dev/null)
+        [ -n "$q" ] && icon="$icon $q%"
+    elif [ "$KIND" = ethernet ]; then
+        mbit=$(cat "/sys/class/net/$IFACE/speed" 2>/dev/null)
+        case $mbit in
+            '' | -* | *[!0-9]*) ;;
+            *) if [ "$mbit" -ge 1000 ]; then
+                   icon="$icon $(awk -v m="$mbit" 'BEGIN { printf "%gG", m / 1000 }')"
+               else
+                   icon="$icon ${mbit}M"
+               fi ;;
+        esac
+    fi
+fi
+
+if [ "$1" = --awesome ]; then
+    printf '%s %s\n' "$color" "$icon"
+else
+    printf '^c%s^%s \n' "$color" "$icon"
+fi
