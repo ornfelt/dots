@@ -1,13 +1,20 @@
 #!/bin/bash
 # Old: ImageMagick's import grabs only the pointer, so Escape can't cancel it:
 #import png:- | xclip -selection clipboard -t image/png
-# maim -s selects with slop, which cancels on Escape (exits non-zero). Capture
-# to a temp file so that cancelling leaves the clipboard untouched; -u leaves
-# the mouse cursor out of the capture
+# maim -s (or slurp) selects, cancelling on Escape. Capture to a temp file so
+# that cancelling leaves the clipboard untouched (shot_grab exits then)
+. ~/.local/bin/my_scripts/screenshot_lib.sh
 if [ -n "$WAYLAND_DISPLAY" ]; then
-    # slurp exits non-zero on Escape, leaving the clipboard untouched
-    region=$(slurp) && grim -g "$region" - | wl-copy -t image/png
-    exit
+    shot_need wl-copy:wl-clipboard
+else
+    shot_need xclip
 fi
-f=$(mktemp --suffix=.png) && maim -s -u "$f" && xclip -selection clipboard -t image/png -i "$f"
-rm -f "$f"
+f=$(mktemp --suffix=.png)
+trap 'rm -f "$f" "$SHOT_ERR"' EXIT
+shot_grab "$f"
+if [ -n "$WAYLAND_DISPLAY" ]; then
+    wl-copy -t image/png < "$f" 2>"$SHOT_ERR"
+else
+    xclip -selection clipboard -t image/png -i "$f" 2>"$SHOT_ERR"
+fi || { shot_error "Screenshot: copy to clipboard failed" "$(shot_errmsg)"; exit 1; }
+shot_notify -i "$f" "Screenshot copied to clipboard"

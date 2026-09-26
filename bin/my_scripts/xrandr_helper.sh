@@ -16,23 +16,34 @@ xrandr6="xrandr --output DP-3 --primary --mode 1920x1080 --rate 240.00 --output 
 options="$xrandr1\n$xrandr2\n$xrandr3\n$xrandr4\n$xrandr5\n$xrandr6"
 
 chosen="$(echo -e "$options" | menu "Choose a command" "" -selected-row 0)"
+# Run the chosen xrandr command and say how it went. xrandr exits 0 on some
+# failures too (an output that isn't connected is only a warning)
+run() {
+    if out=$($1 2>&1) && [ -z "$out" ]; then
+        notify-send -a xrandr "Display mode applied" "${1#xrandr }"
+    else
+        out=$(printf '%s' "${out:-exit code $?}" | tail -n 3 | sed 's/&/\&amp;/g; s/</\&lt;/g; s/>/\&gt;/g')
+        notify-send -a xrandr -u critical "xrandr: ${1#xrandr }" "$out"
+    fi
+}
+
 case $chosen in
     $xrandr1)
-		$xrandr1
+		run "$xrandr1"
         ;;
     $xrandr2)
-		$xrandr2
+		run "$xrandr2"
         ;;
     $xrandr3)
-		$xrandr3
+		run "$xrandr3"
         ;;
     $xrandr4)
-		$xrandr4
+		run "$xrandr4"
         ;;
     $xrandr5)
-		$xrandr5
+		run "$xrandr5"
         ;;
     $xrandr6)
-		$xrandr5
+		run "$xrandr6"
         ;;
 esac

@@ -11,7 +11,8 @@ fi
 
 export VISUAL=nvim
 export EDITOR=nvim
-export TESSDATA_PREFIX=/usr/local/share/tessdata
+# /usr/local/share/tessdata doesn't exist (tesseract warns and uses its own):
+#export TESSDATA_PREFIX=/usr/local/share/tessdata
 
 # Set name of the theme to load --- if set to "random", it will
 # load a random theme each time oh-my-zsh is loaded, in which case,

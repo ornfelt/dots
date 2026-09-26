@@ -234,6 +234,7 @@ static void maprequest(XEvent *e);
 static void monocle(Monitor *m);
 static void movemouse(const Arg *arg);
 static Client *nexttiled(Client *c);
+static void notifysend(const char *tag, const char *msg);
 static void pop(Client *c);
 static void propertynotify(XEvent *e);
 static void pushstack(const Arg *arg);
@@ -252,6 +253,7 @@ static void setclientstate(Client *c, long state);
 static void setfocus(Client *c);
 static void setfullscreen(Client *c, int fullscreen);
 static void setsticky(Client *c, int sticky);
+static void setcfact(const Arg *arg);
 static void setlayout(const Arg *arg);
 static void setmfact(const Arg *arg);
 static void setup(void);
@@ -1187,8 +1189,10 @@ focusurgent(const Arg *arg)
 
 	for (m = mons; m && !c; m = m->next)
 		for (c = m->clients; c && !(c->isurgent && (c->tags & TAGBITS)); c = c->next);
-	if (!c)
+	if (!c) {
+		notifysend("urgent", "no urgent window");
 		return;
+	}
 	if (c->mon != selmon) {
 		unfocus(selmon->sel, 0);
 		selmon = c->mon;
@@ -1363,8 +1367,12 @@ grabkeys(void)
 void
 incnmaster(const Arg *arg)
 {
+	char msg[32];
+
 	selmon->nmaster = MAX(selmon->nmaster + arg->i, 0);
 	arrange(selmon);
+	snprintf(msg, sizeof msg, "master: %d", selmon->nmaster);
+	notifysend("nmaster", msg);
 }
 
 #ifdef XINERAMA
@@ -1582,6 +1590,18 @@ nexttiled(Client *c)
 {
 	for (; c && (c->isfloating || !ISVISIBLE(c)); c = c->next);
 	return c;
+}
+
+/* a notification (dunst); a new one replaces the last one with the same tag
+ * instead of stacking */
+void
+notifysend(const char *tag, const char *msg)
+{
+	char hint[64];
+
+	snprintf(hint, sizeof hint, "string:x-dunst-stack-tag:%s", tag);
+	spawn(&((Arg) { .v = (const char *[]){ "notify-send", "-t", "2000", "-h", hint,
+		"dwm", msg, NULL } }));
 }
 
 void
@@ -1986,6 +2006,26 @@ layoutmenu(const Arg *arg)
 		setlayout(&((Arg) { .v = &layouts[i] }));
 }
 
+/* cfacts: the focused window's weight in its area of the layout (its height
+ * in a column of tile, deck and centeredmaster, its width in bstack), 1.0 by
+ * default; arg->f 0 sets it back to 1.0 */
+void
+setcfact(const Arg *arg)
+{
+	float f;
+	Client *c = selmon->sel;
+
+	if (!arg || !c || !selmon->lt[selmon->sellt]->arrange)
+		return;
+	f = arg->f + c->cfact;
+	if (arg->f == 0.0)
+		f = 1.0;
+	else if (f < 0.25 || f > 4.0)
+		return;
+	c->cfact = f;
+	arrange(selmon);
+}
+
 void
 setlayout(const Arg *arg)
 {
@@ -2222,10 +2262,17 @@ sigstatusbar(const Arg *arg)
 	sigqueue(statuspid, SIGRTMIN+statussig, sv);
 }
 
+/* appended to sh -c commands: the shell exits 127 when the command isn't found */
+static const char notfoundcmd[] =
+	"\n[ $? -ne 127 ] || notify-send -u critical \"dwm: command not found\" \"$0\"";
+
 void
 spawn(const Arg *arg)
 {
 	struct sigaction sa;
+	char **argv = (char **)arg->v, *script;
+	char *shargv[] = { "/bin/sh", "-c", NULL, NULL, NULL };
+	int err;
 
 	if (arg->v == dmenucmd)
 		dmenumon[0] = '0' + selmon->num;
@@ -2239,8 +2286,22 @@ spawn(const Arg *arg)
 		sa.sa_handler = SIG_DFL;
 		sigaction(SIGCHLD, &sa, NULL);
 
-		execvp(((char **)arg->v)[0], (char **)arg->v);
-		die("dwm: execvp '%s' failed:", ((char **)arg->v)[0]);
+		/* sh -c commands (SHCMD) tell when the command isn't found; the
+		 * original command is $0, for the notification */
+		if (!strcmp(argv[0], "/bin/sh") && argv[1] && !strcmp(argv[1], "-c")
+		&& argv[2] && !argv[3]) {
+			script = ecalloc(strlen(argv[2]) + sizeof notfoundcmd, 1);
+			strcat(strcpy(script, argv[2]), notfoundcmd);
+			shargv[2] = script;
+			shargv[3] = argv[2];
+			argv = shargv;
+		}
+		execvp(argv[0], argv);
+		err = errno;
+		execlp("notify-send", "notify-send", "-u", "critical", err == ENOENT
+			? "dwm: command not found" : "dwm: can't run", argv[0], (char *)NULL);
+		errno = err;
+		die("dwm: execvp '%s' failed:", argv[0]);
 	}
 }
 
@@ -2438,8 +2499,7 @@ togglelayoutalltags(const Arg *arg)
 	layoutalltags = !layoutalltags;
 	if (layoutalltags) /* every tag takes the current layout */
 		setlayout(&((Arg) { .v = selmon->lt[selmon->sellt] }));
-	spawn(&((Arg) { .v = (const char *[]){ "notify-send", "-t", "2000", "dwm",
-		layoutalltags ? "layout: all tags" : "layout: per tag", NULL } }));
+	notifysend("layout", layoutalltags ? "layout: all tags" : "layout: per tag");
 }
 
 void
@@ -2455,6 +2515,7 @@ togglesticky(const Arg *arg)
 	if (!selmon->sel)
 		return;
 	setsticky(selmon->sel, !selmon->sel->issticky);
+	notifysend("sticky", selmon->sel->issticky ? "sticky: on" : "sticky: off");
 	arrange(selmon);
 }
 

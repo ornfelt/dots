@@ -222,10 +222,6 @@ static const Key keys[] = {
         { MODKEY|ControlMask,       XK_i,               setlayout,          {.v = &layouts[5]} },
         /* bind mod-ctrl-o: setlayout centeredmaster */
         { MODKEY|ControlMask,       XK_o,               setlayout,          {.v = &layouts[6]} },
-        /* bind mod-alt-p: setlayout centeredfloatingmaster */
-        { MODKEY|MODKEY1,           XK_p,               setlayout,          {.v = &layouts[7]} },
-        /* bind mod-ctrl-aring: setlayout floating */
-        { MODKEY|ControlMask,       XK_aring,           setlayout,          {.v = &layouts[8]} },
         /* bind mod-r: layoutmenu (pick a layout from layout_menu.sh) */
         { MODKEY,                   XK_r,               layoutmenu,         {.v = layoutmenucmd} },
         /* bind mod-shift-r: togglelayoutalltags (layouts for all tags / per tag) */
@@ -240,6 +236,12 @@ static const Key keys[] = {
         { MODKEY,                   XK_y,               setmfact,           {.f = -0.05} },
         /* bind mod-o: setmfact +0.05 (grow master) */
         { MODKEY,                   XK_o,               setmfact,           {.f = +0.05} },
+        /* bind mod-alt-y: setcfact -0.25 (focused window shorter) */
+        { MODKEY|MODKEY1,           XK_y,               setcfact,           {.f = -0.25} },
+        /* bind mod-alt-o: setcfact +0.25 (focused window taller) */
+        { MODKEY|MODKEY1,           XK_o,               setcfact,           {.f = +0.25} },
+        /* bind mod-alt-x: setcfact 0 (focused window back to its default size) */
+        { MODKEY|MODKEY1,           XK_x,               setcfact,           {.f =  0.00} },
         /* bind mod-shift-u: incnmaster +1 */
         { MODKEY|ShiftMask,         XK_u,               incnmaster,         {.i = +1 } },
         /* bind mod-shift-i: incnmaster -1 */
@@ -375,10 +377,16 @@ static const Key keys[] = {
         { MODKEY,                   XK_period,          spawn,              SHCMD("~/.local/bin/my_scripts/emojipick/emojipick") },
         /* bind mod-a: spawn tmux_attach.sh */
         { MODKEY,                   XK_a,               spawn,              SHCMD("~/.local/bin/my_scripts/tmux_attach.sh " TERMINAL) },
-        /* bind mod-shift-a: spawn picom-trans -5 */
-        { MODKEY|ShiftMask,         XK_a,               spawn,              SHCMD("picom-trans -c -5")},
-        /* bind mod-ctrl-a: spawn picom-trans +5 */
-        { MODKEY|ControlMask,       XK_a,               spawn,              SHCMD("picom-trans -c +5")},
+        /* bind mod-shift-a: spawn picom_trans.sh -5 (decrease transparency) */
+        { MODKEY|ShiftMask,         XK_a,               spawn,              SHCMD("~/.local/bin/my_scripts/picom_trans.sh -5")},
+        /* bind mod-ctrl-a: spawn picom_trans.sh +5 (increase transparency) */
+        { MODKEY|ControlMask,       XK_a,               spawn,              SHCMD("~/.local/bin/my_scripts/picom_trans.sh +5")},
+        /* bind mod-alt-a: spawn picom_trans.sh --reset (all windows back to picom.conf) */
+        { MODKEY|MODKEY1,           XK_a,               spawn,              SHCMD("~/.local/bin/my_scripts/picom_trans.sh --reset")},
+        /* bind mod-alt-shift-a: spawn picom_trans.sh --all -5 (all windows more transparent) */
+        { MODKEY|MODKEY1|ShiftMask, XK_a,               spawn,              SHCMD("~/.local/bin/my_scripts/picom_trans.sh --all -5")},
+        /* bind mod-alt-ctrl-a: spawn picom_trans.sh --all +5 (all windows more opaque) */
+        { MODKEY|MODKEY1|ControlMask, XK_a,              spawn,              SHCMD("~/.local/bin/my_scripts/picom_trans.sh --all +5")},
         /* bind mod-section: spawn loadEww.sh */
         { MODKEY,                   XK_section,         spawn,              SHCMD("~/.local/bin/my_scripts/loadEww.sh") },
         /* { MODKEY,                   XK_BackSpace,       spawn,              SHCMD("sysact") }, */
