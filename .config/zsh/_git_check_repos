@@ -1,0 +1,30 @@
+#compdef git_check_repos.sh
+
+# Completion for ~/.local/bin/my_scripts/git_check_repos.sh (also through the
+# .git_check alias, which zsh expands before completing)
+
+local -a categories=(
+    'all:everything (the default)'
+    'wow:WoW servers, cores and tools'
+    'wm:window managers and bars'
+    'term:terminals'
+    'terminal:terminals'
+    'dots:wm + term + dmenu, clipmenu and the dotfiles repos'
+    'other:everything in no other category'
+    'x:everything in no other category'
+    'config:every repo in ~/.config'
+    'help:show help'
+)
+
+_arguments -s \
+    '-n[do not fetch first]' \
+    '-a[also list the clean repos]' \
+    '(- *)-h[show help]' \
+    '*: :->args'
+
+if [[ $state == args ]]; then
+    local ret=1
+    _describe -t categories category categories && ret=0
+    _files -/ && ret=0
+    return ret
+fi
