@@ -30,7 +30,12 @@ log_sep()   { log_info "--------------------------------------------------------
 say()       { printf "%b\n" "$*"; }
 die()       { log_err "$*"; exit 1; }
 
+SOURCE_DIR="$HOME/Downloads/dotfiles"
 TARGET_DIR="$HOME/Downloads/dots"
+
+# only ever run from the source dir, since "." is what gets copied
+[ "$(pwd -P)" = "$(cd "$SOURCE_DIR" 2>/dev/null && pwd -P)" ] \
+  || die "Must be run from $SOURCE_DIR (current dir: $(pwd))"
 
 # bail check
 #if [ ! -d "$TARGET_DIR" ]; then
