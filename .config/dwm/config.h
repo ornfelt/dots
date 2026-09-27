@@ -361,11 +361,11 @@ static const Key keys[] = {
         { MODKEY|ShiftMask,         XK_m,               spawn,              SHCMD("spotify") },
         /* bind mod-ctrl-m: spawn open_notes.sh 2 */
         { MODKEY|ControlMask,       XK_m,               spawn,              SHCMD("~/.local/bin/my_scripts/open_notes.sh 2 " TERMINAL) },
-        /* bind mod-shift-comma: spawn suspend_awsm.sh (lock, suspend) */
+        /* bind mod-shift-comma: spawn suspend_awsm.sh (pause music, lock, suspend) */
         { MODKEY|ShiftMask,         XK_comma,           spawn,              SHCMD("~/.local/bin/my_scripts/suspend_awsm.sh")},
         /* bind mod-ctrl-comma: spawn suspend_mute.sh */
         { MODKEY|ControlMask,       XK_comma,           spawn,              SHCMD("~/.local/bin/my_scripts/alert_exit.sh && ~/.local/bin/my_scripts/suspend_mute.sh")},
-        /* bind mod-shift-period: spawn suspend_awsm_lock.sh (mute, lock, suspend) */
+        /* bind mod-shift-period: spawn suspend_awsm_lock.sh (pause music, mute, lock, suspend) */
         { MODKEY|ShiftMask,         XK_period,          spawn,              SHCMD("~/.local/bin/my_scripts/suspend_awsm_lock.sh")},
         /* bind mod-v: spawn clip_history.sh */
         { MODKEY,                   XK_v,               spawn,              SHCMD("~/.local/bin/my_scripts/clip_history.sh") },

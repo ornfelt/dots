@@ -374,11 +374,11 @@ keys = [
 	{ mod = "MODKEY|ShiftMask",         key = "m",        func = "spawn",           arg = { v = "spotifycmd" } },
 	# /* bind mod-ctrl-m: spawn open_notes.sh 2 */
 	{ mod = "MODKEY|ControlMask",       key = "m",        func = "spawn",           arg = { v = "notes2cmd" } },
-	# /* bind mod-shift-comma: spawn suspend_awsm.sh (lock, suspend) */
+	# /* bind mod-shift-comma: spawn suspend_awsm.sh (pause music, lock, suspend) */
 	{ mod = "MODKEY|ShiftMask",         key = "comma",    func = "spawn",           arg = { v = "suspendcmd" } },
 	# /* bind mod-ctrl-comma: spawn suspend_mute.sh */
 	{ mod = "MODKEY|ControlMask",       key = "comma",    func = "spawn",           arg = { v = "suspendmutecmd" } },
-	# /* bind mod-shift-period: spawn suspend_awsm_lock.sh (mute, lock, suspend) */
+	# /* bind mod-shift-period: spawn suspend_awsm_lock.sh (pause music, mute, lock, suspend) */
 	{ mod = "MODKEY|ShiftMask",         key = "period",   func = "spawn",           arg = { v = "locksuspendcmd" } },
 	# /* bind mod-v: spawn clip_history.sh */
 	{ mod = "MODKEY",                   key = "v",        func = "spawn",           arg = { v = "cliphistorycmd" } },

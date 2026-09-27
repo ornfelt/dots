@@ -325,7 +325,7 @@ bindsym $mod+Control+x exec --no-startup-id ~/.local/bin/my_scripts/lock_random.
 bindsym $mod+Control+Shift+x exec --no-startup-id ~/.local/bin/my_scripts/lock_random.sh
 
 # Suspend 
-# comma: lock (random image) + suspend; period: the same, but mute first
+# comma: pause music, lock (random image), suspend; period: the same, but also mute
 bindsym $mod+Shift+comma exec --no-startup-id ~/.local/bin/my_scripts/suspend_awsm.sh
 bindsym $mod+Shift+period exec --no-startup-id ~/.local/bin/my_scripts/suspend_awsm_lock.sh
 
