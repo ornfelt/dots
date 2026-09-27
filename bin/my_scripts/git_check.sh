@@ -6,7 +6,7 @@
 # Also lists branches that are behind their upstream (or, without one, the
 # branch of the same name on the remote), i.e. that have something to pull.
 #
-#   git_check_repos.sh [-n] [-a] [CATEGORY|DIR...]
+#   git_check.sh [-n] [-a] [CATEGORY|DIR...]
 #
 #   CATEGORY  which of the known repos to check (case insensitive, can be combined)
 #               all          everything (the default without CATEGORY and DIR)
