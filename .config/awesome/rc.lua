@@ -371,7 +371,13 @@ screen.connect_signal("arrange", function (s)
     if (c.class == "firefox" or c.class == "firefox-esr")
        and not awful.client.property.get(c, "manual_maximized") then
       local lone = ntiled == 1 and not c.floating and firefox_auto_max
-      if c.maximized ~= lone then c.maximized = lone end
+      if c.maximized ~= lone then
+        c.maximized = lone
+        -- Re-tile: un-maximizing only re-arranges as a side effect of
+        -- firefox's geometry changing, and after a restart the geometry it
+        -- restores is the maximized one
+        awful.layout.arrange(s)
+      end
     end
   end
 
