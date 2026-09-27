@@ -599,10 +599,12 @@ clone_projects() {
     if [ -d "$MODULES_DIR" ]; then
         cd "$MODULES_DIR"
 
-        if [ -f /etc/arch-release ]; then
-            log_info "Arch Linux detected, checking out 'linux' branch..."
-            git checkout linux || die "Failed to checkout linux branch"
-        fi
+        # Disabled: npcbots_3.3.5 now has the MariaDB fix itself (USE_MARIADB_FIX, auto-enabled
+        # by CMake on Linux when MariaDB client headers are found), so the linux branch isn't needed
+        #if [ -f /etc/arch-release ]; then
+        #    log_info "Arch Linux detected, checking out 'linux' branch..."
+        #    git checkout linux || die "Failed to checkout linux branch"
+        #fi
 
         if $USE_ELUNA; then
             clone_repo_if_missing "mod-eluna" "https://github.com/azerothcore/mod-eluna"
