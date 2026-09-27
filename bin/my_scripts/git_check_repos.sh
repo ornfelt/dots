@@ -7,8 +7,8 @@
 #
 #   git_check_repos.sh [-n] [-a] [DIR...]
 #
-#   DIR   where to look for repos, up to 4 levels deep (default: ~/.config
-#         and the dwm repos under $code_root_dir/Code2, see DEFAULT_DIRS)
+#   DIR   where to look for repos, up to 4 levels deep (default: ~/.config,
+#         plus the repos in DEFAULT_REPOS)
 #   -n    don't fetch first (offline); the ahead/behind counts are then as of
 #         the last fetch, and pushing to a URL (like git_push.sh does) doesn't
 #         update them, so pushed commits can still show as not pushed
@@ -38,12 +38,24 @@ shift $((OPTIND - 1))
 code_root_dir=${code_root_dir:-$HOME}
 DEFAULT_DIRS=(
     "$HOME/.config"
+)
+# Checked as repos themselves, not searched (some have nested submodule checkouts)
+DEFAULT_REPOS=(
     "$code_root_dir/Code2/Rust/dwmr"
     "$code_root_dir/Code2/Rust/dwmblocksr"
     "$code_root_dir/Code2/C/dwmc"
     "$code_root_dir/Code2/C/dwmblocksc"
+    "$code_root_dir/Code2/General/utils"
+    "$code_root_dir/Code2/C#/my_cs"
+    "$code_root_dir/Code2/Python/my_py"
+    "$code_root_dir/Code2/General/gfx"
+    "$code_root_dir/Code2/Wow/tools/my_wow"
+    "$code_root_dir/Code2/C++/space"
+    "$code_root_dir/Code2/C++/my_cplusplus"
+    "$HOME/Downloads/dotfiles"
 )
-[ $# -eq 0 ] && set -- "${DEFAULT_DIRS[@]}"
+default_repos=()
+[ $# -eq 0 ] && { set -- "${DEFAULT_DIRS[@]}"; default_repos=("${DEFAULT_REPOS[@]}"); }
 
 # Prints one line per problem in the repo, nothing if it is clean
 check_repo() {
@@ -99,6 +111,13 @@ for dir in "$@"; do
     while read -r gitdir; do
         repos+=("${gitdir%/.git}")
     done < <(find "$dir" -maxdepth 5 -name .git \( -type d -o -type f \) -prune 2>/dev/null | LC_ALL=C sort)
+done
+for repo in "${default_repos[@]}"; do
+    if [ -e "$repo/.git" ]; then
+        repos+=("$repo")
+    else
+        printf "%b[warn] %s is not a git repo, skipping%b\n" "$YELLOW" "${repo/#$HOME/\~}" "$RESET"
+    fi
 done
 
 # Fetch all repos in parallel, so the ahead/behind counts match the remotes
