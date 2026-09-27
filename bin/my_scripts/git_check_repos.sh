@@ -36,6 +36,7 @@ done
 shift $((OPTIND - 1))
 
 code_root_dir=${code_root_dir:-$HOME}
+my_notes_path=${my_notes_path:-$HOME/Documents/my_notes}
 DEFAULT_DIRS=(
     "$HOME/.config"
 )
@@ -47,12 +48,15 @@ DEFAULT_REPOS=(
     "$code_root_dir/Code2/C/dwmblocksc"
     "$code_root_dir/Code2/General/utils"
     "$code_root_dir/Code2/C#/my_cs"
+    "$code_root_dir/Code2/C#/my_csharp"
     "$code_root_dir/Code2/Python/my_py"
     "$code_root_dir/Code2/General/gfx"
     "$code_root_dir/Code2/Wow/tools/my_wow"
     "$code_root_dir/Code2/C++/space"
     "$code_root_dir/Code2/C++/my_cplusplus"
     "$HOME/Downloads/dotfiles"
+    "$HOME/Documents/windows_dots"
+    "$my_notes_path"
 )
 default_repos=()
 [ $# -eq 0 ] && { set -- "${DEFAULT_DIRS[@]}"; default_repos=("${DEFAULT_REPOS[@]}"); }
