@@ -120,12 +120,39 @@ for repo in "${default_repos[@]}"; do
     fi
 done
 
+# Prints the name of the env var holding the token for a GitHub remote URL,
+# nothing if there isn't one (same mapping as git_push.sh)
+token_var() {
+    [[ $1 =~ github\.com[:/]([^/]+)/([^/]+)$ ]] || return
+    [ "${BASH_REMATCH[2]%.git}" = my_notes ] && { echo GITHUB_TOKEN; return; }
+    case ${BASH_REMATCH[1]} in
+        ornfelt|sveawebpay|rewow) echo GITHUB_TOKEN ;;
+        archornf) echo ALT_GITHUB_TOKEN ;;
+    esac
+}
+
+# Fetches every remote of the repo, never prompting for credentials: private
+# GitHub repos get the owner's token through a credential helper that reads it
+# from the environment, so it doesn't show up in the process list
+fetch_repo() {
+    local repo=$1 remote var failed=false
+    for remote in $(git -C "$repo" remote); do
+        var=$(token_var "$(git -C "$repo" remote get-url "$remote")")
+        if [ -n "$var" ] && [ -n "${!var}" ]; then
+            GIT_CHECK_TOKEN=${!var} GIT_TERMINAL_PROMPT=0 git -C "$repo" \
+                -c 'credential.https://github.com.helper=!f() { echo username=x-access-token; echo "password=$GIT_CHECK_TOKEN"; }; f' \
+                fetch --quiet "$remote" 2>/dev/null || failed=true
+        else
+            GIT_TERMINAL_PROMPT=0 git -C "$repo" fetch --quiet "$remote" 2>/dev/null || failed=true
+        fi
+    done
+    $failed && printf "%b[warn] fetch failed for %s%b\n" "$YELLOW" "${repo/#$HOME/\~}" "$RESET"
+}
+
 # Fetch all repos in parallel, so the ahead/behind counts match the remotes
 if $fetch; then
     for repo in "${repos[@]}"; do
-        [ -n "$(git -C "$repo" remote)" ] || continue
-        (git -C "$repo" fetch --all --quiet 2>/dev/null ||
-            printf "%b[warn] fetch failed for %s%b\n" "$YELLOW" "${repo/#$HOME/\~}" "$RESET") &
+        fetch_repo "$repo" &
     done
     wait
 fi

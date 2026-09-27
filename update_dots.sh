@@ -31,6 +31,13 @@ log_sep()   { log_info "--------------------------------------------------------
 say()       { printf "%b\n" "$*"; }
 die()       { log_err "$*"; exit 1; }
 
+# Everything below rm -rf's relative paths, so it must run inside the dotfiles repo
+# (from ~ it would delete the real ~/.config/nvim, ~/.bashrc, ...)
+cd "$(dirname "$(readlink -f "$0")")" || die "Failed to cd to the script dir"
+if [ ! -d .git ] || [ ! -f setup.sh ]; then
+    die "$PWD doesn't look like the dotfiles repo (no .git or setup.sh). Exiting."
+fi
+
 arg=$(echo "$1" | tr '[:upper:]' '[:lower:]')
 
 if [ $# -eq 0 ]; then
@@ -47,7 +54,8 @@ if [ $# -eq 0 ]; then
         die "Script $INSTALL_SCRIPT does not exist... Exiting."
     fi
 
-    cd "$INSTALL_DOCS_DIR" && ./update.sh && cd - > /dev/null
+    # Subshell so a failing update.sh can't leave us in $INSTALL_DOCS_DIR for the rm -rf's below
+    (cd "$INSTALL_DOCS_DIR" && ./update.sh) || die "$INSTALL_SCRIPT failed. Exiting."
     rm -rf installation
     cp -r $HOME/Documents/installation installation/
     log_ok "Updated installation docs."
@@ -59,165 +67,89 @@ else
     fi
 fi
 
-rm -rf .config/alacritty
-rm -rf .config/awesome
-rm -rf .config/somewm
-rm -rf .config/cava
-rm -rf .config/conky
-rm -rf .config/dmenu
-rm -rf .config/dunst
-rm -rf .config/dwm
-rm -rf .config/dwmblocks
-rm -rf .config/dwmr
-rm -rf .config/dwmblocksr
-rm -rf .config/dwmc
-rm -rf .config/dwmblocksc
-rm -rf .config/eww
-rm -rf .config/hypr
-rm -rf .config/i3
-rm -rf .config/kitty
-rm -rf .config/lf
-rm -rf .config/neofetch
-rm -rf .config/nvim
-rm -rf .config/picom
-rm -rf .config/pip
-rm -rf .config/polybar
-rm -rf .config/ranger
-rm -rf .config/wezterm
-rm -rf .config/zsh
+# Replace the repo copy only when the source exists, so a config that is missing on
+# this machine isn't deleted from the repo (and then from the next commit)
+sync_dir() {
+    local src=$1
+    local dest=$2
+    if [ -d "$src" ]; then
+        rm -rf "$dest"
+        mkdir -p "$(dirname "$dest")"
+        cp -r "$src" "$dest"
+    else
+        log_warn "$src does not exist. Keeping repo copy of $dest."
+    fi
+}
+
+sync_file() {
+    local src=$1
+    local dest=$2
+    if [ -f "$src" ]; then
+        mkdir -p "$(dirname "$dest")"
+        cp "$src" "$dest"
+    else
+        log_warn "$src does not exist. Keeping repo copy of $dest."
+    fi
+}
+
+config_dirs=(
+    alacritty awesome somewm cava conky dmenu dunst dwm dwmblocks dwmr dwmblocksr
+    dwmc dwmblocksc eww hypr i3 kitty lf neofetch nvim picom pip polybar ranger
+    wezterm zsh rofi st zathura
+)
+for dir in "${config_dirs[@]}"; do
+    sync_dir "$HOME/.config/$dir" ".config/$dir"
+done
 
 if [[ -d "$HOME/.config/yazi/plugins" ]]; then
-    rm -rf .config/yazi
+    sync_dir "$HOME/.config/yazi" ".config/yazi"
 else
     log_warn "Directory $HOME/.config/yazi/plugins does not exist. Skipping copy."
 fi
 
-rm -rf .config/rofi
-rm -rf .config/st
-rm -rf .config/zathura
-rm -rf .dwm
-rm -rf .claude
-rm -rf bin
-rm .bashrc
-rm .tmux.conf
-rm .wezterm.lua
-rm .xinitrc
-rm .Xresources
-rm .Xresources_cat
-rm .zshrc
-rm .zshenv
+sync_file "$HOME/.config/mimeapps.list" ".config/mimeapps.list"
+sync_file "$HOME/.config/gtk-3.0/bookmarks" ".config/gtk-3.0/bookmarks"
+sync_file "$HOME/.config/xfce4/xfconf/xfce-perchannel-xml/xfce4-power-manager.xml" \
+    ".config/xfce4/xfconf/xfce-perchannel-xml/xfce4-power-manager.xml"
 
-log_ok "Removed files..."
-sleep 0.5
+sync_dir "$HOME/.dwm" ".dwm"
 
-cp -r $HOME/.config/awesome .config/awesome/
-cp -r $HOME/.config/somewm .config/somewm/
-cp -r $HOME/.config/alacritty .config/alacritty/
-cp -r $HOME/.config/cava .config/cava/
-cp -r $HOME/.config/conky .config/conky/
-cp -r $HOME/.config/dmenu .config/dmenu/
-cp -r $HOME/.config/dunst .config/dunst/
-cp -r $HOME/.config/dwm .config/dwm/
-cp -r $HOME/.config/dwmblocks .config/dwmblocks/
-cp -r $HOME/.config/dwmr .config/dwmr/
-cp -r $HOME/.config/dwmblocksr .config/dwmblocksr/
-cp -r $HOME/.config/dwmc .config/dwmc/
-cp -r $HOME/.config/dwmblocksc .config/dwmblocksc/
-cp -r $HOME/.config/eww .config/eww/
-cp -r $HOME/.config/hypr .config/hypr/
-cp -r $HOME/.config/i3 .config/i3/
-cp -r $HOME/.config/kitty .config/kitty/
-cp -r $HOME/.config/lf .config/lf/
-cp -r $HOME/.config/neofetch .config/neofetch/
-cp -r $HOME/.config/nvim .config/nvim/
-cp -r $HOME/.config/picom .config/picom/
-cp -r $HOME/.config/pip .config/pip/
-cp -r $HOME/.config/polybar .config/polybar/
-cp -r $HOME/.config/ranger .config/ranger/
-cp -r $HOME/.config/wezterm .config/wezterm/
-cp -r $HOME/.config/zsh .config/zsh/
+for dir in cron dwm_keybinds i3-used-keybinds my_scripts statusbar widgets xyz; do
+    sync_dir "$HOME/.local/bin/$dir" "bin/$dir"
+done
+for file in lfub lf-select greenclip; do
+    sync_file "$HOME/.local/bin/$file" "bin/$file"
+done
 
-if [[ -d "$HOME/.config/yazi/plugins" ]]; then
-    cp -r $HOME/.config/yazi .config/yazi/
-else
-    log_warn "Directory $HOME/.config/yazi/plugins does not exist. Skipping copy."
-fi
-
-cp -r $HOME/.config/rofi .config/rofi/
-cp -r $HOME/.config/st .config/st/
-cp -r $HOME/.config/zathura .config/zathura/
-cp $HOME/.config/mimeapps.list .config/
-cp $HOME/.config/gtk-3.0/bookmarks .config/gtk-3.0/
-mkdir -p .config/xfce4/xfconf/xfce-perchannel-xml
-cp $HOME/.config/xfce4/xfconf/xfce-perchannel-xml/xfce4-power-manager.xml .config/xfce4/xfconf/xfce-perchannel-xml/
-
-cp -r $HOME/.dwm .dwm/
-mkdir -p bin
-cp -r $HOME/.local/bin/cron bin/
-cp -r $HOME/.local/bin/dwm_keybinds bin/
-cp -r $HOME/.local/bin/i3-used-keybinds bin/
-cp -r $HOME/.local/bin/my_scripts bin/
-cp -r $HOME/.local/bin/statusbar bin/
-cp -r $HOME/.local/bin/widgets bin/
-cp -r $HOME/.local/bin/xyz bin/
-cp -r $HOME/.local/bin/lfub bin/
-cp -r $HOME/.local/bin/lf-select bin/
-cp -r $HOME/.local/bin/greenclip bin/
-
-cp -r $HOME/.bashrc .bashrc
-cp -r $HOME/.tmux.conf .tmux.conf
-cp -r $HOME/.wezterm.lua .wezterm.lua
-cp -r $HOME/.xinitrc .xinitrc
-cp -r $HOME/.Xresources .Xresources
-cp -r $HOME/.Xresources_cat .Xresources_cat
-cp -r $HOME/.zshrc .zshrc
-cp -r $HOME/.zshenv .zshenv
+for file in .bashrc .tmux.conf .wezterm.lua .xinitrc .Xresources .Xresources_cat .zshrc .zshenv; do
+    sync_file "$HOME/$file" "$file"
+done
 
 # Copy selected Claude configuration
-mkdir -p .claude
-if [[ -f "$HOME/.claude/settings.json" ]]; then
-    cp "$HOME/.claude/settings.json" .claude/
-else
-    log_warn "File $HOME/.claude/settings.json does not exist. Skipping copy."
-fi
+sync_file "$HOME/.claude/settings.json" ".claude/settings.json"
+sync_dir "$HOME/.claude/hooks" ".claude/hooks"
 
-if [[ -d "$HOME/.claude/hooks" ]]; then
-    cp -r "$HOME/.claude/hooks" .claude/
-else
-    log_warn "Directory $HOME/.claude/hooks does not exist. Skipping copy."
-fi
+log_ok "Synced files..."
 
-rm --f .config/dmenu/dmenu
-rm --f .config/dmenu/stest
-rm --f .config/dwm/dwm
-rm --f .config/dwmblocks/dwmblocks
-rm --f .config/st/st
-rm --f installation/packages/log.txt
+rm -f .config/dmenu/dmenu
+rm -f .config/dmenu/stest
+rm -f .config/dwm/dwm
+rm -f .config/dwmblocks/dwmblocks
+rm -f .config/st/st
+rm -f installation/packages/log.txt
 
-rm --f .config/dmenu/*.o
-rm --f .config/dwm/*.o
-rm --f .config/dwmblocks/*.o
-rm --f .config/st/*.o
+rm -f .config/dmenu/*.o
+rm -f .config/dwm/*.o
+rm -f .config/dwmblocks/*.o
+rm -f .config/st/*.o
 
-sudo rm -r --f .config/dwmblocks/build
-sudo rm -r --f .config/awesome/.git
-sudo rm -r --f .config/somewm/.git
+rm -rf .config/dwmblocks/build
 
-# Remove .git dirs from dmenu, dwm and st
-dirs=(
-    ".config/dmenu/.git"
-    ".config/dwm/.git"
-    ".config/dwmblocks/.git"
-    ".config/st/.git"
-)
-
-for dir in "${dirs[@]}"; do
-    if [ -d "$dir" ]; then
-        log_info "Removing $dir"
-        rm -rf "$dir"
-    else
-        log_info "$dir does not exist, skipping."
-    fi
+# Remove nested .git dirs (dmenu, dwm, st, awesome, any cloned plugin, ...) so they
+# aren't committed as broken embedded repos; the repo's own ./.git is skipped
+find . -path ./.git -prune -o -name .git -prune -print | while IFS= read -r dir; do
+    log_info "Removing $dir"
+    rm -rf "$dir"
 done
 
 # Update alacritty, preserving custom font size (if any)
@@ -234,12 +166,14 @@ update_font_size() {
   fi
 }
 
-if ! grep -q "size: $DEFAULT_FONT_SIZE" "$HOME/.config/alacritty/alacritty.yml"; then
+if [ -f "$HOME/.config/alacritty/alacritty.yml" ] && [ -f ".config/alacritty/alacritty.yml" ] &&
+   ! grep -q "size: $DEFAULT_FONT_SIZE" "$HOME/.config/alacritty/alacritty.yml"; then
   log_info "Reverting font size in alacritty.yml to default size $DEFAULT_FONT_SIZE."
   update_font_size ".config/alacritty/alacritty.yml" "$DEFAULT_FONT_SIZE"
 fi
 
-if ! grep -q "size = $DEFAULT_FONT_SIZE" "$HOME/.config/alacritty/alacritty.toml"; then
+if [ -f "$HOME/.config/alacritty/alacritty.toml" ] && [ -f ".config/alacritty/alacritty.toml" ] &&
+   ! grep -q "size = $DEFAULT_FONT_SIZE" "$HOME/.config/alacritty/alacritty.toml"; then
   log_info "Reverting font size in alacritty.toml to default size $DEFAULT_FONT_SIZE."
   update_font_size ".config/alacritty/alacritty.toml" "$DEFAULT_FONT_SIZE"
 fi
@@ -291,6 +225,22 @@ for key in "${keys[@]}"; do
 done
 
 log_ok "All keys are empty. ./bash_profile is intact."
+
+# The files synced from $HOME could also carry a key: KEY=value, KEY="value" or "KEY": "value".
+# Put the repo version back so the value never sits in the working tree, then stop.
+secret_files=(.bashrc .zshrc .zshenv .claude/settings.json)
+for file in "${secret_files[@]}"; do
+  [ -f "$file" ] || continue
+  for key in "${keys[@]}"; do
+    if grep -qE "\b$key=[\"']?[^\"'[:space:]]|\"$key\"[[:space:]]*:[[:space:]]*\"[^\"]" "$file"; then
+      log_err "$file sets $key to a value. Restoring the repo version of $file."
+      git restore -- "$file" 2>/dev/null || rm -f "$file"
+      die "Remove $key from \$HOME/$file (or move it to ~/.bash_profile) and rerun."
+    fi
+  done
+done
+
+log_ok "No keys found in synced shell/Claude config."
 
 # Restore Claude settings if the only change is effortLevel
 RESTORE_CLAUDE_EFFORT_ONLY=true

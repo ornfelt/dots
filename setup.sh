@@ -33,6 +33,9 @@ log_sep() { log_info "--------------------------------------------------------";
 say()       { printf "%b\n" "$*"; }
 die()       { log_err "$*"; exit 1; }
 
+# Run from the dotfiles dir so the relative copies below work from anywhere
+cd "$(dirname "$(readlink -f "$0")")" || die "Failed to cd to the script dir"
+
 log_step "Setting up config files!"
 
 CURRENT_DIR="$PWD"
@@ -52,6 +55,7 @@ cp -r .config/somewm/ $HOME/.config/
 cp -r .config/cava/ $HOME/.config/
 cp -r .config/conky/ $HOME/.config/
 cp -r .config/dmenu/ $HOME/.config/
+cp -r .config/dunst/ $HOME/.config/
 cp -r .config/dwm/ $HOME/.config/
 cp -r .config/dwmblocks/ $HOME/.config/
 cp -r .config/dwmr/ $HOME/.config/
@@ -111,8 +115,8 @@ if [[ -f "$HOME/.xinitrc" ]]; then
 else
   log_warn "No ~/.xinitrc to chown, skipping."
 fi
+# chown above lets cp overwrite a root-owned ~/.xinitrc; the copy is then user-owned
 cp .xinitrc $HOME/.xinitrc
-sudo chown "$USER:$USER" "$HOME/.xinitrc"
 cp .Xresources $HOME/.Xresources
 cp .Xresources_cat $HOME/.Xresources_cat
 cp .zshrc $HOME/.zshrc
@@ -401,10 +405,10 @@ check_font_exists() {
 install_jetbrains_mono() {
     log_step "JetBrains Mono font"
     log_info "Downloading JetBrains Mono font..."
-    cd $HOME/Downloads && wget https://github.com/ryanoasis/nerd-fonts/releases/download/v3.1.1/JetBrainsMono.zip
+    cd $HOME/Downloads && wget -N https://github.com/ryanoasis/nerd-fonts/releases/download/v3.1.1/JetBrainsMono.zip
     
     log_info "Installing JetBrains Mono font..."
-    mkdir -p $HOME/.local/share/fonts/ && unzip JetBrainsMono.zip -d $HOME/.local/share/fonts/
+    mkdir -p $HOME/.local/share/fonts/ && unzip -o JetBrainsMono.zip -d $HOME/.local/share/fonts/
     
     log_info "Updating font cache..."
     fc-cache -fv
@@ -469,7 +473,7 @@ clone_repo_if_missing() {
         # Clone based on specific cases
         local clone_cmd="git clone --recurse-submodules"
 
-        if [[ "${repo_dir,,}" == "trinitycore" || "${repo_dir,,}" == "simc" ]]; then
+        if [[ "${repo_dir,,}" == trinitycore* || "${repo_dir,,}" == "simc" ]]; then
             clone_cmd="$clone_cmd --single-branch --depth 1"
         fi
 
@@ -479,6 +483,7 @@ clone_repo_if_missing() {
 
         # Check if the lowercase repo_dir exists in the my_repo_dirs array
         #if [[ "${repo_dir,,}" == "my_notes" || "${repo_dir,,}" == "utils" ]]; then
+        local clean_url="$repo_url"
         if printf '%s\n' "${my_repo_dirs[@]}" | grep -q "^$repo_dir$"; then
             repo_url="${repo_url/https:\/\//https:\/\/$GITHUB_TOKEN@}"
         fi
@@ -490,6 +495,10 @@ clone_repo_if_missing() {
         #return $?
         # check success/failure
         if eval "$clone_cmd"; then
+            # Don't leave the token in plain text in .git/config
+            if [ "$repo_url" != "$clean_url" ]; then
+                git -C "$repo_dir" remote set-url origin "$clean_url"
+            fi
             log_ok "Cloned $repo_dir"
             return 0
         else
@@ -582,7 +591,7 @@ clone_projects() {
     clone_repo_if_missing "stk-code" "https://github.com/ornfelt/stk-code"
     if [ ! -d "stk-assets" ]; then
         if $justInform; then
-            log_info "$repo_dir NOT cloned."
+            log_warn "stk-assets NOT cloned."
         else
             svn co https://svn.code.sf.net/p/supertuxkart/code/stk-assets stk-assets
             log_ok "stk-assets cloned."
@@ -924,28 +933,35 @@ change_ownership_if_exists() {
 
 fix_ownerships() {
     local CURRENT_USER=$(whoami)
-    local NPM_PREFIX=$(npm config get prefix)
+    local NPM_PREFIX=""
+    if command -v npm &>/dev/null; then
+        NPM_PREFIX=$(npm config get prefix)
+    fi
 
-    sudo mkdir -p "$NPM_PREFIX/lib/node_modules" || die "Failed to mkdir $NPM_PREFIX/lib/node_modules"
+    # Without npm the prefix is empty and this would create /lib/node_modules as root
+    if [ -n "$NPM_PREFIX" ]; then
+        sudo mkdir -p "$NPM_PREFIX/lib/node_modules" || die "Failed to mkdir $NPM_PREFIX/lib/node_modules"
 
-    # Check ownership and change only if necessary
-    #for dir in "$NPM_PREFIX/lib/node_modules" "$NPM_PREFIX/bin" "$NPM_PREFIX/share"; do
-    for dir in "$NPM_PREFIX/lib/node_modules"; do
-        if [ -d "$dir" ]; then
-            # Get owner of dir
-            local DIR_OWNER=$(stat -c '%U' "$dir")
-            if [ "$DIR_OWNER" != "$CURRENT_USER" ]; then
-                sudo chown -R "$CURRENT_USER" "$dir" || log_err "Failed to chown $dir"
-                if sudo chown -R "$CURRENT_USER" "$dir"; then
-                    log_ok "Changed ownership of $dir to $CURRENT_USER"
+        # Check ownership and change only if necessary
+        #for dir in "$NPM_PREFIX/lib/node_modules" "$NPM_PREFIX/bin" "$NPM_PREFIX/share"; do
+        for dir in "$NPM_PREFIX/lib/node_modules"; do
+            if [ -d "$dir" ]; then
+                # Get owner of dir
+                local DIR_OWNER=$(stat -c '%U' "$dir")
+                if [ "$DIR_OWNER" != "$CURRENT_USER" ]; then
+                    if sudo chown -R "$CURRENT_USER" "$dir"; then
+                        log_ok "Changed ownership of $dir to $CURRENT_USER"
+                    else
+                        log_err "Failed to chown $dir"
+                    fi
                 else
-                    log_err "Failed to chown $dir"
+                    log_ok "Ownership of $dir is already set to $CURRENT_USER, skipping chown"
                 fi
-            else
-                log_ok "Ownership of $dir is already set to $CURRENT_USER, skipping chown"
             fi
-        fi
-    done
+        done
+    else
+        log_warn "npm not found, skipping node_modules ownership fix."
+    fi
 
     directories=(
         "$HOME/Code/c++/openmw"
@@ -1092,7 +1108,7 @@ compile_projects() {
         fi
 
         if check_dir "jk2mv" "build_new"; then
-            cmake .. CMAKE_BUILD_TYPE=Release
+            cmake .. -DCMAKE_BUILD_TYPE=Release
             make -j$(nproc)
             sudo make install
             cd "$HOME/Code/c++"
@@ -1357,9 +1373,12 @@ compile_projects() {
         if ! python3 -c "import cogapp" &> /dev/null; then
             log_warn "Python package 'cogapp' is required to compile OpenJKDF2 (pip install cogapp)."
         else
-            export CC=clang
-            export CXX=clang++
-            source build_linux64.sh
+            # Subshell so CC/CXX (and anything the build script sets) don't leak into later builds
+            (
+                export CC=clang
+                export CXX=clang++
+                source build_linux64.sh
+            )
         fi
         cd "$HOME/Code2/C++"
     fi
@@ -1469,10 +1488,14 @@ compile_projects() {
         cd "$HOME/Code2/C++"
     fi
 
-    cd my_cplusplus/Navigation
-    if check_dir "Pathing"; then
-        cmake .. -DCMAKE_BUILD_TYPE=Release
-        make -j$(nproc)
+    # my_cplusplus is private and not cloned without GITHUB_TOKEN
+    if cd my_cplusplus/Navigation 2>/dev/null; then
+        if check_dir "Pathing"; then
+            cmake .. -DCMAKE_BUILD_TYPE=Release
+            make -j$(nproc)
+        fi
+    else
+        log_warn "my_cplusplus/Navigation does NOT exist, skipping Pathing."
     fi
     cd "$HOME/Code2/C++"
 
@@ -1484,30 +1507,40 @@ compile_projects() {
         GO_VERSION=$(go version 2>/dev/null)
 
         if [ -z "$GO_VERSION" ]; then
-            die "Go is not installed."
+            # Treat as 0.0 so it gets installed below instead of aborting all remaining compiles
+            log_warn "Go is not installed."
+            GO_SEMVER="0.0"
+        else
+            # "go version go1.21.5 linux/amd64" -> "1.21.5" (patch kept, so 1.21.5 isn't read as 1.21.0)
+            GO_SEMVER=$(echo "$GO_VERSION" | grep -oP 'go\K\d+\.\d+(\.\d+)?')
         fi
+        # Adding .0 to handle versions without patch number; _ swallows the extra .0 otherwise
+        IFS='.' read -r MAJOR MINOR PATCH _ <<< "$GO_SEMVER.0"
 
-        MAJOR_MINOR=$(echo "$GO_VERSION" | grep -oP 'go\d+\.\d+' | grep -oP '\d+\.\d+')
-        IFS='.' read -r MAJOR MINOR PATCH <<< "$MAJOR_MINOR.0" # Adding .0 to handle versions without patch number
-
-        log_info "Go version: $MAJOR_MINOR"
+        log_info "Go version: $GO_SEMVER"
         log_info "Go major version: $MAJOR"
         log_info "Go minor version: $MINOR"
+        log_info "Go patch version: $PATCH"
 
         if (( MAJOR < 1 )) || { (( MAJOR == 1 )) && (( MINOR < 21 )); } || { (( MAJOR == 1 )) && (( MINOR == 21 )) && (( PATCH < 1 )); }; then
             log_warn "Go version is below 1.21.1. Installing go 1.21.1..."
             # Don't install dependencies through apt since they are too old for
             # this repo...
-            curl -O https://dl.google.com/go/go1.21.1.linux-amd64.tar.gz
-            sudo rm -rf /usr/local/go 
-            sudo rm /usr/bin/go
-            sudo tar -C /usr/local -xzf go1.21.1.linux-amd64.tar.gz
+            case "$(uname -m)" in
+                aarch64|arm64) GO_ARCH="arm64" ;;
+                arm*) GO_ARCH="armv6l" ;;
+                *) GO_ARCH="amd64" ;;
+            esac
+            GO_TARBALL="go1.21.1.linux-${GO_ARCH}.tar.gz"
+            curl -O "https://dl.google.com/go/$GO_TARBALL"
+            sudo rm -rf /usr/local/go
+            sudo rm -f /usr/bin/go
+            sudo tar -C /usr/local -xzf "$GO_TARBALL"
 
-            log_info "Updating PATH/GOPATH in ~/.bashrc"
-            echo 'export PATH=$PATH:/usr/local/go/bin' >> $HOME/.bashrc
-            echo 'export GOPATH=$HOME/go' >> $HOME/.bashrc
-            echo 'export PATH=$PATH:$GOPATH/bin' >> $HOME/.bashrc
-            source $HOME/.bashrc
+            # .bashrc/.zshrc from these dotfiles already add go to PATH, so only
+            # update PATH for the rest of this script
+            export GOPATH="$HOME/go"
+            export PATH="/usr/local/go/bin:$PATH:$GOPATH/bin"
         else
             log_ok "Go version is 1.21.1 or higher. Continuing..."
         fi
@@ -1599,7 +1632,7 @@ compile_projects() {
         #cd .. && make
         #cd ..
         cd src
-        mkdir build && cd build
+        mkdir -p build && cd build
         cmake .. && make -j$(nproc)
         cd "$HOME/Code2/Wow/tools"
     fi
@@ -1774,6 +1807,22 @@ else
     fi
 fi
 
+# In check-only mode (justInform), log what would be copied and return 1 instead
+can_copy() {
+    if $justInform; then
+        log_info "Would copy $1"
+        return 1
+    fi
+}
+
+# Returns 1 with a warning when a source on the hard drive is missing
+require_src() {
+    if [ ! -e "$1" ]; then
+        log_warn "$1 does NOT exist, skipping."
+        return 1
+    fi
+}
+
 # Copy game data
 copy_dir_to_target() {
     SRC=$1
@@ -1838,18 +1887,24 @@ copy_game_data() {
         DOWNLOADS_DIR="$HOME/Downloads"
     fi
 
-    fix_ownerships
+    $justInform || fix_ownerships
 
     # Create dirs
-    mkdir -p $HOME/.local/share/supertuxkart/addons
-    mkdir -p $HOME/.local/share/OpenJKDF2/openjkdf2
-    mkdir -p $HOME/.local/share/openjk/JediOutcast/base
-    mkdir -p $HOME/.local/share/openjk/japlus
-    mkdir -p $HOME/acore/bin
-    mkdir -p $HOME/tcore/bin
-    mkdir -p $HOME/vmangos/bin
-    mkdir -p $HOME/cmangos/run/bin
-    mkdir -p $HOME/mangoszero/run/bin
+    if ! $justInform; then
+        mkdir -p $HOME/.local/share/supertuxkart/addons
+        mkdir -p $HOME/.local/share/OpenJKDF2/openjkdf2
+        mkdir -p $HOME/.local/share/openjk/JediOutcast/base
+        mkdir -p $HOME/.local/share/openjk/JediAcademy/base
+        mkdir -p $HOME/.local/share/openjk/japlus
+        mkdir -p $HOME/acore/bin
+        mkdir -p $HOME/tcore/bin
+        mkdir -p $HOME/vmangos/bin
+        mkdir -p $HOME/cmangos/run/bin
+        mkdir -p $HOME/cmangos-tbc/run/bin
+        mkdir -p $HOME/mangoszero/run/bin
+        # mangoszero reads data from run/etc (DataDir = "../etc" in mangosd.conf)
+        mkdir -p $HOME/mangoszero/run/etc
+    fi
 
     MEDIA_PATHS=("/media" "/media2")
     MEDIA_PATH=""
@@ -1919,23 +1974,27 @@ copy_game_data() {
     #    echo "$LUA_SRC does NOT exist, skipping."
     #fi
     if [ -d "$LUA_SRC" ]; then
-        mkdir -p "$DEST_DIR/lua_scripts"
+        $justInform || mkdir -p "$DEST_DIR/lua_scripts"
         for item in "$LUA_SRC"/*; do
             item_name=$(basename "$item")
             if [ "$item_name" != "extensions" ]; then
                 if [ -d "$item" ]; then
                     # Copy the subdirectory recursively
                     if [ ! -d "$DEST_DIR/lua_scripts/$item_name" ]; then
-                        cp -r "$item" "$DEST_DIR/lua_scripts/$item_name"
-                        log_info "Copied directory $item -> $DEST_DIR/lua_scripts/$item_name"
+                        if can_copy "$item -> $DEST_DIR/lua_scripts/$item_name"; then
+                            cp -r "$item" "$DEST_DIR/lua_scripts/$item_name"
+                            log_info "Copied directory $item -> $DEST_DIR/lua_scripts/$item_name"
+                        fi
                     else
                         log_ok "Dir exists: $DEST_DIR/lua_scripts/$item_name (skipping)"
                     fi
                 else
                     # Copy the file
                     if [ ! -f "$DEST_DIR/lua_scripts/$item_name" ]; then
-                        cp "$item" "$DEST_DIR/lua_scripts/$item_name"
-                        log_info "Copied file $item -> $DEST_DIR/lua_scripts/$item_name"
+                        if can_copy "$item -> $DEST_DIR/lua_scripts/$item_name"; then
+                            cp "$item" "$DEST_DIR/lua_scripts/$item_name"
+                            log_info "Copied file $item -> $DEST_DIR/lua_scripts/$item_name"
+                        fi
                     else
                         log_ok "File exists: $DEST_DIR/lua_scripts/$item_name (skipping)"
                     fi
@@ -1952,7 +2011,7 @@ copy_game_data() {
 
     log_step "Copying acore_old -> $ACORE_OLD_DEST"
     if [ -d "$ACORE_OLD_SRC" ]; then
-        mkdir -p "$ACORE_OLD_DEST"
+        $justInform || mkdir -p "$ACORE_OLD_DEST"
 
         # Copy all directories from source into destination (only if missing)
         for item in "$ACORE_OLD_SRC"/*; do
@@ -1961,8 +2020,10 @@ copy_game_data() {
 
             if [ -d "$item" ]; then
                 if [ ! -d "$ACORE_OLD_DEST/$name" ]; then
-                    cp -r -- "$item" "$ACORE_OLD_DEST/$name"
-                    log_info "Copied dir $name -> $ACORE_OLD_DEST/"
+                    if can_copy "$item -> $ACORE_OLD_DEST/$name"; then
+                        cp -r -- "$item" "$ACORE_OLD_DEST/$name"
+                        log_info "Copied dir $name -> $ACORE_OLD_DEST/"
+                    fi
                 else
                     log_ok "Dir exists: $ACORE_OLD_DEST/$name (skipping)"
                 fi
@@ -1990,7 +2051,9 @@ copy_game_data() {
     DEST_FILE="$HOME/tcore/bin/$FILE_NAME"
     if [ -f "$DEST_FILE" ]; then
         log_ok "TDB file already exists: $DEST_FILE (skip)"
-    else
+    elif [ ! -f "$SRC_FILE" ]; then
+        log_warn "$SRC_FILE does NOT exist, skipping."
+    elif can_copy "$SRC_FILE -> $DEST_FILE"; then
         cp "$SRC_FILE" "$DEST_FILE"
         log_info "Copied $FILE_NAME -> $HOME/tcore/bin"
     fi
@@ -2040,12 +2103,14 @@ copy_game_data() {
     DEST_DIR_DIABLO="$HOME/Code2/C++/devilutionX/build"
     log_step "Copying diablo files -> $DEST_DIR_DIABLO"
     if [ -d "$SRC_DIABLO" ]; then
-        mkdir -p "$DEST_DIR_DIABLO"
+        $justInform || mkdir -p "$DEST_DIR_DIABLO"
         for file in "$SRC_DIABLO"/*; do
             file_name=$(basename "$file")
             if [ ! -f "$DEST_DIR_DIABLO/$file_name" ]; then
-                cp "$file" "$DEST_DIR_DIABLO/$file_name"
-                log_info "Copied $file -> $DEST_DIR_DIABLO/$file_name"
+                if can_copy "$file -> $DEST_DIR_DIABLO/$file_name"; then
+                    cp "$file" "$DEST_DIR_DIABLO/$file_name"
+                    log_info "Copied $file -> $DEST_DIR_DIABLO/$file_name"
+                fi
             else
                 log_ok "Exists: $DEST_DIR_DIABLO/$file_name (skip)"
             fi
@@ -2057,9 +2122,11 @@ copy_game_data() {
     # doom3
     log_step "Copying doom3 -> $DOWNLOADS_DIR"
     if [ ! -d "$DOWNLOADS_DIR/doom3" ]; then
-        cp "$MEDIA_PATH/2024/doom3_base.zip" "$DOWNLOADS_DIR"
-        unzip "$DOWNLOADS_DIR/doom3_base.zip" -d "$DOWNLOADS_DIR/doom3"
-        log_info "Copied and unzipped doom3_base.zip -> $DOWNLOADS_DIR/doom3"
+        if require_src "$MEDIA_PATH/2024/doom3_base.zip" && can_copy "$MEDIA_PATH/2024/doom3_base.zip"; then
+            cp "$MEDIA_PATH/2024/doom3_base.zip" "$DOWNLOADS_DIR"
+            unzip "$DOWNLOADS_DIR/doom3_base.zip" -d "$DOWNLOADS_DIR/doom3"
+            log_info "Copied and unzipped doom3_base.zip -> $DOWNLOADS_DIR/doom3"
+        fi
     else
         log_ok "$DOWNLOADS_DIR/doom3 exists, skipping."
     fi
@@ -2067,10 +2134,11 @@ copy_game_data() {
     # doom
     log_step "Copying doom files -> $DOWNLOADS_DIR"
     if [ ! -d "$DOWNLOADS_DIR/doom" ]; then
-        unzip DOOM.zip -d "$DOWNLOADS_DIR"
-        cp "$MEDIA_PATH/2024/DOOM.zip" "$DOWNLOADS_DIR"
-        unzip "$DOWNLOADS_DIR/DOOM.zip" -d "$DOWNLOADS_DIR/doom"
-        log_info "Copied and unzipped DOOM.zip -> $DOWNLOADS_DIR/doom"
+        if require_src "$MEDIA_PATH/2024/DOOM.zip" && can_copy "$MEDIA_PATH/2024/DOOM.zip"; then
+            cp "$MEDIA_PATH/2024/DOOM.zip" "$DOWNLOADS_DIR"
+            unzip "$DOWNLOADS_DIR/DOOM.zip" -d "$DOWNLOADS_DIR/doom"
+            log_info "Copied and unzipped DOOM.zip -> $DOWNLOADS_DIR/doom"
+        fi
     else
         log_ok "$DOWNLOADS_DIR/doom exists, skipping."
     fi
@@ -2084,10 +2152,12 @@ copy_game_data() {
     # jo
     log_step "Copying JediOutcast files -> $HOME/.local/share/openjk/JediOutcast/base"
     if [ ! -f "$HOME/.local/share/openjk/JediOutcast/base/assets0.pk3" ]; then
-        cp "$MEDIA_PATH/2024/jedi_outcast_gamedata.zip" "$DOWNLOADS_DIR"
-        unzip "$DOWNLOADS_DIR/jedi_outcast_gamedata.zip" -d "$DOWNLOADS_DIR/jedi_outcast_gamedata"
-        cp "$DOWNLOADS_DIR/jedi_outcast_gamedata/base"/*.pk3 "$HOME/.local/share/openjk/JediOutcast/base/"
-        log_info "Copied and unzipped jedi_outcast_gamedata.zip and moved *.pk3 -> $HOME/.local/share/openjk/JediOutcast/base/"
+        if require_src "$MEDIA_PATH/2024/jedi_outcast_gamedata.zip" && can_copy "$MEDIA_PATH/2024/jedi_outcast_gamedata.zip"; then
+            cp "$MEDIA_PATH/2024/jedi_outcast_gamedata.zip" "$DOWNLOADS_DIR"
+            unzip "$DOWNLOADS_DIR/jedi_outcast_gamedata.zip" -d "$DOWNLOADS_DIR/jedi_outcast_gamedata"
+            cp "$DOWNLOADS_DIR/jedi_outcast_gamedata/base"/*.pk3 "$HOME/.local/share/openjk/JediOutcast/base/"
+            log_info "Copied and unzipped jedi_outcast_gamedata.zip and moved *.pk3 -> $HOME/.local/share/openjk/JediOutcast/base/"
+        fi
     else
         log_ok "assets0.pk3 already exists in $HOME/.local/share/openjk/JediOutcast/base/, skipping."
     fi
@@ -2096,10 +2166,12 @@ copy_game_data() {
     log_step "Copying JediAcademy files -> $HOME/.local/share/openjk/JediAcademy/base"
     # Not 100% sure about JediKnightGalaxies and jk2mv...
     if [ ! -f "$HOME/.local/share/openjk/JediAcademy/base/assets0.pk3" ] && [ ! -f "$HOME/.local/share/openjk/base/assets0.pk3" ]; then
-        cp "$MEDIA_PATH/2024/JK_JA_GameData.zip" "$DOWNLOADS_DIR"
-        unzip "$DOWNLOADS_DIR/JK_JA_GameData.zip" -d "$DOWNLOADS_DIR/JK_JA_GameData"
-        cp "$DOWNLOADS_DIR/JK_JA_GameData/base"/*.pk3 "$HOME/.local/share/openjk/JediAcademy/base"
-        log_info "Copied and unzipped JK_JA_GameData.zip and moved *.pk3 -> $HOME/.local/share/openjk/JediAcademy/base"
+        if require_src "$MEDIA_PATH/2024/JK_JA_GameData.zip" && can_copy "$MEDIA_PATH/2024/JK_JA_GameData.zip"; then
+            cp "$MEDIA_PATH/2024/JK_JA_GameData.zip" "$DOWNLOADS_DIR"
+            unzip "$DOWNLOADS_DIR/JK_JA_GameData.zip" -d "$DOWNLOADS_DIR/JK_JA_GameData"
+            cp "$DOWNLOADS_DIR/JK_JA_GameData/base"/*.pk3 "$HOME/.local/share/openjk/JediAcademy/base"
+            log_info "Copied and unzipped JK_JA_GameData.zip and moved *.pk3 -> $HOME/.local/share/openjk/JediAcademy/base"
+        fi
     else
         log_ok "assets0.pk3 already exists in JediAcademy base or openjk base, skipping."
     fi
@@ -2111,9 +2183,11 @@ copy_game_data() {
     # openmw
     log_step "Copying openmw files -> $DOWNLOADS_DIR"
     if [ ! -d "$DOWNLOADS_DIR/Morrowind" ] && [ ! -d "/mnt/new/openmw_gamedata" ]; then
-        cp "$MEDIA_PATH/2024/Morrowind.zip" "$DOWNLOADS_DIR"
-        unzip "$DOWNLOADS_DIR/Morrowind.zip" -d "$DOWNLOADS_DIR/Morrowind"
-        log_info "Copied and unzipped Morrowind.zip -> $DOWNLOADS_DIR/Morrowind"
+        if require_src "$MEDIA_PATH/2024/Morrowind.zip" && can_copy "$MEDIA_PATH/2024/Morrowind.zip"; then
+            cp "$MEDIA_PATH/2024/Morrowind.zip" "$DOWNLOADS_DIR"
+            unzip "$DOWNLOADS_DIR/Morrowind.zip" -d "$DOWNLOADS_DIR/Morrowind"
+            log_info "Copied and unzipped Morrowind.zip -> $DOWNLOADS_DIR/Morrowind"
+        fi
     else
         log_ok "$DOWNLOADS_DIR/Morrowind or /mnt/new/openmw_gamedata already exists, skipping."
     fi
@@ -2121,8 +2195,10 @@ copy_game_data() {
     # openjkdf2
     log_step "Copying openjkdf2 files -> $HOME/.local/share/OpenJKDF2/openjkdf2"
     if [ ! -d "$HOME/.local/share/OpenJKDF2/openjkdf2/Episode" ]; then
-        cp -r "$MEDIA_PATH/2024/star_wars_jkdf2/"* "$HOME/.local/share/OpenJKDF2/openjkdf2"
-        log_info "Copied star_wars_jkdf2 -> $HOME/.local/share/OpenJKDF2/openjkdf2"
+        if require_src "$MEDIA_PATH/2024/star_wars_jkdf2" && can_copy "$MEDIA_PATH/2024/star_wars_jkdf2"; then
+            cp -r "$MEDIA_PATH/2024/star_wars_jkdf2/"* "$HOME/.local/share/OpenJKDF2/openjkdf2"
+            log_info "Copied star_wars_jkdf2 -> $HOME/.local/share/OpenJKDF2/openjkdf2"
+        fi
     else
         log_ok "Episode directory already exists in OpenJKDF2, skipping."
     fi
@@ -2130,9 +2206,11 @@ copy_game_data() {
     # kotor
     log_step "Copying kotor files -> $DOWNLOADS_DIR"
     if [ ! -d "$DOWNLOADS_DIR/kotor" ]; then
-        cp "$MEDIA_PATH/2024/Star Wars - KotOR.zip" "$DOWNLOADS_DIR"
-        unzip "$DOWNLOADS_DIR/Star Wars - KotOR.zip" -d "$DOWNLOADS_DIR/kotor"
-        log_info "Copied and unzipped 'Star Wars - KotOR.zip' -> $DOWNLOADS_DIR/kotor"
+        if require_src "$MEDIA_PATH/2024/Star Wars - KotOR.zip" && can_copy "$MEDIA_PATH/2024/Star Wars - KotOR.zip"; then
+            cp "$MEDIA_PATH/2024/Star Wars - KotOR.zip" "$DOWNLOADS_DIR"
+            unzip "$DOWNLOADS_DIR/Star Wars - KotOR.zip" -d "$DOWNLOADS_DIR/kotor"
+            log_info "Copied and unzipped 'Star Wars - KotOR.zip' -> $DOWNLOADS_DIR/kotor"
+        fi
     else
         log_ok "$DOWNLOADS_DIR/kotor already exists, skipping."
     fi
@@ -2140,9 +2218,11 @@ copy_game_data() {
     # kotor2
     log_step "Copying kotor2 files -> $DOWNLOADS_DIR"
     if [ ! -d "$DOWNLOADS_DIR/kotor2" ]; then
-        cp "$MEDIA_PATH/2024/Star Wars - KotOR2.zip" "$DOWNLOADS_DIR"
-        unzip "$DOWNLOADS_DIR/Star Wars - KotOR2.zip" -d "$DOWNLOADS_DIR/kotor2"
-        log_info "Copied and unzipped 'Star Wars - KotOR2.zip' -> $DOWNLOADS_DIR/kotor2"
+        if require_src "$MEDIA_PATH/2024/Star Wars - KotOR2.zip" && can_copy "$MEDIA_PATH/2024/Star Wars - KotOR2.zip"; then
+            cp "$MEDIA_PATH/2024/Star Wars - KotOR2.zip" "$DOWNLOADS_DIR"
+            unzip "$DOWNLOADS_DIR/Star Wars - KotOR2.zip" -d "$DOWNLOADS_DIR/kotor2"
+            log_info "Copied and unzipped 'Star Wars - KotOR2.zip' -> $DOWNLOADS_DIR/kotor2"
+        fi
     else
         log_ok "$DOWNLOADS_DIR/kotor2 already exists, skipping."
     fi
@@ -2153,8 +2233,10 @@ copy_game_data() {
         if [ -d "$dir" ]; then
             dest_dir="$HOME/.local/share/supertuxkart/addons/$(basename "$dir")"
             if [ ! -d "$dest_dir" ]; then
-                cp -r "$dir" "$dest_dir"
-                log_info "Copied $(basename "$dir") -> $HOME/.local/share/supertuxkart/addons"
+                if can_copy "$dir -> $dest_dir"; then
+                    cp -r "$dir" "$dest_dir"
+                    log_info "Copied $(basename "$dir") -> $HOME/.local/share/supertuxkart/addons"
+                fi
             else
                 log_ok "$(basename "$dir") already exists in addons, skipping."
             fi
@@ -2175,15 +2257,17 @@ copy_game_data() {
         IOQ3_BASEQ3_DIR="$IOQ3_RELEASE_DIR/baseq3"
 
         log_step "Copying ioq3 files -> $IOQ3_BASEQ3_DIR"
-        mkdir -p "$IOQ3_BASEQ3_DIR"
+        $justInform || mkdir -p "$IOQ3_BASEQ3_DIR"
 
         for file in "$MEDIA_PATH/2024/baseq3/"*.pk3; do
             [ -f "$file" ] || continue
 
             dest_file="$IOQ3_BASEQ3_DIR/$(basename "$file")"
             if [ ! -f "$dest_file" ]; then
-                cp -- "$file" "$dest_file"
-                log_info "Copied $(basename "$file") -> $IOQ3_BASEQ3_DIR"
+                if can_copy "$file -> $dest_file"; then
+                    cp -- "$file" "$dest_file"
+                    log_info "Copied $(basename "$file") -> $IOQ3_BASEQ3_DIR"
+                fi
             else
                 log_ok "$(basename "$file") already exists in $IOQ3_BASEQ3_DIR, skipping."
             fi
@@ -2202,13 +2286,15 @@ copy_game_data() {
     LWJGL_JARS_DIR="$DOWNLOADS_DIR/lwjgl_jars"
     if [ ! -d "$LWJGL_JARS_DIR" ]; then
         log_step "Creating directory $LWJGL_JARS_DIR"
-        mkdir -p "$LWJGL_JARS_DIR"
+        $justInform || mkdir -p "$LWJGL_JARS_DIR"
 
         # Copy joml jar
         JOML_JAR="$DOWNLOADS_DIR/jar_files/250630/lwjgl_jars/joml-1.10.8.jar"
         if [ -f "$JOML_JAR" ]; then
-            log_info "Copying $JOML_JAR -> $LWJGL_JARS_DIR"
-            cp "$JOML_JAR" "$LWJGL_JARS_DIR"
+            if can_copy "$JOML_JAR -> $LWJGL_JARS_DIR"; then
+                log_info "Copying $JOML_JAR -> $LWJGL_JARS_DIR"
+                cp "$JOML_JAR" "$LWJGL_JARS_DIR"
+            fi
         else
             log_warn "$JOML_JAR does not exist."
         fi
@@ -2223,41 +2309,24 @@ copy_game_data() {
         # Copy all .jar files from each specified directory
         for DIR in "${JAR_SOURCE_DIRS[@]}"; do
             if [ -d "$DIR" ]; then
-                log_info "Copying .jar files from $DIR -> $LWJGL_JARS_DIR"
-                cp "$DIR"/*.jar "$LWJGL_JARS_DIR"
+                if can_copy "$DIR/*.jar -> $LWJGL_JARS_DIR"; then
+                    log_info "Copying .jar files from $DIR -> $LWJGL_JARS_DIR"
+                    cp "$DIR"/*.jar "$LWJGL_JARS_DIR"
+                fi
             else
                 log_warn "Source directory $DIR does not exist."
             fi
         done
     fi
 
-    # local config file
+    # Copy config.txt if missing (the BloogBot path is fixed below)
     if [ ! -f "$HOME/Documents/local/config.txt" ]; then
-        mkdir -p "$HOME/Documents/local"
+        $justInform || mkdir -p "$HOME/Documents/local"
         if [ -f "$MEDIA_PATH/my_files/my_docs/local/config_home_pc.txt" ]; then
-            cp "$MEDIA_PATH/my_files/my_docs/local/config_home_pc.txt" "$HOME/Documents/local/config.txt"
-            log_info "Copied config file -> $HOME/Documents/local/config.txt"
-            windows_path="C:/Users/jonas/OneDrive/Documents/Code2/c#/BloogBot/Bot/db.db"
-            #unix_path="$HOME/Code2/C#/BloogBot/Bot/db.db"
-            unix_path="${HOME}/Code2/C#/BloogBot/Bot/db.db"
-            if grep -Fq "$windows_path" "$HOME/Documents/local/config.txt"; then
-                # Use double quotes around the sed delimiters to expand HOME
-                sed -i "s|$windows_path|$unix_path|g" "$HOME/Documents/local/config.txt"
-                log_ok "Updated database path in config file."
+            if can_copy "config_home_pc.txt -> $HOME/Documents/local/config.txt"; then
+                cp "$MEDIA_PATH/my_files/my_docs/local/config_home_pc.txt" "$HOME/Documents/local/config.txt"
+                log_info "Copied config file -> $HOME/Documents/local/config.txt"
             fi
-        else
-            log_warn "Source config file not found: $MEDIA_PATH/my_files/my_docs/local/config_home_pc.txt"
-        fi
-    else
-        log_ok "Config file already exists at $HOME/Documents/local/config.txt"
-    fi
-
-    # Copy config.txt if missing
-    if [ ! -f "$HOME/Documents/local/config.txt" ]; then
-        mkdir -p "$HOME/Documents/local"
-        if [ -f "$MEDIA_PATH/my_files/my_docs/local/config_home_pc.txt" ]; then
-            cp "$MEDIA_PATH/my_files/my_docs/local/config_home_pc.txt" "$HOME/Documents/local/config.txt"
-            log_info "Copied config file -> $HOME/Documents/local/config.txt"
         else
             log_warn "Source config file not found: $MEDIA_PATH/my_files/my_docs/local/config_home_pc.txt"
         fi
@@ -2271,9 +2340,13 @@ copy_game_data() {
         #unix_path="$HOME/Code2/C#/BloogBot/Bot/db.db"
         unix_path="${HOME}/Code2/C#/BloogBot/Bot/db.db"
         if grep -Fq "$windows_path" "$HOME/Documents/local/config.txt"; then
-            # Use double quotes around the sed delimiters to expand HOME
-            sed -i "s|$windows_path|$unix_path|g" "$HOME/Documents/local/config.txt"
-            log_ok "Updated database path in config file."
+            if $justInform; then
+                log_info "Would update database path in config file."
+            else
+                # Use double quotes around the sed delimiters to expand HOME
+                sed -i "s|$windows_path|$unix_path|g" "$HOME/Documents/local/config.txt"
+                log_ok "Updated database path in config file."
+            fi
         else
             log_ok "Config file does not have windows path for BloogBot connection string"
         fi
@@ -2281,16 +2354,19 @@ copy_game_data() {
 
     # Copy BloogBot db if needed
     if [ -d "$HOME/Code2/C#/BloogBot" ]; then
-        if [ ! -d "$HOME/Code2/C#/BloogBot/Bot" ]; then
+        if [ ! -d "$HOME/Code2/C#/BloogBot/Bot" ] && ! $justInform; then
             mkdir -p "$HOME/Code2/C#/BloogBot/Bot"
             log_info "Created directory $HOME/Code2/C#/BloogBot/Bot"
         fi
 
-        if [ ! -f "$HOME/Code2/C#/BloogBot/Bot/db.db" ]; then
-            cp "$MEDIA_PATH/my_files/my_docs/db_bkp/bloogbot/db.db" "$HOME/Code2/C#/BloogBot/Bot"
-            log_info "Copied db.db -> $HOME/Code2/C#/BloogBot/Bot"
-        else
+        BLOOGBOT_DB_SRC="$MEDIA_PATH/my_files/my_docs/db_bkp/bloogbot/db.db"
+        if [ -f "$HOME/Code2/C#/BloogBot/Bot/db.db" ]; then
             log_ok "File db.db already exists in $HOME/Code2/C#/BloogBot/Bot"
+        elif [ ! -f "$BLOOGBOT_DB_SRC" ]; then
+            log_warn "$BLOOGBOT_DB_SRC does NOT exist, skipping."
+        elif can_copy "$BLOOGBOT_DB_SRC -> $HOME/Code2/C#/BloogBot/Bot"; then
+            cp "$BLOOGBOT_DB_SRC" "$HOME/Code2/C#/BloogBot/Bot"
+            log_info "Copied db.db -> $HOME/Code2/C#/BloogBot/Bot"
         fi
     else
         log_warn "Directory $HOME/Code2/C#/BloogBot does not exist."
@@ -2331,11 +2407,21 @@ else
     fi
 fi
 
+# Pass the mysql password via MYSQL_PWD instead of -p so it doesn't show up in ps
+USE_MYSQL_PWD_ENV=true
+
 # Check if database exists
 check_database_exists() {
     local db_name=$1
-    result=$(mysql -u"$MYSQL_USER" -p"$MYSQL_PASSWORD" -h"$MYSQL_HOST" -P"$MYSQL_PORT" -e "SHOW DATABASES LIKE '$db_name';" 2>/dev/null)
-    if [[ "$result" == *"$db_name"* ]]; then
+    # Escape _ so LIKE matches it literally instead of as a single-char wildcard
+    local like_name="${db_name//_/\\_}"
+    if $USE_MYSQL_PWD_ENV; then
+        result=$(MYSQL_PWD="$MYSQL_PASSWORD" mysql -N -u"$MYSQL_USER" -h"$MYSQL_HOST" -P"$MYSQL_PORT" -e "SHOW DATABASES LIKE '$like_name';" 2>/dev/null)
+    else
+        result=$(mysql -N -u"$MYSQL_USER" -p"$MYSQL_PASSWORD" -h"$MYSQL_HOST" -P"$MYSQL_PORT" -e "SHOW DATABASES LIKE '$like_name';" 2>/dev/null)
+    fi
+    # -N drops the column header, so an exact match is possible
+    if [[ "$result" == "$db_name" ]]; then
         log_ok "Database $db_name exists."
     else
         log_warn "Database $db_name does NOT exist."
@@ -2609,7 +2695,7 @@ fix_other_files() {
             target_file="$target_dir/$file_name"
 
             if [ ! -f "$target_file" ]; then
-                sudo cp "$source_file" "$target_file"
+                cp "$source_file" "$target_file"
                 log_info "Copied $source_file -> $target_file"
             else
                 log_ok "$target_file already exists. Skipping."
