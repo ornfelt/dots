@@ -456,11 +456,24 @@ function list_tabs()
   local use_fzf = myconfig.get_file_picker() == myconfig.FilePicker.FZF
   local use_fzf_lua = myconfig.get_file_picker() == myconfig.FilePicker.FZF_LUA
 
+  -- "*" marks the tab you are in (not ">", that is the picker's own caret);
+  -- a tab with splits lists every buffer its windows show, "|" between them
   local tabs = {}
-  for i = 1, vim.fn.tabpagenr("$") do
+  local current = vim.fn.tabpagenr()
+  for i, tabpage in ipairs(vim.api.nvim_list_tabpages()) do
     --local tabname = vim.fn.gettabvar(i, "tabname", "[No Name]")
-    local bufname = vim.fn.bufname(vim.fn.tabpagebuflist(i)[1]) or "[No Buffer]"
-    table.insert(tabs, string.format("%d: (%s)", i, myconfig.normalize_path(bufname)))
+    local names, seen = {}, {}
+    for _, win in ipairs(vim.api.nvim_tabpage_list_wins(tabpage)) do
+      local buf = vim.api.nvim_win_get_buf(win)
+      -- floating windows (notifications, pickers) are not part of the layout
+      if not seen[buf] and vim.api.nvim_win_get_config(win).relative == "" then
+        seen[buf] = true
+        local bufname = vim.fn.bufname(buf)
+        table.insert(names, bufname ~= "" and myconfig.normalize_path(bufname) or "[No Name]")
+      end
+    end
+    local marker = i == current and "*" or " "
+    table.insert(tabs, string.format("%s %d: (%s)", marker, i, table.concat(names, " | ")))
   end
 
   if use_fzf then
@@ -468,7 +481,7 @@ function list_tabs()
     vim.fn["fzf#run"]({
       source = tabs,
       sink = function(selected)
-        local index = tonumber(selected:match("^(%d+):"))
+        local index = tonumber(selected:match("^[* ] (%d+):"))
         if index then
           vim.cmd("tabnext " .. index)
         end
@@ -482,7 +495,7 @@ function list_tabs()
       prompt = "Tabs> ",
       actions = {
         ["default"] = function(selected)
-          local index = tonumber(selected[1]:match("^(%d+):"))
+          local index = tonumber(selected[1]:match("^[* ] (%d+):"))
           if index then
             vim.cmd("tabnext " .. index)
           end
@@ -500,7 +513,7 @@ function list_tabs()
             value = entry,
             display = entry,
             ordinal = entry,
-            index = tonumber(entry:match("^(%d+):")),
+            index = tonumber(entry:match("^[* ] (%d+):")),
           }
         end,
       }),
