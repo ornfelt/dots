@@ -109,11 +109,11 @@ theme.titlebar_maximized_button_focus_inactive  = theme.confdir .. "/icons/title
 theme.titlebar_maximized_button_normal_active   = theme.confdir .. "/icons/titlebar/maximized_normal_active.png"
 theme.titlebar_maximized_button_focus_active    = theme.confdir .. "/icons/titlebar/maximized_focus_active.png"
 
--- Random wallpaper
-local function get_random_wallpaper(directory, extension)
+-- Random wallpaper: any jpg/jpeg/png directly in ~/Pictures/Wallpapers.
+-- If there is none, theme.wallpaper stays nil and the wallpaper is left alone.
+local function get_random_wallpaper(directory)
     local wallpapers = {}
-    --local command = "find " .. directory .. " -type f -name '*." .. extension .. "'"
-    local command = "find " .. directory .. " -type f \\( -name '*.png' -o -name '*.jpg' \\)"
+    local command = "find '" .. directory .. "' -maxdepth 1 -type f \\( -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.png' \\) 2>/dev/null"
     local handle = io.popen(command)
     if handle then
         for file in handle:lines() do
@@ -125,20 +125,10 @@ local function get_random_wallpaper(directory, extension)
     if #wallpapers > 0 then
         math.randomseed(os.time())
         return wallpapers[math.random(#wallpapers)]
-    else
-        return nil
     end
 end
 
-local wallpaper_directory = os.getenv("HOME") .. "/Pictures/Wallpapers"
-local wallpaper = get_random_wallpaper(wallpaper_directory, "jpg")
-
-if wallpaper then
-    theme.wallpaper = wallpaper
-else
-    print("No wallpapers found in " .. wallpaper_directory)
-    theme.wallpaper = wallpaper_directory .. "/gruv4.png"
-end
+theme.wallpaper = get_random_wallpaper(os.getenv("HOME") .. "/Pictures/Wallpapers")
 
 local markup = lain.util.markup
 
@@ -805,7 +795,9 @@ function theme.at_screen_connect(s)
     if type(wallpaper) == "function" then
         wallpaper = wallpaper(s)
     end
-    gears.wallpaper.maximized(wallpaper, s, true)
+    if wallpaper then
+        gears.wallpaper.maximized(wallpaper, s, true)
+    end
 
     -- Tags
     awful.tag(awful.util.tagnames, s, awful.layout.layouts[1])

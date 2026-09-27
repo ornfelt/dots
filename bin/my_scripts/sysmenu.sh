@@ -52,18 +52,14 @@ case $chosen in
         fi
         ;;
     $lock)
-		if [[ -f /usr/bin/i3lock ]]; then
-			i3lock
-		elif [[ -f /usr/bin/betterlockscreen ]]; then
-			betterlockscreen -l
-		fi
+		# Same as mod-ctrl-x: random lockscreen image, other lockers as fallback
+		~/.local/bin/my_scripts/lock_random.sh
         ;;
     $suspend)
 		ans=$(confirm_exit &)
 		if [[ $ans == "yes" || $ans == "YES" || $ans == "y" || $ans == "Y" ]]; then
-			mpc -q pause
-			amixer set Master mute
-			systemctl suspend
+			# Same as mod-shift-period: pause music, mute, lock (random image), suspend
+			~/.local/bin/my_scripts/lock_random.sh --pause --mute --suspend
 		elif [[ $ans == "no" || $ans == "NO" || $ans == "n" || $ans == "N" ]]; then
 			exit 0
         fi

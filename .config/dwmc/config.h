@@ -309,8 +309,8 @@ static const Key keys[] = {
 
         /* bind mod-shift-x: spawn i3lock */
         { MODKEY|ShiftMask,         XK_x,               spawn,              SHCMD("i3lock") },
-        /* bind mod-ctrl-x: spawn i3lock with wallpaper */
-        { MODKEY|ControlMask,       XK_x,               spawn,              SHCMD("i3lock -i ~/Downloads/lock-wallpaper.png")},
+        /* bind mod-ctrl-x: spawn lock_random.sh (i3lock with a random lockscreen image) */
+        { MODKEY|ControlMask,       XK_x,               spawn,              SHCMD("~/.local/bin/my_scripts/lock_random.sh")},
         /* bind mod-w: spawn yazi ~/ */
         { MODKEY,                   XK_w,               spawn,              SHCMD(TERMINAL " -e " FILEX " " "~/") },
         /* bind mod-e: spawn file_explorer_wd.sh */
@@ -359,11 +359,11 @@ static const Key keys[] = {
         { MODKEY|ShiftMask,         XK_m,               spawn,              SHCMD("spotify") },
         /* bind mod-ctrl-m: spawn open_notes.sh 2 */
         { MODKEY|ControlMask,       XK_m,               spawn,              SHCMD("~/.local/bin/my_scripts/open_notes.sh 2 " TERMINAL) },
-        /* bind mod-shift-comma: spawn suspend_awsm.sh */
+        /* bind mod-shift-comma: spawn suspend_awsm.sh (lock, suspend) */
         { MODKEY|ShiftMask,         XK_comma,           spawn,              SHCMD("~/.local/bin/my_scripts/suspend_awsm.sh")},
         /* bind mod-ctrl-comma: spawn suspend_mute.sh */
         { MODKEY|ControlMask,       XK_comma,           spawn,              SHCMD("~/.local/bin/my_scripts/alert_exit.sh && ~/.local/bin/my_scripts/suspend_mute.sh")},
-        /* bind mod-shift-period: spawn suspend_awsm_lock.sh (lock, mute, suspend) */
+        /* bind mod-shift-period: spawn suspend_awsm_lock.sh (mute, lock, suspend) */
         { MODKEY|ShiftMask,         XK_period,          spawn,              SHCMD("~/.local/bin/my_scripts/suspend_awsm_lock.sh")},
         /* bind mod-v: spawn clip_history.sh */
         { MODKEY,                   XK_v,               spawn,              SHCMD("~/.local/bin/my_scripts/clip_history.sh") },

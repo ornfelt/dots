@@ -299,7 +299,11 @@ map <c-n> push :mkdir<space>
 
 # Image commands
 cmd convert_rotate ${{
-	convert -rotate 90 $fx $fx
+	# One file at a time: "convert a b a b" would write a and b into b
+	set -f
+	for img in $fx; do
+		magick "$img" -rotate 90 "$img"
+	done
 }}
 
 cmd set_bg ${{

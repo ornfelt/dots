@@ -2,7 +2,7 @@
 
 #sh ~/.fehbg
 export DISPLAY=:0
-feh --bg-fill --randomize ~/Pictures/Wallpapers/* &
+~/.local/bin/my_scripts/random_wallpaper.sh &
 #wmname compiz
 
 #arr=("xfce4-power-man" "copyq" "fcitx5" "dunst" "clipmenud" "qv2ray" "redshift-gtk" "mpd" "picom" "qbittorrent" "nutstore" "solaar")

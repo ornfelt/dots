@@ -107,7 +107,7 @@ modkey = "Mod4Mask"   # MODKEY; MODKEY1 (Mod1Mask) is written out for Tab
 commands.dmenucmd = ["dmenu_run", "-m", "0", "-fn", "JetBrainsMono Nerd Font:size=11:style=bold"]
 commands.termcmd  = ["wezterm"]
 commands.lockcmd           = ["/bin/sh", "-c", "i3lock"]
-commands.lockwallpapercmd  = ["/bin/sh", "-c", "i3lock -i ~/Downloads/lock-wallpaper.png"]
+commands.lockwallpapercmd  = ["/bin/sh", "-c", "~/.local/bin/my_scripts/lock_random.sh"]
 commands.filexcmd          = ["/bin/sh", "-c", "wezterm -e yazi ~/"]
 commands.fileexplorerwdcmd = ["/bin/sh", "-c", "~/.local/bin/my_scripts/file_explorer_wd.sh wezterm yazi"]
 commands.powermenucmd      = ["/bin/sh", "-c", "~/.local/bin/my_scripts/sysmenu.sh"]
@@ -324,7 +324,7 @@ keys = [
 
 	# /* bind mod-shift-x: spawn i3lock */
 	{ mod = "MODKEY|ShiftMask",         key = "x",        func = "spawn",           arg = { v = "lockcmd" } },
-	# /* bind mod-ctrl-x: spawn i3lock with wallpaper */
+	# /* bind mod-ctrl-x: spawn lock_random.sh (i3lock with a random lockscreen image) */
 	{ mod = "MODKEY|ControlMask",       key = "x",        func = "spawn",           arg = { v = "lockwallpapercmd" } },
 	# /* bind mod-w: spawn yazi ~/ */
 	{ mod = "MODKEY",                   key = "w",        func = "spawn",           arg = { v = "filexcmd" } },
@@ -374,11 +374,11 @@ keys = [
 	{ mod = "MODKEY|ShiftMask",         key = "m",        func = "spawn",           arg = { v = "spotifycmd" } },
 	# /* bind mod-ctrl-m: spawn open_notes.sh 2 */
 	{ mod = "MODKEY|ControlMask",       key = "m",        func = "spawn",           arg = { v = "notes2cmd" } },
-	# /* bind mod-shift-comma: spawn suspend_awsm.sh */
+	# /* bind mod-shift-comma: spawn suspend_awsm.sh (lock, suspend) */
 	{ mod = "MODKEY|ShiftMask",         key = "comma",    func = "spawn",           arg = { v = "suspendcmd" } },
 	# /* bind mod-ctrl-comma: spawn suspend_mute.sh */
 	{ mod = "MODKEY|ControlMask",       key = "comma",    func = "spawn",           arg = { v = "suspendmutecmd" } },
-	# /* bind mod-shift-period: spawn suspend_awsm_lock.sh (lock, mute, suspend) */
+	# /* bind mod-shift-period: spawn suspend_awsm_lock.sh (mute, lock, suspend) */
 	{ mod = "MODKEY|ShiftMask",         key = "period",   func = "spawn",           arg = { v = "locksuspendcmd" } },
 	# /* bind mod-v: spawn clip_history.sh */
 	{ mod = "MODKEY",                   key = "v",        func = "spawn",           arg = { v = "cliphistorycmd" } },

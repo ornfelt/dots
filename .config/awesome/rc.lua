@@ -577,15 +577,15 @@ globalkeys = mytable.join(
     spawn("i3lock")     end,
               {description = "i3lock", group = "launcher"}),
 
-    -- bind mod-ctrl-x: spawn i3lock with wallpaper
+    -- bind mod-ctrl-x: spawn lock_random.sh (i3lock with a random lockscreen image)
     awful.key({ modkey, "Control"     },            "x",        function ()
-    spawn("i3lock -i /home/jonas/Downloads/lock-wallpaper.png")  end,
+    spawn("/home/jonas/.local/bin/my_scripts/lock_random.sh")  end,
               {description = "i3lock pic", group = "launcher"}),
 
-    -- bind mod-shift-comma: spawn suspend_awsm.sh
+    -- bind mod-shift-comma: spawn suspend_awsm.sh (lock, suspend)
     awful.key({ modkey, "Shift"    },            "comma",     function ()
     spawn("/home/jonas/.local/bin/my_scripts/suspend_awsm.sh")   end,
-              {description = "Suspend", group = "launcher"}),
+              {description = "Lock and suspend", group = "launcher"}),
 
     -- bind mod-ctrl-comma: spawn suspend_mute.sh
     awful.key({ modkey, ctrlkey    },            "comma",     function ()
@@ -597,10 +597,10 @@ globalkeys = mytable.join(
     spawn("/home/jonas/.local/bin/my_scripts/progrm_helper.sh " .. terminal)   end,
               {description = "Open a note (progrm_helper)", group = "launcher"}),
 
-    -- bind mod-shift-period: spawn suspend_awsm_lock.sh
+    -- bind mod-shift-period: spawn suspend_awsm_lock.sh (mute, lock, suspend)
     awful.key({ modkey, "Shift"    },            "period",     function ()
     spawn("/home/jonas/.local/bin/my_scripts/suspend_awsm_lock.sh")    end,
-              {description = "Lock, mute and suspend", group = "launcher"}),
+              {description = "Mute, lock and suspend", group = "launcher"}),
 
     -- bind mod-v: spawn clip_history.sh
     awful.key({modkey},            "v",        function ()
