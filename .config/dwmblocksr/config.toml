@@ -30,7 +30,7 @@ blocks = [
     { icon = "",               command = "~/.local/bin/statusbar/sb-sysinfo cpu",        interval = 2,    signal = 15 },
     # network: wifi/ethernet, cyan online, red offline, orange while restarting NetworkManager; clicks: details, restart, wifi menu
     { icon = "",               command = "~/.local/bin/statusbar/sb-network",            interval = 3,    signal = 16 },
-    { icon = "^2^  ",    command = "~/.local/bin/statusbar/weather",               interval = 1800, signal = 5 },
+    { icon = "^2^ ",    command = "~/.local/bin/statusbar/weather",               interval = 1800, signal = 5 },
     { icon = "^3^  ",    command = "~/.local/bin/statusbar/cputemp",               interval = 5,    signal = 4 },
     { icon = "^4^ ",           command = "~/.local/bin/statusbar/sb-volume",             interval = 0,    signal = 10 },
     { icon = "^5^ ",           command = "~/.local/bin/statusbar/sb-battery",            interval = 5,    signal = 3, battery = true },
