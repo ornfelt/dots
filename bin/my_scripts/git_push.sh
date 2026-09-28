@@ -212,5 +212,19 @@ if [[ "$OutputOnly" == "true" ]]; then
 else
   #echo "Executing: $pushCommandActual"
   echo "Executing: $pushCommandDisplay"
-  eval "$pushCommandActual"
+  eval "$pushCommandActual" || exit 1
+fi
+
+# dots and dotfiles share one commit message. Once dots is pushed with it,
+# empty both copies so the next commit starts from a blank message.
+dotsDir="$HOME/Downloads/dots"
+dotsMessage="$dotsDir/commit_message.txt"
+dotfilesMessage="$HOME/Downloads/dotfiles/commit_message.txt"
+if [[ "$OutputOnly" != "true" \
+      && "$(git rev-parse --show-toplevel 2>/dev/null)" -ef "$dotsDir" \
+      && -s "$dotsMessage" && -f "$dotfilesMessage" ]] \
+   && cmp -s "$dotsMessage" "$dotfilesMessage"; then
+  : > "$dotsMessage"
+  : > "$dotfilesMessage"
+  echo "Cleared commit_message.txt in dots and dotfiles"
 fi
