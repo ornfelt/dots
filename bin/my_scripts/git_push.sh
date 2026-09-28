@@ -1,5 +1,14 @@
 #!/usr/bin/env bash
 
+RESET='\033[0m'
+RED='\033[31m'
+GREEN='\033[32m'
+YELLOW='\033[33m'
+BLUE='\033[34m'
+DARKGRAY='\033[90m'
+
+error() { printf "%b%s%b\n" "$RED" "$1" "$RESET"; }
+
 # Regenerate and commit the diff files for the repos listed below (dwm, dmenu,
 # st, awsm, ...) before pushing. Off by default; turn on with --diff.
 GenerateDiffs=false
@@ -36,7 +45,7 @@ for arg in "$@"; do
     -d|--diff) GenerateDiffs=true ;;
     -o|--output-only) OutputOnly=true ;;
     *)
-      echo "Unknown argument: $arg" >&2
+      error "Unknown argument: $arg" >&2
       Usage >&2
       exit 1
       ;;
@@ -47,7 +56,7 @@ currentBranch="$(git rev-parse --abbrev-ref HEAD 2>/dev/null)"
 pushUrl="$(git remote get-url --push origin 2>/dev/null)"
 
 if [[ -z "$currentBranch" || -z "$pushUrl" ]]; then
-  echo "Unable to determine current branch or remote URL."
+  error "Unable to determine current branch or remote URL."
   exit 1
 fi
 
@@ -55,7 +64,7 @@ if [[ "$pushUrl" =~ github\.com[:/]([^/]+)/([^/]+)(\.git)?$ ]]; then
   repoOwner="${BASH_REMATCH[1]}"
   repoName="${BASH_REMATCH[2]}"
 else
-  echo "Could not extract owner/organization from remote URL."
+  error "Could not extract owner/organization from remote URL."
   exit 1
 fi
 
@@ -67,9 +76,9 @@ function AddUpstreamIfMissing() {
   existingUpstream="$(git remote get-url upstream 2>/dev/null)"
   if [[ -z "$existingUpstream" ]]; then
     commands+=("git remote add upstream $upstreamUrl")
-    echo "upstream url did NOT exist... Added: $upstreamUrl"
+    printf "%bupstream url did NOT exist... Added: %s%b\n" "$YELLOW" "$upstreamUrl" "$RESET"
   else
-    echo "upstream url already added: $upstreamUrl"
+    printf "%bupstream url already added: %s%b\n" "$DARKGRAY" "$upstreamUrl" "$RESET"
   fi
 }
 
@@ -165,7 +174,7 @@ if [[ "$OutputOnly" == "true" ]]; then
   done
 else
   for cmd in "${commands[@]}"; do
-    echo "Executing: $cmd"
+    printf "%bExecuting:%b %s\n" "$BLUE" "$RESET" "$cmd"
     eval "$cmd"
   done
 fi
@@ -178,7 +187,7 @@ case "$repoOwner" in
     tokenEnvVarName="ALT_GITHUB_TOKEN"
     ;;
   *)
-    echo "Unsupported repository owner: $repoOwner"
+    error "Unsupported repository owner: $repoOwner"
     exit 1
     ;;
 esac
@@ -190,7 +199,7 @@ fi
 tokenValue="${!tokenEnvVarName}"
 
 if [[ -z "$tokenValue" ]]; then
-  echo "No token found for repository owner: $repoOwner"
+  error "No token found for repository owner: $repoOwner"
   exit 1
 fi
 
@@ -211,8 +220,12 @@ if [[ "$OutputOnly" == "true" ]]; then
   echo "$pushCommandDisplay"
 else
   #echo "Executing: $pushCommandActual"
-  echo "Executing: $pushCommandDisplay"
-  eval "$pushCommandActual" || exit 1
+  printf "%bExecuting:%b %s\n" "$BLUE" "$RESET" "$pushCommandDisplay"
+  if ! eval "$pushCommandActual"; then
+    error "Push of $currentBranch to $repoOwner/${repoName%.git} failed."
+    exit 1
+  fi
+  printf "%bPushed %s to %s/%s.%b\n" "$GREEN" "$currentBranch" "$repoOwner" "${repoName%.git}" "$RESET"
 fi
 
 # dots and dotfiles share one commit message. Once dots is pushed with it,
@@ -226,5 +239,5 @@ if [[ "$OutputOnly" != "true" \
    && cmp -s "$dotsMessage" "$dotfilesMessage"; then
   : > "$dotsMessage"
   : > "$dotfilesMessage"
-  echo "Cleared commit_message.txt in dots and dotfiles"
+  printf "%bCleared commit_message.txt in dots and dotfiles.%b\n" "$GREEN" "$RESET"
 fi
