@@ -8,6 +8,7 @@ local status          = require 'status'
 local claude          = require 'claude'
 local nvim_server     = require 'nvim_server'
 local bg_status       = require 'bg_status'
+local claude_usage    = require 'claude_usage'
 
 -- Hard-coded switch: set to true to enable the extra debug notifications and
 -- log calls that are normally turned off. The notifications go through the
@@ -1527,6 +1528,17 @@ table.insert(config.keys, {
   action = wezterm.action_callback(open_github_repo),
 })
 
+-- Show / hide the Claude Code usage on the status line (see claude_usage.lua);
+-- hidden also means the worker stops fetching it
+-- bind leader-c: claude_usage.toggle
+table.insert(config.keys, {
+  key = "c",
+  mods = "LEADER",
+  action = wezterm.action_callback(function(win, _pane)
+    claude_usage.toggle(win)
+  end),
+})
+
 --config.default_gui_startup_args = { 'connect', 'unix' }
 if wezterm.target_triple == 'x86_64-pc-windows-msvc' or wezterm.target_triple == 'x86_64-pc-windows-gnu' then
   --config.default_prog = { 'pwsh.exe', '-NoLogo' }
@@ -1739,10 +1751,21 @@ wezterm.on("update-right-status", function(window, pane)
   -- Starts the background worker on the first tick (see bg_status.lua); its
   -- last result is only read from the state file below, never computed here
   bg_status.poll(window)
+  -- Tells the worker to keep fetching the Claude usage while it is shown
+  claude_usage.poll(window)
+
+  -- Claude usage, then the worker's icons (nvim / keyboard)
+  local function worker_segments()
+    local segments = claude_usage.segments()
+    for _, segment in ipairs(bg_status.segments()) do
+      table.insert(segments, segment)
+    end
+    return segments
+  end
 
   local cwd_uri = pane:get_current_working_dir()
   if not cwd_uri then
-    status.render(window, bg_status.segments())
+    status.render(window, worker_segments())
     return
   end
 
@@ -1818,8 +1841,9 @@ wezterm.on("update-right-status", function(window, pane)
     end
   end
 
-  -- Worker output (nvim servers / keyboard) goes in front of the branch
-  local segments = bg_status.segments()
+  -- Worker output (Claude usage, nvim servers / keyboard) goes in front of the
+  -- branch
+  local segments = worker_segments()
 
   if git_branch then
     table.insert(segments, { Foreground = { Color = branch_color } })

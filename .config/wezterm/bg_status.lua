@@ -20,6 +20,7 @@
 --   bg_status.start()                 -- from "gui-startup"
 --   bg_status.poll(window)            -- from "update-right-status"
 --   bg_status.segments()              -- segments for set_right_status
+--   bg_status.current_state()         -- the worker's last result, or nil
 
 local wezterm = require 'wezterm' --[[@as Wezterm]]
 
@@ -182,6 +183,9 @@ local function current_state()
   end
   return state
 end
+
+-- Shared with claude_usage.lua, which draws the worker's claude_usage block
+M.current_state = current_state
 
 -- ---------------------------------------------------------------------------
 -- Starting the worker
