@@ -319,6 +319,16 @@ else
     log_ok "tmux-resurrect already installed."
 fi
 
+# tpm (tmux plugin manager), then install the remaining @plugin entries (tmux-fzf etc.)
+if [ ! -d "$HOME/.tmux/plugins/tpm/.git" ]; then
+    log_step "Installing tpm"
+    git clone https://github.com/tmux-plugins/tpm "$HOME/.tmux/plugins/tpm"
+    log_ok "tpm installed!"
+else
+    log_ok "tpm already installed."
+fi
+"$HOME/.tmux/plugins/tpm/bin/install_plugins" || log_info "tpm install_plugins failed; run prefix+I inside tmux"
+
 # Copy tmux session (resurrect) file if none exist
 TMUX_TARGET_DIR="$HOME/.local/share/tmux/resurrect"
 SESSION_DIR="$CURRENT_DIR/tmux_session"
