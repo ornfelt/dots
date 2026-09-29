@@ -70,6 +70,18 @@ M.notification_separator = '  ·  '
 -- Between the parts of "wezterm 5052, tab 3, pane 18"
 M.location_separator = ', '
 
+-- Hard-coded switch: a short status message, "🤖 gfx (t3 p18)" instead of
+-- "🤖 Finished in gfx (tab 3, pane 18)" - one letter per location part, no
+-- "Finished in" and the label cut to M.short_label_max_length. "Error in"
+-- stays, so a failure still reads as one next to a finished response.
+M.short_notification = true
+-- The one letter forms of the location parts, and what joins them
+M.short_location_labels = { wezterm = 'w', window = 'win', tab = 't', pane = 'p' }
+M.short_location_separator = ' '
+-- Labels longer than this are cut and get M.short_label_ellipsis appended
+M.short_label_max_length = 15
+M.short_label_ellipsis = '…' -- U+2026, one cell instead of three
+
 local home = (os.getenv('HOME') or os.getenv('USERPROFILE') or '.'):gsub('\\', '/')
 -- Kept in sync with the hook scripts in ~/.claude/hooks/
 M.state_dir = home .. '/.wezterm/claude-status'
@@ -168,6 +180,31 @@ local function index_of(list, id, get_id)
   return nil
 end
 
+--- "tab 3" or, shortened, "t3"
+local function location_part(kind, value)
+  if M.short_notification then
+    return (M.short_location_labels[kind] or kind) .. value
+  end
+  return kind .. ' ' .. value
+end
+
+local function location_separator()
+  if M.short_notification then
+    return M.short_location_separator
+  end
+  return M.location_separator
+end
+
+--- The label, cut to M.short_label_max_length characters
+local function short_label(label)
+  local length = utf8.len(label)
+  if not length or length <= M.short_label_max_length then
+    return label
+  end
+  local after = utf8.offset(label, M.short_label_max_length + 1)
+  return label:sub(1, (after or (M.short_label_max_length + 1)) - 1) .. M.short_label_ellipsis
+end
+
 --- "tab 3, pane 18" for a pane of this instance, from the live mux (tabs may
 -- have moved since the hook ran), with the window only when there are several.
 local function live_location(entry)
@@ -178,27 +215,27 @@ local function live_location(entry)
     local windows = wezterm.mux.all_windows()
     if #windows > 1 then
       local window_index = index_of(windows, mux_window:window_id(), function(w) return w:window_id() end)
-      table.insert(parts, 'window ' .. window_index)
+      table.insert(parts, location_part('window', window_index))
     end
     local tab_index = index_of(mux_window:tabs(), mux_pane:tab():tab_id(), function(t) return t:tab_id() end)
-    table.insert(parts, 'tab ' .. tab_index)
+    table.insert(parts, location_part('tab', tab_index))
   end)
-  table.insert(parts, 'pane ' .. entry.pane_id)
-  return table.concat(parts, M.location_separator)
+  table.insert(parts, location_part('pane', entry.pane_id))
+  return table.concat(parts, location_separator())
 end
 
 --- "wezterm 5052, tab 3, pane 18" for a pane of another instance, from what
 -- its hook wrote down.
 local function remote_location(entry)
-  local parts = { 'wezterm ' .. entry.instance }
+  local parts = { location_part('wezterm', entry.instance) }
   if entry.window and entry.window ~= '1' then
-    table.insert(parts, 'window ' .. entry.window)
+    table.insert(parts, location_part('window', entry.window))
   end
   if entry.tab then
-    table.insert(parts, 'tab ' .. entry.tab)
+    table.insert(parts, location_part('tab', entry.tab))
   end
-  table.insert(parts, 'pane ' .. entry.pane_id)
-  return table.concat(parts, M.location_separator)
+  table.insert(parts, location_part('pane', entry.pane_id))
+  return table.concat(parts, location_separator())
 end
 
 --- "gfx (rate_limit, tab 3, pane 18)" for every entry, in a stable order.
@@ -211,7 +248,11 @@ local function describe(entries)
       table.insert(details, entry.error)
     end
     table.insert(details, entry.mine and live_location(entry) or remote_location(entry))
-    table.insert(descriptions, (entry.label or 'claude code') .. ' (' .. table.concat(details, M.location_separator) .. ')')
+    local label = entry.label or 'claude code'
+    if M.short_notification then
+      label = short_label(label)
+    end
+    table.insert(descriptions, label .. ' (' .. table.concat(details, location_separator()) .. ')')
   end
   return descriptions
 end
@@ -256,7 +297,8 @@ local function announce(fresh, fallback_window)
     table.insert(parts, failed_icon .. 'Error in ' .. table.concat(describe(fresh_failed), ', '))
   end
   if #fresh_done > 0 then
-    table.insert(parts, done_icon .. 'Finished in ' .. table.concat(describe(fresh_done), ', '))
+    local done_prefix = M.short_notification and '' or 'Finished in '
+    table.insert(parts, done_icon .. done_prefix .. table.concat(describe(fresh_done), ', '))
   end
   if #waiting > 0 then
     table.insert(parts, 'waiting: ' .. table.concat(describe(waiting), ', '))

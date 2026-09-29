@@ -20,7 +20,8 @@
 --   choice in M.toggle_file, which then wins over M.enabled; delete that file to
 --   go back to M.enabled. While it is on, the status tick keeps M.request_file
 --   fresh, and the worker only fetches while that file is fresh - so toggled
---   off (or every wezterm closed) means no request at all.
+--   off (or every wezterm closed) means no request at all. On a host
+--   M.disabled_hostname_parts names it stays off whatever the toggle says.
 --
 -- Needs the worker, i.e. bg_status.enabled (on linux: WEZ_ENABLE_ON_LINUX).
 --
@@ -38,6 +39,12 @@ local M = {}
 -- Hard-coded default: show (and fetch) the usage. Only used while there is no
 -- M.toggle_file, i.e. until leader-c is pressed the first time.
 M.enabled = true
+
+-- Hosts the usage stays off on, whatever M.enabled and the toggle file say: a
+-- windows computer name (%COMPUTERNAME%) containing one of these, case
+-- insensitive. Same list as CLAUDE_USAGE_DISABLED_HOSTNAME_PARTS in
+-- scripts/bg/wez_bg_tasks.py.
+M.disabled_hostname_parts = { 'devpc' }
 
 -- Append the extra usage spent (" +30.19€") while there is any. Same switch as
 -- claude_show_spend in awesome's theme.lua, and off there too.
@@ -118,8 +125,27 @@ local function read_toggle()
   return nil
 end
 
+local is_windows = wezterm.target_triple:find('windows') ~= nil
+
+--- true on a host M.disabled_hostname_parts matches (windows only)
+local function host_disabled()
+  if not is_windows then
+    return false
+  end
+  local name = (os.getenv('COMPUTERNAME') or ''):lower()
+  for _, part in ipairs(M.disabled_hostname_parts) do
+    if name:find(part:lower(), 1, true) then
+      return true
+    end
+  end
+  return false
+end
+
 --- Whether the usage is shown (and fetched) right now.
 function M.is_enabled()
+  if host_disabled() then
+    return false
+  end
   local now = os.time()
   if now - toggle_cache.read_at >= M.cache_seconds then
     toggle_cache.read_at = now
@@ -153,6 +179,12 @@ end
 -- CLAUDE_USAGE_REQUEST_MAX_AGE_SECONDS (unless another wezterm instance still
 -- has it on, which touches it again).
 function M.toggle(window)
+  if host_disabled() then
+    status.notify(window, M.notification_title,
+      'Claude usage is off on this host (' .. (os.getenv('COMPUTERNAME') or '?') .. ')',
+      'warning')
+    return
+  end
   local enabled = not M.is_enabled()
   if not write_file(M.toggle_file, enabled and 'on' or 'off') then
     status.notify(window, M.notification_title, 'Cannot write ' .. M.toggle_file, false)
