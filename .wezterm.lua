@@ -269,6 +269,8 @@ config.switch_to_last_active_tab_when_closing_tab = true
 
 local TAB_MAX_WIDTH = 20
 config.tab_max_width = TAB_MAX_WIDTH
+-- true: full cwd path in tab titles, start truncated with …; false: dir name only
+local TAB_TITLE_FULL_PATH = true
 
 config.colors = {
   tab_bar = {
@@ -1410,7 +1412,7 @@ local function short_error(text, fallback)
     message = fallback or ""
   end
   if #message > MAX_STATUS_ERROR_LEN then
-    message = message:sub(1, MAX_STATUS_ERROR_LEN) .. "..."
+    message = message:sub(1, MAX_STATUS_ERROR_LEN) .. "…"
   end
   return message
 end
@@ -1674,6 +1676,10 @@ wezterm.on("format-tab-title", function(tab)
     end
   end
 
+  if not TAB_TITLE_FULL_PATH and new_title ~= "~/" then
+    new_title = new_title:match("([^/]+)/?$") or new_title
+  end
+
   new_title = new_title .. " "
 
   -- Claude Code: robot icon while a finished response hasn't been visited yet,
@@ -1686,7 +1692,8 @@ wezterm.on("format-tab-title", function(tab)
 
   if #new_title > max_title_len then
     --new_title = ".." .. new_title:sub(-(max_title_len-3)) -- If use_fancy_tab_bar
-    new_title = ".." .. new_title:sub(-(max_title_len-3))
+    -- "…" is one column but 3 bytes, so keep max_title_len-2 bytes of the path
+    new_title = "…" .. new_title:sub(-(max_title_len-2))
   end
 
   -- Pad and center if too short
