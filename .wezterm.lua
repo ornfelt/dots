@@ -371,6 +371,30 @@ local TOAST_TIMEOUT_MS = is_linux and 3000 or 2000
 -- Keep the toast fallback in status.lua on the same timeout as the old toasts
 status.toast_timeout_ms = TOAST_TIMEOUT_MS
 
+-- Paste the clipboard without its trailing newlines (\n or \r\n, any number).
+-- wezterm has no lua api to read the clipboard, so ask xclip / powershell;
+-- if that fails, fall back to a plain (untrimmed) paste.
+local function paste_clipboard_trimmed(window, pane)
+  local args
+  if is_linux then
+    -- timeout: never leave the gui waiting on a stuck clipboard owner
+    args = { "timeout", "2", "xclip", "-out", "-selection", "clipboard" }
+  else
+    -- UTF-8 output so å/ä/ö survive; Write adds no newline of its own
+    args = { "powershell.exe", "-NoProfile", "-NonInteractive", "-Command",
+      "[Console]::OutputEncoding = [Text.Encoding]::UTF8; [Console]::Out.Write((Get-Clipboard -Raw))" }
+  end
+  local ok, success, stdout = pcall(wezterm.run_child_process, args)
+  if ok and success and stdout then
+    local text = stdout:gsub("[\r\n]+$", "")
+    if text ~= "" then
+      pane:paste(text)
+    end
+  else
+    window:perform_action(act.PasteFrom(is_linux and "Clipboard" or "PrimarySelection"), pane)
+  end
+end
+
 local function get_prompt_username()
   if is_linux then
     return os.getenv("USER") or "jonas"
@@ -930,8 +954,10 @@ config.keys = {
   -- Copying
   -- bind alt-shift-c: wezterm.action.CopyTo ClipboardAndPrimarySelection
   { key = 'C', mods = 'ALT|SHIFT', action = wezterm.action.CopyTo 'ClipboardAndPrimarySelection', },
-  -- bind alt-shift-v: wezterm.action.PasteFrom
-  { key = 'V', mods = 'ALT|SHIFT', action = is_linux and wezterm.action.PasteFrom 'Clipboard' or wezterm.action.PasteFrom 'PrimarySelection' },
+  -- Old plain paste (keeps trailing newlines):
+  --{ key = 'V', mods = 'ALT|SHIFT', action = is_linux and wezterm.action.PasteFrom 'Clipboard' or wezterm.action.PasteFrom 'PrimarySelection' },
+  -- bind alt-shift-v: paste the clipboard without trailing newlines
+  { key = 'V', mods = 'ALT|SHIFT', action = wezterm.action_callback(paste_clipboard_trimmed) },
 
   -- Session manager
   -- bind leader-m: wezterm.action.EmitEvent save_session
