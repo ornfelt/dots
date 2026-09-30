@@ -404,6 +404,33 @@ fmt_num() { # value decimals -> trimmed fixed-point
 
 json_escape() { printf '%s' "${1:-}" | sed 's/\\/\\\\/g; s/"/\\"/g'; }
 
+# Output name -> "width_mm height_mm" from the kernel's copy of the EDID, for the
+# backends that report no physical size (sway, hyprland). Empty when there is none.
+edid_size_mm() {
+    local f
+    for f in /sys/class/drm/card*-"$1"/edid; do
+        [[ -s "$f" ]] || continue
+        od -An -tu1 -v "$f" | awk '
+            { for (i = 1; i <= NF; i++) b[n++] = $i }
+            END {
+                if (n < 128) exit
+                # the first detailed timing descriptor holds the size in mm; a zero
+                # pixel clock means it is not a timing, so use the header cm instead
+                if (b[54] || b[55]) {
+                    w = b[66] + int(b[68] / 16) * 256; h = b[67] + (b[68] % 16) * 256
+                    if (w && h) { print w, h; exit }
+                }
+                if (b[21] && b[22]) print b[21] * 10, b[22] * 10
+            }'
+        return
+    done
+}
+
+diagonal_inch() { # width_mm height_mm -> diagonal in inches, one decimal
+    [[ -z "${1:-}" || "${1:-}" == "0" || -z "${2:-}" ]] && return
+    calc "printf \"%.1f\", sqrt($1 * $1 + $2 * $2) / $MM_PER_INCH"
+}
+
 # ------------------------------------------------------------- debug output --
 show_commands() {
     local grep_filter=""
@@ -449,6 +476,8 @@ show_commands() {
     echo "# the DPI handed to the toolkits, and the resulting scaling percentage"
     echo "xrdb -query | grep -i '^Xft.dpi'"
     echo "xdpyinfo | grep -E 'dimensions|resolution'"
+    echo "# physical size in mm when the backend has none (EDID bytes 66-68), for the diagonal"
+    echo "od -An -tu1 -v /sys/class/drm/card*-<output>/edid"
     echo "# the cursor size a client gets for a custom cursor of its own"
     echo "echo \"\${XCURSOR_SIZE:-\$(gsettings get $GSETTINGS_IFACE cursor-size)}\""
     echo "# toolkit overrides that change what a client is handed"
@@ -491,10 +520,12 @@ print_record() {
         legacy_note="the compositor upscales this to ${w}x${h}"
     fi
 
+    [[ -z "$mm_w" || "$mm_w" == "0" ]] && read -r mm_w mm_h < <(edid_size_mm "$name")
+
     local phys_dpi="" diag=""
     if [[ -n "$mm_w" && "$mm_w" != "0" ]]; then
         phys_dpi="$(calc "printf \"%d\", int($w * $MM_PER_INCH / $mm_w + 0.5)")"
-        diag="$(calc "printf \"%.1f\", sqrt($mm_w * $mm_w + $mm_h * $mm_h) / $MM_PER_INCH")"
+        diag="$(diagonal_inch "$mm_w" "$mm_h")"
     fi
 
     echo
@@ -505,6 +536,10 @@ print_record() {
     if [[ -n "$mm_w" && "$mm_w" != "0" ]]; then
         kv "PhysicalSize" "${mm_w}mm x ${mm_h}mm (${diag}\")"
         kv "PhysicalDPI"  "$phys_dpi  ${C_DIM}true pixel density${C_RESET}"
+        # a 23.8" panel is sold as a 24 inch monitor
+        kv "Diagonal"     "${diag}\" (~$(fmt_num "$diag" 0) inch)  ${C_DIM}estimated from the physical size${C_RESET}"
+    else
+        kv "Diagonal"     "$UNKNOWN_TEXT  ${C_DIM}no physical size reported${C_RESET}"
     fi
     kv "DPI"       "$dpi"
     kv "Scaling"   "${scaling}%"
@@ -532,16 +567,21 @@ json_record() {
         legacy_w="$(round_div "$w" "$scale")"; legacy_h="$(round_div "$h" "$scale")"
     fi
 
-    local phys_dpi="null"
-    [[ -n "$mm_w" && "$mm_w" != "0" ]] && phys_dpi="$(calc "printf \"%d\", int($w * $MM_PER_INCH / $mm_w + 0.5)")"
+    [[ -z "$mm_w" || "$mm_w" == "0" ]] && read -r mm_w mm_h < <(edid_size_mm "$name")
+
+    local phys_dpi="null" diag="null"
+    if [[ -n "$mm_w" && "$mm_w" != "0" ]]; then
+        phys_dpi="$(calc "printf \"%d\", int($w * $MM_PER_INCH / $mm_w + 0.5)")"
+        diag="$(diagonal_inch "$mm_w" "$mm_h")"
+    fi
 
     printf '  {"name": "%s", "primary": %s, "width": %s, "height": %s, "x": %s, "y": %s,' \
         "$(json_escape "$name")" "$( [[ "$primary" == "1" ]] && echo true || echo false )" \
         "${w:-null}" "${h:-null}" "${x:-null}" "${y:-null}"
     printf ' "refresh": %s, "scale": %s, "dpi": %s, "physicalDpi": %s,' \
         "${refresh:-null}" "$scale" "$dpi" "$phys_dpi"
-    printf ' "widthMm": %s, "heightMm": %s, "cursorSize": %s,' \
-        "${mm_w:-null}" "${mm_h:-null}" "$CURSOR_SIZE"
+    printf ' "widthMm": %s, "heightMm": %s, "diagonalInch": %s, "cursorSize": %s,' \
+        "${mm_w:-null}" "${mm_h:-null}" "$diag" "$CURSOR_SIZE"
     printf ' "legacyWidth": %s, "legacyHeight": %s, "description": "%s"}' \
         "${legacy_w:-null}" "${legacy_h:-null}" "$(json_escape "$desc")"
 }
