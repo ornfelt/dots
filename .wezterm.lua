@@ -46,6 +46,37 @@ config.font = wezterm.font_with_fallback {
   { family = 'Symbols Nerd Font Mono', scale = NERD_FONT_SCALE },
 }
 
+-- The vim and keyboard icons (bg_status.lua) are drawn a little bigger than
+-- NERD_FONT_SCALE. wezterm can only scale a whole font, so bg_status
+-- draws those two icons italic and this rule gives italic text its own nerd
+-- font scale. The nerd font is pinned to its normal style, so the icons are
+-- not slanted, and italic text itself still uses JetBrains Mono Italic.
+-- The vim icon is drawn dim italic as well, which the second rule gives a
+-- scale of its own (dim only lightens the font weight, it keeps the colour).
+-- That rule keeps JetBrains Mono Light Italic for dim italic text, as wezterm's
+-- default would, and pins the nerd font to Regular so the icon isn't faded.
+-- wezterm keeps its default rules for bold and dim text after these.
+local STATUS_ICON_SCALE = 0.9
+local STATUS_VIM_ICON_SCALE = 0.85
+config.font_rules = {
+  {
+    intensity = 'Normal',
+    italic = true,
+    font = wezterm.font_with_fallback {
+      { family = 'JetBrains Mono', style = 'Italic' },
+      { family = 'Symbols Nerd Font Mono', style = 'Normal', scale = STATUS_ICON_SCALE },
+    },
+  },
+  {
+    intensity = 'Half',
+    italic = true,
+    font = wezterm.font_with_fallback {
+      { family = 'JetBrains Mono', weight = 'Light', style = 'Italic' },
+      { family = 'Symbols Nerd Font Mono', weight = 'Regular', style = 'Normal', scale = STATUS_VIM_ICON_SCALE },
+    },
+  },
+}
+
 config.audible_bell = "Disabled"
 
 local user_domain = os.getenv("USERDOMAIN") or ""
@@ -1564,6 +1595,17 @@ table.insert(config.keys, {
   mods = "LEADER",
   action = wezterm.action_callback(function(win, _pane)
     claude_usage.toggle(win)
+  end),
+})
+
+-- Show a mocked failed Claude Code notification, then a finished one, to see
+-- how they look on the status line (see claude.lua)
+-- bind leader-C: claude.demo
+table.insert(config.keys, {
+  key = "C",
+  mods = "LEADER|SHIFT",
+  action = wezterm.action_callback(function(win, pane)
+    claude.demo(win, pane)
   end),
 })
 

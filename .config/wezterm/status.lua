@@ -27,7 +27,7 @@ M.toast_timeout_ms = 4000
 M.tab_bar_hidden_with_single_tab = true
 
 -- Drawn between the message and the regular right status content
-M.separator = '  '
+M.separator = ' '
 
 M.colors = {
   progress = '#83a598',
@@ -107,7 +107,9 @@ end
 -- another wezterm instance already raises one for
 -- @param timeout_ms number|nil: how long the status line message stays,
 -- defaults to M.timeout_ms
-function M.notify(window, title, message, ok, toast, timeout_ms)
+-- @param prefix boolean|nil: false leaves out the M.prefix symbol, for a
+-- message that carries an icon of its own
+function M.notify(window, title, message, ok, toast, timeout_ms, prefix)
   if not M.visible(window) then
     if current then
       current = nil
@@ -121,7 +123,7 @@ function M.notify(window, title, message, ok, toast, timeout_ms)
 
   local kind = ok == 'warning' and 'warning' or (ok and 'success' or 'failure')
   current = {
-    text = M.prefix[kind] .. message,
+    text = (prefix == false and '' or M.prefix[kind]) .. message,
     color = M.colors[kind],
     expires_at = os.time() + math.max(1, math.ceil((timeout_ms or M.timeout_ms) / 1000)),
     window_id = window:window_id(),

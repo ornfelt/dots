@@ -179,3 +179,4 @@ libdebconfclient0
 libdrm-dev
 libdrogon-dev
 libedit2
+libegl1

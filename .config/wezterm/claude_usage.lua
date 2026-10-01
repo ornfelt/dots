@@ -71,12 +71,16 @@ M.separator = '  '
 -- Percentages from which the text turns warn / crit colored (highest window)
 M.thresholds = { warn = 75, crit = 90 }
 
+-- Claude orange, about 8 % darker than the awesome config's
+local CLAUDE_ORANGE = '#C86D50'
+-- local CLAUDE_ORANGE = '#D97757' -- the awesome config's (linux dotfiles)
+
 -- Same as the awesome config: warn is the normal orange there as well, so the
 -- text always matches the icon until it goes red
 M.colors = {
-  icon   = '#D97757',
-  normal = '#D97757',
-  warn   = '#D97757',
+  icon   = CLAUDE_ORANGE,
+  normal = CLAUDE_ORANGE,
+  warn   = CLAUDE_ORANGE,
   crit   = '#C8442E',
   error  = '#9C9A93',
 }

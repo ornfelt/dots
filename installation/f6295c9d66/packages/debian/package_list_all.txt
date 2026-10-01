@@ -927,6 +927,8 @@ libgio-2.0-dev-bin
 libgirara-gtk3-4
 libgirepository-1.0-1
 libgirepository-2.0-0
+libgit2-1.9
+libgit2-dev
 libgl-dev
 libgl1
 libgl1
@@ -1086,6 +1088,8 @@ libhttp-daemon-perl
 libhttp-date-perl
 libhttp-message-perl
 libhttp-negotiate-perl
+libhttp-parser-dev
+libhttp-parser2.9
 libhttpclient-java
 libhttpcore-java
 libhwasan0

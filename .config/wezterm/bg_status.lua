@@ -91,6 +91,17 @@ M.separator = '  '
 -- Between the two icons
 M.icon_separator = ' '
 
+-- Draw the vim and keyboard icons italic, which the font_rules in wezterm.lua
+-- turn into a slightly bigger nerd font (STATUS_ICON_SCALE there)
+M.bigger_icons = true
+-- Drawn right after each bigger icon, in the same italic run. wezterm only
+-- lets a glyph spill past its cell into a following space of the same run and
+-- shrinks it back to one cell otherwise, which undoes the bigger scale.
+M.bigger_icon_room = ' '
+-- Draw the bigger vim icon dim italic as well, which the font_rules turn into
+-- a scale of its own (STATUS_VIM_ICON_SCALE there), a bit below the keyboard's
+M.smaller_vim_icon = true
+
 -- Nerd font glyphs; wezterm falls back to its bundled Symbols Nerd Font when
 -- the main font has no glyph, so these render without configuring a font.
 M.icons = {
@@ -338,8 +349,14 @@ function M.segments()
   local state = current_state()
   local segments = {}
 
-  local function add(text, color)
+  local function add(text, color, italic, half)
     table.insert(segments, { Foreground = { Color = color } })
+    if italic then
+      table.insert(segments, { Attribute = { Italic = true } })
+    end
+    if half then
+      table.insert(segments, { Attribute = { Intensity = 'Half' } })
+    end
     table.insert(segments, { Text = text })
     table.insert(segments, 'ResetAttributes')
   end
@@ -368,18 +385,28 @@ function M.segments()
   local icons = {}
   local nvim_text, nvim_color, nvim_count = nvim_icon(state.nvim)
   if nvim_text then
-    table.insert(icons, { text = nvim_text, color = nvim_color, count = nvim_count })
+    table.insert(icons, { text = nvim_text, color = nvim_color, count = nvim_count,
+      half = M.smaller_vim_icon })
   end
   local keyboard_text, keyboard_color = keyboard_icon(state.keyboard)
   if keyboard_text then
     table.insert(icons, { text = keyboard_text, color = keyboard_color })
   end
 
+  -- True while the last thing drawn is a bigger icon's room, which then
+  -- stands in for the first cell of M.separator
+  local ends_in_room = false
   for index, icon in ipairs(icons) do
-    add(icon.text, icon.color)
+    if M.bigger_icons then
+      add(icon.text .. M.bigger_icon_room, icon.color, true, icon.half)
+    else
+      add(icon.text, icon.color)
+    end
+    ends_in_room = M.bigger_icons
     if icon.count then
       -- Own segment, so the glyph above is never laid out together with digits
       add(icon.count, icon.color)
+      ends_in_room = false
     end
     if index < #icons then
       table.insert(segments, { Text = M.icon_separator })
@@ -387,7 +414,11 @@ function M.segments()
   end
 
   if #segments > 0 then
-    table.insert(segments, { Text = M.separator })
+    local separator = M.separator
+    if ends_in_room then
+      separator = separator:sub(#M.bigger_icon_room + 1)
+    end
+    table.insert(segments, { Text = separator })
   end
   return segments
 end

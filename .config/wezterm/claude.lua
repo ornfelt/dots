@@ -41,12 +41,17 @@ local M = {}
 -- Hard-coded switch: set to false to disable the tab marker and notification
 M.enabled = true
 
+-- Sparkles (close to the starburst Claude Code spins) instead of the robot for
+-- a finished response, in the tab title and on the status line. The robot's
+-- antenna fills the top of its emoji box, so it reads lower than the text.
+M.use_sparkles = true
 -- Prefixed to the title of tabs with a finished, unvisited response.
 -- Nerd font alternatives: '󰚩 ' (nf-md-robot), '🤖 ', '● '
-M.icon = '🤖 '
+M.icon = M.use_sparkles and '✨ ' or '🤖 '
 -- Prefixed instead when that response ended on an API error.
--- nf-md-robot_dead (U+F16A1), from the bundled Symbols Nerd Font Mono
-M.failed_icon = '\u{f16a1} '
+-- A colour emoji like M.icon, so the two match in size and style.
+-- Alternative: '\u{f16a1} ' (nf-md-robot_dead, tinted by failed_icon_color)
+M.failed_icon = '💥 '
 -- Gruvbox orange, same as status.colors.warning
 M.failed_icon_color = status.colors.warning
 -- Columns reserved for the icon when truncating the tab title
@@ -70,11 +75,19 @@ M.notification_separator = '  ·  '
 -- Between the parts of "wezterm 5052, tab 3, pane 18"
 M.location_separator = ', '
 
+-- Put status.lua's ✓ / ⚠ in front of the status line message as well. Off
+-- by default: the robot and failed icons already say how it ended.
+M.notification_prefix = false
+
+-- Session name and error of the mocked notifications from M.demo
+M.demo_label = 'demo'
+M.demo_error = 'rate_limit'
+
 -- Hard-coded switch: a short status message, "🤖 gfx (t3 p18)" instead of
 -- "🤖 Finished in gfx (tab 3, pane 18)" - one letter per location part, no
 -- "Finished in" and the label cut to M.short_label_max_length. "Error in"
 -- stays, so a failure still reads as one next to a finished response.
-M.short_notification = true
+M.short_notification = false
 -- The one letter forms of the location parts, and what joins them
 M.short_location_labels = { wezterm = 'w', window = 'win', tab = 't', pane = 'p' }
 M.short_location_separator = ' '
@@ -305,7 +318,29 @@ local function announce(fresh, fallback_window)
   end
 
   status.notify(target, M.notification_title, table.concat(parts, M.notification_separator),
-    #fresh_failed > 0 and 'warning' or true, any_mine, M.notification_timeout_ms)
+    #fresh_failed > 0 and 'warning' or true, any_mine, M.notification_timeout_ms,
+    M.notification_prefix)
+end
+
+--- Shows a mocked failed notification for the given pane, then a finished one
+-- once that has expired, through the same announce() as real markers. Only
+-- for seeing how they look: no marker is written and no tab gets an icon.
+function M.demo(window, pane)
+  local function mock(kind, error)
+    return {
+      name = 'demo.' .. kind,
+      kind = kind,
+      label = M.demo_label,
+      error = error,
+      instance = M.instance,
+      pane_id = pane:pane_id(),
+      mine = true,
+    }
+  end
+  announce({ mock(FAILED_EXTENSION, M.demo_error) }, window)
+  wezterm.time.call_after(M.notification_timeout_ms / 1000, function()
+    announce({ mock(DONE_EXTENSION) }, window)
+  end)
 end
 
 --- Drops the markers for a pane of this instance, in memory and on disk.

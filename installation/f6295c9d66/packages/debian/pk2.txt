@@ -1,4 +1,3 @@
-libegl1
 libelf1t64
 libenet-dev
 libexiv2-dev
@@ -12,6 +11,7 @@ libfuse-dev
 libgcc-s1
 libgccjit-12-dev
 libgdk-pixbuf-2.0-dev
+libgit2-dev
 libgl1-mesa-dev
 libgl1-mesa-dri
 libgles2
@@ -179,3 +179,4 @@ logrotate
 logsave
 lsb-release
 lsof
+lua-lgi
