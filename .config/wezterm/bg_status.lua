@@ -16,6 +16,10 @@
 --   an flock'ed file elsewhere), so every wezterm instance may call start().
 --   The freshness check below only avoids the pointless interpreter start.
 --
+-- pc_remote.py (scripts/bg/pc_remote.py) is not started from here, but it
+-- leaves its own status file, and poll() turns a tailscale problem in it into
+-- one warning per wezterm session (see M.pc_remote_warnings).
+--
 -- Usage from wezterm.lua:
 --   bg_status.start()                 -- from "gui-startup"
 --   bg_status.poll(window)            -- from "update-right-status"
@@ -23,6 +27,7 @@
 --   bg_status.current_state()         -- the worker's last result, or nil
 
 local wezterm = require 'wezterm' --[[@as Wezterm]]
+local status = require 'status'
 
 local M = {}
 
@@ -46,18 +51,31 @@ local function env_bool(name)
   return not (value == '0' or value == 'off' or value == 'false' or value == 'no')
 end
 
--- Opt in to running the wezterm side of this on linux. The same variable
--- enables nvim_server.lua, so one export covers both modules.
-M.linux_env_switch = 'WEZ_ENABLE_ON_LINUX'
+-- The worker runs on linux too, for its claude job (Claude Code hooks to the
+-- phone, the same as on windows). Every other job decides for itself there:
+-- the keyboard job is AutoHotkey and windows only, the nvim job only runs
+-- while the headless nvim servers are on (WEZ_ENABLE_ON_LINUX /
+-- WEZ_NVIM_SERVERS, the same rules as nvim_server.lua), pc_remote is
+-- windows only (a systemd user service starts it on linux), and the claude
+-- usage stays off until leader-c turns it on. Their icons simply never appear
+-- while they are off.
+--
+-- WEZ_BG_TASKS overrides M.enabled on any platform: 0/off/false/no keeps the
+-- worker from being started at all, anything else starts it. Unset means "use
+-- M.enabled". Set it session-wide (setx on windows, ~/.xinitrc on linux).
+M.env_switch = 'WEZ_BG_TASKS'
 
--- Forced off on linux unless that variable says otherwise: the keyboard half
--- of the worker is AutoHotkey, i.e. windows only whatever this says, and the
--- headless nvim servers it reports on are off there by default too (see
--- nvim_server.lua). With the switch set, the worker still runs and reports on
--- the nvim servers; the keyboard icon simply never appears.
-if not is_windows and not env_bool(M.linux_env_switch) then
-  M.enabled = false
+local override = env_bool(M.env_switch)
+if override ~= nil then
+  M.enabled = override
 end
+
+-- Hard-coded switch: warn when pc_remote.py reports that tailscale is not
+-- installed or not connected (it then skips its tailnet listener). Shown once
+-- per problem per wezterm session, on the status line or as a toast while the
+-- tab bar is hidden, and written to the wezterm log once. Independent of
+-- M.enabled, since pc_remote is not started by this module.
+M.pc_remote_warnings = true
 
 -- Hard-coded switch: how the status line shows what the worker found.
 --   false  only a warning text, and only while the nvim servers are out of
@@ -126,6 +144,15 @@ local home = (os.getenv('HOME') or os.getenv('USERPROFILE') or '.'):gsub('\\', '
 
 -- Written by the worker; keep in sync with STATE_FILE in wez_bg_tasks.py
 M.state_file = home .. '/.wezterm/bg-status.json'
+
+-- Written by pc_remote.py; keep in sync with STATUS_FILE there
+M.pc_remote_status_file = home .. '/.wezterm/pc-remote-status.json'
+-- How often poll() reads it
+M.pc_remote_check_seconds = 10
+-- A status file older than this is ignored: pc_remote rewrites it every
+-- recheck_seconds (60) while it runs, so an old one belongs to a listener that
+-- is gone
+M.pc_remote_stale_seconds = 300
 
 -- The worker, under {my_notes_path}/scripts/bg/
 local notes_dir = (os.getenv('my_notes_path') or (home .. '/my_notes')):gsub('\\', '/')
@@ -260,10 +287,86 @@ function M.start()
   end
 end
 
+-- ---------------------------------------------------------------------------
+-- pc_remote warnings
+-- ---------------------------------------------------------------------------
+
+local last_pc_remote_check = 0
+
+--- The warning for pc_remote's status file, as (key, message), or nil when
+-- there is nothing to say. The key is what "once" is counted by.
+local function pc_remote_problem(info)
+  if type(info) ~= 'table' or type(info.updated) ~= 'number' then
+    return nil
+  end
+  if math.abs(os.time() - info.updated) > M.pc_remote_stale_seconds then
+    return nil
+  end
+  if info.running == false then
+    if info.error and info.error ~= '' and info.error ~= 'stopped' then
+      return 'stopped', 'pc_remote stopped: ' .. info.error
+    end
+    return nil
+  end
+  local tailscale = info.tailscale
+  if type(tailscale) ~= 'table' or not tailscale.checked then
+    return nil
+  end
+  if tailscale.state == 'missing' then
+    return 'missing', 'pc_remote: tailscale is not installed, the phone can only reach this pc over ntfy'
+  end
+  if tailscale.state == 'disconnected' then
+    if tailscale.listener == 'live' then
+      return 'disconnected', 'pc_remote: tailscale disconnected, its listener answers again once it is back'
+    end
+    return 'disconnected', 'pc_remote: tailscale is not connected, its listener starts once it is'
+  end
+  return nil
+end
+
+--- Reads pc_remote's status file now and then and warns once per problem.
+-- wezterm.GLOBAL survives config reloads, so "once" means once per wezterm
+-- process rather than once per reload or per window.
+local function check_pc_remote(window)
+  if not M.pc_remote_warnings or not window then
+    return
+  end
+  local now = os.time()
+  if now - last_pc_remote_check < M.pc_remote_check_seconds then
+    return
+  end
+  last_pc_remote_check = now
+
+  local file = io.open(M.pc_remote_status_file, 'r')
+  if not file then
+    return
+  end
+  local contents = file:read('*a')
+  file:close()
+  local ok, info = pcall(wezterm.json_parse, contents or '')
+  if not ok then
+    return
+  end
+
+  local key, message = pc_remote_problem(info)
+  if not key then
+    return
+  end
+  local global_key = 'bg_status_pc_remote_warned_' .. key
+  if wezterm.GLOBAL[global_key] then
+    return
+  end
+  wezterm.GLOBAL[global_key] = true
+  wezterm.log_warn(message .. ' (' .. tostring(info.tailscale and info.tailscale.detail
+    or info.error) .. ')')
+  status.notify(window, 'pc_remote', message, 'warning', nil, 8000)
+end
+
 --- Start on the status tick as well, which is what covers linux (where
 -- "gui-startup" is not registered) and a worker that died while wezterm kept
 -- running. Rate limited by M.restart_check_seconds, so this is nearly free.
-function M.poll(_window)
+function M.poll(window)
+  check_pc_remote(window)
   if not M.enabled then
     return
   end

@@ -23,7 +23,9 @@
 --   off (or every wezterm closed) means no request at all. On a host
 --   M.disabled_hostname_parts names it stays off whatever the toggle says.
 --
--- Needs the worker, i.e. bg_status.enabled (on linux: WEZ_ENABLE_ON_LINUX).
+-- Needs the worker, i.e. bg_status.enabled. On linux the usage is off until
+-- leader-c turns it on (M.enabled_on_linux), and the worker's job waits for
+-- that same toggle (CLAUDE_USAGE_ON_LINUX in wez_bg_tasks.py).
 --
 -- Usage from wezterm.lua:
 --   claude_usage.poll(window)       -- from "update-right-status"
@@ -39,6 +41,11 @@ local M = {}
 -- Hard-coded default: show (and fetch) the usage. Only used while there is no
 -- M.toggle_file, i.e. until leader-c is pressed the first time.
 M.enabled = true
+
+-- The same default on linux, where it is off for now. leader-c still turns it
+-- on (the toggle file wins over both), and wez_bg_tasks.py only fetches on
+-- linux while the toggle file says "on".
+M.enabled_on_linux = false
 
 -- Hosts the usage stays off on, whatever M.enabled and the toggle file say: a
 -- windows computer name (%COMPUTERNAME%) containing one of these, case
@@ -156,6 +163,9 @@ function M.is_enabled()
     toggle_cache.value = read_toggle()
   end
   if toggle_cache.value == nil then
+    if not is_windows then
+      return M.enabled_on_linux
+    end
     return M.enabled
   end
   return toggle_cache.value

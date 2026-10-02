@@ -66,9 +66,10 @@ local function env_bool(name)
   return not (value == '0' or value == 'off' or value == 'false' or value == 'no')
 end
 
--- Opt in to running the wezterm side of this on linux. Read by bg_status.lua
--- too, so one variable covers both modules; the AutoHotkey job in the worker
--- has no such switch on purpose and stays windows only.
+-- Opt in to running the wezterm side of this on linux. The worker's nvim job
+-- (scripts/bg/wez_bg_tasks.py) follows the same rules, so it only runs while
+-- these servers are on; the AutoHotkey job in the worker has no such switch on
+-- purpose and stays windows only.
 M.linux_env_switch = 'WEZ_ENABLE_ON_LINUX'
 
 -- Forced off on linux unless that variable says otherwise: the shell side that
