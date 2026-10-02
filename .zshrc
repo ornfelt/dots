@@ -762,6 +762,7 @@ playermap ()
 }
 alias .playermap_old='playermap'
 alias .playermap="$HOME/.local/bin/my_scripts/playermap.sh"
+alias .mpq_server="$HOME/.local/bin/my_scripts/mpq_server.sh"
 
 # use the vi navigation keys in menu completion
 #bindkey -M menuselect 'h' vi-backward-char
