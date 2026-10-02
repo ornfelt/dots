@@ -313,6 +313,15 @@ config.colors = {
   }
 }
 
+-- WecTerm (the C port of wezterm, ~/Code2/C/WecTerm) loads this same file; give
+-- its selected tab the wezterm website's deep purple (#7e56c2, in place of the blue
+-- above) so it is easy to tell apart from the real wezterm.
+-- Both export WEZTERM_EXECUTABLE, and only wecterm's binary is wecterm-gui.
+local is_wecterm = (os.getenv('WEZTERM_EXECUTABLE') or ''):lower():find('wecterm%-gui') ~= nil
+if is_wecterm then
+  config.colors.tab_bar.active_tab.bg_color = '#7e56c2'
+end
+
 config.force_reverse_video_cursor = true
 
 -- Neovide style smear/trail animation for the cursor. Only the custom wezterm

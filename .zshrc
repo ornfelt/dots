@@ -853,6 +853,18 @@ export PATH="${PATH}:$HOME/Downloads/lsp/lua/bin"
 export OMNISHARP_PATH="/usr/lib/omnisharp-roslyn/"
 export my_notes_path="$HOME/Documents/my_notes"
 export code_root_dir="$HOME"
+
+# `wez` / `wec` run the custom wezterm launcher from the wezterm checkout and the
+# WecTerm (C port) launcher from its checkout; `wez help` / `wec help` print
+# their usage. Kept right after code_root_dir is exported, which they need.
+if [[ -n "$code_root_dir" ]]; then
+  if [[ -f "$code_root_dir/Code2/Rust/wezterm/run-custom-wezterm.sh" ]]; then
+    alias wez="${(q)code_root_dir}/Code2/Rust/wezterm/run-custom-wezterm.sh"
+  fi
+  if [[ -f "$code_root_dir/Code2/C/WecTerm/run-custom-wecterm.sh" ]]; then
+    alias wec="${(q)code_root_dir}/Code2/C/WecTerm/run-custom-wecterm.sh"
+  fi
+fi
 #export PATH="${PATH}:$HOME/.fzf/bin"
 
 if [ -d "/mnt/new/wow" ]; then
