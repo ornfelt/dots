@@ -50,6 +50,10 @@ systemctl --user reset-failed dunst.service 2>/dev/null
 systemctl --user restart dunst.service &
 
 # set some env vars
+# wezswitch: its `wezterm` wrapper must come before /usr/bin/wezterm, so every
+# plain `wezterm` (WM keybindings, my_scripts, TERMINAL) runs the variant picked
+# with `wezswitch system|fork|wecterm` (see ~/.local/bin/wezswitch/)
+export PATH="$HOME/.local/bin/wezswitch:$PATH"
 # Terminal for the statusbar scripts' click actions (dwmblocks inherits it via dwm)
 export TERMINAL="wezterm"
 export my_notes_path="$HOME/Documents/my_notes"

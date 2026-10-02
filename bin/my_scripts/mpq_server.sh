@@ -18,6 +18,9 @@
 # wotlk, javascript (expansion and language may come in any order):
 # mpq_server.sh js
 #
+# only listen on localhost (127.0.0.1), not on the network ip (default is both):
+# mpq_server.sh tbc js --localhost
+#
 # print the commands instead of running them:
 # mpq_server.sh tbc js --show-cmd
 #
@@ -76,7 +79,7 @@ show_usage() {
   write_info "$SCRIPT_NAME - sync and launch the mpq file server for a WoW expansion"
   echo
   write_info_alt "Usage:"
-  echo "  $SCRIPT_NAME [expansion] [$(IFS='|'; echo "${LANGUAGES[*]}")] [--show-cmd]"
+  echo "  $SCRIPT_NAME [expansion] [$(IFS='|'; echo "${LANGUAGES[*]}")] [--localhost] [--show-cmd]"
   echo "  $SCRIPT_NAME help | -h"
   echo
   show_expansions
@@ -89,6 +92,7 @@ show_usage() {
   echo "  $(join_by_comma "${SYNC_FILES[@]}")"
   echo
   write_info_alt "Options:"
+  echo "  --localhost  only listen on 127.0.0.1 (default: all interfaces, i.e. also the network ip)"
   echo "  --show-cmd   print the commands that would be run, then exit"
   echo "  -h, help     show this help"
   echo
@@ -97,6 +101,7 @@ show_usage() {
   echo "  $SCRIPT_NAME tbc"
   echo "  $SCRIPT_NAME classic js"
   echo "  $SCRIPT_NAME js"
+  echo "  $SCRIPT_NAME tbc js --localhost"
   echo "  $SCRIPT_NAME tbc js --show-cmd"
 }
 
@@ -125,6 +130,7 @@ lookup_exp() {
 }
 
 show_cmd=0
+localhost=0
 exp_arg=""
 lang=""
 
@@ -137,6 +143,9 @@ for arg in "$@"; do
       ;;
     --show-cmd|--showcmd)
       show_cmd=1
+      ;;
+    --localhost|-localhost)
+      localhost=1
       ;;
     -*)
       usage_and_exit "Unknown option '$arg'"
@@ -207,11 +216,12 @@ case "$lang" in
   py) run_argv=(/usr/bin/python3 "$SERVER_NAME.py") ;;
   js) run_argv=(node "$SERVER_NAME.js") ;;
 esac
+(( localhost )) && run_argv+=(--localhost)
 run_cmd="${run_argv[*]}"
 
 if (( show_cmd )); then
   write_info "Equivalent bash command:"
-  echo "# $SCRIPT_NAME $exp $lang"
+  echo "# $SCRIPT_NAME $exp $lang$( (( localhost )) && echo ' --localhost')"
   for file in "${to_copy[@]}"; do
     echo "cp -f '$source_dir/$file' '$mpq_dir/$file'"
   done

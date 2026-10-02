@@ -1,0 +1,190 @@
+#!/usr/bin/env bash
+#
+# Pick which wezterm variant a plain `wezterm` runs (see the wrapper next to
+# this script, ~/.local/bin/wezswitch/wezterm).
+#
+#   system   /usr/bin/wezterm (the installed package)
+#   fork     the wezterm fork, $code_root_dir/Code2/Rust/wezterm/target/release
+#            (build it with: wez --build --no-run)
+#   wecterm  the C port, $code_root_dir/Code2/C/WecTerm/build-rel/bin
+#            (build it with: wec --build --no-run)
+#
+# The choice is stored in ~/.config/wezswitch/variant and applies to the next
+# window that is opened; windows that are already open keep running what
+# they were started with. The three can run side by side: a new window is only
+# handed to an already running instance of the same executable.
+#
+# Usage examples:
+# show the current variant and which ones are built:
+# wezswitch
+# wezswitch status
+#
+# switch:
+# wezswitch wecterm
+# wezswitch fork
+# wezswitch system
+#
+# switch to a variant that is not built yet (the wrapper falls back to the
+# system wezterm until it is):
+# wezswitch fork --force
+#
+# print what would change instead of changing it:
+# wezswitch wecterm --show-cmd
+#
+# one line per variant for scripts (wezswitch_menu.sh):
+# "<variant> <TAB> <current 0|1> <TAB> <built 0|1> <TAB> <exe> <TAB> <build hint>"
+# wezswitch --porcelain
+#
+# help:
+# wezswitch help
+# wezswitch -h
+
+RESET='\033[0m'
+RED='\033[31m'
+GREEN='\033[32m'
+YELLOW='\033[33m'
+CYAN='\033[36m'
+MAGENTA='\033[35m'
+DARKGRAY='\033[90m'
+
+print_ok()       { printf "${GREEN}%s${RESET}\n" "$*"; }
+print_err()      { printf "${RED}%s${RESET}\n" "$*" >&2; }
+print_warn()     { printf "${YELLOW}%s${RESET}\n" "$*"; }
+print_info()     { printf "${CYAN}%s${RESET}\n" "$*"; }
+print_info_alt() { printf "${MAGENTA}%s${RESET}\n" "$*"; }
+print_dim()      { printf "${DARKGRAY}%s${RESET}\n" "$*"; }
+
+ROOT=${code_root_dir:-$HOME}
+VARIANT_DIR=${XDG_CONFIG_HOME:-$HOME/.config}/wezswitch
+VARIANT_FILE=$VARIANT_DIR/variant
+VARIANTS=(system fork wecterm)
+
+exe_for() {
+    case $1 in
+        system) echo /usr/bin/wezterm ;;
+        fork) echo "$ROOT/Code2/Rust/wezterm/target/release/wezterm" ;;
+        wecterm) echo "$ROOT/Code2/C/WecTerm/build-rel/bin/wecterm" ;;
+        *) return 1 ;;
+    esac
+}
+
+build_hint() {
+    case $1 in
+        fork) echo "wez --build --no-run" ;;
+        wecterm) echo "wec --build --no-run" ;;
+        *) echo "sudo apt install wezterm" ;;
+    esac
+}
+
+current_variant() {
+    local variant=""
+    [ -r "$VARIANT_FILE" ] && variant=$(tr -d ' \t\r\n' < "$VARIANT_FILE")
+    echo "${variant:-system}"
+}
+
+usage() {
+    print_info_alt "wezswitch - pick which wezterm variant 'wezterm' runs"
+    echo
+    print_info "Usage:"
+    echo "  wezswitch [status]"
+    echo "  wezswitch <system|fork|wecterm> [--force] [--show-cmd]"
+    echo
+    print_info "Variants:"
+    echo "  system    /usr/bin/wezterm (installed package)"
+    echo "  fork      \$code_root_dir/Code2/Rust/wezterm/target/release/wezterm"
+    echo "  wecterm   \$code_root_dir/Code2/C/WecTerm/build-rel/bin/wecterm"
+    echo
+    print_info "Options:"
+    echo "  --force       switch even if the variant is not built"
+    echo "  --show-cmd    print what would change instead of changing it"
+    echo "  --porcelain   one tab-separated line per variant, for scripts"
+    echo "  -h, help      show this help"
+    echo
+    print_warn "Notes:"
+    print_warn "  The switch applies to the next window; open windows keep their variant."
+    print_warn "  WEZ_VARIANT=<name> wezterm ... overrides the choice for one call."
+    print_warn "  'wezterm cli' inside a pane always uses the variant that owns the pane."
+}
+
+show_status() {
+    local current
+    current=$(current_variant)
+    print_info_alt "wezterm runs: $current"
+    print_dim "  (choice in $VARIANT_FILE)"
+    local wrapper
+    wrapper=$(command -v wezterm)
+    if [ "$wrapper" != "$HOME/.local/bin/wezswitch/wezterm" ]; then
+        print_warn "  'wezterm' resolves to $wrapper, not the wrapper: is ~/.local/bin/wezswitch"
+        print_warn "  in front of PATH? (~/.xinitrc prepends it; log out of X once after adding it)"
+    fi
+    echo
+    local variant exe mark
+    for variant in "${VARIANTS[@]}"; do
+        exe=$(exe_for "$variant")
+        mark="  "
+        [ "$variant" = "$current" ] && mark="* "
+        if [ -x "$exe" ]; then
+            printf "${GREEN}%s%-8s${RESET} %s\n" "$mark" "$variant" "$exe"
+        else
+            printf "${YELLOW}%s%-8s${RESET} %s ${DARKGRAY}(not built: %s)${RESET}\n" \
+                "$mark" "$variant" "$exe" "$(build_hint "$variant")"
+        fi
+    done
+}
+
+porcelain() {
+    local current variant exe
+    current=$(current_variant)
+    for variant in "${VARIANTS[@]}"; do
+        exe=$(exe_for "$variant")
+        printf '%s\t%d\t%d\t%s\t%s\n' "$variant" "$([ "$variant" = "$current" ] && echo 1 || echo 0)" \
+            "$([ -x "$exe" ] && echo 1 || echo 0)" "$exe" "$(build_hint "$variant")"
+    done
+}
+
+target=""
+force=0
+show_cmd=0
+while [ $# -gt 0 ]; do
+    case "${1,,}" in
+        -h|--help|help|/h|/help|/\?|-\?) usage; exit 0 ;;
+        --force|-f) force=1 ;;
+        --show-cmd) show_cmd=1 ;;
+        --porcelain) porcelain; exit 0 ;;
+        status|"") ;;
+        system|fork|wecterm) target="${1,,}" ;;
+        *) print_err "Unknown argument: $1"; usage; exit 1 ;;
+    esac
+    shift
+done
+
+if [ -z "$target" ]; then
+    show_status
+    exit 0
+fi
+
+exe=$(exe_for "$target")
+if [ ! -x "$exe" ] && [ "$force" -eq 0 ]; then
+    print_err "$target is not built: $exe"
+    print_warn "Build it with: $(build_hint "$target")   (or pass --force to switch anyway)"
+    exit 1
+fi
+
+if [ "$show_cmd" -eq 1 ]; then
+    print_info_alt "# equivalent of: wezswitch $target"
+    printf 'mkdir -p "%s" && printf "%%s\\n" %s > "%s"\n' "$VARIANT_DIR" "$target" "$VARIANT_FILE"
+    exit 0
+fi
+
+previous=$(current_variant)
+mkdir -p "$VARIANT_DIR" && printf '%s\n' "$target" > "$VARIANT_FILE" || {
+    print_err "Could not write $VARIANT_FILE"
+    exit 1
+}
+if [ "$previous" = "$target" ]; then
+    print_ok "wezterm already runs $target"
+else
+    print_ok "wezterm now runs $target (was $previous)"
+fi
+[ -x "$exe" ] || print_warn "Not built yet, the wrapper uses the system wezterm until it is: $(build_hint "$target")"
+print_dim "Applies to the next window; open windows keep their variant."

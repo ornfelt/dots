@@ -114,7 +114,7 @@ sync_file "$HOME/.config/xfce4/xfconf/xfce-perchannel-xml/xfce4-power-manager.xm
 
 sync_dir "$HOME/.dwm" ".dwm"
 
-for dir in cron dwm_keybinds i3-used-keybinds my_scripts statusbar widgets xyz; do
+for dir in cron dwm_keybinds i3-used-keybinds my_scripts statusbar wezswitch widgets xyz; do
     sync_dir "$HOME/.local/bin/$dir" "bin/$dir"
 done
 for file in lfub lf-select greenclip; do

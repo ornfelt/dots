@@ -1,0 +1,81 @@
+#!/bin/sh
+# wezterm wrapper: runs whichever wezterm variant `wezswitch` selected.
+#
+# This directory (~/.local/bin/wezswitch) is put in front of PATH in
+# ~/.xinitrc, so every plain `wezterm` - dwm/dwmc/dwmr/awesome keybindings,
+# the my_scripts helpers, TERMINAL=wezterm for dwmblocks - comes through here.
+#
+#   system   /usr/bin/wezterm (the installed package)
+#   fork     $code_root_dir/Code2/Rust/wezterm/target/release/wezterm
+#   wecterm  $code_root_dir/Code2/C/WecTerm/build-rel/bin/wecterm
+#
+# The choice lives in ~/.config/wezswitch/variant (written by `wezswitch`);
+# WEZ_VARIANT=<name> overrides it for one call, e.g.
+#   WEZ_VARIANT=wecterm wezterm start --cwd ~/Code2
+#
+# `wezterm cli ...` run inside a pane goes to the variant that owns the pane
+# (WEZTERM_EXECUTABLE, which every wezterm/wecterm exports to its panes), not
+# to the selected one: the cli has to speak the same protocol version as the
+# gui it talks to, or e.g. nvim's `wezterm cli split-pane` fails in a pane of
+# the other variant.
+#
+# A selected variant that is not built falls back to the system wezterm, with
+# a notification, so a terminal keybinding never silently does nothing.
+
+SYSTEM_EXE=/usr/bin/wezterm
+ROOT=${code_root_dir:-$HOME}
+FORK_EXE=$ROOT/Code2/Rust/wezterm/target/release/wezterm
+WECTERM_EXE=$ROOT/Code2/C/WecTerm/build-rel/bin/wecterm
+VARIANT_FILE=${XDG_CONFIG_HOME:-$HOME/.config}/wezswitch/variant
+
+exe_for() {
+    case $1 in
+        system) echo "$SYSTEM_EXE" ;;
+        fork) echo "$FORK_EXE" ;;
+        wecterm) echo "$WECTERM_EXE" ;;
+        *) return 1 ;;
+    esac
+}
+
+# The first argument that is not a global option, to spot `wezterm [opts] cli`
+first_command() {
+    while [ $# -gt 0 ]; do
+        case $1 in
+            --config-file|--config) shift 2 ;;
+            --) return 0 ;;
+            -*) shift ;;
+            *) echo "$1"; return 0 ;;
+        esac
+    done
+}
+
+# cli inside a pane: the cli next to the gui that owns it
+if [ -n "$WEZTERM_EXECUTABLE" ] && [ "$(first_command "$@")" = cli ]; then
+    dir=$(dirname -- "$WEZTERM_EXECUTABLE")
+    for name in wezterm wecterm; do
+        if [ -x "$dir/$name" ] && [ "$dir/$name" != "$0" ]; then
+            exec "$dir/$name" "$@"
+        fi
+    done
+fi
+
+variant=${WEZ_VARIANT:-}
+if [ -z "$variant" ] && [ -r "$VARIANT_FILE" ]; then
+    variant=$(tr -d ' \t\r\n' < "$VARIANT_FILE")
+fi
+variant=${variant:-system}
+
+exe=$(exe_for "$variant") || {
+    echo "wezterm wrapper: unknown variant '$variant' in $VARIANT_FILE, using system" >&2
+    variant=system
+    exe=$SYSTEM_EXE
+}
+
+if [ ! -x "$exe" ]; then
+    message="$variant is not built ($exe), using the system wezterm"
+    echo "wezterm wrapper: $message" >&2
+    command -v notify-send >/dev/null 2>&1 && notify-send -u normal "wezswitch" "$message"
+    exe=$SYSTEM_EXE
+fi
+
+exec "$exe" "$@"
