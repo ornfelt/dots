@@ -236,7 +236,7 @@ local function tab_title(buf)
 end
 
 _G.TabLine = function()
-  local show_index = vim.g.tabline_show_index ~= false and vim.g.tabline_show_index ~= 0
+  local show_index = vim.g.tabline_show_index == true or vim.g.tabline_show_index == 1
   local n = vim.fn.tabpagenr("$")
   local cur = vim.fn.tabpagenr()
   local width = vim.o.columns

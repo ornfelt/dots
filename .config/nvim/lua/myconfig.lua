@@ -4,7 +4,7 @@ local M = {} -- Module table
 
 -- The tab number in front of each tab's name on the tabline ("1:name");
 -- false shows just the name.
-M.show_tab_index = true
+M.show_tab_index = false
 
 -- Utility function to normalize paths
 function M.normalize_path(path)
