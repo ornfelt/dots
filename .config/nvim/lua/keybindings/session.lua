@@ -240,6 +240,83 @@ local function read_patterns_from_file(filepath)
   return patterns
 end
 
+-- One tab page of the layout file: the windows that show a file, in window
+-- order, with their cursor -- and the splits between them, as a shape like
+-- "row(60x22,col(59x11,59x10))": winlayout() with each window written as its
+-- width x height ("-" without "winsize"). Windows that are left out (no name,
+-- or help/terminal/quickfix, which 'sessionoptions' leaves out of :mks too)
+-- are taken out of the shape as well, so it always holds the windows listed.
+local function collect_tab(tabnr, with_sizes)
+  local tab = { wins = {}, active = 1 }
+  local cur_win = vim.api.nvim_tabpage_get_win(vim.api.nvim_list_tabpages()[tabnr])
+
+  -- a split left with one window is that window, and a split of the same kind
+  -- inside another one is part of it (winlayout() never nests a row in a row)
+  local function join(kind, kids)
+    local flat = {}
+    for _, kid in ipairs(kids) do
+      if kid.kind == kind then
+        vim.list_extend(flat, kid.kids)
+      else
+        table.insert(flat, kid)
+      end
+    end
+    if #flat == 0 then return nil end
+    if #flat == 1 then return flat[1] end
+    return { kind = kind, kids = flat }
+  end
+
+  local function walk(node)
+    if node[1] == 'leaf' then
+      local win = node[2]
+      local buf = vim.api.nvim_win_get_buf(win)
+      local buf_name = vim.fn.bufname(buf)
+      if buf_name == "" or vim.bo[buf].buftype ~= "" then return nil end
+      local pos = vim.api.nvim_win_get_cursor(win)
+      local text = vim.api.nvim_buf_get_lines(buf, pos[1] - 1, pos[1], false)[1] or ""
+      table.insert(tab.wins, {
+        path = myconfig.normalize_path(vim.fn.fnamemodify(buf_name, ':p')),
+        line = pos[1],
+        col = vim.fn.strchars(text:sub(1, pos[2])) + 1,   -- characters, not bytes
+      })
+      if win == cur_win then tab.active = #tab.wins end
+      if not with_sizes then return { text = "-" } end
+      return { text = vim.api.nvim_win_get_width(win) .. "x" .. vim.api.nvim_win_get_height(win) }
+    end
+    local kids = {}
+    for _, child in ipairs(node[2]) do
+      local kid = walk(child)
+      if kid then table.insert(kids, kid) end
+    end
+    return join(node[1], kids)
+  end
+
+  local function spell(shape)
+    if not shape.kind then return shape.text end
+    local parts = {}
+    for _, kid in ipairs(shape.kids) do table.insert(parts, spell(kid)) end
+    return shape.kind .. "(" .. table.concat(parts, ",") .. ")"
+  end
+
+  local shape = walk(vim.fn.winlayout(tabnr))
+  tab.shape = shape and spell(shape) or "-"
+  return tab
+end
+
+-- :mksession writes two things 'sessionoptions' has no flag for: each window's
+-- alternate file ("balt") and the argument list ("$argadd"). Both list a buffer
+-- again when the session is loaded -- buffers that were open once, not ones on
+-- screen -- so the next save writes them down as well. Take them back out.
+local function strip_session_history(path)
+  local lines = vim.fn.readfile(path)
+  local kept = vim.tbl_filter(function(line)
+    return not (line:match("^balt ") or line:match("^%$argadd "))
+  end, lines)
+  if #kept ~= #lines then
+    vim.fn.writefile(kept, path)
+  end
+end
+
 -- Return last n slash-delimited components joined with underscores
 -- e.g.: path="Code/ml/llama.cpp", n=3 => "Code_ml_llama.cpp"
 local function last_n_dirs_underscored(path, n)
@@ -399,27 +476,22 @@ function save_tabs_and_splits()
   -- a file name -- and opening a file called "2". Only windows that have a name
   -- are counted, and a tab left with none of them is skipped altogether, so
   -- "TAB:" is the position of the current tab among the tabs that were kept.
+  -- 'sessionoptions' says what else goes in, the way it does for :mks! below:
+  -- every tab or only this one ("tabpages"), the sizes or not ("winsize").
+  local ssop = vim.opt.sessionoptions:get()
+  local all_tabs = vim.tbl_contains(ssop, 'tabpages')
+  local with_sizes = vim.tbl_contains(ssop, 'winsize')
   local layout = {}
   local active_tab = 1
 
   for i = 1, tab_count do
-    vim.cmd(i .. "tabnext")
-
-    local win_count = vim.fn.winnr('$')
-    local paths = {}
-
-    for j = 1, win_count do
-      vim.cmd(j .. "wincmd w")
-      local buf_name = vim.fn.bufname('%')
-      if buf_name ~= "" then
-        table.insert(paths, myconfig.normalize_path(vim.fn.fnamemodify(buf_name, ':p')))
-      end
-    end
-
-    if #paths > 0 then
-      table.insert(layout, paths)
-      if i <= current_tab then
-        active_tab = #layout
+    if all_tabs or i == current_tab then
+      local tab = collect_tab(i, with_sizes)
+      if #tab.wins > 0 then
+        table.insert(layout, tab)
+        if i <= current_tab then
+          active_tab = #layout
+        end
       end
     end
   end
@@ -429,24 +501,35 @@ function save_tabs_and_splits()
   local file = io.open(layout_filename, "w")
   file:write(#layout .. "\n")
 
-  for _, paths in ipairs(layout) do
-    file:write(#paths .. "\n")
-    for _, full_path in ipairs(paths) do
-      file:write(full_path .. "\n")
+  for _, tab in ipairs(layout) do
+    file:write(#tab.wins .. "\n")
+    for _, win in ipairs(tab.wins) do
+      file:write(win.path .. "\n")
     end
   end
 
   file:write("TAB:" .. active_tab .. "\n")
-  file:close()
 
-  -- Restore original tab and window
-  vim.cmd(current_tab .. "tabnext")
-  vim.cmd(current_win .. "wincmd w")
+  -- load_tabs_and_splits() stops reading at "TAB:", so what follows is only for
+  -- nvcs, which reads this file and not the :mks one: the cursor of every
+  -- window not at 1:1, then each tab's splits (see layout_shape).
+  for t, tab in ipairs(layout) do
+    for w, win in ipairs(tab.wins) do
+      if win.line > 1 or win.col > 1 then
+        file:write(string.format("CUR:%d:%d:%d:%d\n", t, w, win.line, win.col))
+      end
+    end
+  end
+  for t, tab in ipairs(layout) do
+    file:write(string.format("LAYOUT:%d:%d:%s\n", t, tab.active, tab.shape))
+  end
+  file:close()
 
   print("Session data saved to " .. layout_filename)
 
   -- Save the session
   vim.cmd("mks! " .. session_filename)
+  strip_session_history(session_filename)
 end
 
 local function delete_session_by_name(selected_name, sessions, session_dir, backup_dir, user_domain, use_debug_print)

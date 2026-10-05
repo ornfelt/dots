@@ -131,6 +131,22 @@ vim.cmd('set t_vb=')
 opt.autoread = true
 opt.autowrite = true
 
+-- Sessions (:mksession -- <leader>m in keybindings/session.lua writes one).
+-- Only what is on screen when the session is saved: the tab pages, the windows
+-- in each and their sizes, the file each window shows and the cursor in it
+-- (that last one is always saved). Left out of the default
+-- "blank,buffers,curdir,folds,help,tabpages,winsize,terminal":
+--   buffers  - a 'badd' for every hidden buffer ever opened. Loading the session
+--              listed them all again, so the next save wrote them back and the
+--              file only ever grew.
+--   folds    - manual folds and the fold settings of every window
+--   curdir   - a :cd to the directory nvim was in. 'autochdir' moves it to the
+--              file anyway, and without it the paths are written in full.
+--   blank, help, terminal - empty windows, help windows, terminals
+-- (Two things :mksession writes whatever this says -- each window's alternate
+--  file and the argument list -- save_tabs_and_splits() takes back out.)
+opt.sessionoptions = { 'tabpages', 'winsize' }
+
 -- Command-line completion adjustments
 opt.wildmenu = true
 
