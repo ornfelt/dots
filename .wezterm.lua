@@ -307,19 +307,23 @@ config.colors = {
   tab_bar = {
     active_tab = {
       fg_color = '#3c3836',
-      --bg_color = '#8ec07c',
-      bg_color = '#458588',
+      bg_color = '#7e56c2',
     }
   }
 }
 
--- WecTerm (the C port of wezterm, ~/Code2/C/WecTerm) loads this same file; give
--- its selected tab the wezterm website's deep purple (#7e56c2, in place of the blue
--- above) so it is easy to tell apart from the real wezterm.
--- Both export WEZTERM_EXECUTABLE, and only wecterm's binary is wecterm-gui.
-local is_wecterm = (os.getenv('WEZTERM_EXECUTABLE') or ''):lower():find('wecterm%-gui') ~= nil
+-- The selected tab's color tells the variants apart (they all load this file):
+-- the installed wezterm keeps the wezterm website's deep purple above, the custom
+-- Rust fork (running from Code2/Rust/wezterm/target) gets blue, and WecTerm (the C
+-- port, ~/Code2/C/WecTerm, whose binary is wecterm-gui) gets green.
+-- All of them export WEZTERM_EXECUTABLE.
+local wezterm_exe = (os.getenv('WEZTERM_EXECUTABLE') or ''):lower():gsub('\\', '/')
+local is_wecterm = wezterm_exe:find('wecterm%-gui') ~= nil
+local is_rust_fork = wezterm_exe:find('code2/rust/wezterm/target/', 1, true) ~= nil
 if is_wecterm then
-  config.colors.tab_bar.active_tab.bg_color = '#7e56c2'
+  config.colors.tab_bar.active_tab.bg_color = '#689d6a'
+elseif is_rust_fork then
+  config.colors.tab_bar.active_tab.bg_color = '#458588'
 end
 
 config.force_reverse_video_cursor = true
