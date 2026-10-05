@@ -2,6 +2,10 @@ require('dbg_log').log_file(debug.getinfo(1, 'S').source)
 
 local M = {} -- Module table
 
+-- The tab number in front of each tab's name on the tabline ("1:name");
+-- false shows just the name.
+M.show_tab_index = true
+
 -- Utility function to normalize paths
 function M.normalize_path(path)
   if not path then return nil end
@@ -399,6 +403,9 @@ vim.api.nvim_create_user_command('ToggleUseCustomStatusline', ToggleUseCustomSta
 vim.api.nvim_create_user_command('ToggleUseCustomLspForSql', ToggleUseCustomLspForSql, {})
 -- cmd ToggleUseTsMdViewer: ToggleUseTsMdViewer
 vim.api.nvim_create_user_command('ToggleUseTsMdViewer', ToggleUseTsMdViewer, {})
+
+-- what the tabline reads (options.lua's TabLine, nvcs' built-in one)
+vim.g.tabline_show_index = M.show_tab_index
 
 -- Dynamic ai keybind mode
 function M.get_ai_mode()

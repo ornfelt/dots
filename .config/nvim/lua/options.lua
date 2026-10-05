@@ -195,28 +195,82 @@ vim.g.loaded_netrwPlugin = 1
 
 vim.env.LANG = "en_US.UTF-8"
 
---vim.opt.showtabline = 1
---vim.opt.tabline = "%!v:lua.TabLine()"
+-- Custom tabline: "1:name" per tab, the way tmux names its windows, and the
+-- same tabline nvcs draws (its UI/Renderer.cs DrawTabLine).
+--   * name: the file name of the tab's current window, not its path -- the
+--     directory's name for an oil buffer ("oil:///home/me/src/" -> "src")
+--   * cut to 12 characters, keeping the end behind a "…" ("…ng_file.txt")
+--   * " [+]" behind it when that buffer is modified
+--   * the "1:" only with vim.g.tabline_show_index (myconfig's show_tab_index)
+-- Names keep all of their 12 characters however many tabs there are (nvim's own
+-- tabline squeezes them into equal shares, down to a character or two). When
+-- the tabs do not fit, the row starts late enough to keep the current tab on
+-- screen, where nvim's would stop at the edge.
+local MAX_TAB_TITLE = 12
 
--- Custom tabline
---_G.TabLine = function()
---  local s = ""
---  for i = 1, vim.fn.tabpagenr("$") do
---    -- Get tab label or buffer name
---    local tabname = vim.fn.gettabvar(i, "tablabel", vim.fn.bufname(vim.fn.tabpagebuflist(i)[1]))
---    if #tabname > 12 then
---      tabname = tabname:sub(-12) -- Negative index to get the last 12 characters
---    end
---
---    -- Highlight active tab
---    if i == vim.fn.tabpagenr() then
---      s = s .. "%#TabLineSel# " .. i .. " " .. tabname .. " "
---    else
---      s = s .. "%#TabLine# " .. i .. " " .. tabname .. " "
---    end
---  end
---  return s
---end
+local function cells(s) return vim.fn.strdisplaywidth(s) end
+
+-- The end of name that fits in room cells, a "…" standing in for the rest.
+local function keep_end(name, room)
+  if cells(name) <= room then return name end
+  if room <= 1 then return room == 1 and "…" or "" end
+  local start = vim.fn.strchars(name)
+  local used = 1 -- the "…"
+  while start > 0 do
+    local w = cells(vim.fn.strcharpart(name, start - 1, 1))
+    if used + w > room then break end
+    used = used + w
+    start = start - 1
+  end
+  return "…" .. vim.fn.strcharpart(name, start)
+end
+
+local function tab_title(buf)
+  local name = vim.api.nvim_buf_get_name(buf)
+  if name == "" then
+    return vim.bo[buf].buftype == "quickfix" and "[Quickfix List]" or "[No Name]"
+  end
+  local trimmed = (name:gsub("[/\\]+$", ""))
+  local last = trimmed:match("[^/\\]+$") or name
+  return keep_end(last, MAX_TAB_TITLE)
+end
+
+_G.TabLine = function()
+  local show_index = vim.g.tabline_show_index ~= false and vim.g.tabline_show_index ~= 0
+  local n = vim.fn.tabpagenr("$")
+  local cur = vim.fn.tabpagenr()
+  local width = vim.o.columns
+
+  local labels, span = {}, 0
+  for i = 1, n do
+    local buf = vim.fn.tabpagebuflist(i)[vim.fn.tabpagewinnr(i)]
+    labels[i] = (show_index and (" " .. i .. ":") or " ") .. tab_title(buf)
+      .. (vim.bo[buf].modified and " [+]" or "") .. " "
+    if i <= cur then span = span + cells(labels[i]) end
+  end
+  local first = 1
+  while first < cur and span > width do
+    span = span - cells(labels[first])
+    first = first + 1
+  end
+
+  -- Only what fits is handed over, the last label cut at the edge, so nvim
+  -- never truncates the line itself (it would cut from the start).
+  local s, col = "", 0
+  for i = first, n do
+    if col >= width then break end
+    local label = labels[i]
+    if col + cells(label) > width then
+      label = vim.fn.strcharpart(label, 0, width - col)
+    end
+    col = col + cells(label)
+    s = s .. "%" .. i .. "T" .. (i == cur and "%#TabLineSel#" or "%#TabLine#")
+      .. label:gsub("%%", "%%%%")
+  end
+  return s .. "%#TabLineFill#%T"
+end
+
+vim.opt.tabline = "%!v:lua.TabLine()"
 
 -- https://gpanders.com/blog/whats-new-in-neovim-0-11/#diagnostics
 vim.diagnostic.config({ virtual_text = true })
