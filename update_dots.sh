@@ -127,6 +127,7 @@ done
 
 # Copy selected Claude configuration
 sync_file "$HOME/.claude/settings.json" ".claude/settings.json"
+sync_file "$HOME/.claude/keybindings.json" ".claude/keybindings.json"
 sync_dir "$HOME/.claude/hooks" ".claude/hooks"
 
 log_ok "Synced files..."

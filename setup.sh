@@ -132,6 +132,12 @@ else
     log_warn "File .claude/settings.json does not exist. Skipping copy."
 fi
 
+if [[ -f ".claude/keybindings.json" ]]; then
+    cp ".claude/keybindings.json" "$HOME/.claude/keybindings.json"
+else
+    log_warn "File .claude/keybindings.json does not exist. Skipping copy."
+fi
+
 if [[ -d ".claude/hooks" ]]; then
     rm -rf "$HOME/.claude/hooks"
     cp -r ".claude/hooks" "$HOME/.claude/"
