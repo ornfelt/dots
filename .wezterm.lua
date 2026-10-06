@@ -488,6 +488,28 @@ local function is_tmux(pane)
   return process_name and string.find(process_name, "tmux", 1, true) ~= nil
 end
 
+-- Whether Claude Code runs in the pane. It is searched for below the foreground process too,
+-- since wrappers (ccs.sh) put a shell in front of it. "claude.exe" is the Windows binary.
+local function is_claude(pane)
+  local function has_claude(process_info)
+    if not process_info then
+      return false
+    end
+    local process_name = (process_info.name or ""):lower()
+    if process_name == "claude" or process_name == "claude.exe" then
+      return true
+    end
+    for _, child in pairs(process_info.children or {}) do
+      if has_claude(child) then
+        return true
+      end
+    end
+    return false
+  end
+
+  return has_claude(pane:get_foreground_process_info())
+end
+
 -- Handle pane split in wezterm, tmux, or vim
 local function split_nav(key)
   return {
@@ -979,6 +1001,11 @@ config.keys = {
     action = wezterm.action_callback(function(win, pane)
       if is_tmux(pane) then
         win:perform_action({ SendKey = { key = 'J', mods = 'ALT|SHIFT' } }, pane)
+      elseif is_claude(pane) then
+        -- ~/.claude/keybindings.json maps it to scroll:lineDown, one line per press
+        for _ = 1, 3 do
+          win:perform_action({ SendKey = { key = 'J', mods = 'ALT|SHIFT' } }, pane)
+        end
       else
         win:perform_action(wezterm.action.ScrollByLine(1), pane)
       end
@@ -991,6 +1018,11 @@ config.keys = {
     action = wezterm.action_callback(function(win, pane)
       if is_tmux(pane) then
         win:perform_action({ SendKey = { key = 'K', mods = 'ALT|SHIFT' } }, pane)
+      elseif is_claude(pane) then
+        -- ~/.claude/keybindings.json maps it to scroll:lineUp, one line per press
+        for _ = 1, 3 do
+          win:perform_action({ SendKey = { key = 'K', mods = 'ALT|SHIFT' } }, pane)
+        end
       else
         win:perform_action(wezterm.action.ScrollByLine(-1), pane)
       end
