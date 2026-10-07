@@ -135,9 +135,11 @@ else
 fi
 
 # Append-only trail of finished responses:
-#   "<unix ms>\t<pane>\t<label>\tStop\t\t<instance>"
-#   "<unix ms>\t<pane>\t<label>\tStopFailure\t<error type>\t<instance>"
-# (older lines stop after <label>, or after <error type>).
+#   "<unix ms>\t<pane>\t<label>\tStop\t\t<instance>\t<tmux pane>"
+#   "<unix ms>\t<pane>\t<label>\tStopFailure\t<error type>\t<instance>\t<tmux pane>"
+# (older lines stop after <label>, <error type> or <instance>). <tmux pane> is
+# $TMUX_PANE ("%7"), empty outside tmux: every tmux window inside one wezterm
+# pane shares that pane's id, so only this one tells them apart.
 # The marker above is short lived -- claude.lua removes it again as soon as the
 # tab it belongs to is the active one -- so anything that wants to *wait* for a
 # response to finish (send_hotkey.py) reads this instead. claude.lua only globs
@@ -148,7 +150,7 @@ now_ms="$(date +%s%3N 2>/dev/null)"
 case "$now_ms" in *N*|"") now_ms="$(( $(date +%s) * 1000 ))";; esac
 event_name="Stop"
 [ -z "$error_type" ] || event_name="StopFailure"
-printf '%s\t%s\t%s\t%s\t%s\t%s\n' "$now_ms" "$WEZTERM_PANE" "$label" "$event_name" "$error_type" "$instance" >> "$trail"
+printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\n' "$now_ms" "$WEZTERM_PANE" "$label" "$event_name" "$error_type" "$instance" "${TMUX_PANE:-}" >> "$trail"
 
 # Keep it from growing forever
 if [ "$(wc -c < "$trail" 2>/dev/null || echo 0)" -gt 65536 ]; then
