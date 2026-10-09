@@ -418,23 +418,35 @@ local TOAST_TIMEOUT_MS = is_linux and 3000 or 2000
 status.toast_timeout_ms = TOAST_TIMEOUT_MS
 
 -- Paste the clipboard without its trailing newlines (\n or \r\n, any number).
--- wezterm has no lua api to read the clipboard, so ask xclip / powershell;
+-- wezterm has no lua api to read the clipboard, so ask xclip / win32yank
+-- (~10ms, ships with neovim) / powershell (~170ms+, blocks the gui meanwhile);
 -- if that fails, fall back to a plain (untrimmed) paste.
 local function paste_clipboard_trimmed(window, pane)
-  local args
+  local candidates
   if is_linux then
     -- timeout: never leave the gui waiting on a stuck clipboard owner
-    args = { "timeout", "2", "xclip", "-out", "-selection", "clipboard" }
+    candidates = { { "timeout", "2", "xclip", "-out", "-selection", "clipboard" } }
   else
-    -- UTF-8 output so å/ä/ö survive; Write adds no newline of its own
-    args = { "powershell.exe", "-NoProfile", "-NonInteractive", "-Command",
-      "[Console]::OutputEncoding = [Text.Encoding]::UTF8; [Console]::Out.Write((Get-Clipboard -Raw))" }
+    candidates = {
+      { "win32yank.exe", "-o" },
+      -- UTF-8 output so å/ä/ö survive; Write adds no newline of its own
+      { "powershell.exe", "-NoProfile", "-NonInteractive", "-Command",
+        "[Console]::OutputEncoding = [Text.Encoding]::UTF8; [Console]::Out.Write((Get-Clipboard -Raw))" },
+    }
   end
-  local ok, success, stdout = pcall(wezterm.run_child_process, args)
+  local ok, success, stdout
+  for _, args in ipairs(candidates) do
+    ok, success, stdout = pcall(wezterm.run_child_process, args)
+    if ok and success and stdout then
+      break
+    end
+  end
   if ok and success and stdout then
     local text = stdout:gsub("[\r\n]+$", "")
     if text ~= "" then
       pane:paste(text)
+      -- PasteFrom jumps to the prompt line (scroll_to_bottom_on_input); pane:paste does not
+      window:perform_action(act.ScrollToBottom, pane)
     end
   else
     window:perform_action(act.PasteFrom(is_linux and "Clipboard" or "PrimarySelection"), pane)
