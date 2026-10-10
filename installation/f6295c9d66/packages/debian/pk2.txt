@@ -1,3 +1,4 @@
+libegl1
 libelf1t64
 libenet-dev
 libexiv2-dev
@@ -179,4 +180,3 @@ logrotate
 logsave
 lsb-release
 lsof
-lua-lgi

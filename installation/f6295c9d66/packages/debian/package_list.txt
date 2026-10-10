@@ -92,6 +92,7 @@ gcc
 gdb
 gettext-base
 gettext
+gh
 git
 glslang-tools
 glslc

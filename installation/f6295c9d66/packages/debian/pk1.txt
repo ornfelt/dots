@@ -92,6 +92,7 @@ gcc
 gdb
 gettext-base
 gettext
+gh
 git
 glslang-tools
 glslc
@@ -179,4 +180,3 @@ libdebconfclient0
 libdrm-dev
 libdrogon-dev
 libedit2
-libegl1

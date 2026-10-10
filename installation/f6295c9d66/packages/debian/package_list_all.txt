@@ -220,6 +220,7 @@ gfortran
 gfortran-14
 gfortran-14-x86-64-linux-gnu
 gfortran-x86-64-linux-gnu
+gh
 ghostscript
 gir1.2-adw-1
 gir1.2-appstream-1.0
