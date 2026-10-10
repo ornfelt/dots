@@ -4,6 +4,7 @@ RESET='\033[0m'
 RED='\033[31m'
 GREEN='\033[32m'
 BLUE='\033[34m'
+YELLOW='\033[33m'
 
 error() { printf "%b%s%b\n" "$RED" "$1" "$RESET"; }
 
@@ -88,15 +89,37 @@ fi
 
 pullCommandActual="git pull https://${tokenValue}@github.com/${repoOwner}/${repoName} ${currentBranch} && ${syncCommand}"
 pullCommandDisplay="git pull https://\$${tokenEnvVarName}@github.com/${repoOwner}/${repoName} ${currentBranch} && ${syncCommand}"
+rebaseCommandActual="git pull --rebase https://${tokenValue}@github.com/${repoOwner}/${repoName} ${currentBranch} && ${syncCommand}"
+rebaseCommandDisplay="git pull --rebase https://\$${tokenEnvVarName}@github.com/${repoOwner}/${repoName} ${currentBranch} && ${syncCommand}"
 
 if [[ -n "$OutputOnly" ]]; then
   echo "$pullCommandDisplay"
 else
   #echo "Executing: $pullCommandActual"
   printf "%bExecuting:%b %s\n" "$BLUE" "$RESET" "$pullCommandDisplay"
-  if ! eval "$pullCommandActual"; then
-    error "Pull of $currentBranch from $repoOwner/${repoName%.git} failed."
-    exit 1
+  # stderr is shown as usual and also kept in pullErrFile, so a divergent-branches
+  # failure can be told apart from other failures.
+  pullErrFile="$(mktemp)"
+  trap 'rm -f "$pullErrFile"' EXIT
+  if ! ( set -o pipefail; eval "$pullCommandActual" 2>&1 1>&3 3>&- | tee "$pullErrFile" >&2 ) 3>&1; then
+    if ! grep -q "reconcile divergent branches" "$pullErrFile"; then
+      error "Pull of $currentBranch from $repoOwner/${repoName%.git} failed."
+      exit 1
+    fi
+    printf "%bBranches have diverged. Pull via rebase? [y/N]:%b " "$YELLOW" "$RESET"
+    read -r answer
+    case "${answer,,}" in
+      y|yes) ;;
+      *)
+        error "Pull of $currentBranch from $repoOwner/${repoName%.git} failed (rebase declined)."
+        exit 1
+        ;;
+    esac
+    printf "%bExecuting:%b %s\n" "$BLUE" "$RESET" "$rebaseCommandDisplay"
+    if ! eval "$rebaseCommandActual"; then
+      error "Rebase pull of $currentBranch from $repoOwner/${repoName%.git} failed."
+      exit 1
+    fi
   fi
   printf "%bPulled %s from %s/%s.%b\n" "$GREEN" "$currentBranch" "$repoOwner" "${repoName%.git}" "$RESET"
 fi
