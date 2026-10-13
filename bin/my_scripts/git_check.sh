@@ -82,6 +82,8 @@ WOW_REPOS=(
     "$code_root_dir/Code2/C++/azerothcore-wotlk"
     "$code_root_dir/Code2/C++/azerothcore-wotlk-playerbots"
     "$code_root_dir/Code2/C++/azerothcore-wotlk-playerbots/modules/mod-playerbots"
+    "$code_root_dir/Code2/Wow/tools/benilla"
+    "$code_root_dir/Code2/Wow/tools/cenilla"
 )
 # 'other' is these plus the repos in OTHER_DIRS that are in no other category
 OTHER_REPOS=(
@@ -96,6 +98,7 @@ OTHER_REPOS=(
     "$code_root_dir/Code2/C++/stk-code"
     "$code_root_dir/Code2/Sql/my_sql"
     "$code_root_dir/Code2/C/ioq3"
+    "$code_root_dir/Code2/Rust/ioq3-rs"
     "$my_notes_path"
 )
 OTHER_DIRS=(

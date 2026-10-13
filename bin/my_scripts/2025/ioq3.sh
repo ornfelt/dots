@@ -2,8 +2,12 @@
 # ioq3.sh - the bash / Linux version of ioq3.ps1: starts the newest C ioq3 build.
 #
 # Usage examples (args in any order, case insensitive; `.ioq3 help` lists them all):
-# start like before:
+# start like before (the backends / renderer last used are remembered in q3config.cfg):
 # .ioq3
+#
+# pick the gfx device and / or window (the newest build with gfx; ignored when none has it):
+# .ioq3 vk glfw
+# .ioq3 gles3 x11
 #
 # dev map (q3dm0) in a window:
 # .ioq3 dev win
@@ -18,9 +22,7 @@
 # .ioq3 qvm dev +set r_mode 6
 #
 # print the bash line for this run instead of running it:
-# .ioq3 dev print
-#
-# the gfx backend args of .ioq3rs (vk, glfw, ...) are accepted but ignored: C ioq3 has no gfx
+# .ioq3 vk dev print
 
 write_label() { printf '\033[90m%s\033[0m\n' "$1"; } # Dark gray
 write_alt()   { printf '\033[35m%s\033[0m\n' "$1"; } # Magenta
@@ -62,8 +64,9 @@ HDD_ROOT_GLOBS=(/media /media2 /mnt/* /media/* "/run/media/${USER:-}"/*)
 PK3_PATTERN="*.pk3"
 REQUIRED_PK3S=(pak{0..8}.pk3)
 
-# Launch options (show_help). The gfx ones are those of ioq3rs.sh, accepted so the same args
-# work for both scripts, but ignored: the C ioq3 has no gfx renderer.
+# Launch options (show_help). The gfx backends only reach a client built with USE_GFX (the gfx
+# branch): renderer_gfx is built into its exe, so the exe holds its cvar names. A gfx arg picks
+# the newest build with gfx over a newer one without.
 ALIAS_NAME=".ioq3"
 HELP_TOKENS=(help h)
 PRINT_TOKENS=(print onlyprint showcmd)
@@ -71,7 +74,8 @@ GFX_DEVICES=(gl4 gl3 gles3 vk d3d11 d3d12)
 declare -A GFX_DEVICE_ALIASES=([vulkan]=vk [dx11]=d3d11 [dx12]=d3d12)
 GFX_WINDOWS=(sdl glfw x11 win32)
 GFX_RENDERER="gfx"
-RENDERERS=(opengl1 opengl2)
+RENDERERS=("$GFX_RENDERER" opengl1 opengl2)
+GFX_EXE_MARKER="r_gfxDevice"
 OPTION_VALUE_SEPARATOR="="
 PASSTHROUGH_PREFIX="+"
 DEV_MAP="q3dm0"
@@ -112,8 +116,15 @@ show_help() {
 Usage: $ALIAS_NAME [options] [+game args...]
 Options are case insensitive, in any order, with or without leading dashes.
 
+gfx backends (used only when the built client supports gfx, ignored otherwise):
+  $(join_by ' | ' "${GFX_DEVICES[@]}")   r_gfxDevice (vulkan = vk, dx11 / dx12 = d3d11 / d3d12)
+  $(join_by ' | ' "${GFX_WINDOWS[@]}")         r_gfxWindow
+  d3d11 / d3d12 / win32 are Windows only: the game falls back to gl4 / sdl here.
+  Either one also sets cl_renderer $GFX_RENDERER and picks the newest build with gfx (USE_GFX). Both
+  cvars are remembered in q3config.cfg, so a start without them uses the last ones.
+
 Renderer:
-  $(join_by ' | ' "${RENDERERS[@]}")      cl_renderer
+  $(join_by ' | ' "${RENDERERS[@]}")     cl_renderer ($GFX_RENDERER only on a gfx build)
 
 Starting:
   dev                    +devmap $DEV_MAP (skips the menu)
@@ -133,21 +144,17 @@ Other:
   $(join_by ' | ' "${PRINT_TOKENS[@]}")  print the bash line for this run instead of running it
   $(join_by ' | ' "${HELP_TOKENS[@]}") (also -help, --help)  this help
 
-The gfx backend args of .ioq3rs ($(join_by ', ' "${GFX_DEVICES[@]}" "${GFX_WINDOWS[@]}" "$GFX_RENDERER")) are
-accepted and ignored: the C ioq3 has no gfx renderer.
-
 Examples:
-  $ALIAS_NAME dev win
+  $ALIAS_NAME vk glfw dev win
   $ALIAS_NAME map=q3dm17 bots fresh log
-  $ALIAS_NAME bench opengl1
-  $ALIAS_NAME qvm dev +set r_mode 6
+  $ALIAS_NAME bench gles3
+  $ALIAS_NAME opengl1 dev +set r_mode 6
 EOF
 }
 
 read_options() {
-    # Sets the opt_* launch options from the script args; exits on an unknown one. The gfx ones
-    # are only collected, to be reported as ignored.
-    opt_help=false; opt_print_only=false; opt_ignored_gfx=(); opt_renderer=""
+    # Sets the opt_* launch options from the script args; exits on an unknown one
+    opt_help=false; opt_print_only=false; opt_device=""; opt_window=""; opt_renderer=""
     opt_map=""; opt_bots=false; opt_no_bots=false; opt_connect=""; opt_bench=false
     opt_windowed=false; opt_qvm=false; opt_team_arena=false; opt_fresh=false; opt_log=false
     opt_extra=()
@@ -167,11 +174,12 @@ read_options() {
             name="${name%%"$OPTION_VALUE_SEPARATOR"*}"
         fi
         name="${name,,}"
+        if [[ -n "$name" && -n "${GFX_DEVICE_ALIASES[$name]:-}" ]]; then name="${GFX_DEVICE_ALIASES[$name]}"; fi
 
         if in_list "$name" "${HELP_TOKENS[@]}"; then opt_help=true
         elif in_list "$name" "${PRINT_TOKENS[@]}"; then opt_print_only=true
-        elif [[ -n "$name" && -n "${GFX_DEVICE_ALIASES[$name]:-}" ]] || in_list "$name" "${GFX_DEVICES[@]}" \
-            || in_list "$name" "${GFX_WINDOWS[@]}" || [[ "$name" == "$GFX_RENDERER" ]]; then opt_ignored_gfx+=("$raw")
+        elif in_list "$name" "${GFX_DEVICES[@]}"; then opt_device="$name"
+        elif in_list "$name" "${GFX_WINDOWS[@]}"; then opt_window="$name"
         elif in_list "$name" "${RENDERERS[@]}"; then opt_renderer="$name"
         elif [[ "$name" == "dev" ]]; then opt_map="${value:-$DEV_MAP}"
         elif [[ "$name" == "map" && -n "$value" ]]; then opt_map="$value"
@@ -194,17 +202,50 @@ read_options() {
     if $opt_bots && [[ -z "$opt_map" ]]; then opt_map="$DEV_MAP"; fi
 }
 
-get_launch_args() {
-    # Sets launch_args: the defaults, then the cvars of the options, then the commands
-    if (( ${#opt_ignored_gfx[@]} > 0 )); then
-        write_warn "C ioq3 has no gfx - ignoring the gfx arg(s): $(join_by ', ' "${opt_ignored_gfx[@]}")"
+test_gfx_build() {
+    # True when the client was built with USE_GFX (see the launch options above)
+    LC_ALL=C grep -qaF -- "$GFX_EXE_MARKER" "$1"
+}
+
+test_gfx_wanted() {
+    # True when a gfx arg was given
+    [[ -n "$opt_device" || -n "$opt_window" || "$opt_renderer" == "$GFX_RENDERER" ]]
+}
+
+resolve_gfx_options() {
+    # Drops the gfx options on a build without gfx; on a gfx build a backend also picks renderer_gfx
+    local gfx_build="$1"
+    local -a ignored=()
+
+    if ! $gfx_build; then
+        [[ -n "$opt_device" ]] && ignored+=("$opt_device")
+        [[ -n "$opt_window" ]] && ignored+=("$opt_window")
+        if [[ "$opt_renderer" == "$GFX_RENDERER" ]]; then ignored+=("$opt_renderer"); opt_renderer=""; fi
+        write_label "The client is built without gfx."
+        if (( ${#ignored[@]} > 0 )); then write_warn "Ignoring the gfx arg(s): $(join_by ', ' "${ignored[@]}")"; fi
+        opt_device=""
+        opt_window=""
+        return
     fi
 
+    write_label "The client is built with gfx."
+    [[ -n "$opt_device" || -n "$opt_window" ]] || return
+    if [[ -z "$opt_renderer" ]]; then
+        opt_renderer="$GFX_RENDERER"
+    elif [[ "$opt_renderer" != "$GFX_RENDERER" ]]; then
+        write_warn "cl_renderer $opt_renderer ignores r_gfxDevice / r_gfxWindow."
+    fi
+}
+
+get_launch_args() {
+    # Sets launch_args: the defaults, then the cvars of the options, then the commands
     launch_args=("${CLIENT_ARGS[@]}")
     if $opt_qvm; then launch_args+=("${QVM_ARGS[@]}"); fi
     if $opt_team_arena; then launch_args+=("${TEAM_ARENA_ARGS[@]}"); fi
     if $opt_fresh; then launch_args+=(+set fs_homepath "$FRESH_HOME_DIR"); fi
     if [[ -n "$opt_renderer" ]]; then launch_args+=(+set cl_renderer "$opt_renderer"); fi
+    if [[ -n "$opt_device" ]]; then launch_args+=(+set r_gfxDevice "$opt_device"); fi
+    if [[ -n "$opt_window" ]]; then launch_args+=(+set r_gfxWindow "$opt_window"); fi
     if $opt_windowed; then launch_args+=("${WINDOWED_ARGS[@]}"); fi
     if $opt_log || $opt_bench; then launch_args+=("${LOG_ARGS[@]}"); fi
     if $opt_no_bots; then launch_args+=("${NO_BOTS_ARGS[@]}"); fi
@@ -272,8 +313,8 @@ find_client_builds() {
 }
 
 resolve_client_exe() {
-    # Sets exe_path to the newest build
-    local repo_root="$1" older
+    # Sets exe_path to the newest build (the newest with gfx when a gfx arg was given and one has it)
+    local repo_root="$1" older build
     local -a builds
     if [[ ! -d "$repo_root" ]]; then
         write_err "ioq3 repo not found: $repo_root"
@@ -287,6 +328,18 @@ resolve_client_exe() {
     fi
 
     exe_path="${builds[0]}"
+    if test_gfx_wanted && ! test_gfx_build "$exe_path"; then
+        for build in "${builds[@]:1}"; do
+            if test_gfx_build "$build"; then
+                write_label "The newest build has no gfx - using the newest one with gfx."
+                exe_path="$build"
+                local -a others=()
+                for older in "${builds[@]}"; do [[ "$older" == "$build" ]] || others+=("$older"); done
+                builds=("$build" "${others[@]}")
+                break
+            fi
+        done
+    fi
     write_label "Using newest build: $exe_path"
     write_label "  built $(date -r "$exe_path" +"$BUILD_TIME_FORMAT")"
 
@@ -443,6 +496,9 @@ write_alt "ioq3..."
 
 resolve_client_exe "$REPO_ROOT"
 baseq3_dir="$(dirname -- "$exe_path")/$BASEQ3_DIR_NAME"
+gfx_build=false
+test_gfx_build "$exe_path" && gfx_build=true
+resolve_gfx_options "$gfx_build"
 get_launch_args
 
 if $opt_print_only; then
