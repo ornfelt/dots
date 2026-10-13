@@ -82,8 +82,11 @@ GFX_DIR_NAMES=(gfx_benilla gfx)
 GFX_CONFIGURATIONS=(Release Debug)
 GFX_LIB_NAME="libgfx.so"
 
-# The install is read from $WOW_DATA, else the repo's WoW link; WOW_DATA is set to this when unset
-WOW_DATA_DIR="${wow_classic_dir:+$wow_classic_dir/Data}"
+# The install's Data dir, always passed as WOW_DATA: data= (or a WOW_DATA= arg), else $WOW_DATA,
+# else $wow_classic_dir/Data; the run stops when it does not exist (an empty WOW_DATA is "no
+# install", as the client reads it)
+WOW_DATA_VAR="WOW_DATA"
+WOW_DATA_SUBDIR="Data"
 # A scripted login only as this account (WOW_USER=, WOW_PASS=, WOW_CHAR=, one per line)
 PROBE_IDENTITY_NAME=".probe-identity"
 PROBE_FIELDS=(WOW_USER WOW_PASS WOW_CHAR)
@@ -171,12 +174,13 @@ Testing:
   validate               the Vulkan validation layer
 
 Other:
+  data=<dir>             the WoW install's Data dir (WOW_DATA; default \$wow_classic_dir/Data, or \$WOW_DATA when set)
   VAR_NAME=value         any env var with an upper-case name holding an underscore, as it is
   $(join_by ' | ' "${PRINT_TOKENS[@]}")  print the bash line for this run instead of running it
   $(join_by ' | ' "${HELP_TOKENS[@]}") (also -help, --help)  this help
 
 The gfx library must be built first: $GFX_DLL_ROOT/${GFX_DIR_NAMES[0]}/bin/<Release|Debug>_x64/$GFX_LIB_NAME.
-WOW_DATA is set to ${WOW_DATA_DIR:-\$wow_classic_dir/Data} when unset; a sanitized tree gets $SANITIZER_ENV.
+A sanitized tree gets $SANITIZER_ENV.
 
 Examples:
   $ALIAS_NAME vk sdl panel
@@ -192,10 +196,14 @@ read_options() {
     opt_device=""; opt_window=""; opt_panel=false; opt_hud=false; opt_worldview=false; opt_at=""
     opt_host=""; opt_realm=""; opt_char=""; opt_probe=false; opt_nosound=false; opt_unattended=false
     opt_capture=""; opt_out=""; opt_fps=""; opt_exit=""; opt_soft=false; opt_validate=false
-    opt_env=()
+    opt_data=""; opt_data_set=false; opt_env=()
 
     local raw name value
     for raw in "$@"; do
+        if [[ "$raw" == "$WOW_DATA_VAR="* ]]; then
+            opt_data="${raw#*=}"; opt_data_set=true
+            continue
+        fi
         if [[ "$raw" =~ $ENV_ARG_PATTERN ]]; then
             opt_env+=("$raw")
             continue
@@ -234,6 +242,7 @@ read_options() {
         elif [[ "$name" == "exit" && -n "$value" ]]; then opt_exit="$value"
         elif [[ "$name" == "soft" ]]; then opt_soft=true
         elif [[ "$name" == "validate" ]]; then opt_validate=true
+        elif [[ "$name" == "data" && -n "$value" ]]; then opt_data="$(realpath -m -- "$value")"; opt_data_set=true
         else
             write_err "Unknown arg: $raw (tree= / at= / host= / realm= / char= / capture= / out= / fps= / exit= need a value) - see '$ALIAS_NAME help'."
             exit 1
@@ -366,6 +375,32 @@ build_tree() {
     write_ok "Build done."
 }
 
+resolve_wow_data() {
+    # Sets wow_data: data= / a WOW_DATA= arg, else $WOW_DATA, else $wow_classic_dir/Data; exits
+    # when that dir does not exist
+    local source
+    if $opt_data_set; then
+        wow_data="$opt_data"; source="the args"
+    elif [[ -n "${WOW_DATA+set}" ]]; then
+        wow_data="$WOW_DATA"; source="\$WOW_DATA"
+    elif [[ -n "${wow_classic_dir:-}" ]]; then
+        wow_data="$wow_classic_dir/$WOW_DATA_SUBDIR"; source="\$wow_classic_dir"
+    else
+        write_warn "wow_classic_dir is not set - set it to the WoW install, or pass data=<WoW Data dir>."
+        exit 1
+    fi
+
+    if [[ -z "$wow_data" ]]; then
+        write_label "WoW data: none ($WOW_DATA_VAR is empty, from $source)"
+        return
+    fi
+    if [[ ! -d "$wow_data" ]]; then
+        write_warn "The WoW Data dir does not exist: $wow_data (from $source) - pass data=<WoW Data dir>."
+        exit 1
+    fi
+    write_label "WoW data: $wow_data (from $source)"
+}
+
 read_probe_field() {
     # read_probe_field <name> - one field of .probe-identity (quotes stripped), as tools/smoke.sh reads it
     sed -n "s/^[[:space:]]*$1=[\"]*\\([^\"]*\\)[\"]*[[:space:]]*\$/\\1/p" "$REPO_ROOT/$PROBE_IDENTITY_NAME" | head -1
@@ -376,7 +411,7 @@ get_run_env() {
     local field value
     run_env=()
     probe_env_start=-1
-    if [[ -z "${WOW_DATA+set}" && -n "$WOW_DATA_DIR" ]]; then run_env+=("WOW_DATA=$WOW_DATA_DIR"); fi
+    run_env+=("$WOW_DATA_VAR=$wow_data")
     if test_sanitized_tree && [[ -z "${ASAN_OPTIONS+set}" ]]; then run_env+=("$SANITIZER_ENV"); fi
 
     if $opt_probe; then
@@ -512,6 +547,7 @@ if [[ ! -d "$REPO_ROOT" ]]; then
 fi
 
 capture_out=""
+resolve_wow_data
 resolve_tree
 resolve_gfx_library
 get_run_env
