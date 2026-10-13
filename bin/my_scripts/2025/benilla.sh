@@ -180,7 +180,15 @@ Examples:
   $ALIAS_NAME play build probe
   $ALIAS_NAME capture=felwood-night gl4 soft
   $ALIAS_NAME worldview at=-9460,62 vk
+
 EOF
+    show_manual_run
+}
+
+show_manual_run() {
+    # Prints how to start the default profile's client by hand, without this script
+    write_label "Or run it manually (from $REPO_ROOT):"
+    write_extra "export $WOW_DATA_VAR=\"\$wow_classic_dir/$WOW_DATA_SUBDIR\" && $BUILD_COMMAND run ${PROFILE_BUILD_ARGS[$DEFAULT_PROFILE]} -p $CLIENT_EXE_NAME"
 }
 
 read_options() {
@@ -488,6 +496,7 @@ if $opt_help; then
 fi
 
 write_alt "benilla..."
+if (( $# == 0 )); then show_manual_run; fi
 
 if [[ ! -d "$REPO_ROOT" ]]; then
     write_err "benilla repo not found: $REPO_ROOT"
