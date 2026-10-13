@@ -34,8 +34,11 @@ if [[ -z "${code_root_dir:-}" ]]; then
     write_label "code_root_dir is not set - using $code_root_dir"
 fi
 
-# When true, missing pk3 files are copied from the HDD without asking first
+# When true, missing pk3 files are linked / copied without asking first
 AUTO_COPY_DATA=false
+# When true, a pk3 found on the same filesystem is hard-linked instead of copied (no extra disk
+# space; falls back to a copy when linking fails)
+LINK_SAME_VOLUME=true
 
 # Build dirs are searched for these config folders; the newest ioquake3 exe wins
 # (old builds: ioquake3.x86_64 in release-linux-x86_64, CMake builds: ioquake3 in Release)
@@ -48,8 +51,11 @@ LIBRARY_PATTERN="*.so"
 BUILD_TIME_FORMAT="%Y-%m-%d %H:%M:%S"
 CLIENT_ARGS=(+set sv_pure 0 +set vm_game 0 +set vm_cgame 0 +set vm_ui 0)
 
-# Game data: <exe dir>/baseq3 needs these, copied from <any mounted drive>/2024/baseq3 when missing
+# Game data: <exe dir>/baseq3 needs these. When missing they are reused from another build's
+# baseq3 first (a C build here or an ioq3-rs dist dir), then from <any mounted drive>/2024/baseq3
 BASEQ3_DIR_NAME="baseq3"
+RS_DIST_ROOT="$code_root_dir/Code2/Rust/ioq3-rs/target/dist"
+BUILD_BASEQ3_SEARCH_DEPTH=3
 HDD_BASEQ3_SUBPATH="2024/$BASEQ3_DIR_NAME"
 # The Linux stand-ins for the drive roots of the ps1 (/media/2024, /media2/2024, /mnt/new, ...)
 HDD_ROOT_GLOBS=(/media /media2 /mnt/* /media/* "/run/media/${USER:-}"/*)
@@ -298,20 +304,47 @@ get_missing_files() {
     done
 }
 
-find_hdd_baseq3() {
-    # Sets hdd_baseq3: the first <mounted drive>/2024/baseq3 that holds every required pk3
-    local root candidate
-    local -a missing
-    hdd_baseq3=""
+find_build_baseq3_dirs() {
+    # Every <C repo>/build*/**/baseq3 and <ioq3-rs>/target/dist/**/baseq3 (a build's game data),
+    # newest first
+    local search_root
+    for search_root in "$REPO_ROOT"/$BUILD_DIR_PATTERN "$RS_DIST_ROOT"; do
+        [[ -d "$search_root" ]] || continue
+        find "$search_root" -mindepth 1 -maxdepth $((BUILD_BASEQ3_SEARCH_DEPTH + 1)) -type d \
+            -iname "$BASEQ3_DIR_NAME" -printf '%T@ %p\n' 2>/dev/null
+    done | sort -rn | cut -d' ' -f2-
+}
 
+find_hdd_baseq3_dirs() {
+    # Every <mounted drive>/2024/baseq3
+    local root candidate
+    local -A seen=()
     for root in "${HDD_ROOT_GLOBS[@]}"; do
         candidate="$root/$HDD_BASEQ3_SUBPATH"
         [[ -d "$candidate" ]] || continue
+        candidate="$(realpath -- "$candidate")"
+        [[ -n "${seen[$candidate]:-}" ]] && continue
+        seen[$candidate]=1
+        printf '%s\n' "$candidate"
+    done
+}
+
+find_source_baseq3() {
+    # Sets source_baseq3: the first baseq3 (builds first, then the drives) that holds every
+    # required pk3
+    local target_full candidate
+    local -a candidates missing
+    target_full="$(realpath -m -- "$1")"
+    source_baseq3=""
+
+    mapfile -t candidates < <(find_build_baseq3_dirs; find_hdd_baseq3_dirs)
+    for candidate in "${candidates[@]}"; do
+        [[ "$(realpath -m -- "$candidate")" == "$target_full" ]] && continue
 
         mapfile -t missing < <(get_missing_files "$candidate" "${REQUIRED_PK3S[@]}")
         if (( ${#missing[@]} == 0 )); then
-            write_ok "Found baseq3 data on drive: $candidate"
-            hdd_baseq3="$candidate"
+            write_ok "Found baseq3 data: $candidate"
+            source_baseq3="$candidate"
             return
         fi
         write_warn "$candidate is missing $(join_by ', ' "${missing[@]}") - skipping it."
@@ -320,7 +353,7 @@ find_hdd_baseq3() {
 
 confirm_copy() {
     if [[ "$AUTO_COPY_DATA" == true ]]; then
-        write_label "AUTO_COPY_DATA is set - copying without asking."
+        write_label "AUTO_COPY_DATA is set - going ahead without asking."
         return 0
     fi
     local answer
@@ -329,15 +362,41 @@ confirm_copy() {
     [[ "$answer" == "y" || "$answer" == "yes" ]]
 }
 
-sync_baseq3() {
-    # Copies the HDD's missing pk3 files into baseq3 (after one confirmation), then checks
-    # the required ones. Exits when a required pk3 is still missing.
-    local baseq3_dir="$1" name
-    local -a source_names to_copy still_missing
-    find_hdd_baseq3
+add_data_file() {
+    # Hard-links the file when source and destination share a filesystem (and LINK_SAME_VOLUME
+    # is set), copies it otherwise or when linking fails
+    local source="$1" dest_dir="$2"
+    local dest="$dest_dir/$(basename -- "$source")"
 
-    if [[ -n "$hdd_baseq3" ]]; then
-        mapfile -t source_names < <(find "$hdd_baseq3" -maxdepth 1 -type f -iname "$PK3_PATTERN" -printf '%f\n' | sort)
+    if [[ "$LINK_SAME_VOLUME" == true && "$(stat -c %d -- "$source")" == "$(stat -c %d -- "$dest_dir")" ]]; then
+        if ln -- "$source" "$dest" 2>/dev/null; then
+            write_ok "Linked $source -> $dest"
+            return
+        fi
+        write_warn "Could not link $source - copying instead."
+    fi
+
+    if cp -- "$source" "$dest_dir/"; then
+        write_ok "Copied $source -> $dest_dir"
+    else
+        write_err "Could not copy $source -> $dest_dir"
+    fi
+}
+
+sync_baseq3() {
+    # Links / copies the source's missing pk3 files into baseq3 (after one confirmation), then
+    # checks the required ones. Exits when a required pk3 is still missing.
+    local baseq3_dir="$1" name
+    local -a missing_required source_names to_copy still_missing
+    source_baseq3=""
+
+    mapfile -t missing_required < <(get_missing_files "$baseq3_dir" "${REQUIRED_PK3S[@]}")
+    if (( ${#missing_required[@]} > 0 )); then
+        find_source_baseq3 "$baseq3_dir"
+    fi
+
+    if [[ -n "$source_baseq3" ]]; then
+        mapfile -t source_names < <(find "$source_baseq3" -maxdepth 1 -type f -iname "$PK3_PATTERN" -printf '%f\n' | sort)
         mapfile -t to_copy < <(get_missing_files "$baseq3_dir" "${source_names[@]}")
 
         for name in "${source_names[@]}"; do
@@ -347,29 +406,25 @@ sync_baseq3() {
         if (( ${#to_copy[@]} > 0 )); then
             write_warn "${#to_copy[@]} pk3 file(s) missing from $baseq3_dir: $(join_by ', ' "${to_copy[@]}")"
 
-            if confirm_copy "Copy them from $hdd_baseq3?"; then
+            if confirm_copy "Link / copy them from $source_baseq3?"; then
                 mkdir -p -- "$baseq3_dir"
 
                 for name in "${to_copy[@]}"; do
-                    if cp -- "$hdd_baseq3/$name" "$baseq3_dir/"; then
-                        write_ok "Copied $name -> $baseq3_dir"
-                    else
-                        write_err "Could not copy $hdd_baseq3/$name -> $baseq3_dir"
-                    fi
+                    add_data_file "$source_baseq3/$name" "$baseq3_dir"
                 done
             else
                 write_warn "Skipped copying."
             fi
         fi
-    else
-        write_warn "No mounted drive has a valid $HDD_BASEQ3_SUBPATH (needs $(join_by ', ' "${REQUIRED_PK3S[@]}"))."
+    elif (( ${#missing_required[@]} > 0 )); then
+        write_warn "No build baseq3 under $REPO_ROOT/$BUILD_DIR_PATTERN or $RS_DIST_ROOT and no mounted drive's $HDD_BASEQ3_SUBPATH holds $(join_by ', ' "${REQUIRED_PK3S[@]}")."
     fi
 
     mapfile -t still_missing < <(get_missing_files "$baseq3_dir" "${REQUIRED_PK3S[@]}")
     if (( ${#still_missing[@]} > 0 )); then
         write_err "Required file(s) missing from $baseq3_dir: $(join_by ', ' "${still_missing[@]}")"
-        if [[ -z "$hdd_baseq3" ]]; then
-            write_err "Mount a drive with $HDD_BASEQ3_SUBPATH (under $(join_by ', ' /media /media2 /mnt/'<name>' /media/'<name>')) holding them, or copy them in by hand."
+        if [[ -z "$source_baseq3" ]]; then
+            write_err "Build ioq3 / ioq3-rs with its data, mount a drive with $HDD_BASEQ3_SUBPATH (under $(join_by ', ' /media /media2 /mnt/'<name>' /media/'<name>')), or copy them in by hand."
         fi
         exit 1
     fi

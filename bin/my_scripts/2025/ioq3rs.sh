@@ -53,8 +53,8 @@ BUILD_ARGS=(xtask dist --release)
 BUILD_TIME_FORMAT="%Y-%m-%d %H:%M:%S"
 CLIENT_ARGS=(+set sv_pure 0 +set vm_game 0 +set vm_cgame 0 +set vm_ui 0)
 
-# Game data: <exe dir>/baseq3 needs these. They are reused from a C ioq3 build's baseq3 first,
-# then from <any mounted drive>/2024/baseq3
+# Game data: <exe dir>/baseq3 needs these. They are reused from another build's baseq3 first (a
+# C ioq3 build or another dist dir of this port), then from <any mounted drive>/2024/baseq3
 BASEQ3_DIR_NAME="baseq3"
 HDD_BASEQ3_SUBPATH="2024/$BASEQ3_DIR_NAME"
 # The Linux stand-ins for the drive roots of the ps1 (/media/2024, /media2/2024, /mnt/new, ...)
@@ -64,6 +64,7 @@ REQUIRED_PK3S=(pak{0..8}.pk3)
 C_REPO_ROOT="$code_root_dir/Code2/C/ioq3"
 C_BUILD_DIR_PATTERN="build*"
 C_BASEQ3_SEARCH_DEPTH=3
+DIST_ROOT="$REPO_ROOT/$(dirname -- "$DIST_SUBPATH")"
 
 # The game's own console log (its default fs_homepath on Linux)
 DEFAULT_HOME_DIR="$HOME/.q3a"
@@ -377,9 +378,10 @@ get_missing_files() {
 }
 
 find_c_baseq3_dirs() {
-    # Every <C repo>/build*/**/baseq3 (a C build's game data), newest first
+    # Every <C repo>/build*/**/baseq3 and <this repo>/target/dist/**/baseq3 (a build's game
+    # data), newest first
     local search_root
-    for search_root in "$C_REPO_ROOT"/$C_BUILD_DIR_PATTERN; do
+    for search_root in "$C_REPO_ROOT"/$C_BUILD_DIR_PATTERN "$DIST_ROOT"; do
         [[ -d "$search_root" ]] || continue
         find "$search_root" -mindepth 1 -maxdepth $((C_BASEQ3_SEARCH_DEPTH + 1)) -type d \
             -iname "$BASEQ3_DIR_NAME" -printf '%T@ %p\n' 2>/dev/null
@@ -401,7 +403,7 @@ find_hdd_baseq3_dirs() {
 }
 
 find_source_baseq3() {
-    # Sets source_baseq3: the first baseq3 (C builds first, then the drives) that holds every
+    # Sets source_baseq3: the first baseq3 (builds first, then the drives) that holds every
     # required pk3
     local target_full candidate
     local -a candidates missing
@@ -487,7 +489,7 @@ sync_baseq3() {
             fi
         fi
     elif (( ${#missing_required[@]} > 0 )); then
-        write_warn "No C build baseq3 under $C_REPO_ROOT and no mounted drive's $HDD_BASEQ3_SUBPATH holds $(join_by ', ' "${REQUIRED_PK3S[@]}")."
+        write_warn "No build baseq3 under $C_REPO_ROOT/$C_BUILD_DIR_PATTERN or $DIST_ROOT and no mounted drive's $HDD_BASEQ3_SUBPATH holds $(join_by ', ' "${REQUIRED_PK3S[@]}")."
     fi
 
     mapfile -t still_missing < <(get_missing_files "$baseq3_dir" "${REQUIRED_PK3S[@]}")
