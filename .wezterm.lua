@@ -1795,17 +1795,21 @@ wezterm.on("format-tab-title", function(tab)
     new_title = "…" .. new_title:sub(-(max_title_len-2))
   end
 
-  -- Pad and center if too short
-  local len = #new_title
-  if len < min_title_len then
-    local pad_total = min_title_len - len
-    local pad_left  = math.floor(pad_total / 2)
-    local pad_right = pad_total - pad_left
-    new_title = string.rep(" ", pad_left) .. new_title .. string.rep(" ", pad_right)
+  -- Pad and center if too short. The width is in columns (#new_title counted
+  -- bytes), the Claude icon is centered along with the path, and the trailing
+  -- space is left out (it pushed the path a column or so left of center).
+  local pad_left = ""
+  local content = new_title:gsub(" $", "")
+  local content_width = wezterm.column_width((claude_icon or "") .. content)
+  if content_width < min_title_len then
+    local pad_total = min_title_len - content_width
+    pad_left  = string.rep(" ", math.floor(pad_total / 2))
+    new_title = content .. string.rep(" ", pad_total - #pad_left)
   end
 
   if claude_icon and claude_icon_color then
     return {
+      { Text = pad_left },
       { Foreground = { Color = claude_icon_color } },
       { Text = claude_icon },
       'ResetAttributes',
@@ -1818,7 +1822,7 @@ wezterm.on("format-tab-title", function(tab)
   end
 
   return {
-    { Text = new_title }
+    { Text = pad_left .. new_title }
   }
 end)
 
