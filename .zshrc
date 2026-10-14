@@ -329,10 +329,8 @@ alias .ioq3rs="_source_or_run $HOME/.local/bin/my_scripts/2025/ioq3rs.sh"
 alias .benilla="_source_or_run $HOME/.local/bin/my_scripts/2025/benilla.sh"
 alias .cenilla="_source_or_run $HOME/.local/bin/my_scripts/2025/cenilla.sh"
 alias .stk="_source_or_run $HOME/.local/bin/my_scripts/2025/stk.sh"
-alias .openjk='$HOME/.local/share/openjk/JediAcademy/openjk.x86_64'
-alias .openjk_sp='$HOME/.local/share/openjk/JediAcademy/openjk_sp.x86_64'
-alias .openjo_sp='$HOME/.local/share/openjk/JediOutcast/openjo_sp.x86_64'
-alias .japp='$HOME/.local/share/openjk/JediAcademy/openjk.x86_64 +set fs_game "japlus"'
+# .openjk run [mp | sp | jo | ded] [japp] ... (the old .openjk_sp / .openjo_sp / .japp: run sp / run jo / run japp)
+alias .openjk="_source_or_run $HOME/.local/bin/my_scripts/2025/openjk.sh"
 alias .acore='cd $HOME/acore/bin; pwd; ls'
 #alias .acore_update='cd $HOME/Code2/C++/AzerothCore-wotlk-with-NPCBots && git pull && cd modules/mod-eluna && git pull && cd ../..'
 alias .acore_update_old='cd $HOME/Code2/C++/AzerothCore-wotlk-with-NPCBots && git pull && cd modules/mod-eluna && git pull https://github.com/azerothcore/mod-eluna master && cd ../..'
