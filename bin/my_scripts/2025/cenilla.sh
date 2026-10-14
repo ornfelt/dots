@@ -2,32 +2,36 @@
 # cenilla.sh - starts cenilla (benilla, the WoW 1.12.1 client, translated to C on the gfx library)
 # from one of its CMake build trees; a tree without the client is configured and built first.
 #
-# Usage examples (args in any order, case insensitive; `.cenilla help` lists them all):
-# the optimized build (build-rel) on the gfx library's default window and device:
+# Usage examples (nothing runs without `run` as the first arg; the args after it in any order,
+# case insensitive; `.cenilla help` lists them all):
+# cd into the repo and print how to run it, through this script and by hand (runs nothing):
 # .cenilla
 #
+# the optimized build (build-rel) on the gfx library's default window and device:
+# .cenilla run
+#
 # pick the gfx device and / or window:
-# .cenilla vk sdl
-# .cenilla gl3 glfw
+# .cenilla run vk sdl
+# .cenilla run gl3 glfw
 #
 # the sanitized debug build (build/), rebuilt first, with the debug panel open:
-# .cenilla debug build panel
+# .cenilla run debug build panel
 #
 # log in as the checkout's .probe-identity, on another server and realm:
-# .cenilla probe host=192.168.1.10 realm=Elysium
+# .cenilla run probe host=192.168.1.10 realm=Elysium
 #
 # a server-less capture on lavapipe, and the list of capture scenarios:
-# .cenilla capture=water-noon vk soft
-# .cenilla capture=list
+# .cenilla run capture=water-noon vk soft
+# .cenilla run capture=list
 #
 # the engine viewer over Goldshire:
-# .cenilla at=-9460,62
+# .cenilla run at=-9460,62
 #
 # any other env var (an upper-case name with an underscore) as it is:
-# .cenilla WOW_MSAA=4 WOW_FARCLIP=800
+# .cenilla run WOW_MSAA=4 WOW_FARCLIP=800
 #
 # print the bash line for this run instead of running it:
-# .cenilla vk debug print
+# .cenilla run vk debug print
 
 write_label() { printf '\033[90m%s\033[0m\n' "$1"; } # Dark gray
 write_alt()   { printf '\033[35m%s\033[0m\n' "$1"; } # Magenta
@@ -43,6 +47,16 @@ fi
 
 REPO_ROOT="$code_root_dir/Code2/Wow/tools/cenilla"
 BUILD_TIME_FORMAT="%Y-%m-%d %H:%M:%S"
+
+# A bare call cds into the repo and prints how to run it (show_usage), running nothing. The cd
+# only reaches the calling shell when the script is sourced (the .zshrc alias sources it for a
+# bare call), so a sourced script prints through a bash run of itself and returns here, before
+# the bash-only code below
+if (( $# == 0 )) && (return 0 2>/dev/null); then
+    cd -- "$REPO_ROOT" || return 1
+    bash "${BASH_SOURCE[0]:-$0}"
+    return 0
+fi
 
 # The build trees (docs/RUNNING.md), picked by name; `tree=<dir>` takes any other build dir as it
 # is. A missing tree is configured with its args; pgo is tools/pgo.sh's (it trains on a live
@@ -103,6 +117,7 @@ EXIT_LOADER_FAILED=127
 
 # Launch options (show_help)
 ALIAS_NAME=".cenilla"
+RUN_COMMAND="run"
 HELP_TOKENS=(help h)
 PRINT_TOKENS=(print onlyprint showcmd)
 GFX_DEVICES=(gl4 gl3 gles3 vk d3d11 d3d12)
@@ -134,7 +149,8 @@ show_help() {
     write_alt "cenilla - start cenilla from a build tree under $REPO_ROOT (configured and built when missing)"
     cat <<EOF
 
-Usage: $ALIAS_NAME [options] [VAR_NAME=value...]
+Usage: $ALIAS_NAME $RUN_COMMAND [options] [VAR_NAME=value...]
+Nothing runs without $RUN_COMMAND as the first arg; a bare $ALIAS_NAME cds into the repo and prints how to run it.
 Options are case insensitive, in any order, with or without leading dashes.
 
 Build tree (default $DEFAULT_TREE):
@@ -183,12 +199,20 @@ The gfx library must be built first: $GFX_DLL_ROOT/${GFX_DIR_NAMES[0]}/bin/<Rele
 A sanitized tree gets $SANITIZER_ENV.
 
 Examples:
-  $ALIAS_NAME vk sdl panel
-  $ALIAS_NAME debug build probe
-  $ALIAS_NAME capture=felwood-night gl4 soft
-  $ALIAS_NAME worldview at=-9460,62 vk
+  $ALIAS_NAME $RUN_COMMAND vk sdl panel
+  $ALIAS_NAME $RUN_COMMAND debug build probe
+  $ALIAS_NAME $RUN_COMMAND capture=felwood-night gl4 soft
+  $ALIAS_NAME $RUN_COMMAND worldview at=-9460,62 vk
 
 EOF
+    show_manual_run
+}
+
+show_usage() {
+    # A bare call: how to run cenilla from the repo, through this script and by hand
+    write_alt "cenilla - $REPO_ROOT"
+    write_label "Run it through this script (the options after $RUN_COMMAND; '$ALIAS_NAME help' lists them):"
+    write_extra "$ALIAS_NAME $RUN_COMMAND"
     show_manual_run
 }
 
@@ -196,6 +220,20 @@ show_manual_run() {
     # Prints how to start the default tree's client by hand, without this script
     write_label "Or run it manually (from $REPO_ROOT, once ${TREE_DIRS[$DEFAULT_TREE]}/ is built):"
     write_extra "export $WOW_DATA_VAR=\"\$wow_classic_dir/$WOW_DATA_SUBDIR\" && ./${TREE_DIRS[$DEFAULT_TREE]}/$EXE_SUBDIR/$CLIENT_EXE_NAME"
+}
+
+read_command() {
+    # read_command <first arg> - returns on run; help shows the help, anything else the usage, and exits
+    local name="${1#"${1%%[!-]*}"}"
+    name="${name,,}"
+    [[ "$name" == "$RUN_COMMAND" ]] && return
+    if in_list "$name" "${HELP_TOKENS[@]}"; then
+        show_help
+        exit 0
+    fi
+    write_err "Nothing runs without $RUN_COMMAND as the first arg (got: $1)."
+    show_usage
+    exit 1
 }
 
 read_options() {
@@ -541,6 +579,12 @@ start_client() {
 }
 
 script_args=("$@")
+if (( $# == 0 )); then
+    show_usage
+    exit 0
+fi
+read_command "$1"
+shift
 read_options "$@"
 if $opt_help; then
     show_help

@@ -322,10 +322,12 @@ alias .cdp='cd $HOME/Documents/windows_dots; ls'
 alias .dots='cd $HOME/Downloads/dotfiles; ls'
 #alias .ioq3='$HOME/Code2/C/ioq3/build/release-linux-x86_64/ioquake3.x86_64 +set sv_pure 0 +set vm_game 0 +set vm_cgame 0 +set vm_ui 0'
 #alias .ioq32='$HOME/Code2/C/ioq3/build/release-linux-x86_64_golden/ioquake3.x86_64 +set sv_pure 0 +set vm_game 0 +set vm_cgame 0 +set vm_ui 0'
-alias .ioq3="$HOME/.local/bin/my_scripts/2025/ioq3.sh"
-alias .ioq3rs="$HOME/.local/bin/my_scripts/2025/ioq3rs.sh"
-alias .benilla="$HOME/.local/bin/my_scripts/2025/benilla.sh"
-alias .cenilla="$HOME/.local/bin/my_scripts/2025/cenilla.sh"
+# A bare call sources the script (it cds into the repo and prints how to run it); with args it runs
+_source_or_run() { local script="$1"; shift; if (( $# )); then "$script" "$@"; else source "$script"; fi }
+alias .ioq3="_source_or_run $HOME/.local/bin/my_scripts/2025/ioq3.sh"
+alias .ioq3rs="_source_or_run $HOME/.local/bin/my_scripts/2025/ioq3rs.sh"
+alias .benilla="_source_or_run $HOME/.local/bin/my_scripts/2025/benilla.sh"
+alias .cenilla="_source_or_run $HOME/.local/bin/my_scripts/2025/cenilla.sh"
 alias .stk='cd $HOME/Code2/C++/stk-code/build/bin && ./supertuxkart'
 alias .openjk='$HOME/.local/share/openjk/JediAcademy/openjk.x86_64'
 alias .openjk_sp='$HOME/.local/share/openjk/JediAcademy/openjk_sp.x86_64'

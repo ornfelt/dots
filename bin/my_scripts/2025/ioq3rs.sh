@@ -2,28 +2,32 @@
 # ioq3rs.sh - the bash / Linux version of ioq3rs.ps1: builds (when missing) and starts the
 # ioq3-rs client (the Rust port of ioquake3) from target/dist/release.
 #
-# Usage examples (args in any order, case insensitive; `.ioq3rs help` lists them all):
-# start like before (the backends / renderer last used are remembered in q3config.cfg):
+# Usage examples (nothing runs without `run` as the first arg; the args after it in any order,
+# case insensitive; `.ioq3rs help` lists them all):
+# cd into the repo and print how to run it, through this script and by hand (runs nothing):
 # .ioq3rs
 #
+# start like before (the backends / renderer last used are remembered in q3config.cfg):
+# .ioq3rs run
+#
 # pick the gfx device and / or window (ignored by a build without gfx):
-# .ioq3rs vk glfw
-# .ioq3rs gles3 x11
+# .ioq3rs run vk glfw
+# .ioq3rs run gles3 x11
 #
 # dev map (q3dm0) in a window:
-# .ioq3rs dev win
+# .ioq3rs run dev win
 #
 # another map with bots, on a fresh config, writing qconsole.log:
-# .ioq3rs map=q3dm17 bots fresh log
+# .ioq3rs run map=q3dm17 bots fresh log
 #
 # timedemo benchmark on vk:
-# .ioq3rs bench vk
+# .ioq3rs run bench vk
 #
 # the QVMs instead of the Rust modules, raw game args after them (from the first + arg on):
-# .ioq3rs qvm dev +set r_mode 6
+# .ioq3rs run qvm dev +set r_mode 6
 #
 # print the bash lines for this run instead of running it:
-# .ioq3rs vk dev print
+# .ioq3rs run vk dev print
 
 write_label() { printf '\033[90m%s\033[0m\n' "$1"; } # Dark gray
 write_alt()   { printf '\033[35m%s\033[0m\n' "$1"; } # Magenta
@@ -53,6 +57,16 @@ BUILD_ARGS=(xtask dist --release)
 BUILD_TIME_FORMAT="%Y-%m-%d %H:%M:%S"
 CLIENT_ARGS=(+set sv_pure 0 +set vm_game 0 +set vm_cgame 0 +set vm_ui 0)
 
+# A bare call cds into the repo and prints how to run it (show_usage), running nothing. The cd
+# only reaches the calling shell when the script is sourced (the .zshrc alias sources it for a
+# bare call), so a sourced script prints through a bash run of itself and returns here, before
+# the bash-only code below
+if (( $# == 0 )) && (return 0 2>/dev/null); then
+    cd -- "$REPO_ROOT" || return 1
+    bash "${BASH_SOURCE[0]:-$0}"
+    return 0
+fi
+
 # Game data: <exe dir>/baseq3 needs these. They are reused from another build's baseq3 first (a
 # C ioq3 build or another dist dir of this port), then from <any mounted drive>/2024/baseq3
 BASEQ3_DIR_NAME="baseq3"
@@ -76,6 +90,7 @@ EXIT_LOADER_FAILED=127
 # earlier gfx build, so that file alone says nothing). The branch only decides it for `print`
 # when nothing is built yet.
 ALIAS_NAME=".ioq3rs"
+RUN_COMMAND="run"
 HELP_TOKENS=(help h)
 PRINT_TOKENS=(print onlyprint showcmd)
 GFX_DEVICES=(gl4 gl3 gles3 vk d3d11 d3d12)
@@ -123,7 +138,8 @@ show_help() {
     write_alt "ioq3rs - build (when missing) and start the ioq3-rs client from $REPO_ROOT/$DIST_SUBPATH"
     cat <<EOF
 
-Usage: $ALIAS_NAME [options] [+game args...]
+Usage: $ALIAS_NAME $RUN_COMMAND [options] [+game args...]
+Nothing runs without $RUN_COMMAND as the first arg; a bare $ALIAS_NAME cds into the repo and prints how to run it.
 Options are case insensitive, in any order, with or without leading dashes.
 
 gfx backends (used only when the built client supports gfx, ignored otherwise):
@@ -155,11 +171,39 @@ Other:
   $(join_by ' | ' "${HELP_TOKENS[@]}") (also -help, --help)  this help
 
 Examples:
-  $ALIAS_NAME vk glfw dev win
-  $ALIAS_NAME map=q3dm17 bots fresh log
-  $ALIAS_NAME bench gles3
-  $ALIAS_NAME opengl1 dev +set r_mode 6
+  $ALIAS_NAME $RUN_COMMAND vk glfw dev win
+  $ALIAS_NAME $RUN_COMMAND map=q3dm17 bots fresh log
+  $ALIAS_NAME $RUN_COMMAND bench gles3
+  $ALIAS_NAME $RUN_COMMAND opengl1 dev +set r_mode 6
 EOF
+}
+
+show_usage() {
+    # A bare call: how to run ioq3-rs from the repo, through this script and by hand
+    write_alt "ioq3-rs - $REPO_ROOT"
+    write_label "Run it through this script (the options after $RUN_COMMAND; '$ALIAS_NAME help' lists them):"
+    write_extra "$ALIAS_NAME $RUN_COMMAND"
+    show_manual_run
+}
+
+show_manual_run() {
+    # Prints how to build and start the client by hand, without this script (the pk3 check left out)
+    write_label "Or run it manually (from $REPO_ROOT; the build only when $DIST_SUBPATH/$CLIENT_EXE_NAME is missing or old):"
+    write_extra "$BUILD_COMMAND ${BUILD_ARGS[*]} && (cd $DIST_SUBPATH && ./$CLIENT_EXE_NAME $(format_args "${CLIENT_ARGS[@]}"))"
+}
+
+read_command() {
+    # read_command <first arg> - returns on run; help shows the help, anything else the usage, and exits
+    local name="${1#"${1%%[!-]*}"}"
+    name="${name,,}"
+    [[ "$name" == "$RUN_COMMAND" ]] && return
+    if in_list "$name" "${HELP_TOKENS[@]}"; then
+        show_help
+        exit 0
+    fi
+    write_err "Nothing runs without $RUN_COMMAND as the first arg (got: $1)."
+    show_usage
+    exit 1
 }
 
 read_options() {
@@ -526,6 +570,12 @@ start_client() {
 }
 
 script_args=("$@")
+if (( $# == 0 )); then
+    show_usage
+    exit 0
+fi
+read_command "$1"
+shift
 read_options "$@"
 if $opt_help; then
     show_help

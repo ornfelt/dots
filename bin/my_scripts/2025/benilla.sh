@@ -2,32 +2,36 @@
 # benilla.sh - starts benilla (the Rust WoW 1.12.1 client on trimmed Bevy and the gfx library)
 # from one of its cargo profiles; a profile without the client is built with cargo first.
 #
-# Usage examples (args in any order, case insensitive; `.benilla help` lists them all):
-# the release build (target/release) on the gfx library's default window and device:
+# Usage examples (nothing runs without `run` as the first arg; the args after it in any order,
+# case insensitive; `.benilla help` lists them all):
+# cd into the repo and print how to run it, through this script and by hand (runs nothing):
 # .benilla
 #
+# the release build (target/release) on the gfx library's default window and device:
+# .benilla run
+#
 # pick the gfx device and / or window:
-# .benilla vk sdl
-# .benilla gl3 glfw
+# .benilla run vk sdl
+# .benilla run gl3 glfw
 #
 # the play profile (release + incremental), rebuilt first, with the debug panel open:
-# .benilla play build panel
+# .benilla run play build panel
 #
 # log in as the checkout's .probe-identity, on another server and realm:
-# .benilla probe host=192.168.1.10 realm=Elysium
+# .benilla run probe host=192.168.1.10 realm=Elysium
 #
 # a server-less capture on lavapipe, and the list of capture scenarios:
-# .benilla capture=water-noon vk soft
-# .benilla capture=list
+# .benilla run capture=water-noon vk soft
+# .benilla run capture=list
 #
 # the engine viewer over Goldshire:
-# .benilla at=-9460,62
+# .benilla run at=-9460,62
 #
 # any other env var (an upper-case name with an underscore) as it is:
-# .benilla WOW_MSAA=4 WOW_FARCLIP=800
+# .benilla run WOW_MSAA=4 WOW_FARCLIP=800
 #
 # print the bash line for this run instead of running it:
-# .benilla vk debug print
+# .benilla run vk debug print
 
 write_label() { printf '\033[90m%s\033[0m\n' "$1"; } # Dark gray
 write_alt()   { printf '\033[35m%s\033[0m\n' "$1"; } # Magenta
@@ -43,6 +47,16 @@ fi
 
 REPO_ROOT="$code_root_dir/Code2/Wow/tools/benilla"
 BUILD_TIME_FORMAT="%Y-%m-%d %H:%M:%S"
+
+# A bare call cds into the repo and prints how to run it (show_usage), running nothing. The cd
+# only reaches the calling shell when the script is sourced (the .zshrc alias sources it for a
+# bare call), so a sourced script prints through a bash run of itself and returns here, before
+# the bash-only code below
+if (( $# == 0 )) && (return 0 2>/dev/null); then
+    cd -- "$REPO_ROOT" || return 1
+    bash "${BASH_SOURCE[0]:-$0}"
+    return 0
+fi
 
 # The cargo profiles (RUNNING.md), picked by name. The player build has no `dev` feature, so it
 # gets its own target dir instead of replacing target/release's client. The names shared with
@@ -98,6 +112,7 @@ EXIT_LOADER_FAILED=127
 
 # Launch options (show_help)
 ALIAS_NAME=".benilla"
+RUN_COMMAND="run"
 HELP_TOKENS=(help h)
 PRINT_TOKENS=(print onlyprint showcmd)
 GFX_DEVICES=(gl4 gl3 gles3 vk d3d11 d3d12)
@@ -129,7 +144,8 @@ show_help() {
     write_alt "benilla - start benilla from a cargo profile under $REPO_ROOT (built when missing)"
     cat <<EOF
 
-Usage: $ALIAS_NAME [options] [VAR_NAME=value...]
+Usage: $ALIAS_NAME $RUN_COMMAND [options] [VAR_NAME=value...]
+Nothing runs without $RUN_COMMAND as the first arg; a bare $ALIAS_NAME cds into the repo and prints how to run it.
 Options are case insensitive, in any order, with or without leading dashes.
 
 Profile (default $DEFAULT_PROFILE):
@@ -176,12 +192,20 @@ Other:
 The gfx library must be built first: $GFX_DLL_ROOT/${GFX_DIR_NAMES[0]}/bin/<Release|Debug>_x64/$GFX_LIB_NAME.
 
 Examples:
-  $ALIAS_NAME vk sdl panel
-  $ALIAS_NAME play build probe
-  $ALIAS_NAME capture=felwood-night gl4 soft
-  $ALIAS_NAME worldview at=-9460,62 vk
+  $ALIAS_NAME $RUN_COMMAND vk sdl panel
+  $ALIAS_NAME $RUN_COMMAND play build probe
+  $ALIAS_NAME $RUN_COMMAND capture=felwood-night gl4 soft
+  $ALIAS_NAME $RUN_COMMAND worldview at=-9460,62 vk
 
 EOF
+    show_manual_run
+}
+
+show_usage() {
+    # A bare call: how to run benilla from the repo, through this script and by hand
+    write_alt "benilla - $REPO_ROOT"
+    write_label "Run it through this script (the options after $RUN_COMMAND; '$ALIAS_NAME help' lists them):"
+    write_extra "$ALIAS_NAME $RUN_COMMAND"
     show_manual_run
 }
 
@@ -189,6 +213,20 @@ show_manual_run() {
     # Prints how to start the default profile's client by hand, without this script
     write_label "Or run it manually (from $REPO_ROOT):"
     write_extra "export $WOW_DATA_VAR=\"\$wow_classic_dir/$WOW_DATA_SUBDIR\" && $BUILD_COMMAND run ${PROFILE_BUILD_ARGS[$DEFAULT_PROFILE]} -p $CLIENT_EXE_NAME"
+}
+
+read_command() {
+    # read_command <first arg> - returns on run; help shows the help, anything else the usage, and exits
+    local name="${1#"${1%%[!-]*}"}"
+    name="${name,,}"
+    [[ "$name" == "$RUN_COMMAND" ]] && return
+    if in_list "$name" "${HELP_TOKENS[@]}"; then
+        show_help
+        exit 0
+    fi
+    write_err "Nothing runs without $RUN_COMMAND as the first arg (got: $1)."
+    show_usage
+    exit 1
 }
 
 read_options() {
@@ -489,6 +527,12 @@ start_client() {
 }
 
 script_args=("$@")
+if (( $# == 0 )); then
+    show_usage
+    exit 0
+fi
+read_command "$1"
+shift
 read_options "$@"
 if $opt_help; then
     show_help
