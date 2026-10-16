@@ -7,7 +7,8 @@
 # cd into the repo and print how to run it, through this script and by hand (runs nothing):
 # .cenilla
 #
-# the optimized build (build-rel) on the gfx library's default window and device:
+# the first build tree that exists (build-rel, else build/, ...) on the platform's window
+# (win32 / x11) and the gfx library's default device:
 # .cenilla run
 #
 # pick the gfx device and / or window:
@@ -26,6 +27,10 @@
 #
 # the engine viewer over Goldshire:
 # .cenilla run at=-9460,62
+#
+# windowed for this run, at the client's default 1600x900 or a size of your own:
+# .cenilla run win
+# .cenilla run size=1280x720
 #
 # any other env var (an upper-case name with an underscore) as it is:
 # .cenilla run WOW_MSAA=4 WOW_FARCLIP=800
@@ -65,6 +70,9 @@ fi
 DEFAULT_TREE="rel"
 TREE_NAMES=(rel debug pgo player clang)
 declare -A TREE_DIRS=([rel]=build-rel [debug]=build [pgo]=build-release [player]=build-player [clang]=build-clang)
+# With no tree named, the first of these that is configured (holds its CMakeCache.txt) runs:
+# build-rel, else build/, else the rest. When none is, DEFAULT_TREE is configured and built.
+TREE_AUTO_ORDER=(rel debug pgo player clang)
 declare -A TREE_ALIASES=([release]=rel [relwithdebinfo]=rel [dev]=debug [ship]=pgo)
 declare -A TREE_INFO=(
     [rel]="RelWithDebInfo, no sanitizers: the playable build (also: release)"
@@ -121,10 +129,28 @@ RUN_COMMAND="run"
 HELP_TOKENS=(help h)
 PRINT_TOKENS=(print onlyprint showcmd)
 GFX_DEVICES=(gl4 gl3 gles3 vk d3d11 d3d12)
+# A d3d device opens only in a win32 window; with any other the window is never created
+D3D_DEVICES=(d3d11 d3d12)
+D3D_WINDOW="win32"
 declare -A GFX_DEVICE_ALIASES=([vulkan]=vk [dx11]=d3d11 [dx12]=d3d12)
 GFX_WINDOWS=(x11 sdl glfw win32)
+# The window when none is named as an arg (a window option or a WOW_GFX_WINDOW= arg), even over
+# a WOW_GFX_WINDOW left in the environment: the platform's own, win32 on
+# Windows (Git Bash / MSYS / Cygwin) and x11 on Linux; elsewhere the library's first.
+case "${OSTYPE:-}" in
+    msys* | cygwin* | win32*) DEFAULT_GFX_WINDOW="win32" ;;
+    linux*) DEFAULT_GFX_WINDOW="x11" ;;
+    *) DEFAULT_GFX_WINDOW="" ;;
+esac
+DEFAULT_GFX_WINDOW_INFO="$DEFAULT_GFX_WINDOW"
+if [[ -z "$DEFAULT_GFX_WINDOW_INFO" ]]; then DEFAULT_GFX_WINDOW_INFO="the library's first"; fi
 OPTION_VALUE_SEPARATOR="="
 ENV_ARG_PATTERN='^[A-Z][A-Z0-9]*_[A-Z0-9_]*='
+# win / size=: WOW_WIN=<W>x<H> runs the client windowed at that size for this run only (never
+# saved; the in-game Windowed Mode, gxWindow 1, is what persists); win alone takes the client's
+# default windowed size (DEFAULT_WINDOWED, gxResolution's default)
+WINDOWED_DEFAULT_SIZE="1600x900"
+WINDOW_SIZE_PATTERN='^[0-9]+x[0-9]+$'
 
 join_by() {
     # join_by <separator> <items...>
@@ -153,7 +179,7 @@ Usage: $ALIAS_NAME $RUN_COMMAND [options] [VAR_NAME=value...]
 Nothing runs without $RUN_COMMAND as the first arg; a bare $ALIAS_NAME cds into the repo and prints how to run it.
 Options are case insensitive, in any order, with or without leading dashes.
 
-Build tree (default $DEFAULT_TREE):
+Build tree (default: the first configured of $(join_by ', ' "${TREE_AUTO_ORDER[@]}"), else $DEFAULT_TREE):
 EOF
     for name in "${TREE_NAMES[@]}"; do
         printf '  %-8s %-14s %s\n' "$name" "${TREE_DIRS[$name]}/" "${TREE_INFO[$name]}"
@@ -162,10 +188,15 @@ EOF
   tree=<dir>             any other build dir (build-tsan, build-gfxnew, ...), not configured here
   build                  build the tree first (cmake --build: relinks and copies a newer gfx library)
 
-gfx backends (WOW_GFX_DEVICE / WOW_GFX_WINDOW; unset, the library's first):
+gfx backends (WOW_GFX_DEVICE / WOW_GFX_WINDOW; the device unset is the library's first, the
+window $DEFAULT_GFX_WINDOW_INFO unless named as an arg, even over a WOW_GFX_WINDOW in the environment):
   $(join_by ' | ' "${GFX_DEVICES[@]}")   (vulkan = vk, dx11 / dx12 = d3d11 / d3d12)
   $(join_by ' | ' "${GFX_WINDOWS[@]}")
   d3d11 / d3d12 / win32 are Windows only; a name the library lacks stops the boot, listing its names.
+
+Window (this run only; the in-game Windowed Mode / gxWindow 1 is what is saved):
+  win                    windowed at $WINDOWED_DEFAULT_SIZE (WOW_WIN; also: windowed)
+  size=<W>x<H>           windowed at that size (WOW_WIN=<W>x<H>)
 
 Dev tools:
   panel                  the debug panel open at boot (WOW_PANEL=1)
@@ -216,10 +247,24 @@ show_usage() {
     show_manual_run
 }
 
+find_tree() {
+    # Prints the first tree of TREE_AUTO_ORDER that is configured, else DEFAULT_TREE
+    local name
+    for name in "${TREE_AUTO_ORDER[@]}"; do
+        if [[ -f "$REPO_ROOT/${TREE_DIRS[$name]}/$CMAKE_CACHE_NAME" ]]; then
+            printf '%s\n' "$name"
+            return
+        fi
+    done
+    printf '%s\n' "$DEFAULT_TREE"
+}
+
 show_manual_run() {
     # Prints how to start the default tree's client by hand, without this script
-    write_label "Or run it manually (from $REPO_ROOT, once ${TREE_DIRS[$DEFAULT_TREE]}/ is built):"
-    write_extra "export $WOW_DATA_VAR=\"\$wow_classic_dir/$WOW_DATA_SUBDIR\" && ./${TREE_DIRS[$DEFAULT_TREE]}/$EXE_SUBDIR/$CLIENT_EXE_NAME"
+    local tree_name
+    tree_name="$(find_tree)"
+    write_label "Or run it manually (from $REPO_ROOT, once ${TREE_DIRS[$tree_name]}/ is built):"
+    write_extra "export $WOW_DATA_VAR=\"\$wow_classic_dir/$WOW_DATA_SUBDIR\" && ./${TREE_DIRS[$tree_name]}/$EXE_SUBDIR/$CLIENT_EXE_NAME"
 }
 
 read_command() {
@@ -239,7 +284,7 @@ read_command() {
 read_options() {
     # Sets the opt_* launch options from the script args; exits on an unknown one
     opt_help=false; opt_print_only=false; opt_tree=""; opt_tree_dir=""; opt_build=false
-    opt_device=""; opt_window=""; opt_panel=false; opt_hud=false; opt_worldview=false; opt_at=""
+    opt_device=""; opt_window=""; opt_win=false; opt_size=""; opt_panel=false; opt_hud=false; opt_worldview=false; opt_at=""
     opt_host=""; opt_realm=""; opt_char=""; opt_probe=false; opt_nosound=false; opt_unattended=false
     opt_capture=""; opt_out=""; opt_fps=""; opt_exit=""; opt_soft=false; opt_validate=false
     opt_data=""; opt_data_set=false; opt_env=()
@@ -273,6 +318,8 @@ read_options() {
         elif [[ "$name" == "tree" && -n "$value" ]]; then opt_tree_dir="$value"
         elif [[ "$name" == "build" ]]; then opt_build=true
         elif [[ "$name" == "panel" ]]; then opt_panel=true
+        elif [[ "$name" == "win" || "$name" == "windowed" ]]; then opt_win=true
+        elif [[ "$name" == "size" && -n "$value" ]]; then opt_size="${value,,}"
         elif [[ "$name" == "hud" ]]; then opt_hud=true
         elif [[ "$name" == "worldview" ]]; then opt_worldview=true
         elif [[ "$name" == "at" && -n "$value" ]]; then opt_at="$value"; opt_worldview=true
@@ -290,7 +337,7 @@ read_options() {
         elif [[ "$name" == "validate" ]]; then opt_validate=true
         elif [[ "$name" == "data" && -n "$value" ]]; then opt_data="$(realpath -m -- "$value")"; opt_data_set=true
         else
-            write_err "Unknown arg: $raw (tree= / at= / host= / realm= / char= / capture= / out= / fps= / exit= need a value) - see '$ALIAS_NAME help'."
+            write_err "Unknown arg: $raw (tree= / size= / at= / host= / realm= / char= / capture= / out= / fps= / exit= need a value) - see '$ALIAS_NAME help'."
             exit 1
         fi
     done
@@ -299,8 +346,17 @@ read_options() {
         write_warn "tree=$opt_tree_dir is used - ignoring $opt_tree."
         opt_tree=""
     fi
-    if [[ -z "$opt_tree" && -z "$opt_tree_dir" ]]; then opt_tree="$DEFAULT_TREE"; fi
+    if [[ -z "$opt_tree" && -z "$opt_tree_dir" ]]; then
+        opt_tree="$(find_tree)"
+        if [[ "$opt_tree" != "$DEFAULT_TREE" ]]; then
+            write_label "No ${TREE_DIRS[$DEFAULT_TREE]}/ - using ${TREE_DIRS[$opt_tree]}/."
+        fi
+    fi
     if [[ -n "$opt_out" && -z "$opt_capture" ]]; then write_warn "out= is for a capture - ignoring it."; fi
+    if [[ -n "$opt_size" && ! "$opt_size" =~ $WINDOW_SIZE_PATTERN ]]; then
+        write_err "size= takes <W>x<H>, e.g. size=$WINDOWED_DEFAULT_SIZE (got: $opt_size)."
+        exit 1
+    fi
     if $opt_worldview && [[ -n "$opt_capture" ]]; then
         write_warn "A capture runs in the client - ignoring worldview / at=."
         opt_worldview=false; opt_at=""
@@ -477,7 +533,12 @@ get_run_env() {
     fi
 
     [[ -n "$opt_device" ]] && run_env+=("WOW_GFX_DEVICE=$opt_device")
-    [[ -n "$opt_window" ]] && run_env+=("WOW_GFX_WINDOW=$opt_window")
+    if [[ -n "$opt_window" ]]; then run_env+=("WOW_GFX_WINDOW=$opt_window")
+    elif [[ -n "$DEFAULT_GFX_WINDOW" && " ${opt_env[*]} " != *" WOW_GFX_WINDOW="* ]]; then
+        run_env+=("WOW_GFX_WINDOW=$DEFAULT_GFX_WINDOW")
+    fi
+    if [[ -n "$opt_size" ]]; then run_env+=("WOW_WIN=$opt_size")
+    elif $opt_win; then run_env+=("WOW_WIN=$WINDOWED_DEFAULT_SIZE"); fi
     $opt_panel && run_env+=("WOW_PANEL=1")
     $opt_hud && run_env+=("WOW_PERF_HUD=1")
     [[ -n "$opt_at" ]] && run_env+=("WOW_WORLDVIEW_AT=$opt_at")
@@ -599,11 +660,39 @@ if [[ ! -d "$REPO_ROOT" ]]; then
     exit 1
 fi
 
+check_gfx_pair() {
+    # Names a WOW_GFX_WINDOW / WOW_GFX_DEVICE the run takes from the environment (the launch line
+    # lists only what this script sets) or a WOW_GFX_WINDOW there it overrides, and warns about a
+    # d3d device in a window other than win32
+    local entry window="" device="" hint=""
+    for entry in "${run_env[@]}"; do
+        case "$entry" in
+            WOW_GFX_WINDOW=*) window="${entry#*=}" ;;
+            WOW_GFX_DEVICE=*) device="${entry#*=}" ;;
+        esac
+    done
+    if [[ -n "$window" && -n "${WOW_GFX_WINDOW:-}" && "${WOW_GFX_WINDOW,,}" != "${window,,}" ]]; then
+        write_label "WOW_GFX_WINDOW=$WOW_GFX_WINDOW in the environment is not used: the window is $window."
+    elif [[ -z "$window" && -n "${WOW_GFX_WINDOW:-}" ]]; then
+        window="$WOW_GFX_WINDOW"
+        hint=", or unset WOW_GFX_WINDOW"
+        write_label "WOW_GFX_WINDOW=$window (from the environment)"
+    fi
+    if [[ -z "$device" && -n "${WOW_GFX_DEVICE:-}" ]]; then
+        device="$WOW_GFX_DEVICE"
+        write_label "WOW_GFX_DEVICE=$device (from the environment)"
+    fi
+    if in_list "${device,,}" "${D3D_DEVICES[@]}" && [[ -n "$window" && "${window,,}" != "$D3D_WINDOW" ]]; then
+        write_warn "$device opens only in a $D3D_WINDOW window, not $window: its window will not be created - name $D3D_WINDOW$hint."
+    fi
+}
+
 capture_out=""
 resolve_wow_data
 resolve_tree
 resolve_gfx_library
 get_run_env
+check_gfx_pair
 
 if $opt_print_only; then
     show_launch_command

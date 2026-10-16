@@ -6,7 +6,8 @@
 # cd into the repo and print how to run it, through this script and by hand (runs nothing):
 # .ioq3
 #
-# start like before (the backends / renderer last used are remembered in q3config.cfg):
+# start like before (the device / renderer last used are remembered in q3config.cfg; the window
+# is the platform's, win32 / x11, unless named):
 # .ioq3 run
 #
 # pick the gfx device and / or window (the newest build with gfx; ignored when none has it):
@@ -88,6 +89,20 @@ PRINT_TOKENS=(print onlyprint showcmd)
 GFX_DEVICES=(gl4 gl3 gles3 vk d3d11 d3d12)
 declare -A GFX_DEVICE_ALIASES=([vulkan]=vk [dx11]=d3d11 [dx12]=d3d12)
 GFX_WINDOWS=(sdl glfw x11 win32)
+# The window when none is named (a window option or a raw +set r_gfxWindow): the platform's own,
+# win32 on Windows (Git Bash / MSYS / Cygwin) and x11 on Linux, even over the r_gfxWindow
+# q3config.cfg remembers; elsewhere the game's (q3config.cfg's, else sdl). It does not pick
+# renderer_gfx. A d3d device opens only in a win32 window: the game switches to win32 itself.
+# Q3_HOME_DIR is the game's own fs_homepath, whose baseq3/q3config.cfg holds the remembered cvars.
+case "${OSTYPE:-}" in
+    msys* | cygwin* | win32*) DEFAULT_GFX_WINDOW="win32"; Q3_HOME_DIR="${APPDATA:-$HOME/AppData/Roaming}/Quake3" ;;
+    linux*) DEFAULT_GFX_WINDOW="x11"; Q3_HOME_DIR="$HOME/.q3a" ;;
+    darwin*) DEFAULT_GFX_WINDOW=""; Q3_HOME_DIR="$HOME/Library/Application Support/Quake3" ;;
+    *) DEFAULT_GFX_WINDOW=""; Q3_HOME_DIR="$HOME/.q3a" ;;
+esac
+D3D_DEVICES=(d3d11 d3d12)
+D3D_WINDOW="win32"
+Q3CONFIG_NAME="q3config.cfg"
 GFX_RENDERER="gfx"
 RENDERERS=("$GFX_RENDERER" opengl1 opengl2)
 GFX_EXE_MARKER="r_gfxDevice"
@@ -136,8 +151,10 @@ gfx backends (used only when the built client supports gfx, ignored otherwise):
   $(join_by ' | ' "${GFX_DEVICES[@]}")   r_gfxDevice (vulkan = vk, dx11 / dx12 = d3d11 / d3d12)
   $(join_by ' | ' "${GFX_WINDOWS[@]}")         r_gfxWindow
   d3d11 / d3d12 / win32 are Windows only: the game falls back to gl4 / sdl here.
-  Either one also sets cl_renderer $GFX_RENDERER and picks the newest build with gfx (USE_GFX). Both
-  cvars are remembered in q3config.cfg, so a start without them uses the last ones.
+  Either one also sets cl_renderer $GFX_RENDERER and picks the newest build with gfx (USE_GFX).
+  r_gfxDevice is remembered in q3config.cfg, so a start without one uses the last; the window is
+  the platform's (win32 / x11) unless named, even over the remembered one (it does not pick
+  renderer_gfx).
 
 Renderer:
   $(join_by ' | ' "${RENDERERS[@]}")     cl_renderer ($GFX_RENDERER only on a gfx build)
@@ -262,6 +279,26 @@ test_gfx_wanted() {
     [[ -n "$opt_device" || -n "$opt_window" || "$opt_renderer" == "$GFX_RENDERER" ]]
 }
 
+raw_cvar() {
+    # raw_cvar <name> - the value the last raw `+set <name> <value>` (or seta / set) among the game
+    # args gives, else empty
+    local i value=""
+    for (( i = 1; i + 1 < ${#opt_extra[@]}; i++ )); do
+        if [[ "${opt_extra[i],,}" == "${1,,}" && "${opt_extra[i-1],,}" =~ ^\+?seta?$ ]]; then
+            value="${opt_extra[i+1]}"
+        fi
+    done
+    printf '%s' "$value"
+}
+
+remembered_cvar() {
+    # remembered_cvar <name> - the value q3config.cfg in the game's home remembers
+    # (seta <name> "<value>"), else empty; a `fresh` home has none
+    local path="$Q3_HOME_DIR/$BASEQ3_DIR_NAME/$Q3CONFIG_NAME"
+    if $opt_fresh || [[ ! -f "$path" ]]; then return 0; fi
+    sed -n "s/^[[:space:]]*seta[[:space:]][[:space:]]*$1[[:space:]][[:space:]]*\"\{0,1\}\([^\"]*\)\"\{0,1\}.*/\1/p" "$path" | tail -n 1
+}
+
 resolve_gfx_options() {
     # Drops the gfx options on a build without gfx; on a gfx build a backend also picks renderer_gfx
     local gfx_build="$1"
@@ -279,11 +316,36 @@ resolve_gfx_options() {
     fi
 
     write_label "The client is built with gfx."
-    [[ -n "$opt_device" || -n "$opt_window" ]] || return
-    if [[ -z "$opt_renderer" ]]; then
-        opt_renderer="$GFX_RENDERER"
-    elif [[ "$opt_renderer" != "$GFX_RENDERER" ]]; then
-        write_warn "cl_renderer $opt_renderer ignores r_gfxDevice / r_gfxWindow."
+    if [[ -n "$opt_device" || -n "$opt_window" ]]; then
+        if [[ -z "$opt_renderer" ]]; then
+            opt_renderer="$GFX_RENDERER"
+        elif [[ "$opt_renderer" != "$GFX_RENDERER" ]]; then
+            write_warn "cl_renderer $opt_renderer ignores r_gfxDevice / r_gfxWindow."
+        fi
+    fi
+
+    # The platform's window unless one is named, over the one q3config.cfg remembers
+    local raw_window remembered window device
+    raw_window="$(raw_cvar r_gfxWindow)"
+    if [[ -z "$opt_window" && -z "$raw_window" && -n "$DEFAULT_GFX_WINDOW" ]]; then
+        opt_window="$DEFAULT_GFX_WINDOW"
+    fi
+    window="${raw_window:-$opt_window}"
+    remembered="$(remembered_cvar r_gfxWindow)"
+    if [[ -n "$window" && -n "$remembered" && "${remembered,,}" != "${window,,}" ]]; then
+        write_label "r_gfxWindow $remembered in $Q3CONFIG_NAME is not used: the window is $window."
+    fi
+    window="${window:-$remembered}"
+
+    device="$(raw_cvar r_gfxDevice)"
+    device="${device:-$opt_device}"
+    if [[ -z "$device" ]]; then device="$(remembered_cvar r_gfxDevice)"; fi
+    if in_list "${device,,}" "${D3D_DEVICES[@]}"; then
+        if [[ "$DEFAULT_GFX_WINDOW" != "$D3D_WINDOW" ]]; then
+            write_warn "$device is Windows only: the game falls back to its default device here."
+        elif [[ -n "$window" && "${window,,}" != "$D3D_WINDOW" ]]; then
+            write_warn "$device opens only in a $D3D_WINDOW window, not $window: the game uses $D3D_WINDOW instead."
+        fi
     fi
 }
 
