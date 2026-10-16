@@ -99,6 +99,8 @@ OTHER_REPOS=(
     "$code_root_dir/Code2/Sql/my_sql"
     "$code_root_dir/Code2/C/ioq3"
     "$code_root_dir/Code2/Rust/ioq3-rs"
+    "$code_root_dir/Code2/Rust/openjk-rs"
+    "$code_root_dir/Code2/Rust/rim"
     "$my_notes_path"
 )
 OTHER_DIRS=(
