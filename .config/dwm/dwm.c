@@ -528,7 +528,6 @@ swallow(Client *p, Client *c)
 	detach(c);
 	detachstack(c);
 
-	setclientstate(c, WithdrawnState);
 	XUnmapWindow(dpy, p->win);
 
 	p->swallowing = c;
@@ -537,6 +536,8 @@ swallow(Client *p, Client *c)
 	Window w = p->win;
 	p->win = c->win;
 	c->win = w;
+	/* after the swap c->win is the hidden terminal; the swallowed window keeps NormalState */
+	setclientstate(c, WithdrawnState);
 	int b = p->isbrowser;
 	p->isbrowser = c->isbrowser;
 	c->isbrowser = b;
