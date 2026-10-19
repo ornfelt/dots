@@ -411,8 +411,8 @@ keys = [
 	# /* bind mod-ctrl-return: spawn term_wd.sh st */
 	{ mod = "MODKEY|ControlMask",       key = "Return",   func = "spawn",           arg = { v = "sectermwdcmd" } },
 
-	# /* bind F1: spawn show_keys.sh dwm */
-	{ mod = "0",                        key = "F1",       func = "spawn",           arg = { v = "showkeysdwmcmd" } },
+	# /* (disabled) bind F1: spawn show_keys.sh dwm */
+	# { mod = "0",                        key = "F1",       func = "spawn",           arg = { v = "showkeysdwmcmd" } },
 	# /* bind F10: spawn pactl toggle mute */
 	{ mod = "0",                        key = "F10",      func = "spawn",           arg = { v = "mutecmd" } },
 	# /* bind F11: spawn pactl volume -5% */

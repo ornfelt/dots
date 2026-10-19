@@ -1,4 +1,6 @@
 #!/usr/bin/bash
+# Re-run in bash when started via `sh wow.sh` (dash), the detection below uses bash syntax
+[ -z "$BASH_VERSION" ] && exec bash "$0" "$@"
 
 GREEN='\033[0;32m'; YELLOW='\033[1;33m'; RED='\033[0;31m'; CYAN='\033[0;36m'; NC='\033[0m'
 info()    { echo -e "${CYAN}$*${NC}"; }
