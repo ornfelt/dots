@@ -1,0 +1,86 @@
+#!/bin/sh
+# nvim wrapper: runs whichever nvim variant `nvimswitch` selected.
+#
+# This directory (~/.local/bin/nvimswitch) is put in front of PATH in
+# ~/.xinitrc and ~/.zshrc, so every plain `nvim` - the vim/vi aliases,
+# EDITOR/VISUAL, git, the my_scripts helpers - comes through here.
+#
+#   system   /usr/local/bin/nvim (else /usr/bin/nvim), the installed nvim
+#   fork     $code_root_dir/Code/c/neovim/build/bin/nvim, the C fork's build
+#   rim      $code_root_dir/Code2/Rust/rim/target/dist/release/bin/nvim
+#            (or bin/rim), the Rust port
+#
+# The choice lives in ~/.config/nvimswitch/variant (written by `nvimswitch`);
+# NVIM_VARIANT=<name> overrides it for one call, e.g.
+#   NVIM_VARIANT=rim nvim README.md
+#
+# VIMRUNTIME: the fork's build has /usr/local compiled in as its prefix, so on
+# its own it would load the installed nvim's runtime, which belongs to another
+# version. The wrapper points it at the fork's runtime instead. nvim also
+# exports VIMRUNTIME to everything it starts, so an nvim run from a :terminal
+# would inherit its parent's runtime; a VIMRUNTIME that belongs to one of the
+# three variants is therefore replaced by the selected one's (unset for system
+# and rim, which find their own). Any other VIMRUNTIME is left alone.
+#
+# A selected variant that is not built falls back to the system nvim, with a
+# message, so `nvim` never silently does nothing.
+
+ROOT=${code_root_dir:-$HOME}
+FORK_DIR=$ROOT/Code/c/neovim
+RIM_DIR=$ROOT/Code2/Rust/rim/target/dist/release
+VARIANT_FILE=${XDG_CONFIG_HOME:-$HOME/.config}/nvimswitch/variant
+
+system_exe() {
+    for exe in /usr/local/bin/nvim /usr/bin/nvim; do
+        [ -x "$exe" ] && { echo "$exe"; return 0; }
+    done
+    echo /usr/local/bin/nvim
+}
+
+# The executable is called nvim unless rim's [[bin]] name was changed to rim
+rim_exe() {
+    [ -x "$RIM_DIR/bin/rim" ] && [ ! -x "$RIM_DIR/bin/nvim" ] && { echo "$RIM_DIR/bin/rim"; return 0; }
+    echo "$RIM_DIR/bin/nvim"
+}
+
+exe_for() {
+    case $1 in
+        system) system_exe ;;
+        fork) echo "$FORK_DIR/build/bin/nvim" ;;
+        rim) rim_exe ;;
+        *) return 1 ;;
+    esac
+}
+
+variant=${NVIM_VARIANT:-}
+source=NVIM_VARIANT
+if [ -z "$variant" ] && [ -r "$VARIANT_FILE" ]; then
+    variant=$(tr -d ' \t\r\n' < "$VARIANT_FILE")
+    source=$VARIANT_FILE
+fi
+variant=${variant:-system}
+
+exe=$(exe_for "$variant") || {
+    echo "nvim wrapper: unknown variant '$variant' in $source, using system" >&2
+    variant=system
+    exe=$(system_exe)
+}
+
+if [ ! -x "$exe" ]; then
+    echo "nvim wrapper: $variant is not built ($exe), using the system nvim" >&2
+    variant=system
+    exe=$(system_exe)
+fi
+
+case ${VIMRUNTIME:-} in
+    ""|/usr/local/share/nvim/runtime|/usr/share/nvim/runtime|"$FORK_DIR/runtime"|"$RIM_DIR/share/nvim/runtime")
+        if [ "$variant" = fork ]; then
+            VIMRUNTIME=$FORK_DIR/runtime
+            export VIMRUNTIME
+        else
+            unset VIMRUNTIME
+        fi
+        ;;
+esac
+
+exec "$exe" "$@"

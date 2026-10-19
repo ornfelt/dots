@@ -96,6 +96,7 @@ cp -r bin/cron $HOME/.local/bin/
 cp -r bin/dwm_keybinds $HOME/.local/bin/
 cp -r bin/i3-used-keybinds $HOME/.local/bin/
 cp -r bin/my_scripts $HOME/.local/bin/
+cp -r bin/nvimswitch $HOME/.local/bin/
 cp -r bin/statusbar $HOME/.local/bin/
 cp -r bin/wezswitch $HOME/.local/bin/
 cp -r bin/widgets $HOME/.local/bin/

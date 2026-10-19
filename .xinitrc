@@ -54,6 +54,11 @@ systemctl --user restart dunst.service &
 # plain `wezterm` (WM keybindings, my_scripts, TERMINAL) runs the variant picked
 # with `wezswitch system|fork|wecterm` (see ~/.local/bin/wezswitch/)
 export PATH="$HOME/.local/bin/wezswitch:$PATH"
+# nvimswitch: the same for nvim - its `nvim` wrapper must come before
+# /usr/local/bin/nvim, so every plain `nvim` (EDITOR, git, my_scripts) runs the
+# variant picked with `nvimswitch system|fork|rim` (see ~/.local/bin/nvimswitch/).
+# ~/.zshrc prepends it too, for shells that do not come from this X session.
+export PATH="$HOME/.local/bin/nvimswitch:$PATH"
 # Terminal for the statusbar scripts' click actions (dwmblocks inherits it via dwm)
 export TERMINAL="wezterm"
 export my_notes_path="$HOME/Documents/my_notes"

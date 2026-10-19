@@ -127,6 +127,7 @@ pandas==2.3.3
 pandocfilters==1.5.1
 parso==0.8.4
 patch-ng==1.18.1
+perf==0.1
 pexpect==4.9.0
 pillow==11.1.0
 platformdirs==4.3.7

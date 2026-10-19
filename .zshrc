@@ -855,19 +855,32 @@ export PATH="${PATH}:/sbin"
 export PATH="${PATH}:${HOME}/Code/f#/FsAutoComplete/src/FsAutoComplete/bin/Release/net6.0"
 export PATH="${PATH}:$HOME/Downloads/lsp/jdtls/bin"
 export PATH="${PATH}:$HOME/Downloads/lsp/lua/bin"
+# nvimswitch: its `nvim` wrapper must come before /usr/local/bin/nvim, so a
+# plain `nvim` (the vim/vi aliases, EDITOR, git) runs the variant picked with
+# `nvimswitch system|fork|rim` (see ~/.local/bin/nvimswitch/). ~/.xinitrc
+# prepends it for the X session; this covers shells from a tty or ssh.
+if [[ -x "$HOME/.local/bin/nvimswitch/nvim" && ":$PATH:" != *":$HOME/.local/bin/nvimswitch:"* ]]; then
+  export PATH="$HOME/.local/bin/nvimswitch:$PATH"
+fi
 export OMNISHARP_PATH="/usr/lib/omnisharp-roslyn/"
 export my_notes_path="$HOME/Documents/my_notes"
 export code_root_dir="$HOME"
 
 # `wez` / `wec` run the custom wezterm launcher from the wezterm checkout and the
 # WecTerm (C port) launcher from its checkout; `wez help` / `wec help` print
-# their usage. Kept right after code_root_dir is exported, which they need.
+# their usage. `rim` runs rim (the Rust port of Neovim) from its checkout,
+# building the release layout first when there is none; other arguments go to
+# rim, and `rim help` prints the launcher's usage. Kept right after
+# code_root_dir is exported, which they need.
 if [[ -n "$code_root_dir" ]]; then
   if [[ -f "$code_root_dir/Code2/Rust/wezterm/run-custom-wezterm.sh" ]]; then
     alias wez="${(q)code_root_dir}/Code2/Rust/wezterm/run-custom-wezterm.sh"
   fi
   if [[ -f "$code_root_dir/Code2/C/WecTerm/run-custom-wecterm.sh" ]]; then
     alias wec="${(q)code_root_dir}/Code2/C/WecTerm/run-custom-wecterm.sh"
+  fi
+  if [[ -f "$code_root_dir/Code2/Rust/rim/run-rim.sh" ]]; then
+    alias rim="${(q)code_root_dir}/Code2/Rust/rim/run-rim.sh"
   fi
 fi
 #export PATH="${PATH}:$HOME/.fzf/bin"

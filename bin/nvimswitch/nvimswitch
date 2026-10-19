@@ -1,0 +1,221 @@
+#!/usr/bin/env bash
+#
+# Pick which nvim variant a plain `nvim` runs (see the wrapper next to this
+# script, ~/.local/bin/nvimswitch/nvim).
+#
+#   system   /usr/local/bin/nvim (else /usr/bin/nvim), the installed nvim
+#   fork     the C fork, $code_root_dir/Code/c/neovim/build/bin
+#            (build it with: make -C $code_root_dir/Code/c/neovim CMAKE_BUILD_TYPE=Release)
+#   rim      the Rust port, $code_root_dir/Code2/Rust/rim/target/dist/release/bin
+#            (build it with: rim --build --no-run)
+#
+# The choice is stored in ~/.config/nvimswitch/variant and applies to the next
+# nvim that is started; editors that are already open keep running what they
+# were started with. All three use the same ~/.config/nvim and data dirs.
+#
+# Usage examples:
+# show the current variant and which ones are built:
+# nvimswitch
+# nvimswitch status
+#
+# switch:
+# nvimswitch rim
+# nvimswitch fork
+# nvimswitch system
+#
+# switch to a variant that is not built yet (the wrapper falls back to the
+# system nvim until it is):
+# nvimswitch rim --force
+#
+# print what would change instead of changing it:
+# nvimswitch rim --show-cmd
+#
+# one line per variant for scripts (nvimswitch_menu.sh):
+# "<variant> <TAB> <current 0|1> <TAB> <built 0|1> <TAB> <exe> <TAB> <build hint>"
+# nvimswitch --porcelain
+#
+# help:
+# nvimswitch help
+# nvimswitch -h
+
+RESET='\033[0m'
+RED='\033[31m'
+GREEN='\033[32m'
+YELLOW='\033[33m'
+CYAN='\033[36m'
+MAGENTA='\033[35m'
+DARKGRAY='\033[90m'
+
+print_ok()       { printf "${GREEN}%s${RESET}\n" "$*"; }
+print_err()      { printf "${RED}%s${RESET}\n" "$*" >&2; }
+print_warn()     { printf "${YELLOW}%s${RESET}\n" "$*"; }
+print_info()     { printf "${CYAN}%s${RESET}\n" "$*"; }
+print_info_alt() { printf "${MAGENTA}%s${RESET}\n" "$*"; }
+print_dim()      { printf "${DARKGRAY}%s${RESET}\n" "$*"; }
+
+ROOT=${code_root_dir:-$HOME}
+FORK_DIR=$ROOT/Code/c/neovim
+RIM_DIR=$ROOT/Code2/Rust/rim/target/dist/release
+WRAPPER=$HOME/.local/bin/nvimswitch/nvim
+VARIANT_DIR=${XDG_CONFIG_HOME:-$HOME/.config}/nvimswitch
+VARIANT_FILE=$VARIANT_DIR/variant
+VARIANTS=(system fork rim)
+
+# Same lookups as the wrapper
+system_exe() {
+    local exe
+    for exe in /usr/local/bin/nvim /usr/bin/nvim; do
+        [ -x "$exe" ] && { echo "$exe"; return 0; }
+    done
+    echo /usr/local/bin/nvim
+}
+
+rim_exe() {
+    [ -x "$RIM_DIR/bin/rim" ] && [ ! -x "$RIM_DIR/bin/nvim" ] && { echo "$RIM_DIR/bin/rim"; return 0; }
+    echo "$RIM_DIR/bin/nvim"
+}
+
+exe_for() {
+    case $1 in
+        system) system_exe ;;
+        fork) echo "$FORK_DIR/build/bin/nvim" ;;
+        rim) rim_exe ;;
+        *) return 1 ;;
+    esac
+}
+
+build_hint() {
+    case $1 in
+        fork) echo "make -C $FORK_DIR CMAKE_BUILD_TYPE=Release" ;;
+        rim) echo "rim --build --no-run" ;;
+        *) echo "sudo make install in a neovim checkout, or sudo apt install neovim" ;;
+    esac
+}
+
+# The runtime each one runs with through the wrapper (VIMRUNTIME unset or
+# inherited from another variant)
+runtime_for() {
+    case $1 in
+        fork) echo "$FORK_DIR/runtime" ;;
+        rim) echo "$RIM_DIR/share/nvim/runtime" ;;
+        *) echo "$(dirname -- "$(dirname -- "$(system_exe)")")/share/nvim/runtime" ;;
+    esac
+}
+
+current_variant() {
+    local variant=""
+    [ -r "$VARIANT_FILE" ] && variant=$(tr -d ' \t\r\n' < "$VARIANT_FILE")
+    echo "${variant:-system}"
+}
+
+usage() {
+    print_info_alt "nvimswitch - pick which nvim variant 'nvim' runs"
+    echo
+    print_info "Usage:"
+    echo "  nvimswitch [status]"
+    echo "  nvimswitch <system|fork|rim> [--force] [--show-cmd]"
+    echo
+    print_info "Variants:"
+    echo "  system    $(system_exe) (installed)"
+    echo "  fork      \$code_root_dir/Code/c/neovim/build/bin/nvim (the C fork)"
+    echo "  rim       \$code_root_dir/Code2/Rust/rim/target/dist/release/bin/nvim (the Rust port)"
+    echo
+    print_info "Options:"
+    echo "  --force       switch even if the variant is not built"
+    echo "  --show-cmd    print what would change instead of changing it"
+    echo "  --porcelain   one tab-separated line per variant, for scripts"
+    echo "  -h, help      show this help"
+    echo
+    print_warn "Notes:"
+    print_warn "  The switch applies to the next nvim; open editors keep their variant, and so"
+    print_warn "  do warm headless servers (WEZ_NVIM_SERVERS) until they are restarted."
+    print_warn "  NVIM_VARIANT=<name> nvim ... overrides the choice for one call."
+    print_warn "  All three share ~/.config/nvim and the data dirs (ShaDa, undo, swap, plugins)."
+    print_warn "  The fork runs with its own runtime, but loads the tree-sitter parsers from"
+    print_warn "  /usr/local/lib/nvim/parser (its compiled-in prefix) while that exists."
+}
+
+show_status() {
+    local current
+    current=$(current_variant)
+    print_info_alt "nvim runs: $current"
+    print_dim "  (choice in $VARIANT_FILE)"
+    local resolved
+    resolved=$(command -v nvim)
+    if [ "$resolved" != "$WRAPPER" ]; then
+        print_warn "  'nvim' resolves to $resolved, not the wrapper: is ~/.local/bin/nvimswitch"
+        print_warn "  in front of PATH? (~/.xinitrc and ~/.zshrc prepend it; open a new shell,"
+        print_warn "  and log out of X once for programs started by the WM)"
+    fi
+    echo
+    local variant exe mark version
+    for variant in "${VARIANTS[@]}"; do
+        exe=$(exe_for "$variant")
+        mark="  "
+        [ "$variant" = "$current" ] && mark="* "
+        if [ -x "$exe" ]; then
+            version=$(VIMRUNTIME=$(runtime_for "$variant") "$exe" --version 2>/dev/null | head -n 1)
+            printf "${GREEN}%s%-7s${RESET} %s ${DARKGRAY}(%s)${RESET}\n" "$mark" "$variant" "$exe" "${version:-?}"
+        else
+            printf "${YELLOW}%s%-7s${RESET} %s ${DARKGRAY}(not built: %s)${RESET}\n" \
+                "$mark" "$variant" "$exe" "$(build_hint "$variant")"
+        fi
+    done
+}
+
+porcelain() {
+    local current variant exe
+    current=$(current_variant)
+    for variant in "${VARIANTS[@]}"; do
+        exe=$(exe_for "$variant")
+        printf '%s\t%d\t%d\t%s\t%s\n' "$variant" "$([ "$variant" = "$current" ] && echo 1 || echo 0)" \
+            "$([ -x "$exe" ] && echo 1 || echo 0)" "$exe" "$(build_hint "$variant")"
+    done
+}
+
+target=""
+force=0
+show_cmd=0
+while [ $# -gt 0 ]; do
+    case "${1,,}" in
+        -h|--help|help|/h|/help|/\?|-\?) usage; exit 0 ;;
+        --force|-f) force=1 ;;
+        --show-cmd) show_cmd=1 ;;
+        --porcelain) porcelain; exit 0 ;;
+        status|"") ;;
+        system|fork|rim) target="${1,,}" ;;
+        *) print_err "Unknown argument: $1"; usage; exit 1 ;;
+    esac
+    shift
+done
+
+if [ -z "$target" ]; then
+    show_status
+    exit 0
+fi
+
+exe=$(exe_for "$target")
+if [ ! -x "$exe" ] && [ "$force" -eq 0 ]; then
+    print_err "$target is not built: $exe"
+    print_warn "Build it with: $(build_hint "$target")   (or pass --force to switch anyway)"
+    exit 1
+fi
+
+if [ "$show_cmd" -eq 1 ]; then
+    print_info_alt "# equivalent of: nvimswitch $target"
+    printf 'mkdir -p "%s" && printf "%%s\\n" %s > "%s"\n' "$VARIANT_DIR" "$target" "$VARIANT_FILE"
+    exit 0
+fi
+
+previous=$(current_variant)
+mkdir -p "$VARIANT_DIR" && printf '%s\n' "$target" > "$VARIANT_FILE" || {
+    print_err "Could not write $VARIANT_FILE"
+    exit 1
+}
+if [ "$previous" = "$target" ]; then
+    print_ok "nvim already runs $target"
+else
+    print_ok "nvim now runs $target (was $previous)"
+fi
+[ -x "$exe" ] || print_warn "Not built yet, the wrapper uses the system nvim until it is: $(build_hint "$target")"
+print_dim "Applies to the next nvim; open editors keep their variant."

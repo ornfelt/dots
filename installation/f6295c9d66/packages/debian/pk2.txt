@@ -171,6 +171,7 @@ libyaml-cpp-dev
 libzstd1
 light
 linux-image-amd64
+linux-perf
 linux-sysctl-defaults
 lm-sensors
 locales
@@ -179,4 +180,3 @@ login
 logrotate
 logsave
 lsb-release
-lsof

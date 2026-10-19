@@ -1420,6 +1420,7 @@ libopencore-amrnb0
 libopencore-amrnb0
 libopencore-amrwb0
 libopencore-amrwb0
+libopencsd1
 libopencv-core410
 libopencv-imgcodecs410
 libopencv-imgproc410
@@ -1860,6 +1861,7 @@ libtirpc3t64
 libtk8.6
 libtool
 libtool-bin
+libtraceevent1
 libtrantor-dev
 libtrantor1
 libtree-sitter0.22
@@ -2197,6 +2199,7 @@ linux-base
 linux-image-6.12.57+deb13-amd64
 linux-image-amd64
 linux-libc-dev
+linux-perf
 linux-sysctl-defaults
 lld-19
 llvm-19
