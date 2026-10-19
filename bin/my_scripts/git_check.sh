@@ -6,7 +6,7 @@
 # Also lists branches that are behind their upstream (or, without one, the
 # branch of the same name on the remote), i.e. that have something to pull.
 #
-#   git_check.sh [-n] [-a] [CATEGORY|DIR...]
+#   git_check.sh [-n] [-a|-q] [CATEGORY|DIR...]
 #
 #   CATEGORY  which of the known repos to check (case insensitive, can be combined)
 #               all          everything (the default without CATEGORY and DIR)
@@ -21,7 +21,8 @@
 #   -n        don't fetch first (offline); the ahead/behind counts are then as of
 #             the last fetch, and pushing to a URL (like git_push.sh does) doesn't
 #             update them, so pushed commits can still show as not pushed
-#   -a        also list the clean repos
+#   -a        also list the clean repos, with their branch (the default)
+#   -q        list only the repos with something to commit, push or pull
 #   -h, help  show this help
 #
 # Known repos that don't exist (yet) or aren't git repos are skipped with a warning.
@@ -68,6 +69,7 @@ DOTS_REPOS=(
 WOW_REPOS=(
     "$code_root_dir/Code2/Wow/tools/my_wow"
     "$code_root_dir/Code2/Rust/azerothcore-wotlk-rs"
+    "$code_root_dir/Code2/Rust/mangos-tbc-rs"
     "$code_root_dir/Code2/C#/mangos-tbc-cs"
     "$code_root_dir/Code2/C#/vmangos_cs"
     "$code_root_dir/Code2/C#/azerothcore-wotlk-cs"
@@ -108,7 +110,8 @@ OTHER_DIRS=(
 )
 
 fetch=true
-show_all=false
+# list the clean repos too (-a), -q turns it off
+show_all=true
 declare -A want=()
 dirs=()
 for arg; do
@@ -125,6 +128,7 @@ for arg; do
                 case ${opts:i:1} in
                     n) fetch=false ;;
                     a) show_all=true ;;
+                    q) show_all=false ;;
                     h|H) usage; exit 0 ;;
                     *) printf "unknown option: %s\n\n" "$arg" >&2; usage >&2; exit 2 ;;
                 esac
@@ -296,7 +300,8 @@ for repo in "${repos[@]}"; do
         printf "%b%s%b %b(%s)%b\n%s\n" "$BLUE" "$name" "$RESET" "$DARKGRAY" \
             "$(git -C "$repo" rev-parse --abbrev-ref HEAD 2>/dev/null)" "$RESET" "$report"
     elif $show_all; then
-        printf "%b%s%b %bclean%b\n" "$BLUE" "$name" "$RESET" "$GREEN" "$RESET"
+        printf "%b%s%b %b(%s)%b %bok, clean and in sync%b\n" "$BLUE" "$name" "$RESET" "$DARKGRAY" \
+            "$(git -C "$repo" rev-parse --abbrev-ref HEAD 2>/dev/null)" "$RESET" "$GREEN" "$RESET"
     fi
 done
 
