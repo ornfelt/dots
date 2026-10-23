@@ -83,7 +83,7 @@ case "$ARG" in
         WOW_DIR="wow_classic"
         WOW_EXEC="WoW.exe"
         ;;
-    tbc)
+    tbc|t)
         WOW_DIR="wow_tbc"
         WOW_EXEC="Wow.exe"
         ;;

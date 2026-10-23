@@ -10,6 +10,7 @@
 #   ./cmake.sh r | release            RUN in Release mode
 #   ./cmake.sh r foo                  Release + PRINT-ONLY (any 2nd arg flips)
 #   ./cmake.sh rd | rwdi              RUN in RelWithDebInfo mode
+#   ./cmake.sh d | debug              RUN in Debug mode
 #   ./cmake.sh h | help | -h | --help show help
 #
 # Linux-only assumption: vcpkg is always OFF, so the vcpkg alternative
@@ -48,6 +49,8 @@ Usage:
       Release mode (PRINT-ONLY if a 2nd arg exists).
   ./cmake.sh rd | rwdi | relwithdebinfo [foo]
       RelWithDebInfo mode (PRINT-ONLY if a 2nd arg exists).
+  ./cmake.sh d | debug [foo]
+      Debug mode (PRINT-ONLY if a 2nd arg exists).
   ./cmake.sh h | help | -h | --help
       Show this help.
 
@@ -83,6 +86,9 @@ if [[ -n "$Arg" ]]; then
         [[ -n "$Arg2" ]] && OnlyPrint=1
     elif [[ "$arg_lc" == "rd" || "$arg_lc" == "rwdi" || "$arg_lc" == "relwithdebinfo" ]]; then
         RelWithDebInfo=1
+        [[ -n "$Arg2" ]] && OnlyPrint=1
+    elif [[ "$arg_lc" == "d" || "$arg_lc" == "debug" ]]; then
+        # Debug is the default BuildType
         [[ -n "$Arg2" ]] && OnlyPrint=1
     else
         OnlyPrint=1

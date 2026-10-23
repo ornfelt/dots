@@ -1,0 +1,2 @@
+dwmblocks
+  commit 8cedd220684064f1433749ed2a19a6184c22cf07
