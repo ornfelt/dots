@@ -74,6 +74,7 @@
 #define TEXTW(X)                (drw_fontset_getwidth(drw, (X)) + lrpad)
 #define TRUNC(X,A,B)            (MAX((A), MIN((X), (B))))
 #define TAGBITS                 ((1 << LENGTH(tags)) - 1) /* normal tags, no scratchpads */
+#define ALLDESKTOPS             0xFFFFFFFFUL /* _NET_WM_DESKTOP of a window on every desktop (EWMH) */
 #define SCREEN_MASK             (0x55555555 & TAGBITS)    /* odd tags 1,3,5,..: first monitor */
 
 /* enums */
@@ -81,8 +82,10 @@ enum { CurNormal, CurResize, CurMove, CurLast }; /* cursor */
 enum { SchemeNorm, SchemeSel }; /* color schemes */
 enum { NetSupported, NetWMName, NetWMState, NetWMCheck,
        NetWMFullscreen, NetWMSticky, NetActiveWindow, NetWMWindowType,
-       NetWMWindowTypeDialog, NetClientList, NetLast }; /* EWMH atoms */
+       NetWMWindowTypeDialog, NetClientList, NetNumberOfDesktops, NetCurrentDesktop,
+       NetDesktopNames, NetDesktopViewport, NetWMDesktop, NetLast }; /* EWMH atoms */
 enum { WMProtocols, WMDelete, WMState, WMTakeFocus, WMLast }; /* default atoms */
+enum { DwmTags, DwmViewedTags, DwmLast }; /* dwm's own atoms: the tag masks EWMH desktops cannot hold */
 enum { ClkTagBar, ClkLtSymbol, ClkStatusText, ClkClientWin,
        ClkRootWin, ClkLast }; /* clicks */
 
@@ -120,6 +123,9 @@ struct Client {
     Client *swallowing;
 	Monitor *mon;
 	Window win;
+	Window ewmhwin; /* the window, tags and sticky state its _NET_WM_DESKTOP / _DWM_TAGS */
+	unsigned int ewmhtags; /* were last written for (updateewmhtags); swallow swaps windows */
+	int ewmhsticky;
 };
 
 typedef struct {
@@ -194,6 +200,7 @@ static void buttonpress(XEvent *e);
 static void checkotherwm(void);
 static void cleanup(void);
 static void cleanupmon(Monitor *mon);
+static long clientdesktop(unsigned int mask, int sticky);
 static void clientmessage(XEvent *e);
 static void configure(Client *c);
 static void configurenotify(XEvent *e);
@@ -253,7 +260,9 @@ static void setclientstate(Client *c, long state);
 static void setfocus(Client *c);
 static void setfullscreen(Client *c, int fullscreen);
 static void setsticky(Client *c, int sticky);
+static void setcardinal(Window w, Atom prop, unsigned long value);
 static void setcfact(const Arg *arg);
+static void setdesktops(Atom utf8string);
 static void setlayout(const Arg *arg);
 static void setmfact(const Arg *arg);
 static void setup(void);
@@ -287,6 +296,7 @@ static void unmapnotify(XEvent *e);
 static void updatebarpos(Monitor *m);
 static void updatebars(void);
 static void updateclientlist(void);
+static void updateewmhtags(void);
 static int updategeom(void);
 static void updatenetwmstate(Client *c);
 static void updatenumlockmask(void);
@@ -337,7 +347,7 @@ static void (*handler[LASTEvent]) (XEvent *) = {
 	[PropertyNotify] = propertynotify,
 	[UnmapNotify] = unmapnotify
 };
-static Atom wmatom[WMLast], netatom[NetLast];
+static Atom wmatom[WMLast], netatom[NetLast], dwmatom[DwmLast];
 static int running = 1;
 static Cur *cursor[CurLast];
 static Clr **scheme;
@@ -484,6 +494,7 @@ arrange(Monitor *m)
 		restack(m);
 	} else for (m = mons; m; m = m->next)
 		arrangemon(m);
+	updateewmhtags();
 }
 
 void
@@ -684,6 +695,12 @@ cleanup(void)
 	XSync(dpy, False);
 	XSetInputFocus(dpy, PointerRoot, RevertToPointerRoot, CurrentTime);
 	XDeleteProperty(dpy, root, netatom[NetActiveWindow]);
+	/* ewmhtags: a window manager started after dwm sees no stale desktops */
+	XDeleteProperty(dpy, root, netatom[NetNumberOfDesktops]);
+	XDeleteProperty(dpy, root, netatom[NetCurrentDesktop]);
+	XDeleteProperty(dpy, root, netatom[NetDesktopNames]);
+	XDeleteProperty(dpy, root, netatom[NetDesktopViewport]);
+	XDeleteProperty(dpy, root, dwmatom[DwmViewedTags]);
 }
 
 void
@@ -702,12 +719,37 @@ cleanupmon(Monitor *mon)
 	free(mon);
 }
 
+/* ewmhtags: the _NET_WM_DESKTOP of a client on the tags of mask (its normal
+ * tags, without scratchpads): the lowest one, every desktop when it is sticky
+ * or on all tags, none (-1) when it is only on a scratchpad. */
+long
+clientdesktop(unsigned int mask, int sticky)
+{
+	long i;
+
+	if (sticky || mask == TAGBITS)
+		return ALLDESKTOPS;
+	if (!mask)
+		return -1;
+	for (i = 0; !(mask & 1U << i); i++);
+	return i;
+}
+
 void
 clientmessage(XEvent *e)
 {
 	XClientMessageEvent *cme = &e->xclient;
 	Client *c = wintoclient(cme->window);
+	unsigned long i;
 
+	/* ewmhtags: a pager / tool asks to show a desktop (tag) */
+	if (cme->window == root && cme->message_type == netatom[NetCurrentDesktop]) {
+		i = cme->data.l[0];
+		/* view() of the tag already shown would go back to the previous tagset */
+		if (i < LENGTH(tags) && (mons->next || 1U << i != selmon->tagset[selmon->seltags]))
+			view(&((Arg) { .ui = 1U << i }));
+		return;
+	}
 	if (!c)
 		return;
 	if (cme->message_type == netatom[NetWMState]) {
@@ -722,6 +764,21 @@ clientmessage(XEvent *e)
 	} else if (cme->message_type == netatom[NetActiveWindow]) {
 		if (c != selmon->sel && !c->isurgent)
 			seturgent(c, 1);
+	} else if (cme->message_type == netatom[NetWMDesktop]) {
+		/* ewmhtags: move the window to a desktop (tag); every desktop makes it sticky */
+		i = cme->data.l[0];
+		if ((i & ALLDESKTOPS) == ALLDESKTOPS)
+			setsticky(c, 1);
+		else if (i < LENGTH(tags)) {
+			if (c == selmon->sel)
+				tag(&((Arg) { .ui = 1U << i }));
+			else {
+				/* not the selected client: no move to the tag's monitor, as tag() does */
+				c->tags = 1U << i;
+				focus(NULL);
+				arrange(c->mon);
+			}
+		}
 	}
 }
 
@@ -1136,6 +1193,7 @@ focus(Client *c)
 	}
 	selmon->sel = c;
 	drawbars();
+	updateewmhtags();
 }
 
 /* there are some broken focus acquiring clients needing extra handling */
@@ -2007,6 +2065,15 @@ layoutmenu(const Arg *arg)
 		setlayout(&((Arg) { .v = &layouts[i] }));
 }
 
+/* sets a one-value CARDINAL property, as ewmhtags writes them */
+void
+setcardinal(Window w, Atom prop, unsigned long value)
+{
+	long data = value;
+
+	XChangeProperty(dpy, w, prop, XA_CARDINAL, 32, PropModeReplace, (unsigned char *)&data, 1);
+}
+
 /* cfacts: the focused window's weight in its area of the layout (its height
  * in a column of tile, deck and centeredmaster, its width in bstack), 1.0 by
  * default; arg->f 0 sets it back to 1.0 */
@@ -2025,6 +2092,30 @@ setcfact(const Arg *arg)
 		return;
 	c->cfact = f;
 	arrange(selmon);
+}
+
+/* ewmhtags: the tags as EWMH desktops, set once in setup(): their number,
+ * their names and their viewports (all 0,0: no large desktops) */
+void
+setdesktops(Atom utf8string)
+{
+	long viewport[2 * LENGTH(tags)] = {0};
+	size_t i, len = 0;
+	char *names;
+
+	for (i = 0; i < LENGTH(tags); i++)
+		len += strlen(tags[i]) + 1;
+	names = ecalloc(len, 1);
+	for (len = 0, i = 0; i < LENGTH(tags); i++) {
+		strcpy(names + len, tags[i]); /* names holds every tag and its NUL */
+		len += strlen(tags[i]) + 1;
+	}
+	setcardinal(root, netatom[NetNumberOfDesktops], LENGTH(tags));
+	XChangeProperty(dpy, root, netatom[NetDesktopNames], utf8string, 8,
+		PropModeReplace, (unsigned char *)names, len);
+	XChangeProperty(dpy, root, netatom[NetDesktopViewport], XA_CARDINAL, 32,
+		PropModeReplace, (unsigned char *)viewport, LENGTH(viewport));
+	free(names);
 }
 
 void
@@ -2179,6 +2270,13 @@ setup(void)
 	netatom[NetWMWindowType] = XInternAtom(dpy, "_NET_WM_WINDOW_TYPE", False);
 	netatom[NetWMWindowTypeDialog] = XInternAtom(dpy, "_NET_WM_WINDOW_TYPE_DIALOG", False);
 	netatom[NetClientList] = XInternAtom(dpy, "_NET_CLIENT_LIST", False);
+	netatom[NetNumberOfDesktops] = XInternAtom(dpy, "_NET_NUMBER_OF_DESKTOPS", False);
+	netatom[NetCurrentDesktop] = XInternAtom(dpy, "_NET_CURRENT_DESKTOP", False);
+	netatom[NetDesktopNames] = XInternAtom(dpy, "_NET_DESKTOP_NAMES", False);
+	netatom[NetDesktopViewport] = XInternAtom(dpy, "_NET_DESKTOP_VIEWPORT", False);
+	netatom[NetWMDesktop] = XInternAtom(dpy, "_NET_WM_DESKTOP", False);
+	dwmatom[DwmTags] = XInternAtom(dpy, "_DWM_TAGS", False);
+	dwmatom[DwmViewedTags] = XInternAtom(dpy, "_DWM_VIEWED_TAGS", False);
 	/* init cursors */
 	cursor[CurNormal] = drw_cur_create(drw, XC_left_ptr);
 	cursor[CurResize] = drw_cur_create(drw, XC_sizing);
@@ -2203,6 +2301,7 @@ setup(void)
 	XChangeProperty(dpy, root, netatom[NetSupported], XA_ATOM, 32,
 		PropModeReplace, (unsigned char *) netatom, NetLast);
 	XDeleteProperty(dpy, root, netatom[NetClientList]);
+	setdesktops(utf8string);
 	/* select events */
 	wa.cursor = cursor[CurNormal]->cursor;
 	wa.event_mask = SubstructureRedirectMask|SubstructureNotifyMask
@@ -2616,6 +2715,9 @@ unmanage(Client *c, int destroyed)
 		XConfigureWindow(dpy, c->win, CWBorderWidth, &wc); /* restore border */
 		XUngrabButton(dpy, AnyButton, AnyModifier, c->win);
 		setclientstate(c, WithdrawnState);
+		/* ewmhtags: a withdrawn window is on no desktop */
+		XDeleteProperty(dpy, c->win, netatom[NetWMDesktop]);
+		XDeleteProperty(dpy, c->win, dwmatom[DwmTags]);
 		XSync(dpy, False);
 		XSetErrorHandler(xerror);
 		XUngrabServer(dpy);
@@ -2690,6 +2792,48 @@ updateclientlist(void)
 			XChangeProperty(dpy, root, netatom[NetClientList],
 				XA_WINDOW, 32, PropModeAppend,
 				(unsigned char *) &(c->win), 1);
+}
+
+/* ewmhtags: mirrors the tags into the EWMH desktop properties, after every
+ * arrange() and focus(): the root's _NET_CURRENT_DESKTOP (the lowest tag selmon
+ * views) and _DWM_VIEWED_TAGS (the tags any monitor views), each client's
+ * _NET_WM_DESKTOP (see clientdesktop()) and _DWM_TAGS (its tag mask, which EWMH
+ * cannot hold: a dwm window can be on several tags). Only what changed is
+ * written. */
+void
+updateewmhtags(void)
+{
+	static unsigned long desktop = ~0UL, viewed = ~0UL;
+	unsigned int cur, all = 0;
+	unsigned long i;
+	long d;
+	Client *c;
+	Monitor *m;
+
+	if (!selmon)
+		return;
+	if ((cur = selmon->tagset[selmon->seltags] & TAGBITS)) {
+		for (i = 0; !(cur & 1U << i); i++);
+		if (i != desktop)
+			setcardinal(root, netatom[NetCurrentDesktop], desktop = i);
+	}
+	for (m = mons; m; m = m->next)
+		all |= m->tagset[m->seltags] & TAGBITS;
+	if (all != viewed)
+		setcardinal(root, dwmatom[DwmViewedTags], viewed = all);
+	for (m = mons; m; m = m->next)
+		for (c = m->clients; c; c = c->next) {
+			if (c->ewmhwin == c->win && c->ewmhtags == (c->tags & TAGBITS) && c->ewmhsticky == c->issticky)
+				continue;
+			c->ewmhwin = c->win;
+			c->ewmhtags = c->tags & TAGBITS;
+			c->ewmhsticky = c->issticky;
+			if ((d = clientdesktop(c->ewmhtags, c->issticky)) < 0)
+				XDeleteProperty(dpy, c->win, netatom[NetWMDesktop]);
+			else
+				setcardinal(c->win, netatom[NetWMDesktop], d);
+			setcardinal(c->win, dwmatom[DwmTags], c->ewmhtags);
+		}
 }
 
 int

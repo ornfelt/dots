@@ -38,6 +38,29 @@ termination before starting.  The latter is executed in the background before
 dwm enters its handler loop.
 .P
 Either of these files may be omitted.
+.P
+The tags are published as EWMH desktops (ewmhtags), so pagers, status bars
+and tools such as
+.BR xdotool (1)
+see them: the root window holds
+.BR _NET_NUMBER_OF_DESKTOPS ,
+.BR _NET_DESKTOP_NAMES ,
+.B _NET_DESKTOP_VIEWPORT
+and
+.B _NET_CURRENT_DESKTOP
+(the lowest tag the selected screen shows), and every window
+.B _NET_WM_DESKTOP
+(its lowest tag; 0xFFFFFFFF when it is sticky or on every tag). A request to
+change
+.B _NET_CURRENT_DESKTOP
+shows that tag, one to change a window's
+.B _NET_WM_DESKTOP
+moves the window to that tag. As EWMH has one desktop per window and one
+current desktop, dwm also sets
+.B _DWM_TAGS
+on every window (its tag mask, bit 0 for tag 1) and
+.B _DWM_VIEWED_TAGS
+on the root window (the tags any screen shows).
 .SH OPTIONS
 .TP
 .B \-v
