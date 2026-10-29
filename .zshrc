@@ -685,6 +685,7 @@ fi
 
 function .cc {
     unset ANTHROPIC_API_KEY
+    export CLAUDE_CODE_DISABLE_BG_SHELL_PRESSURE_REAP=1
     claude --permission-mode auto "$@"
 }
 

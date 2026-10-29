@@ -91,6 +91,7 @@ xset -b
 WM="${WM:-dwmr}"
 #WM="${WM:-dwmc}"
 #WM="${WM:-awesome}"
+#WM="${WM:-i3}"
 
 # To start with logging:
 # startx > $HOME/startx.log 2>&1
