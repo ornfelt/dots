@@ -7,10 +7,10 @@
 # Usage:
 #   ./cmake.sh                        detect path and RUN the chosen cmake
 #   ./cmake.sh onlyprint              detect path and PRINT commands only
-#   ./cmake.sh r | release            RUN in Release mode
+#   ./cmake.sh r | rel | release      RUN in Release mode
 #   ./cmake.sh r foo                  Release + PRINT-ONLY (any 2nd arg flips)
-#   ./cmake.sh rd | rwdi              RUN in RelWithDebInfo mode
-#   ./cmake.sh d | debug              RUN in Debug mode
+#   ./cmake.sh rd | rwd | rwdi        RUN in RelWithDebInfo mode
+#   ./cmake.sh d | dbg | debug        RUN in Debug mode
 #   ./cmake.sh h | help | -h | --help show help
 #
 # Linux-only assumption: vcpkg is always OFF, so the vcpkg alternative
@@ -45,11 +45,11 @@ Usage:
       Detect path, pick a pattern, RUN cmake.
   ./cmake.sh onlyprint
       Detect path, pick a pattern, PRINT commands only.
-  ./cmake.sh r | release [foo]
+  ./cmake.sh r | rel | release [foo]
       Release mode (PRINT-ONLY if a 2nd arg exists).
-  ./cmake.sh rd | rwdi | relwithdebinfo [foo]
+  ./cmake.sh rd | rwd | rwdi | relwithdebinfo [foo]
       RelWithDebInfo mode (PRINT-ONLY if a 2nd arg exists).
-  ./cmake.sh d | debug [foo]
+  ./cmake.sh d | dbg | debug [foo]
       Debug mode (PRINT-ONLY if a 2nd arg exists).
   ./cmake.sh h | help | -h | --help
       Show this help.
@@ -81,13 +81,13 @@ OnlyPrint=""
 Release=""
 RelWithDebInfo=""
 if [[ -n "$Arg" ]]; then
-    if [[ "$arg_lc" == "r" || "$arg_lc" == "release" ]]; then
+    if [[ "$arg_lc" == "r" || "$arg_lc" == "rel" || "$arg_lc" == "release" ]]; then
         Release=1
         [[ -n "$Arg2" ]] && OnlyPrint=1
-    elif [[ "$arg_lc" == "rd" || "$arg_lc" == "rwdi" || "$arg_lc" == "relwithdebinfo" ]]; then
+    elif [[ "$arg_lc" == "rd" || "$arg_lc" == "rwd" || "$arg_lc" == "rwdi" || "$arg_lc" == "relwithdebinfo" ]]; then
         RelWithDebInfo=1
         [[ -n "$Arg2" ]] && OnlyPrint=1
-    elif [[ "$arg_lc" == "d" || "$arg_lc" == "debug" ]]; then
+    elif [[ "$arg_lc" == "d" || "$arg_lc" == "dbg" || "$arg_lc" == "debug" ]]; then
         # Debug is the default BuildType
         [[ -n "$Arg2" ]] && OnlyPrint=1
     else
