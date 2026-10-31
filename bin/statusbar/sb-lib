@@ -1,0 +1,95 @@
+# shellcheck shell=sh
+# Output and demo helpers for the status bar scripts (sh and bash), sourced
+# after setting SB_MODULE to the module's name:
+#
+#	SB_MODULE=battery
+#	. "$HOME/.local/bin/statusbar/sb-lib"
+#	sb_seg "$COLOR_BAT" "$ICON_BAT_4" "97%"	# a part: colour, icon, value
+#	sb_print				# prints the module
+#
+# A script prints only its values; the icons, colours, gap and separator
+# come from sb-theme. A module with no parts prints nothing, which leaves it
+# out of both bars.
+#
+# SB_BAR picks the output:
+#	dwm (default)	^c#rrggbb^ status2d colour codes, the parts joined by
+#			SB_GAP; SB_LAST also gets SB_EDGE after it
+#	awesome		a "colour<TAB>icon<TAB>value" line per part, theme.lua
+#			builds the markup, the gaps and the separators
+#	plain		icon and value without colours (waybar)
+#	value		the values only (somewm's widgets draw their own icons)
+#
+# Demo (sb-demo): while sb-demo runs, sb_demo is true and the scripts show a
+# random variant (sb_pick, sb_range, sb_choose) instead of their real values.
+# The variant is random per tick but the same within one, so a block that
+# runs again on its own interval keeps showing it.
+
+SB_DIR="$HOME/.local/bin/statusbar"
+. "$SB_DIR/sb-theme"
+
+SB_BAR=${SB_BAR:-dwm}
+SB_DEMO_DIR="${XDG_RUNTIME_DIR:-/tmp}/sb-demo"
+_sb_out=
+_sb_n=0
+
+# icon and value with SB_GAP between them, or whichever of them there is
+_sb_join() {
+	if [ -n "$1" ] && [ -n "$2" ]; then
+		_sb_part="$1$SB_GAP$2"
+	else
+		_sb_part="$1$2"
+	fi
+}
+
+# sb_seg COLOR ICON VALUE: adds a part to the module
+sb_seg() {
+	_sb_join "$2" "$3"
+	[ -n "$_sb_part" ] || return 0
+	case $SB_BAR in
+		awesome) _sb_out="$_sb_out$1	$2	$3
+" ;;
+		value) _sb_out="$_sb_out${_sb_out:+$SB_GAP}$3" ;;
+		plain) _sb_out="$_sb_out${_sb_out:+$SB_GAP}$_sb_part" ;;
+		*) _sb_out="$_sb_out${_sb_out:+$SB_GAP}^c$1^$_sb_part" ;;
+	esac
+}
+
+# Prints the module (nothing if it has no parts) and starts the next one
+sb_print() {
+	if [ -n "$_sb_out" ]; then
+		case $SB_BAR in
+			awesome) printf '%s' "$_sb_out" ;;
+			dwm) [ "$SB_MODULE" = "$SB_LAST" ] && _sb_out="$_sb_out$SB_EDGE"
+			     printf '%s\n' "$_sb_out" ;;
+			*) printf '%s\n' "$_sb_out" ;;
+		esac
+	fi
+	_sb_out=
+}
+
+# True while sb-demo runs (its pid is alive); sets SB_DEMO_SEED, new every tick
+sb_demo() {
+	[ -r "$SB_DEMO_DIR/seed" ] && [ -r "$SB_DEMO_DIR/pid" ] || return 1
+	read -r _sb_pid < "$SB_DEMO_DIR/pid" && kill -0 "$_sb_pid" 2>/dev/null || return 1
+	read -r SB_DEMO_SEED < "$SB_DEMO_DIR/seed"
+}
+
+# sb_pick N: SB_R = 0..N-1, from the tick's seed, the module and the call count
+sb_pick() {
+	_sb_n=$((_sb_n + 1))
+	_sb_sum=$(printf '%s:%s:%s' "$SB_DEMO_SEED" "$SB_MODULE" "$_sb_n" | cksum)
+	SB_R=$(( ${_sb_sum%% *} % $1 ))
+}
+
+# sb_range LO HI: SB_R = LO..HI
+sb_range() {
+	sb_pick $(( $2 - $1 + 1 ))
+	SB_R=$(( $1 + SB_R ))
+}
+
+# sb_choose A B ...: SB_R = one of the arguments
+sb_choose() {
+	sb_pick $#
+	shift "$SB_R"
+	SB_R=$1
+}

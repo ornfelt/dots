@@ -1,0 +1,82 @@
+# shellcheck shell=sh
+# The look of the status bar modules, shared by dwm's dwmblocks / dwmblocksc /
+# dwmblocksr and awesome: the separator between modules, the gap between an
+# icon and its value, every icon and every colour. Nothing else defines them:
+# the scripts print only their values through sb-lib, which adds the icon,
+# the gap and the colour, and the bars put SB_SEP between the modules
+# (dwmblocks* get it as -d from sb-start, awesome's theme.lua reads it here).
+#
+# Sourced by the sh/bash scripts and read by awesome's theme.lua and
+# sb-claude (lua), so keep to NAME='value' lines: single quotes, no
+# expansions; a comment may follow on the same line.
+#
+# The icons are Nerd Font glyphs. The bars use "JetBrainsMono Nerd Font
+# Propo", whose icons are as wide as they are drawn, so one SB_GAP looks the
+# same after every icon (the plain Nerd Font gives them all one cell, so wide
+# ones run into the gap and narrow ones leave a hole).
+#
+# After a change: the scripts pick it up on their next run; restart awesome
+# (mod-ctrl-r) or the status bar (sb-start dwmblocksr) for SB_SEP / SB_EDGE.
+
+SB_SEP='  '   # between two modules
+SB_GAP=' '    # between an icon and its value, and between two parts of a module
+SB_EDGE=' '   # after the last module, before the right screen edge
+SB_LAST='clock' # the module that gets SB_EDGE (the rightmost one in both bars)
+
+# Icons, in bar order
+# spotify_dwmblocks.sh
+ICON_SPOTIFY='' # U+F1BC
+# sb-claude (dwm only: awesome's claude_usage widget draws its own starburst); not in the Nerd Font, so fontconfig falls back to another font for it
+ICON_CLAUDE='✻' # U+273B
+# sb-sysinfo net
+ICON_NET_DOWN='' # U+EA9A
+ICON_NET_UP='' # U+EAA1
+# sb-sysinfo mem
+ICON_MEM='' # U+F51E
+# sb-sysinfo cpu
+ICON_CPU='' # U+F4BC
+# sb-network
+ICON_WIFI='󰖩' # U+F05A9
+ICON_WIFI_OFF='󰖪' # U+F05AA
+ICON_ETH='󰈀' # U+F0200
+ICON_ETH_OFF='󰈂' # U+F0202
+# weather
+ICON_WEATHER='' # U+F0C2
+# cputemp
+ICON_TEMP='' # U+F2CA
+# sb-volume
+ICON_VOL='󰕾' # U+F057E
+ICON_MUTE='󰖁' # U+F0581
+# sb-battery: full or at least 80%, 60%, 40%, 20%, below 20%, charging
+ICON_BAT_4='' # U+F240
+ICON_BAT_3='' # U+F241
+ICON_BAT_2='' # U+F242
+ICON_BAT_1='' # U+F243
+ICON_BAT_0='' # U+F244
+ICON_BAT_CHARGING='󰂄' # U+F0084
+# sb-clock
+ICON_CLOCK='󰥔' # U+F0954
+
+# Colours, in bar order
+COLOR_SPOTIFY='#ebdbb2'
+# icon and text; the text turns COLOR_CLAUDE_CRIT at the crit threshold, COLOR_CLAUDE_ERROR on an error
+COLOR_CLAUDE='#D97757'
+COLOR_CLAUDE_CRIT='#C8442E'
+COLOR_CLAUDE_ERROR='#9C9A93'
+COLOR_NET_DOWN='#b8bb26'
+COLOR_NET_UP='#689d6a'
+COLOR_MEM='#fabd2f'
+COLOR_CPU='#b16286'
+# sb-network: connected with internet / no internet or not connected / restarting NetworkManager / unknown
+COLOR_NETWORK_ONLINE='#8ec07c'
+COLOR_NETWORK_OFFLINE='#fb4934'
+COLOR_NETWORK_RESTARTING='#fe8019'
+COLOR_NETWORK_UNKNOWN='#928374'
+# weather: 0..20 degrees / below 0 / above 20
+COLOR_WEATHER='#ebdbb2'
+COLOR_WEATHER_COLD='#458588'
+COLOR_WEATHER_HOT='#cc241d'
+COLOR_TEMP='#d79921'
+COLOR_VOL='#83a598'
+COLOR_BAT='#d3869b'
+COLOR_CLOCK='#8ec07c'

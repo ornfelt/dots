@@ -22,9 +22,11 @@ static int browsergaps          = 0;        /* 0 means no outer gap when there i
 static int showbar              = 1;        /* 0 means no bar */
 static int topbar               = 1;        /* 0 means bottom bar */
 static const int focusonwheel   = 0;        /* 0 allows the user to scroll window without changing focus */
-static const char *fonts[]      = { "JetBrainsMono Nerd Font:size=11:style=bold" };
+/* Propo: the icons are as wide as they are drawn, so one gap after an icon
+ * looks the same for every icon (see ~/.local/bin/statusbar/sb-theme) */
+static const char *fonts[]      = { "JetBrainsMono Nerd Font Propo:size=11:style=bold" };
 /* bigger font for status text between ^B^ and ^N^, e.g. a block's icon */
-static const char *statusbigfonts[] = { "JetBrainsMono Nerd Font:size=15:style=bold" };
+static const char *statusbigfonts[] = { "JetBrainsMono Nerd Font Propo:size=15:style=bold" };
 /* "#RRGGBB": the resources[] below are written into them */
 static char normbgcolor[]       = "#282828";
 static char normbordercolor[]   = "#282828";
@@ -134,7 +136,8 @@ static const char statusbar[] = "dwmblocksc";
 
 /* the command dwmc runs once at startup, after the existing windows have been
  * taken over; here it (re)starts the status bar. { NULL } runs none */
-static const char *autostart[] = { "sh", "-c", "killall -q dwmblocksc; dwmblocksc &", NULL };
+/* sb-start passes the separator from sb-theme (SB_SEP) to the bar */
+static const char *autostart[] = { "sh", "-c", "~/.local/bin/statusbar/sb-start dwmblocksc &", NULL };
 
 /* commands */
 static char dmenumon[2] = "0"; /* component of dmenucmd, manipulated in spawn() */

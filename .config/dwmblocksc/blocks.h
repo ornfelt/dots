@@ -25,15 +25,19 @@ static const Block blocks[] = {
     {"",            "~/.local/bin/statusbar/sb-sysinfo cpu",        2,                      15},
     /* network: wifi/ethernet, cyan online, red offline, orange while restarting NetworkManager; clicks: details, restart, wifi menu */
     {"",            "~/.local/bin/statusbar/sb-network",            3,                      16},
-    {"^2^ ",      "~/.local/bin/statusbar/weather",               1800,                   5},
-    {"^3^  ",      "~/.local/bin/statusbar/cputemp",               5,                      4},
-    {"^4^ ",        "~/.local/bin/statusbar/sb-volume",             0,                      10},
-    {"^5^ ",        "~/.local/bin/statusbar/sb-battery",            5,                      3,                  HasBattery},
-    {"^6^  ",      "~/.local/bin/statusbar/sb-clock",              5,                      1},
+    {"",            "~/.local/bin/statusbar/weather",               1800,                   5},
+    {"",            "~/.local/bin/statusbar/cputemp",               5,                      4},
+    {"",            "~/.local/bin/statusbar/sb-volume",             0,                      10},
+    {"",            "~/.local/bin/statusbar/sb-battery",            5,                      3,                  HasBattery},
+    {"",            "~/.local/bin/statusbar/sb-clock",              5,                      1},
 };
 
 //sets delimiter between status commands. NULL character ('\0') means no delimiter.
-static char delim[] = " ";
+//The separator between the modules is SB_SEP in ~/.local/bin/statusbar/sb-theme:
+//dwm starts the bar with sb-start, which passes it as -d, so this is only used
+//when the bar is started without it (keep it equal to SB_SEP). The icons and
+//colours are in sb-theme too, the scripts print them, so the icons here are empty.
+static char delim[] = "  ";
 //at most this many bytes of the delimiter are used
 static unsigned int delimLen = 5;
 

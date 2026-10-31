@@ -1,5 +1,8 @@
 #!/bin/bash
 
+SB_MODULE=clock
+. "$HOME/.local/bin/statusbar/sb-lib"
+
 clock=$(date '+%I')
 
 # case "$clock" in
@@ -67,10 +70,18 @@ esac
 #date "+%a %d %b %I:%M%p (%V)"
 #date "+%a %d %b %I:%M%p (%V) "
 
-if grep -qEi 'arch' /etc/os-release; then
-    echo " $(date -d "+4 minutes" "+%a %d %b %I:%M%p (%V) ")"
+# Demo (sb-demo): any moment of the coming year, so every weekday, month and
+# hour shows up
+SECONDS_PER_YEAR=31536000
+if sb_demo; then
+    sb_range 0 $(( SECONDS_PER_YEAR - 1 ))
+    when="@$(( $(date +%s) + SB_R ))"
+elif grep -qEi 'arch' /etc/os-release; then
+    when="+4 minutes"
 else
     #date -d "+4 minutes" "+%a %d %b %I:%M%p (%V) "
-    date "+%a %d %b %I:%M%p (%V) "
+    when="now"
 fi
+sb_seg "$COLOR_CLOCK" "$ICON_CLOCK" "$(date -d "$when" "+%a %d %b %I:%M%p (%V)")"
+sb_print
 

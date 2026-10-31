@@ -1,0 +1,29 @@
+#!/bin/sh
+# (Re)starts a dwm status bar program with the separator from sb-theme
+# (SB_SEP) as its delimiter, so the separator between the blocks is defined
+# there only. dwm, dwmc and dwmr start their bar with it.
+#
+# Usage examples:
+# dwmblocksr (the default):
+#	sb-start
+# dwmblocksc or dwmblocks:
+#	sb-start dwmblocksc
+# print the command instead of running it:
+#	sb-start --show-cmd dwmblocks
+
+. "$HOME/.local/bin/statusbar/sb-theme"
+
+show=
+[ "$1" = --show-cmd ] && { show=1; shift; }
+bar=${1:-dwmblocksr}
+case $bar in
+	dwmblocks|dwmblocksc|dwmblocksr) ;;
+	*) printf '\033[31m%s\033[0m\n' "usage: ${0##*/} [--show-cmd] [dwmblocks|dwmblocksc|dwmblocksr]" >&2; exit 1 ;;
+esac
+
+if [ -n "$show" ]; then
+	printf "killall -q %s; %s -d '%s' &\n" "$bar" "$bar" "$SB_SEP"
+	exit 0
+fi
+killall -q "$bar"
+exec "$bar" -d "$SB_SEP"

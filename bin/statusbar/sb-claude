@@ -5,7 +5,11 @@
 -- and formatting (its cli.lua keeps the API calls within the rate limit).
 -- Prints nothing when the module is not there, which hides the block.
 --
--- Uses dwm's ^c#rrggbb^ status colour code.
+-- The icon, colours, gap and separator come from sb-theme, like the other
+-- blocks' (see sb-lib): SB_BAR picks dwm's ^c#rrggbb^ codes (the default),
+-- awesome's "colour<TAB>icon<TAB>text" (the widget draws its own icon, theme.lua
+-- only uses this during sb-demo), plain or value. While sb-demo runs it shows
+-- made-up usage instead (every level, errors, no data).
 
 local home = os.getenv("HOME") or ""
 local dir = home .. "/.config/awesome/claude_usage"
@@ -19,19 +23,39 @@ local config = require("config")
 local format = require("format")
 local history = require("history")
 
+-- NAME='value' lines of sb-theme (the sh scripts source it)
+local function read_theme(path)
+	local t = {}
+	local f = io.open(path, "r")
+	if not f then
+		return t
+	end
+	for line in f:lines() do
+		local k, v = line:match("^%s*([%w_]+)='([^']*)'")
+		if k then
+			t[k] = v
+		end
+	end
+	f:close()
+	return t
+end
+local theme = read_theme(home .. "/.local/bin/statusbar/sb-theme")
+local SB_BAR = os.getenv("SB_BAR") or "dwm"
+local GAP = theme.SB_GAP or " "
+
 -- Same options as the awesome widget (themes/multicolor/theme.lua)
-local ORANGE = "#D97757"
+local ORANGE = theme.COLOR_CLAUDE or "#D97757"
 local opts = config.resolve({
 	spend_in_bar = false,
 	show_glyph = false, -- the widget draws its icon instead of the text glyph
 	-- warn = ORANGE: the text keeps the icon's orange until crit, like the widget
-	colors = { normal = ORANGE, icon = ORANGE, warn = ORANGE, crit = "#C8442E", error = "#9C9A93" },
+	colors = { normal = ORANGE, icon = ORANGE, warn = ORANGE, crit = theme.COLOR_CLAUDE_CRIT, error = theme.COLOR_CLAUDE_ERROR },
 })
 -- Popup colours from the awesome popup, on gruvbox dark like the rest of the bar
 local c = opts.popup_colors
 c.bg, c.fg, c.muted, c.track = "#282828", "#ebdbb2", "#a89984", "#504945"
 
-local ICON = "✻" -- Claude's logo glyph (awesome draws it)
+local ICON = theme.ICON_CLAUDE or "✻" -- Claude's logo glyph (awesome draws it)
 local TERMINAL = os.getenv("TERMINAL") or "wezterm"
 local FONT = "JetBrainsMono Nerd Font 10" -- the bar font
 local POPUP_WIDTH = 380
@@ -63,9 +87,74 @@ end
 
 local function bar_text(st)
 	local color = format.color_for(st, opts) or ORANGE
-	-- trailing space: a little room before the next block, like the widget's right margin
-	-- ^B^...^N^: dwm's bigger status font, like the widget's 1.35x icon
-	return string.format("^c%s^^B^%s^N^ ^c%s^%s ", opts.colors.icon, ICON, color, format.bar_text(st, opts))
+	local text = format.bar_text(st, opts)
+	local out
+	if SB_BAR == "awesome" then
+		return string.format("%s\t%s\t%s", color, ICON, text)
+	elseif SB_BAR == "value" then
+		out = text
+	elseif SB_BAR == "plain" then
+		out = ICON .. GAP .. text
+	else
+		-- ^B^...^N^: dwm's bigger status font, like the widget's 1.35x icon
+		out = string.format("^c%s^^B^%s^N^%s^c%s^%s", opts.colors.icon, ICON, GAP, color, text)
+	end
+	if theme.SB_LAST == "claude" and SB_BAR == "dwm" then
+		out = out .. (theme.SB_EDGE or "")
+	end
+	return out
+end
+
+-- Demo (sb-demo) -------------------------------------------------------------
+
+local DEMO_DIR = runtime_dir .. "/sb-demo"
+
+local function first_line(path)
+	local f = io.open(path, "r")
+	if not f then
+		return nil
+	end
+	local l = f:read("l")
+	f:close()
+	return l
+end
+
+-- The tick's seed while sb-demo runs (its pid is alive), else nil
+local function demo_seed()
+	local seed, pid = first_line(DEMO_DIR .. "/seed"), first_line(DEMO_DIR .. "/pid")
+	if not seed or not pid or not pid:match("^%d+$") then
+		return nil
+	end
+	if not os.execute("kill -0 " .. pid .. " 2>/dev/null") then
+		return nil
+	end
+	return tonumber(seed)
+end
+
+-- A made-up state, the same for the whole tick: usage at every level (and
+-- around the thresholds), a hidden window now and then, errors, no data yet
+local DEMO_ERRORS = { "unauthorized", "no_credentials", "rate_limited", "network", "parse", "no_source" }
+local function demo_state(seed)
+	math.randomseed(seed)
+	local function pct()
+		return math.random(0, 100)
+	end
+	local kind = math.random(1, 8)
+	if kind == 1 then
+		return nil -- nothing fetched yet
+	elseif kind == 2 then
+		return { scoped = {}, error = { code = DEMO_ERRORS[math.random(#DEMO_ERRORS)] } }
+	elseif kind == 3 then
+		return { scoped = {} } -- no data, no error
+	end
+	local st = { five_hour = { percent = pct() }, seven_day = { percent = pct() }, scoped = {} }
+	if math.random(1, 3) == 1 then
+		st.five_hour = nil
+	end
+	if math.random(1, 2) == 1 then
+		st.scoped[1] = { name = "Fable", percent = math.random(1, 3) == 1 and 0 or pct() }
+	end
+	return st
 end
 
 -- Popup (a yad window with pango markup) ----------------------------------
@@ -269,6 +358,12 @@ elseif button == "3" then
 	get_state(0) -- forced refresh, dwmblocks updates the block afterwards
 elseif button == "6" then
 	os.execute(sh_quote(TERMINAL) .. " -e " .. sh_quote(os.getenv("EDITOR") or "nvim") .. " " .. sh_quote(arg[0]) .. " &")
+end
+
+local seed = demo_seed()
+if seed then
+	print(bar_text(demo_state(seed)))
+	os.exit(0)
 end
 
 local st = get_state()

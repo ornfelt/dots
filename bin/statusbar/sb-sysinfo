@@ -23,7 +23,12 @@
 # They keep sampling while hidden, so the first value after showing them is
 # a fresh one. Like the widgets they run every 2 seconds.
 #
-# Uses dwm's ^c#rrggbb^ status colour code.
+# The icons and colours are in sb-theme, sb-lib prints them (SB_BAR=awesome
+# for the awesome widgets, which hide and show themselves, so the dwm state
+# above only applies to dwm).
+
+SB_MODULE=${1:-sysinfo}
+. "$HOME/.local/bin/statusbar/sb-lib"
 
 CONFIG="$HOME/.config/my_config.txt"
 KEY="dwm_bar_toggled"
@@ -92,7 +97,7 @@ net() {
 				if (last && dt > 0) { rx = drx / dt / 1024; tx = dtx / dt / 1024 }
 			}
 			if (show)
-				printf "^c#b8bb26^\356\252\232 %.1f ^c#689d6a^\356\252\241 %.1f\n", rx, tx
+				printf "%.1f %.1f\n", rx, tx
 			if (save) {
 				tmp = state ".tmp"
 				printf "t %s\nrate %s %s\n%s", now, rx, tx, devs > tmp
@@ -113,7 +118,7 @@ mem() {
 		$1 == "Buffers:" { buf = mib($2) }
 		$1 == "Cached:" { cache = mib($2) }
 		$1 == "SReclaimable:" { srec = mib($2) }
-		END { printf " ^c#fabd2f^\357\224\236 %dM\n", total - free - buf - cache - srec }
+		END { printf "%dM\n", total - free - buf - cache - srec }
 	' /proc/meminfo
 }
 
@@ -151,7 +156,7 @@ cpu() {
 				}
 			}
 			if (show)
-				printf " ^c#b16286^\357\222\274 %d%% \n", usage
+				printf "%d%%\n", usage
 			if (save) {
 				tmp = state ".tmp"
 				printf "t %s\ncpu %s %s\nusage %d\n", now, active, total, usage > tmp
@@ -237,13 +242,35 @@ if [ -n "$BLOCK_BUTTON" ]; then
 	exit 0
 fi
 
-show=1
-hidden && show=0
+# Demo (sb-demo): always shown, rates from idle to a busy link, any memory
+# and usage; no samples, so the real rates go on where they left off
+if sb_demo; then
+	case $1 in
+		net)	for color in "$COLOR_NET_DOWN" "$COLOR_NET_UP"; do
+				sb_choose 10 100 1000 10000 100000; sb_range 0 "$SB_R"
+				out="$out $((SB_R / 10)).$((SB_R % 10))"
+			done ;;
+		mem)	sb_range 300 31999; out="${SB_R}M" ;;
+		cpu)	sb_range 0 100; out="$SB_R%" ;;
+	esac
+else
+	show=1
+	[ "$SB_BAR" = dwm ] && hidden && show=0
+	case $1 in
+		net) out=$(net "$show") ;;
+		cpu) out=$(cpu "$show") ;;
+		mem) [ "$show" = 1 ] && out=$(mem) ;;
+	esac
+fi
 
 case $1 in
-	net) net "$show" ;;
-	cpu) cpu "$show" ;;
-	mem) [ "$show" = 1 ] && mem ;;
+	net)	[ -n "$out" ] && set -- $out && sb_seg "$COLOR_NET_DOWN" "$ICON_NET_DOWN" "$1" &&
+			sb_seg "$COLOR_NET_UP" "$ICON_NET_UP" "$2"
+		sb_print ;;
+	mem)	[ -n "$out" ] && sb_seg "$COLOR_MEM" "$ICON_MEM" "$out"
+		sb_print ;;
+	cpu)	[ -n "$out" ] && sb_seg "$COLOR_CPU" "$ICON_CPU" "$out"
+		sb_print ;;
 	toggle)
 		if [ "$show" = 1 ]; then setconfig true; else setconfig false; fi
 		for s in $SIGNALS; do

@@ -3,6 +3,9 @@
 # Prints all batteries, their percentage remaining and an emoji corresponding
 # to charge status (🔌 for plugged up, 🔋 for discharging on battery, etc.).
 
+SB_MODULE=battery
+. "$HOME/.local/bin/statusbar/sb-lib"
+
 # Left click: one notification at a time, clicks are ignored while it is
 # loading or shown (the lock is held until notify-send --wait returns)
 case $BLOCK_BUTTON in
@@ -70,10 +73,49 @@ esac
 #done && exit 0
 
 
-# Loop through all attached batteries and format the info
+# Icon for a status and capacity, like awesome's battery widget used: full,
+# charging, else by the level (80/60/40/20)
+bat_icon() {
+    if [ "$1" = "full" ]; then
+        icon=$ICON_BAT_4
+    elif [ "$1" = "charging" ]; then
+        icon=$ICON_BAT_CHARGING
+    elif [ "$2" -ge 80 ]; then
+        icon=$ICON_BAT_4
+    elif [ "$2" -ge 60 ]; then
+        icon=$ICON_BAT_3
+    elif [ "$2" -ge 40 ]; then
+        icon=$ICON_BAT_2
+    elif [ "$2" -ge 20 ]; then
+        icon=$ICON_BAT_1
+    else
+        icon=$ICON_BAT_0
+    fi
+}
+
+# Demo (sb-demo): one battery, each icon as likely as the others, with a
+# capacity that fits it
+if sb_demo; then
+    sb_pick 7
+    case $SB_R in
+        0) status=full lo=100 hi=100 ;;
+        1) status=charging lo=0 hi=100 ;;
+        2) status=discharging lo=80 hi=100 ;;
+        3) status=discharging lo=60 hi=79 ;;
+        4) status=discharging lo=40 hi=59 ;;
+        5) status=discharging lo=20 hi=39 ;;
+        *) status=discharging lo=0 hi=19 ;;
+    esac
+    sb_range "$lo" "$hi"
+    bat_icon "$status" "$SB_R"
+    sb_seg "$COLOR_BAT" "$icon" "$SB_R%"
+    sb_print
+    exit 0
+fi
+
+# Loop through all attached batteries and format the info, a part each
 for battery in /sys/class/power_supply/BAT?*; do
-    # If non-first battery, print a space separator.
-    [ -n "${capacity+x}" ] && printf " "
+    [ -r "$battery/capacity" ] || continue
     # Sets up the status and capacity
     case "$(cat "$battery/status")" in
         "Full") status="full" ;;
@@ -94,23 +136,8 @@ for battery in /sys/class/power_supply/BAT?*; do
     #status="discharging"
     #capacity="29"
 
-    # Set the appropriate emoji based on status and capacity
-    if [ "$status" = "full" ]; then
-        emoji=" "
-    elif [ "$status" = "charging" ]; then
-        emoji="󰂄"
-    elif [ "$capacity" -gt 85 ]; then
-        emoji=" "
-    elif [ "$capacity" -gt 60 ]; then
-        emoji=" "
-    elif [ "$capacity" -gt 30 ]; then
-        emoji=" "
-    else
-        emoji=" "
-    fi
-
-    # Prints the info
-    printf "%s %d%%" "$emoji" "$capacity"
-
-done && exit 0
-
+    bat_icon "$status" "$capacity"
+    sb_seg "$COLOR_BAT" "$icon" "$capacity%"
+done
+sb_print
+exit 0

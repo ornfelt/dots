@@ -5,8 +5,8 @@
 #   orange  restarting NetworkManager (or iwd) to get the internet back
 #   gray    unknown: no data yet, or neither ping nor curl to check with
 #
-#   sb-network            the block, with dwm's ^c#rrggbb^ color code
-#   sb-network --awesome  "COLOR ICON" for the awesome widget
+#   sb-network            the block (SB_BAR=awesome for the awesome widget,
+#                         see sb-lib); icons and colors are in sb-theme
 #   sb-network --check    one internet check (the block starts it in the
 #                         background every CHECK_EVERY seconds)
 # Clicks (BLOCK_BUTTON, also from the awesome widget): left shows the
@@ -42,9 +42,9 @@ RESTART_GRACE=90 # after a restart, time for wifi to reconnect
 THROTTLE=1800
 SIGNAL=16
 
-CYAN="#8ec07c" RED="#fb4934" ORANGE="#fe8019" GRAY="#928374"
-ICON_WIFI=$'\U000f05a9' ICON_WIFI_OFF=$'\U000f05aa'
-ICON_ETH=$'\U000f0200' ICON_ETH_OFF=$'\U000f0202'
+SB_MODULE=network
+. "$HOME/.local/bin/statusbar/sb-lib"
+CYAN=$COLOR_NETWORK_ONLINE RED=$COLOR_NETWORK_OFFLINE ORANGE=$COLOR_NETWORK_RESTARTING GRAY=$COLOR_NETWORK_UNKNOWN
 
 LIB=~/.local/bin/my_scripts/wifi_lib.sh
 
@@ -260,13 +260,31 @@ if [ "$1" = --check ]; then
     exit 0
 fi
 
-load
-link
-t=$(now)
-# a new check in the background, not holding the bar's pipe
-if [ $(( t - ${S[checked]:-0} )) -ge $CHECK_EVERY ]; then
-    "$0" --check </dev/null >/dev/null 2>&1 &
-    disown
+if sb_demo; then
+    # Demo (sb-demo): wifi, ethernet or no device, each state the checks can
+    # leave behind, any signal or link speed; no checks, no restarts
+    t=$(now)
+    sb_choose wifi ethernet none; KIND=$SB_R
+    UP=1 S[checked]=$t S[online]=yes S[restarting_until]=0
+    sb_choose online offline restarting unknown down
+    case $SB_R in
+        offline) S[online]=no ;;
+        restarting) S[restarting_until]=$(( t + RESTART_GRACE )) ;;
+        unknown) S[online]=unknown ;;
+        down) UP=0 ;;
+    esac
+    [ "$KIND" = none ] && UP=0
+    sb_range 1 100; demo_q=$SB_R
+    sb_choose 10 100 1000 2500 10000; demo_mbit=$SB_R
+else
+    load
+    link
+    t=$(now)
+    # a new check in the background, not holding the bar's pipe
+    if [ $(( t - ${S[checked]:-0} )) -ge $CHECK_EVERY ]; then
+        "$0" --check </dev/null >/dev/null 2>&1 &
+        disown
+    fi
 fi
 
 if [ "$KIND" = ethernet ]; then icon=$ICON_ETH off=$ICON_ETH_OFF; else icon=$ICON_WIFI off=$ICON_WIFI_OFF; fi
@@ -284,27 +302,25 @@ else
     color=$RED
 fi
 
+value=
 # the wifi signal (link quality out of 70, like the details) or the ethernet
 # link speed in Mb/s (-1 or unreadable while there's no link)
 if [ "$SHOW_STRENGTH" = true ] && [ "$UP" = 1 ]; then
     if [ "$KIND" = wifi ]; then
-        q=$(awk -v dev="$IFACE:" '$1 == dev { print int($3 * 100 / 70) }' /proc/net/wireless 2>/dev/null)
-        [ -n "$q" ] && icon="$icon $q%"
+        q=${demo_q-$(awk -v dev="$IFACE:" '$1 == dev { print int($3 * 100 / 70) }' /proc/net/wireless 2>/dev/null)}
+        [ -n "$q" ] && value="$q%"
     elif [ "$KIND" = ethernet ]; then
-        mbit=$(cat "/sys/class/net/$IFACE/speed" 2>/dev/null)
+        mbit=${demo_mbit-$(cat "/sys/class/net/$IFACE/speed" 2>/dev/null)}
         case $mbit in
             '' | -* | *[!0-9]*) ;;
             *) if [ "$mbit" -ge 1000 ]; then
-                   icon="$icon $(awk -v m="$mbit" 'BEGIN { printf "%gG", m / 1000 }')"
+                   value=$(awk -v m="$mbit" 'BEGIN { printf "%gG", m / 1000 }')
                else
-                   icon="$icon ${mbit}M"
+                   value="${mbit}M"
                fi ;;
         esac
     fi
 fi
 
-if [ "$1" = --awesome ]; then
-    printf '%s %s\n' "$color" "$icon"
-else
-    printf '^c%s^%s \n' "$color" "$icon"
-fi
+sb_seg "$color" "$icon" "$value"
+sb_print

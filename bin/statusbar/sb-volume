@@ -2,6 +2,9 @@
 
 # Prints the current volume or 🔇 if muted.
 
+SB_MODULE=volume
+. "$HOME/.local/bin/statusbar/sb-lib"
+
 case $BLOCK_BUTTON in
 	1) pamixer -t; pkill -44 -x 'dwmblocksr?' ;;
 	2) rofi -theme "~/.config/rofi/themes/gruvbox/gruvbox-dark.rasi" -e "Audio clicked 2" ;;
@@ -14,11 +17,18 @@ esac
 # [ $(pamixer --get-mute) = true ] && echo 🔇 && exit
 # [ $(pamixer --get-mute) = true ] && echo 婢 && exit
 #[ $(pamixer --get-mute) = true ] && echo "婢 0%" && exit
-[ $(pamixer --get-mute) = true ] && echo "󰖁 0%" && exit
+# Demo (sb-demo): muted or not, any volume up to the boost limit
+if sb_demo; then
+	sb_pick 2; muted=$SB_R
+	sb_range 0 150; vol=$SB_R
+else
+	[ "$(pamixer --get-mute)" = true ] && muted=1 || muted=0
+	vol="$(pamixer --get-volume)"
+fi
 
-vol="$(pamixer --get-volume)"
+[ "$muted" = 1 ] && sb_seg "$COLOR_VOL" "$ICON_MUTE" "0%" && sb_print && exit
 
-icon="󰕾 "
+icon=$ICON_VOL
 #
 
 #if [ "$vol" -gt "70" ]; then
@@ -32,4 +42,5 @@ icon="󰕾 "
 #    icon="墳 "
 #fi
 
-echo "$icon$vol%"
+sb_seg "$COLOR_VOL" "$icon" "$vol%"
+sb_print

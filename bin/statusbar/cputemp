@@ -3,6 +3,9 @@
 #sensors | awk '/Package/ {sub(/^\+/, "", $2);print $4}'
 #sensors | awk '/Package/ {sub(/^\+/, "", $2);print $4}' | sed 's/\+//'
 
+SB_MODULE=temp
+. "$HOME/.local/bin/statusbar/sb-lib"
+
 # Left click: one notification at a time, clicks are ignored while it is
 # loading or shown (the lock is held until notify-send --wait returns)
 case $BLOCK_BUTTON in
@@ -15,6 +18,14 @@ case $BLOCK_BUTTON in
 	6) "$TERMINAL" -e "$EDITOR" "$0" ;;
 esac
 
+# Demo (sb-demo): any temperature from idle to throttling, as sensors prints it
+if sb_demo; then
+	sb_range 250 999
+	sb_seg "$COLOR_TEMP" "$ICON_TEMP" "$((SB_R / 10)).$((SB_R % 10))°C"
+	sb_print
+	exit 0
+fi
+
 STR=$(sensors | awk '/Tctl/ {sub(/^\+/, "", $2);print $2}')
 
 if [ -z "$STR" ]; then
@@ -25,4 +36,5 @@ if [ -z "$STR" ]; then
 	STR="0°"
 fi
 
-echo "$STR"
+sb_seg "$COLOR_TEMP" "$ICON_TEMP" "$STR"
+sb_print

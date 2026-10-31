@@ -1,8 +1,28 @@
 #!/bin/sh
 
+SB_MODULE=spotify
+. "$HOME/.local/bin/statusbar/sb-lib"
+
+# Escapes the metadata for the sed replacements below
+esc() {
+  printf '%s' "$1" | sed 's/\&/\\&/g' | sed 's#\/#\\/#g'
+}
+
+# Demo (sb-demo): short and long titles, with & and / in them
+demo_track() {
+  sb_choose "Daft Punk" "Simon & Garfunkel" "AC/DC" "Sigur Rós" "Godspeed You! Black Emperor"; artist=$(esc "$SB_R")
+  sb_choose "One More Time" "The Sound of Silence" "Back In Black" "Hoppípolla" "Storm" "Lift Your Skinny Fists Like Antennas to Heaven"; title=$(esc "$SB_R")
+  sb_choose "Discovery" "Sounds of Silence" "Back In Black / Remastered" "Takk..."; album=$(esc "$SB_R")
+}
+
+# Prints the track's metadata in the format given, "%artist% - %title%" by
+# default; nothing when spotify isn't running
 main() {
+  if sb_demo; then
+    demo_track
+  else
   if ! pgrep -x spotify >/dev/null; then
-    echo ""; exit
+    return
   fi  
 
   cmd="org.freedesktop.DBus.Properties.Get"
@@ -15,8 +35,9 @@ main() {
   artist=$(echo "$meta" | sed -nr '/xesam:artist"/,+2s/^ +string "(.*)"$/\1/p' | tail -1  | sed 's/\&/\\&/g' | sed 's#\/#\\/#g')
   album=$(echo "$meta" | sed -nr '/xesam:album"/,+2s/^ +variant +string "(.*)"$/\1/p' | tail -1| sed 's/\&/\\&/g'| sed 's#\/#\\/#g')
   title=$(echo "$meta" | sed -nr '/xesam:title"/,+2s/^ +variant +string "(.*)"$/\1/p' | tail -1 | sed 's/\&/\\&/g'| sed 's#\/#\\/#g')
+  fi
    
-echo " ${*:-%artist% - %title%} " | sed "s/%artist%/$artist/g;s/%title%/$title/g;s/%album%/$album/g"i | sed "s/\&/\&/g" | sed "s#\/#\/#g"
+echo "${*:-%artist% - %title%}" | sed "s/%artist%/$artist/g;s/%title%/$title/g;s/%album%/$album/g"i | sed "s/\&/\&/g" | sed "s#\/#\/#g"
 }
 
 # Sends an MPRIS command (PlayPause, Next, Previous) to spotify
@@ -39,4 +60,6 @@ case $BLOCK_BUTTON in
 	6) "$TERMINAL" -e "$EDITOR" "$0" ;;
 esac
 
-main "$@"
+track=$(main "$@")
+[ -n "$track" ] && sb_seg "$COLOR_SPOTIFY" "$ICON_SPOTIFY" "$track"
+sb_print

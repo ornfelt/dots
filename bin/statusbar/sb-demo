@@ -1,0 +1,170 @@
+#!/usr/bin/env bash
+# Cycles every status bar module through random variants of what it can show
+# (every battery level, mute, wifi / ethernet states, temperatures, dates,
+# usage levels, ...), all at the same time every few seconds, in whichever
+# bars run: dwmblocks / dwmblocksc / dwmblocksr (dwm, dwmc, dwmr) and awesome.
+# Handy to check the look of every icon, gap and separator.
+#
+# Every module is shown, the hidden sysinfo ones (net, mem, cpu) and spotify
+# without spotify running too. Each tick draws a new random seed; the scripts
+# (see sb-lib) pick their variant from it, so a block that runs again on its
+# own interval shows the same variant until the next tick. Ctrl-C (or
+# --stop) ends the demo and brings the real values back.
+#
+# Usage examples:
+# a new variant every 3 seconds, until Ctrl-C:
+#	sb-demo
+# every second:
+#	sb-demo 1
+#	sb-demo --interval 1
+# 10 ticks, 5 seconds apart, then stop:
+#	sb-demo -i 5 -n 10
+# stop a demo running in another terminal:
+#	sb-demo --stop
+# print the commands one tick runs instead of running the demo:
+#	sb-demo --show-cmd
+
+RESET='\033[0m'
+RED='\033[31m'
+GREEN='\033[32m'
+YELLOW='\033[33m'
+CYAN='\033[36m'
+MAGENTA='\033[35m'
+DARKGRAY='\033[90m'
+
+write_ok()      { echo -e "${GREEN}${1}${RESET}"; }
+write_err()     { echo -e "${RED}${1}${RESET}" >&2; }
+write_warn()    { echo -e "${YELLOW}${1}${RESET}"; }
+write_info()    { echo -e "${CYAN}${1}${RESET}"; }
+write_info_alt(){ echo -e "${MAGENTA}${1}${RESET}"; }
+write_dim()     { echo -e "${DARKGRAY}${1}${RESET}"; }
+
+DEFAULT_INTERVAL=3
+DEMO_DIR="${XDG_RUNTIME_DIR:-/tmp}/sb-demo"
+BARS="dwmblocks dwmblocksc dwmblocksr"
+SEED_MAX=2147483647
+
+usage() {
+	sed -n '/^# Usage examples:/,/^$/p' "$0" | sed 's/^#\t\{0,1\}//'
+}
+
+interval=$DEFAULT_INTERVAL
+ticks=0
+stop=
+show_cmd=
+while [ $# -gt 0 ]; do
+	case $1 in
+		-i|--interval) interval=$2; shift ;;
+		-n|--ticks) ticks=$2; shift ;;
+		--stop) stop=1 ;;
+		--show-cmd) show_cmd=1 ;;
+		-h|--help) usage; exit 0 ;;
+		[0-9]*) interval=$1 ;;
+		*) write_err "unknown argument: $1"; usage >&2; exit 1 ;;
+	esac
+	shift
+done
+case $interval in
+	''|*[!0-9.]*|.|*.*.*) write_err "the interval must be a number of seconds: $interval"; exit 1 ;;
+esac
+case $ticks in
+	''|*[!0-9]*) write_err "the number of ticks must be a whole number: $ticks"; exit 1 ;;
+esac
+
+# pid of a demo that runs, if any
+running_pid() {
+	local pid
+	read -r pid 2>/dev/null < "$DEMO_DIR/pid" && kill -0 "$pid" 2>/dev/null && echo "$pid"
+}
+
+# The update signals of a bar's blocks, from its config (a signal that no
+# block has would be ignored, but there is no need to send it)
+bar_signals() {
+	case $1 in
+		dwmblocks) awk -F, '/^[ \t]*\{"/ { gsub(/[^0-9]/, "", $4); if ($4 > 0) print $4 }' ~/.config/dwmblocks/blocks.h ;;
+		dwmblocksc) awk -F, '/^[ \t]*\{"/ { gsub(/[^0-9]/, "", $4); if ($4 > 0) print $4 }' ~/.config/dwmblocksc/blocks.h ;;
+		dwmblocksr) grep -v '^[[:space:]]*#' ~/.config/dwmblocksr/config.toml | grep -o 'signal *= *[0-9]*' | grep -o '[0-9]*$' | awk '$1 > 0' ;;
+	esac | sort -un
+}
+
+# The commands that update every module of the bars that run, one per line
+refresh_cmds() {
+	local bar s
+	for bar in $BARS; do
+		pgrep -x "$bar" >/dev/null || continue
+		for s in $(bar_signals "$bar"); do
+			echo "pkill -RTMIN+$s -x $bar"
+		done
+	done
+	pgrep -x awesome >/dev/null && echo "awesome-client 'sb_refresh_all()' >/dev/null"
+}
+
+refresh() {
+	local cmd
+	while IFS= read -r cmd; do
+		eval "$cmd"
+	done < <(refresh_cmds)
+}
+
+new_seed() {
+	echo $(( $(od -An -N4 -tu4 /dev/urandom) % SEED_MAX + 1 ))
+}
+
+if [ -n "$stop" ]; then
+	pid=$(running_pid)
+	if [ -z "$pid" ]; then
+		write_warn "no demo is running"
+		exit 0
+	fi
+	kill "$pid" && write_ok "stopped the demo (pid $pid)"
+	exit 0
+fi
+
+if [ -n "$show_cmd" ]; then
+	echo "# sb-demo -i $interval$( [ "$ticks" -gt 0 ] && echo " -n $ticks"): one tick, repeated every $interval seconds"
+	echo "mkdir -p '$DEMO_DIR' && echo \$\$ > '$DEMO_DIR/pid'"
+	echo "echo $(new_seed) > '$DEMO_DIR/seed'"
+	cmds=$(refresh_cmds)
+	[ -n "$cmds" ] && echo "$cmds" || echo "# (no status bar runs)"
+	echo "sleep $interval"
+	echo "# at the end: rm -rf '$DEMO_DIR', then the same refresh commands"
+	exit 0
+fi
+
+pid=$(running_pid)
+if [ -n "$pid" ]; then
+	write_err "a demo already runs (pid $pid); stop it with: ${0##*/} --stop"
+	exit 1
+fi
+
+bars=$(for bar in $BARS awesome; do pgrep -x "$bar" >/dev/null && printf '%s ' "$bar"; done)
+if [ -z "$bars" ]; then
+	write_err "no status bar runs ($BARS awesome)"
+	exit 1
+fi
+
+finish() {
+	trap - EXIT INT TERM
+	rm -rf "$DEMO_DIR"
+	refresh
+	echo
+	write_ok "demo stopped, the bars show the real values again"
+	exit 0
+}
+
+mkdir -p "$DEMO_DIR"
+echo $$ > "$DEMO_DIR/pid"
+trap finish EXIT INT TERM
+
+write_info "demo in: ${bars% }"
+write_info_alt "a new variant every $interval s$( [ "$ticks" -gt 0 ] && echo ", $ticks ticks"), Ctrl-C stops"
+n=0
+while [ "$ticks" = 0 ] || [ "$n" -lt "$ticks" ]; do
+	n=$((n + 1))
+	seed=$(new_seed)
+	echo "$seed" > "$DEMO_DIR/seed.tmp" && mv "$DEMO_DIR/seed.tmp" "$DEMO_DIR/seed"
+	refresh
+	write_dim "tick $n (seed $seed)"
+	# in the background, so Ctrl-C / --stop end the demo at once
+	sleep "$interval" & wait $!
+done

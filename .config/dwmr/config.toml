@@ -28,9 +28,11 @@ swallowfloating = false # true means swallow floating windows by default
 showbar = true        # false means no bar
 topbar = true         # false means bottom bar
 focusonwheel = false  # false allows the user to scroll window without changing focus
-fonts = ["JetBrainsMono Nerd Font:size=11:style=bold"]
+# Propo: the icons are as wide as they are drawn, so one gap after an icon
+# looks the same for every icon (see ~/.local/bin/statusbar/sb-theme)
+fonts = ["JetBrainsMono Nerd Font Propo:size=11:style=bold"]
 # bigger font for status text between ^B^ and ^N^, e.g. a block's icon; [] for none
-statusbigfonts = ["JetBrainsMono Nerd Font:size=15:style=bold"]
+statusbigfonts = ["JetBrainsMono Nerd Font Propo:size=15:style=bold"]
 #              fg         bg         border
 colors.norm = ["#ebdbb2", "#282828", "#282828"]
 colors.sel  = ["#ebdbb2", "#282828", "#ebdbb2"]
@@ -171,7 +173,8 @@ statusbar = "dwmblocksr"
 
 # the command dwmr runs once at startup, after the existing windows have been
 # taken over; here it (re)starts the status bar. [] runs none
-autostart = ["sh", "-c", "killall -q dwmblocksr; dwmblocksr &"]
+# sb-start passes the separator from sb-theme (SB_SEP) to the bar
+autostart = ["sh", "-c", "~/.local/bin/statusbar/sb-start dwmblocksr &"]
 
 # There is no quit binding: mod-shift-e and mod-shift-q open the power menu (sysmenu.sh), which exits.
 keys = [

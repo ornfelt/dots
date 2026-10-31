@@ -18,8 +18,10 @@ local theme                                     = {}
 theme.confdir                                   = os.getenv("HOME") .. "/.config/awesome/themes/multicolor"
 --theme.wallpaper                                 = theme.confdir .. "/wall.png"
 --theme.font                                      = "JetBrainsMono Nerd Font 11"
-theme.font                                      = "JetBrainsMono Nerd Font Bold 11"
-theme.taglist_font                              = "JetBrainsMono Nerd Font Bold 11"
+-- Propo: the icons are as wide as they are drawn, so one gap after an icon
+-- looks the same for every icon (see ~/.local/bin/statusbar/sb-theme)
+theme.font                                      = "JetBrainsMono Nerd Font Propo Bold 11"
+theme.taglist_font                              = "JetBrainsMono Nerd Font Propo Bold 11"
 theme.menu_bg_normal                            = "#282828"
 theme.menu_bg_focus                             = "#282828"
 theme.bg_normal                                 = "#282828"
@@ -132,91 +134,142 @@ theme.wallpaper = get_random_wallpaper(os.getenv("HOME") .. "/Pictures/Wallpaper
 
 local markup = lain.util.markup
 
--- Textclock
-os.setlocale(os.getenv("LANG")) -- to localize the clock
---local clockicon = wibox.widget.imagebox(theme.widget_clock)
-local clockicon = wibox.widget {
-    widget = wibox.widget.textbox,
-    markup = markup.fontfg(theme.font, "#8ec07c", "󰥔 "),
-    align = "center",
-    valign = "center"
-}
+-- Status modules, like dwm's blocks: each one runs its statusbar script, the
+-- same as dwmblocks / dwmblocksc / dwmblocksr, with SB_BAR=awesome and shows
+-- what it prints. The icons, colours, the gap after an icon (SB_GAP), the
+-- separator between the visible modules (SB_SEP) and the room after the last
+-- one (SB_EDGE) all come from ~/.local/bin/statusbar/sb-theme, so both bars
+-- look the same and are changed in one place. A click runs the script with
+-- BLOCK_BUTTON set, then updates the module, like dwm's clickable blocks.
+-- sb-demo cycles every module through its variants (sb_refresh_all below).
+local statusbar_dir = os.getenv("HOME") .. "/.local/bin/statusbar/"
+local sb_demo_seed = (os.getenv("XDG_RUNTIME_DIR") or "/tmp") .. "/sb-demo/seed"
 
---local mytextclock = wibox.widget.textclock(markup("#7788af", "%A %d %B ") .. markup("#ab7367", ">") .. markup("#de5e1e", " %H:%M "))
+-- NAME='value' lines of sb-theme (the sh scripts source it)
+local function read_sb_theme(path)
+    local t = {}
+    local f = io.open(path, "r")
+    if not f then return t end
+    for line in f:lines() do
+        local k, v = line:match("^%s*([%w_]+)='([^']*)'")
+        if k then t[k] = v end
+    end
+    f:close()
+    return t
+end
 
---local mytextclock = wibox.widget.textclock(markup("#8ec07c", "%A %d %B ") .. markup("#8ec07c", "—") .. markup("#8ec07c", " %H:%M "))
---mytextclock.font = theme.font
+local sb = read_sb_theme(statusbar_dir .. "sb-theme")
+local SB_GAP  = sb.SB_GAP or " "
+local SB_SEP  = sb.SB_SEP or "  "
+local SB_EDGE = sb.SB_EDGE or ""
 
-local mytextclock = wibox.widget {
-    widget = wibox.widget.textbox,
-    markup = markup.fontfg(theme.font, "#8ec07c", "Loading..."),
-    align = "center",
-    valign = "center",
-}
+-- True while sb-demo runs
+local function sb_demo_active()
+    local f = io.open(sb_demo_seed, "r")
+    if f then f:close() end
+    return f ~= nil
+end
 
--- Define a function to log clock updates
-local function log_clock_update(message)
-    local log_file = "/home/jonas/awesome_clock_update.log"
-    local log_entry = os.date("%Y-%m-%d %H:%M:%S") .. " - " .. message .. "\n"
+-- Markup for the "colour<TAB>icon<TAB>value" lines a script prints
+local function sb_markup(out)
+    local parts = {}
+    for line in out:gmatch("[^\n]+") do
+        local color, icon, value = line:match("^([^\t]*)\t([^\t]*)\t(.*)$")
+        if color then
+            local text = (icon ~= "" and value ~= "") and (icon .. SB_GAP .. value) or (icon .. value)
+            parts[#parts + 1] = markup.fg.color(color ~= "" and color or theme.fg_normal, gears.string.xml_escape(text))
+        end
+    end
+    return table.concat(parts, SB_GAP)
+end
 
-    local file = io.open(log_file, "a")
-    if file then
-        file:write(log_entry)
-        file:close()
-    else
-        print("Failed to open log file for writing: " .. log_file)
+-- The bar row: SB_SEP before each visible widget but the first, SB_EDGE at the end
+local sb_row = wibox.layout.fixed.horizontal()
+local sb_entries = {}
+
+local function sb_update_separators()
+    local seen = false
+    for _, e in ipairs(sb_entries) do
+        e.sep.visible = seen and e.widget.visible
+        seen = seen or e.widget.visible
     end
 end
 
--- Define a function to update the clock widget
-local function update_clock_widget()
-    local script_path = "/home/jonas/.local/bin/statusbar/sb-clock"
-
-    awful.spawn.easy_async_with_shell(script_path, function(stdout, stderr)
-        if stderr and #stderr > 0 then
-            mytextclock:set_markup(markup.fontfg(theme.font, "#fb4934", "Error"))
-            --log_clock_update("Error: " .. stderr)
-            return
-        end
-
-        local output = stdout:gsub("^%s*(.-)%s*$", "%1") -- Trim whitespace
-        mytextclock:set_markup(markup.fontfg(theme.font, "#8ec07c", output .. " "))
-        --log_clock_update("Clock output updated: " .. output)
-    end)
+local function sb_add(widget)
+    local sep = wibox.widget { widget = wibox.widget.textbox, font = theme.font, text = SB_SEP, visible = false }
+    sb_row:add(sep)
+    sb_row:add(widget)
+    sb_entries[#sb_entries + 1] = { widget = widget, sep = sep }
+    sb_update_separators()
 end
 
--- Create a timer to update the clock widget every 30 seconds
-gears.timer({
-    timeout = 30,
-    autostart = true,
-    callback = update_clock_widget,
-})
+local sb_modules = {}
+local SB_BUTTONS = { 1, 2, 3, 4, 5 }
 
-update_clock_widget()
+-- A module for a script, updated every `interval` seconds. buttons = false
+-- leaves the clicks to someone else (the clock's calendar).
+local function sb_module(script, interval, buttons)
+    local m = { hidden = false, has_text = false }
+    local cmd = "SB_BAR=awesome " .. script
+    m.widget = wibox.widget { widget = wibox.widget.textbox, font = theme.font, align = "center", valign = "center", visible = false }
+    -- hidden (mod-ctrl-p) modules are shown during sb-demo
+    function m.refresh_visibility()
+        m.widget.visible = m.has_text and (not m.hidden or sb_demo_active())
+    end
+    function m.update()
+        awful.spawn.easy_async_with_shell(cmd, function(stdout)
+            m.has_text = stdout:find("%S") ~= nil
+            m.widget:set_markup(sb_markup(stdout))
+            m.refresh_visibility()
+            sb_update_separators()
+        end)
+    end
+    if buttons ~= false then
+        local list = {}
+        for _, button in ipairs(SB_BUTTONS) do
+            list[#list + 1] = awful.button({}, button, function()
+                awful.spawn.easy_async_with_shell("BLOCK_BUTTON=" .. button .. " " .. cmd, function() m.update() end)
+            end)
+        end
+        m.widget:buttons(my_table.join(table.unpack(list)))
+    end
+    gears.timer({ timeout = interval, autostart = true, call_now = true, callback = m.update })
+    sb_modules[#sb_modules + 1] = m
+    return m
+end
+
+-- Spotify: the track, clicks: notification, play/pause, previous/next
+local sb_spotify = sb_module(os.getenv("HOME") .. "/.local/bin/my_scripts/spotify_dwmblocks.sh", 5)
+-- net down/up, memory and cpu, shown/hidden with mod-ctrl-p; left click: details
+local sb_net     = sb_module(statusbar_dir .. "sb-sysinfo net", 2)
+local sb_mem     = sb_module(statusbar_dir .. "sb-sysinfo mem", 2)
+local sb_cpu     = sb_module(statusbar_dir .. "sb-sysinfo cpu", 2)
+-- Network: a wifi or ethernet icon, cyan online, red offline, orange while
+-- restarting NetworkManager, gray unknown. Left click: details, middle:
+-- restart NetworkManager, right: wifi menu (wifi_menu.sh)
+local sb_network = sb_module(statusbar_dir .. "sb-network", 3)
+-- Weather, cpu temperature, volume, battery: left click a notification
+-- (forecast, sensors and top processes, acpi) or mute, scroll the volume,
+-- right click an update
+local sb_weather = sb_module(statusbar_dir .. "weather", 600)
+local sb_temp    = sb_module(statusbar_dir .. "cputemp", 5)
+local sb_volume  = sb_module(statusbar_dir .. "sb-volume", 5)
+local sb_battery = sb_module(statusbar_dir .. "sb-battery", 5)
+-- Clock, with lain's calendar on hover and its clicks
+local sb_clock   = sb_module(statusbar_dir .. "sb-clock", 30, false)
+
+-- rc.lua's volume keys update the widget with beautiful.volume.update()
+theme.volume = { widget = sb_volume.widget, update = sb_volume.update }
 
 -- Calendar
 theme.cal = lain.widget.cal({
-    attach_to = { mytextclock },
+    attach_to = { sb_clock.widget },
     notification_preset = {
         font = "Terminus 10",
         fg   = theme.fg_normal,
         bg   = theme.bg_normal
     }
 })
-
--- Weather
---local weathericon = wibox.widget.imagebox(theme.widget_weather)
-
-local gruvbox_blue = "#458588"
-local gruvbox_red = "#cc241d"
-local default_color = "#ebdbb2"
-
-local weathericon = wibox.widget {
-    widget = wibox.widget.textbox,
-    markup = markup.fontfg(theme.font, default_color, "   "),
-    align = "center",
-    valign = "center"
-}
 
 --theme.weather = lain.widget.weather({
 --    city_id = 2673730,
@@ -252,68 +305,6 @@ local weathericon = wibox.widget {
 --    end
 --})
 
-local weather_widget = wibox.widget {
-    widget = wibox.widget.textbox,
-    markup = markup.fontfg(theme.font, default_color, "Loading..."),
-    align = "center",
-    valign = "center",
-}
-
-local function log_weather_update(message)
-    local log_file = "/home/jonas/awesome_weather_update.log"
-    local log_entry = os.date("%Y-%m-%d %H:%M:%S") .. " - " .. message .. "\n"
-
-    local file = io.open(log_file, "a")
-    if file then
-        file:write(log_entry)
-        file:close()
-    else
-        print("Failed to open log file for writing: " .. log_file)
-    end
-end
-
-local function update_weather_widget()
-    local script_path = "~/.local/bin/statusbar/weather"
-
-    awful.spawn.easy_async_with_shell(script_path, function(stdout, stderr)
-        if stderr and #stderr > 0 then
-            weather_widget:set_markup(markup.fontfg(theme.font, default_color, "Error"))
-            weathericon:set_markup(markup.fontfg(theme.font, default_color, "  "))
-            return
-        end
-
-        local output = stdout:gsub("^%s*(.-)%s*$", "%1") -- Trim whitespace
-        local units = tonumber(output:match("%-?%d+")) -- Extract numeric temperature
-        local color
-
-        if units then
-            if units < 0 then
-                color = gruvbox_blue
-            elseif units > 20 then
-                color = gruvbox_red
-            else
-                color = default_color
-            end
-            weather_widget:set_markup(markup.fontfg(theme.font, color, output))
-            weathericon:set_markup(markup.fontfg(theme.font, color, "  "))
-        else
-            weather_widget:set_markup(markup.fontfg(theme.font, default_color, output))
-            weathericon:set_markup(markup.fontfg(theme.font, default_color, "  "))
-        end
-
-        local log_message = "Weather output updated: " .. output
-        --log_weather_update(log_message)
-    end)
-end
-
-gears.timer({
-    timeout = 600,
-    autostart = true,
-    callback = update_weather_widget,
-})
-
-update_weather_widget()
-
 -- / fs
 --[[ commented because it needs Gio/Glib >= 2.54
 local fsicon = wibox.widget.imagebox(theme.widget_fs)
@@ -348,219 +339,6 @@ theme.mail = lain.widget.imap({
 })
 --]]
 
--- CPU
---local cpuicon = wibox.widget.imagebox(theme.widget_cpu)
-
-local cpuicon = wibox.widget {
-    widget = wibox.widget.textbox,
-    markup = markup.fontfg(theme.font, "#b16286", "  "),
-    align = "center",
-    valign = "center"
-}
-
-local cpu = lain.widget.cpu({
-    settings = function()
-        --widget:set_markup(markup.fontfg(theme.font, "#e33a6e", cpu_now.usage .. "% "))
-        widget:set_markup(markup.fontfg(theme.font, "#b16286", cpu_now.usage .. "% "))
-    end
-})
-
--- Coretemp
---local tempicon = wibox.widget.imagebox(theme.widget_temp)
-local tempicon = wibox.widget {
-    widget = wibox.widget.textbox,
-    markup = markup.fontfg(theme.font, "#d79921", "  "),
-    align = "center",
-    valign = "center"
-}
-local temp = lain.widget.temp({
-    settings = function()
-        --widget:set_markup(markup.fontfg(theme.font, "#f1af5f", coretemp_now .. "°C "))
-        widget:set_markup(markup.fontfg(theme.font, "#d79921", coretemp_now .. "°C "))
-    end
-})
-
--- Battery
---local baticon = wibox.widget.imagebox(theme.widget_batt)
-local baticon = wibox.widget {
-    widget = wibox.widget.textbox,
-    markup = markup.fontfg(theme.font, "#d3869b", "  "),
-    align = "center",
-    valign = "center"
-}
---local bat = lain.widget.bat({
---    settings = function()
---        local perc = bat_now.perc ~= "N/A" and bat_now.perc .. "%" or bat_now.perc
---
---        if bat_now.ac_status == 1 then
---            perc = perc .. " plug"
---        end
---
---        --widget:set_markup(markup.fontfg(theme.font, theme.fg_normal, perc .. " "))
---        widget:set_markup(markup.fontfg(theme.font, "#d3869b", perc .. " "))
---    end
---})
-local bat = lain.widget.bat({
-    settings = function()
-        local perc = bat_now.perc ~= "N/A" and tonumber(bat_now.perc) or nil
-        local icon = " "
-
-        if bat_now.ac_status == 1 then
-            icon = "󰂄"
-        elseif perc then
-            -- Icons based on percentage
-            if perc >= 80 then
-                icon = " "
-            elseif perc >= 60 then
-                icon = " "
-            elseif perc >= 40 then
-                icon = " "
-            elseif perc >= 20 then
-                icon = " "
-            else
-                icon = " "
-            end
-        end
-
-        baticon:set_markup(markup.fontfg(theme.font, "#d3869b", " " .. icon .. " "))
-        widget:set_markup(markup.fontfg(theme.font, "#d3869b", (perc or "100") .. "%  "))
-    end
-})
-
--- ALSA volume
---local volicon = wibox.widget.imagebox(theme.widget_vol)
-local volicon = wibox.widget {
-    widget = wibox.widget.textbox,
-    markup = markup.fontfg(theme.font, "#83a598", " 󰕾 "),
-    align = "center",
-    valign = "center"
-}
-theme.volume = lain.widget.alsa({
-    settings = function()
-        --if volume_now.status == "off" then
-        --  volume_now.level = volume_now.level .. "M"
-        --end
-        if volume_now.status == "off" then
-            volicon:set_markup(markup.fontfg(theme.font, "#83a598", " 󰖁 "))
-        else
-            volicon:set_markup(markup.fontfg(theme.font, "#83a598", " 󰕾 "))
-        end
-
-        widget:set_markup(markup.fontfg(theme.font, "#83a598", volume_now.level .. "% "))
-    end
-})
-
--- Clicks on the status widgets, like dwm's clickable blocks: the block's
--- statusbar script runs with BLOCK_BUTTON set, so both bars do the same.
--- on_done, if given, updates the widget once the script is done.
-local statusbar_dir = os.getenv("HOME") .. "/.local/bin/statusbar/"
-
-local function block_click(script, button, on_done)
-    return awful.button({}, button, function()
-        awful.spawn.easy_async_with_shell("BLOCK_BUTTON=" .. button .. " " .. statusbar_dir .. script,
-            function() if on_done then on_done() end end)
-    end)
-end
-
-local function set_buttons(widgets, buttons)
-    for _, w in ipairs(widgets) do
-        w:buttons(buttons)
-    end
-end
-
--- left click: mute, scroll: volume -/+ 1%
-set_buttons({ volicon, theme.volume.widget }, my_table.join(
-    block_click("sb-volume", 1, theme.volume.update),
-    block_click("sb-volume", 4, theme.volume.update),
-    block_click("sb-volume", 5, theme.volume.update)))
--- left click: notification (forecast, sensors and top processes, acpi),
--- right click: update the widget
-set_buttons({ weathericon, weather_widget }, my_table.join(
-    block_click("weather", 1),
-    awful.button({}, 3, update_weather_widget)))
-set_buttons({ tempicon, temp.widget }, my_table.join(
-    block_click("cputemp", 1),
-    awful.button({}, 3, temp.update)))
-set_buttons({ baticon, bat.widget }, my_table.join(
-    block_click("sb-battery", 1),
-    awful.button({}, 3, bat.update)))
-
--- Net
---local netdownicon = wibox.widget.imagebox(theme.widget_netdown)
-local netdowninfo = wibox.widget.textbox()
---local netupicon = wibox.widget.imagebox(theme.widget_netup)
-local netupinfo = lain.widget.net({
-    settings = function()
-        --if iface ~= "network off" and
-        --   string.match(theme.weather.widget.text, "N/A")
-        --then
-        --    theme.weather.update()
-        --end
-        --theme.weather.update()
-
-        --widget:set_markup(markup.fontfg(theme.font, "#e54c62", net_now.sent .. " "))
-        --netdowninfo:set_markup(markup.fontfg(theme.font, "#87af5f", net_now.received .. " "))
-        widget:set_markup(markup.fontfg(theme.font, "#689d6a", net_now.sent .. " "))
-        netdowninfo:set_markup(markup.fontfg(theme.font, "#b8bb26", net_now.received .. " "))
-    end
-})
-
-local netupicon = wibox.widget {
-    widget = wibox.widget.textbox,
-    markup = markup.fontfg(theme.font, "#689d6a", " "),
-    align = "center",
-    valign = "center"
-}
-
-local netdownicon = wibox.widget {
-    widget = wibox.widget.textbox,
-    markup = markup.fontfg(theme.font, "#b8bb26", "  "),
-    align = "center",
-    valign = "center"
-}
-
--- MEM
---local memicon = wibox.widget.imagebox(theme.widget_mem)
-local memicon = wibox.widget {
-    widget = wibox.widget.textbox,
-    markup = markup.fontfg(theme.font, "#fabd2f", "  "),
-    align = "center",
-    valign = "center"
-}
-
-local memory = lain.widget.mem({
-    settings = function()
-        --widget:set_markup(markup.fontfg(theme.font, "#e0da37", mem_now.used .. "M "))
-        widget:set_markup(markup.fontfg(theme.font, "#fabd2f", mem_now.used .. "M "))
-    end
-})
-
--- left click: notification with details (interfaces, top memory and cpu
--- processes), from dwm's sb-sysinfo blocks
-set_buttons({ netdownicon, netdowninfo, netupicon, netupinfo.widget },
-    my_table.join(block_click("sb-sysinfo net", 1)))
-set_buttons({ memicon, memory.widget }, my_table.join(block_click("sb-sysinfo mem", 1)))
-set_buttons({ cpuicon, cpu.widget }, my_table.join(block_click("sb-sysinfo cpu", 1)))
-
--- Network, like dwm's sb-network block: a wifi or ethernet icon, cyan online,
--- red offline, orange while restarting NetworkManager, gray unknown. Always
--- shown (not one of the mod-ctrl-p widgets). Left click: details, middle:
--- restart NetworkManager, right: wifi menu (wifi_menu.sh)
-local netstatus = wibox.widget.textbox()
-local function update_netstatus()
-    awful.spawn.easy_async({ statusbar_dir .. "sb-network", "--awesome" }, function(out)
-        local color, icon = out:match("^(#%x+) (.-)%s*$")
-        if not color then color, icon = "#928374", "\u{f05aa}" end
-        -- the leading space matches dwmblocks' delimiter after the cpu block
-        netstatus:set_markup(markup.fontfg(theme.font, color, " " .. icon .. " "))
-    end)
-end
-gears.timer({ timeout = 3, autostart = true, call_now = true, callback = update_netstatus })
-set_buttons({ netstatus }, my_table.join(
-    block_click("sb-network", 1, update_netstatus),
-    block_click("sb-network", 2, update_netstatus),
-    block_click("sb-network", 3, update_netstatus)))
-
 -- MPD
 local mpdicon = wibox.widget.imagebox()
 theme.mpd = lain.widget.mpd({
@@ -589,20 +367,8 @@ theme.mpd = lain.widget.mpd({
     end
 })
 
-local spotify_widget = require("lain.widget.spotify-widget.spotify")
-
-local custom_spotify_widget = spotify_widget({
-    font = theme.font,
-    dim_when_paused = true,
-    dim_opacity = 0.5,
-    max_length = -1,
-})
-
- -- Spotify widget with left, right, top, bottom margins
-local spotify_widget_with_margin = wibox.container.margin(custom_spotify_widget, 0, 3, 0, 0)
-
 -- Claude Code usage (claude_usage/)
-local claude_orange = "#D97757"
+local claude_orange = sb.COLOR_CLAUDE or "#D97757"
 
 -- Show the extra-usage amount (the " +30.19€" tail) in the bar. The popup still
 -- reports the spend either way.
@@ -672,8 +438,8 @@ claude_usage = require("claude_usage").new({
         normal = claude_orange,
         icon   = claude_orange,
         warn   = claude_orange,  -- same as normal, so the text always matches the icon
-        crit   = "#C8442E",
-        error  = "#9C9A93",
+        crit   = sb.COLOR_CLAUDE_CRIT,
+        error  = sb.COLOR_CLAUDE_ERROR,
     },
 
     popup_placement = function(d)
@@ -684,7 +450,60 @@ claude_usage = require("claude_usage").new({
         end
     end,
 })
-local claude_usage_with_margin = wibox.container.margin(claude_usage, 0, 6, 0, 0)
+
+-- sb-demo: the text shows sb-claude's made-up usage (the same formatting as
+-- the widget's) and the widget's own updates wait until the demo ends
+local claude_textbox = claude_usage.textbox
+local claude_set_markup = claude_textbox.set_markup
+local claude_real_markup
+local claude_in_demo = false
+rawset(claude_textbox, "set_markup", function(self, text)
+    claude_real_markup = text
+    if not claude_in_demo then
+        return claude_set_markup(self, text)
+    end
+    return true
+end)
+
+local function claude_demo_update()
+    if sb_demo_active() then
+        awful.spawn.easy_async_with_shell("SB_BAR=awesome " .. statusbar_dir .. "sb-claude", function(out)
+            local color, _, text = out:match("^([^\t]*)\t([^\t]*)\t([^\n]*)")
+            if color then
+                claude_in_demo = true
+                claude_set_markup(claude_textbox, markup.fg.color(color, gears.string.xml_escape(text)))
+            end
+        end)
+    elseif claude_in_demo then
+        claude_in_demo = false
+        if claude_real_markup then
+            claude_set_markup(claude_textbox, claude_real_markup)
+        end
+    end
+end
+
+-- The bar row, in dwm's order
+sb_add(sb_spotify.widget)
+sb_add(claude_usage)
+sb_add(sb_net.widget)
+sb_add(sb_mem.widget)
+sb_add(sb_cpu.widget)
+sb_add(sb_network.widget)
+sb_add(sb_weather.widget)
+sb_add(sb_temp.widget)
+sb_add(sb_volume.widget)
+sb_add(sb_battery.widget)
+sb_add(sb_clock.widget)
+sb_row:add(wibox.widget { widget = wibox.widget.textbox, font = theme.font, text = SB_EDGE })
+
+-- Updates every module at once (sb-demo calls it through awesome-client on
+-- every tick and once more at the end)
+function sb_refresh_all()
+    for _, m in ipairs(sb_modules) do
+        m.update()
+    end
+    claude_demo_update()
+end
 
 local function update_txt_layoutbox(s)
     -- Writes a string representation of the current layout in a textbox widget,
@@ -749,27 +568,24 @@ local function write_config(key, value)
 end
 
 local widgets_to_toggle = {
-  netdownicon,
-  netdowninfo,
-  netupicon,
-  netupinfo.widget,
-  memicon,
-  memory.widget,
-  cpuicon,
-  cpu.widget,
+  sb_net,
+  sb_mem,
+  sb_cpu,
 }
 
 local function set_widget_visibility(visible)
-  for _, widget in ipairs(widgets_to_toggle) do
-    widget.visible = visible
+  for _, m in ipairs(widgets_to_toggle) do
+    m.hidden = not visible
+    m.refresh_visibility()
   end
+  sb_update_separators()
 end
 
 -- Shows/hides the widgets and saves it as awsm_bar_toggled (true is hidden).
 -- The saved state is the new visibility, not the file's value flipped, so the
 -- two cannot drift apart.
 function toggle_widget_visibility()
-  local hide = netdownicon.visible
+  local hide = not sb_net.hidden
   set_widget_visibility(not hide)
   write_config("awsm_bar_toggled", tostring(hide))
 end
@@ -909,30 +725,12 @@ function theme.at_screen_connect(s)
             --    dim_opacity = 0.5,
             --    max_length = -1,
             --}),
-            spotify_widget_with_margin,
-            claude_usage_with_margin,
-            netdownicon,
-            netdowninfo,
-            netupicon,
-            netupinfo.widget,
-            memicon,
-            memory.widget,
-            cpuicon,
-            cpu.widget,
             --fsicon,
             --theme.fs.widget,
-            netstatus,
-            weathericon,
             --theme.weather.widget,
-            weather_widget,
-            tempicon,
-            temp.widget,
-            volicon,
-            theme.volume.widget,
-            baticon,
-            bat.widget,
-            clockicon,
-            mytextclock,
+            -- spotify, claude, net, mem, cpu, network, weather, temp,
+            -- volume, battery, clock, with the separators (see sb_add)
+            sb_row,
         },
     }
 

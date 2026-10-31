@@ -25,7 +25,7 @@
         //"exec": "~/.config/hypr/scripts/tools/start_dyn",
 
         "format":"{}",
-        "exec": "~/.local/bin/my_scripts/spotify_dwmblocks.sh",
+        "exec": "SB_BAR=plain ~/.local/bin/my_scripts/spotify_dwmblocks.sh",
         "exec-if": "pgrep spotify",
         "interval": 1,
         "escape":true

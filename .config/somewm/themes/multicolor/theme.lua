@@ -178,7 +178,7 @@ end
 
 -- Define a function to update the clock widget
 local function update_clock_widget()
-    local script_path = "/home/jonas/.local/bin/statusbar/sb-clock"
+    local script_path = "SB_BAR=value /home/jonas/.local/bin/statusbar/sb-clock" -- values only, the theme draws the icon (see sb-lib)
 
     awful.spawn.easy_async_with_shell(script_path, function(stdout, stderr)
         if stderr and #stderr > 0 then
@@ -281,7 +281,7 @@ local function log_weather_update(message)
 end
 
 local function update_weather_widget()
-    local script_path = "~/.local/bin/statusbar/weather"
+    local script_path = "SB_BAR=value ~/.local/bin/statusbar/weather" -- values only, the theme draws the icon (see sb-lib)
 
     awful.spawn.easy_async_with_shell(script_path, function(stdout, stderr)
         if stderr and #stderr > 0 then

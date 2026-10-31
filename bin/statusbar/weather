@@ -1,6 +1,28 @@
 #!/usr/bin/bash
 #curl -sf "wttr.in/Nizhniy_Novgorod?format=1" | sed -r 's/^.{4}//' | tee "$HOME/.local/share/weatherreport" || exit 1 ; #this exit will only work if tee (or before my changes, sed with output redirection) returns anything other than zero, if curl ends with an error this exit will not be called
 
+SB_MODULE=weather
+. "$HOME/.local/bin/statusbar/sb-lib"
+
+# Colour of the temperature, like awesome's weather widget had it
+COLD_BELOW=0
+HOT_ABOVE=20
+
+# Prints the block for a weather report ("+5°", "-3°", "N/A"): the icon and
+# the report in a colour for the temperature
+show() {
+	local color=$COLOR_WEATHER
+	if [[ "$1" =~ (-?[0-9]+) ]]; then
+		if (( BASH_REMATCH[1] < COLD_BELOW )); then
+			color=$COLOR_WEATHER_COLD
+		elif (( BASH_REMATCH[1] > HOT_ABOVE )); then
+			color=$COLOR_WEATHER_HOT
+		fi
+	fi
+	sb_seg "$color" "$ICON_WEATHER" "$1"
+	sb_print
+}
+
 # Shows the current weather and a 3-day forecast for $CITY in a notification
 forecast() {
 	local data
@@ -28,6 +50,19 @@ case $BLOCK_BUTTON in
 	6) "$TERMINAL" -e "$EDITOR" "$0" ;;
 esac
 
+# Demo (sb-demo): a temperature from cold to hot as wttr.in gives it, now
+# and then no report at all
+if sb_demo; then
+	sb_pick 8
+	if [ "$SB_R" = 0 ]; then
+		show "N/A"
+	else
+		sb_range -25 35
+		if (( SB_R > 0 )); then show "+$SB_R°"; else show "$SB_R°"; fi
+	fi
+	exit 0
+fi
+
 WIFI_NAME=$(iwgetid -r | tr '[:upper:]' '[:lower:]')
 CITY="Stockholm" # Default
 
@@ -38,9 +73,9 @@ CACHE="$HOME/.local/share/weatherreport"
 if ! ip route get 1.1.1.1 >/dev/null 2>&1; then
     [ -n "$show_forecast" ] && notify-send --wait -h string:x-dunst-stack-tag:weather "Weather" "No network"
     if [[ -s "$CACHE" ]]; then
-        cat "$CACHE"
+        show "$(cat "$CACHE")"
     else
-        echo "N/A"
+        show "N/A"
     fi
     exit 0
 fi
@@ -76,7 +111,8 @@ validate_weather() {
 if validate_weather "$WEATHER_REPORT"; then
     #echo "$WEATHER_REPORT"
     #echo "$WEATHER_REPORT" > "$CACHE"
-    echo "$WEATHER_REPORT" | tee "$CACHE"
+    echo "$WEATHER_REPORT" > "$CACHE"
+    show "$WEATHER_REPORT"
     #echo "$CITY $WEATHER_REPORT" | tee "$CACHE"
 else
     #echo "USING FALLBACK"
@@ -86,10 +122,11 @@ else
     #python ~/.local/bin/statusbar/weather_py.py "$CITY" | tee "$CACHE"
     FALLBACK_OUTPUT=$(python ~/.local/bin/statusbar/weather_py.py "$CITY")
     if validate_weather "$FALLBACK_OUTPUT"; then
-        echo "$FALLBACK_OUTPUT" | tee "$CACHE"
+        echo "$FALLBACK_OUTPUT" > "$CACHE"
+        show "$FALLBACK_OUTPUT"
         #echo "$CITY $FALLBACK_OUTPUT" | tee "$CACHE"
     else
-        cat "$CACHE"
+        show "$(cat "$CACHE")"
     fi
 fi
 

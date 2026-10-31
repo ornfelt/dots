@@ -1868,7 +1868,8 @@ run(void)
 void
 runautostart(void)
 {
-    system("killall -q dwmblocks; dwmblocks &");
+    /* sb-start passes the separator from sb-theme (SB_SEP) to the bar */
+    system("~/.local/bin/statusbar/sb-start dwmblocks &");
 }
 
 void
