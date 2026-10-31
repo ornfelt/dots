@@ -371,7 +371,12 @@ alias .fr_cs="$HOME/.local/bin/my_scripts/2025/fr_cs.sh"
 alias .pkg="$HOME/.local/bin/my_scripts/2025/pkg.sh"
 alias .proc="$HOME/.local/bin/my_scripts/2025/proc.sh"
 alias .health_check="$HOME/Documents/my_notes/scripts/health_check.sh"
-alias .wow_wtf_update="$HOME/.local/bin/my_scripts/2025/wow_wtf_update.sh"
+# function instead of alias: the script's final cd only affects its own bash process
+.wow_wtf_update() {
+  "$HOME/.local/bin/my_scripts/2025/wow_wtf_update.sh" "$@" || return
+  local ver="${1:-wotlk}"
+  cd "${code_root_dir:-$HOME}/Code2/Wow/addons/wow_addons/${ver:l}/WTF"
+}
 alias .wow_wtf_fix="$HOME/.local/bin/my_scripts/2025/wow_wtf_fix.sh"
 alias .re3="$HOME/.local/bin/my_scripts/2025/run_re3.sh"
 alias .re3_vice="$HOME/.local/bin/my_scripts/2025/run_re3_vice.sh"
