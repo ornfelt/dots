@@ -41,7 +41,7 @@ debug=false
 
 while [[ $# -gt 0 ]]; do
   case "${1,,}" in
-    -h|--help) usage; exit 0 ;;
+    help|-h|--help) usage; exit 0 ;;
     -f|--from) from="${2:?--from needs an account}"; shift 2 ;;
     -t|--to) to="${2:?--to needs an account (comma separated for several)}"; shift 2 ;;
     -d|--wow-dir) wowRoot="${2:?--wow-dir needs a directory}"; shift 2 ;;

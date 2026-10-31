@@ -4,6 +4,20 @@ set -euo pipefail
 # Usage:
 # ./wow_wtf_update.sh tbc
 
+usage() {
+  cat <<'HELP'
+Copies the WoW install's WTF Account folder and Config.wtf (as <host>_Config.wtf) of that version
+($wow_dir / $wow_tbc_dir / $wow_classic_dir) into wow_addons
+(Code2/Wow/addons/wow_addons/<version>/WTF), replacing its Account folder.
+
+Usage: wow_wtf_update.sh [classic|tbc|wotlk]  (default: wotlk, case insensitive)
+       wow_wtf_update.sh help | --help | -h
+HELP
+}
+for arg in "$@"; do
+  case "${arg,,}" in help|--help|-h) usage; exit 0 ;; esac
+done
+
 # Set version from first argument or default to 'wotlk'
 ver="${1:-wotlk}"
 ver="${ver,,}"  # to lowercase

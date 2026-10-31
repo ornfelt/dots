@@ -374,6 +374,7 @@ alias .health_check="$HOME/Documents/my_notes/scripts/health_check.sh"
 # function instead of alias: the script's final cd only affects its own bash process
 .wow_wtf_update() {
   "$HOME/.local/bin/my_scripts/2025/wow_wtf_update.sh" "$@" || return
+  case "${1:l}" in help|--help|-h) return ;; esac
   local ver="${1:-wotlk}"
   cd "${code_root_dir:-$HOME}/Code2/Wow/addons/wow_addons/${ver:l}/WTF"
 }
