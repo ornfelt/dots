@@ -378,6 +378,7 @@ alias .health_check="$HOME/Documents/my_notes/scripts/health_check.sh"
   cd "${code_root_dir:-$HOME}/Code2/Wow/addons/wow_addons/${ver:l}/WTF"
 }
 alias .wow_wtf_fix="$HOME/.local/bin/my_scripts/2025/wow_wtf_fix.sh"
+alias .wow_wtf_sync="$HOME/.local/bin/my_scripts/2025/wow_wtf_sync.sh"
 alias .re3="$HOME/.local/bin/my_scripts/2025/run_re3.sh"
 alias .re3_vice="$HOME/.local/bin/my_scripts/2025/run_re3_vice.sh"
 alias .openjkdf2="$HOME/.local/bin/my_scripts/2025/run_openjkdf2.sh"
