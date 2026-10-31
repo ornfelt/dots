@@ -162,18 +162,36 @@ function M.bar_text(st, opts)
 		end
 		return glyph .. "--"
 	end
+	-- Windows left out of the bar: an empty 5 hour window ("5h --", e.g. a plan
+	-- without one) and a Fable limit at 0% (opts.hide_empty_five_hour /
+	-- opts.hide_zero_fable). The popup still lists them.
+	local function hidden(key, w)
+		if key == "five_hour" then
+			return opts.hide_empty_five_hour and pct_text(w) == "--"
+		end
+		local name = w and w.name or key:match("^scoped:(.+)$")
+		return opts.hide_zero_fable and tostring(name or ""):lower() == "fable" and pct_text(w) == "0%"
+	end
 	local parts = {}
 	if not opts.compact then
 		for _, key in ipairs(opts.bar_windows or { "five_hour", "seven_day", "scoped" }) do
 			if key == "scoped" then
 				for _, w in ipairs(st.scoped or {}) do
-					parts[#parts + 1] = short_name(w.name) .. " " .. pct_text(w)
+					if not hidden(key, w) then
+						parts[#parts + 1] = short_name(w.name) .. " " .. pct_text(w)
+					end
 				end
 			else
 				local name = key:match("^scoped:(.+)$")
 				local label = key == "five_hour" and "5h" or key == "seven_day" and "7d" or name and short_name(name) or key
-				parts[#parts + 1] = label .. " " .. pct_text(M.window(st, key))
+				local w = M.window(st, key)
+				if not hidden(key, w) then
+					parts[#parts + 1] = label .. " " .. pct_text(w)
+				end
 			end
+		end
+		if #parts == 0 then
+			parts[1] = "--" -- everything hidden: still say something next to the icon
 		end
 	end
 	local text = glyph .. table.concat(parts, opts.separator or " · ")

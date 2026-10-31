@@ -22,6 +22,11 @@
 #   cci.sh --max-age 0
 # cache files only, never call the API:
 #   cci.sh --no-network
+# print it like the wezterm status line does (~/.wezterm/claude_usage.lua): 5h left
+# out while there is no such window, Fable left out at 0 %, wezterm's orange:
+#   cci.sh --wezterm
+# this help (also help, -h; case insensitive):
+#   cci.sh --help
 #
 # Requires jq and curl.
 
@@ -35,15 +40,17 @@ usage() {
 
 max_age=300
 network=1
+wezterm=false
 while (($#)); do
-    case "$1" in
+    case "${1,,}" in
         --max-age)
             shift
             [[ "${1:-}" =~ ^[0-9]+$ ]] || { echo "$SCRIPT_NAME: --max-age needs a number of seconds" >&2; exit 2; }
             max_age="$1"
             ;;
         --no-network) network=0 ;;
-        -h | --help) usage; exit 0 ;;
+        -w | --wezterm) wezterm=true ;;
+        help | -h | --help) usage; exit 0 ;;
         *) echo "$SCRIPT_NAME: unknown argument '$1' (see --help)" >&2; exit 2 ;;
     esac
     shift
@@ -78,6 +85,15 @@ COLOR_ICON="#D97757"
 COLOR_WARN="#D97757"  # same as normal in the theme
 COLOR_CRIT="#C8442E"
 COLOR_ERROR="#9C9A93"
+
+# --wezterm: same as M.hide_zero_fable and CLAUDE_ORANGE in ~/.wezterm/claude_usage.lua
+HIDE_ZERO_FABLE=true
+FABLE_NAME="Fable"
+if [[ "$wezterm" == true ]]; then
+    COLOR_NORMAL="#C86D50"
+    COLOR_ICON="$COLOR_NORMAL"
+    COLOR_WARN="$COLOR_NORMAL"
+fi
 
 now=$(date +%s)
 
@@ -174,11 +190,18 @@ def max_percent: [.five_hour, .seven_day, (.scoped // [])[]]
 def short_error: {unauthorized: "!auth", no_credentials: "!cred", rate_limited: "!429", network: "!net",
   parse: "!parse", no_source: "!none"}[. // ""] // "!err";
 def pct_text: if type == "object" and (.percent | type) == "number" then "\(.percent + 0.5 | floor)%" else "--" end;
-def bar_text:
+# $wez: no 5h while there is no such window (the wezterm worker never assumes one),
+# and with $hide_fable no $fable window at 0 %
+def bar_text($wez; $hide_fable; $fable):
   if has_data | not then (if .error then (.error.code | short_error) else "--" end)
   else
-    ((["5h " + (.five_hour | pct_text), "7d " + (.seven_day | pct_text)]
-      + [(.scoped // [])[] | ((.name | tostring) | .[0:1]) + " " + pct_text]) | join(" · "))
+    (((if $wez and (.five_hour | type != "object" or (.percent | type) != "number" or .assumed == true)
+        then [] else ["5h " + (.five_hour | pct_text)] end)
+      + ["7d " + (.seven_day | pct_text)]
+      + [(.scoped // [])[]
+          | select(($wez and $hide_fable and ((.name | tostring | ascii_downcase) == ($fable | ascii_downcase))
+              and pct_text == "0%") | not)
+          | ((.name | tostring) | .[0:1]) + " " + pct_text]) | join(" · "))
     + (if (.sessions.attention // 0) > 0 then " ⚑" else "" end)
   end
   | sub("^\\s+"; "") | sub("\\s+$"; "");
@@ -345,7 +368,8 @@ fi
 
 # ----------------------------------------------------------------- output --
 { read -r text; read -r level; } < <(jq -r --argjson warn "$WARN_AT" --argjson crit "$CRIT_AT" \
-    "$JQ_LIB bar_text, level(\$warn; \$crit)" <<<"$state")
+    --argjson wez "$wezterm" --argjson hide_fable "$HIDE_ZERO_FABLE" --arg fable "$FABLE_NAME" \
+    "$JQ_LIB bar_text(\$wez; \$hide_fable; \$fable), level(\$warn; \$crit)" <<<"$state")
 
 case "$level" in
     crit) color="$COLOR_CRIT" ;;

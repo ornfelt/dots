@@ -54,6 +54,8 @@ M.defaults = {
 	format = nil, -- fun(state, fmt) -> plain text; nil for the default "5h 3% · 7d 67%"
 	compact = false, -- icon only; the chip fills up like a bar (style = "chip")
 	bar_windows = { "five_hour", "seven_day", "scoped" }, -- windows in the bar text; "scoped" = every per-model limit, or "scoped:<Model>"
+	hide_empty_five_hour = true, -- leave "5h --" out of the bar text when there is no 5 hour window
+	hide_zero_fable = true, -- leave the Fable limit out of the bar text while it is at 0%
 	color_window = "max", -- which window colours the chip/text: "max", "five_hour", "seven_day", "scoped:<Model>"
 	separator = " · ",
 	forced_width = nil,

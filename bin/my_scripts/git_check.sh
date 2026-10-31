@@ -26,6 +26,8 @@
 #   -h, help  show this help
 #
 # Known repos that don't exist (yet) or aren't git repos are skipped with a warning.
+# vmangos (Code2/C++/core) counts as clean when src/shared/Progression.h is its only
+# modified file, and its line says so.
 # A fetch that takes longer than $GIT_CHECK_TIMEOUT seconds (default 60) is
 # stopped and warned about.
 # Exits with 1 if any repo has something to commit, push or pull, and with 2 on
@@ -70,6 +72,9 @@ WOW_REPOS=(
     "$code_root_dir/Code2/Wow/tools/my_wow"
     "$code_root_dir/Code2/Rust/azerothcore-wotlk-rs"
     "$code_root_dir/Code2/Rust/mangos-tbc-rs"
+    "$code_root_dir/Code2/Rust/mangos-classic-rs"
+    "$code_root_dir/Code2/Rust/vmangos-rs"
+    "$code_root_dir/Code2/Rust/mangos-zero-rs"
     "$code_root_dir/Code2/C#/mangos-tbc-cs"
     "$code_root_dir/Code2/C#/vmangos_cs"
     "$code_root_dir/Code2/C#/azerothcore-wotlk-cs"
@@ -87,12 +92,16 @@ WOW_REPOS=(
     "$code_root_dir/Code2/Wow/tools/benilla"
     "$code_root_dir/Code2/Wow/tools/cenilla"
 )
+# vmangos has this file modified locally; when it's the only modified file the repo counts as clean
+VMANGOS_REPO="$code_root_dir/Code2/C++/core"
+VMANGOS_LOCAL_FILE=src/shared/Progression.h
 # 'other' is these plus the repos in OTHER_DIRS that are in no other category
 OTHER_REPOS=(
     "$code_root_dir/Code2/General/utils"
     "$code_root_dir/Code2/C#/my_cs"
     "$code_root_dir/Code2/C#/my_csharp"
     "$code_root_dir/Code2/Python/my_py"
+    "$code_root_dir/Code2/Rust/my_rust"
     "$code_root_dir/Code2/General/gfx"
     "$code_root_dir/Code2/C++/space"
     "$code_root_dir/Code2/C++/my_cplusplus"
@@ -187,13 +196,19 @@ if [ -n "${want[other]}" ]; then
     done
 fi
 
+# True if the repo is vmangos and $VMANGOS_LOCAL_FILE is its only modified (not staged) file
+only_vmangos_local_file() {
+    [ "$(cd "$1" 2>/dev/null && pwd -P)" = "$(cd "$VMANGOS_REPO" 2>/dev/null && pwd -P)" ] &&
+        [ "$(git -C "$1" diff --name-only)" = "$VMANGOS_LOCAL_FILE" ]
+}
+
 # Prints one line per problem in the repo, nothing if it is clean
 check_repo() {
     local repo=$1 n branch branch_ref upstream upstream_ref ahead behind remote gitdir op
     local -a out=()
 
     n=$(git -C "$repo" diff --name-only | wc -l)
-    ((n > 0)) && out+=("${YELLOW}$n modified file(s) not staged${RESET}")
+    ((n > 0)) && ! only_vmangos_local_file "$repo" && out+=("${YELLOW}$n modified file(s) not staged${RESET}")
     n=$(git -C "$repo" ls-files --others --exclude-standard | wc -l)
     ((n > 0)) && out+=("${YELLOW}$n untracked file(s)${RESET}")
     n=$(git -C "$repo" diff --cached --name-only | wc -l)
@@ -299,9 +314,17 @@ for repo in "${repos[@]}"; do
         dirty=$((dirty + 1))
         printf "%b%s%b %b(%s)%b\n%s\n" "$BLUE" "$name" "$RESET" "$DARKGRAY" \
             "$(git -C "$repo" rev-parse --abbrev-ref HEAD 2>/dev/null)" "$RESET" "$report"
+        only_vmangos_local_file "$repo" &&
+            printf "    %bonly %s modified, expected for vmangos (not counted)%b\n" "$DARKGRAY" "$VMANGOS_LOCAL_FILE" "$RESET"
     elif $show_all; then
-        printf "%b%s%b %b(%s)%b %bok, clean and in sync%b\n" "$BLUE" "$name" "$RESET" "$DARKGRAY" \
-            "$(git -C "$repo" rev-parse --abbrev-ref HEAD 2>/dev/null)" "$RESET" "$GREEN" "$RESET"
+        if only_vmangos_local_file "$repo"; then
+            printf "%b%s%b %b(%s)%b %bok, in sync%b %b(only %s modified, expected for vmangos)%b\n" "$BLUE" "$name" "$RESET" \
+                "$DARKGRAY" "$(git -C "$repo" rev-parse --abbrev-ref HEAD 2>/dev/null)" "$RESET" "$GREEN" "$RESET" \
+                "$DARKGRAY" "$VMANGOS_LOCAL_FILE" "$RESET"
+        else
+            printf "%b%s%b %b(%s)%b %bok, clean and in sync%b\n" "$BLUE" "$name" "$RESET" "$DARKGRAY" \
+                "$(git -C "$repo" rev-parse --abbrev-ref HEAD 2>/dev/null)" "$RESET" "$GREEN" "$RESET"
+        fi
     fi
 done
 

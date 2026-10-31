@@ -169,6 +169,8 @@ claude_usage.new({
     compact       = false,    -- icon only; the chip fills up like a bar
     bar_windows   = { "five_hour", "seven_day", "scoped" }, -- windows in the bar text; "scoped" = every
                               -- per-model limit as its first letter ("F 100%"), or name one with "scoped:Fable"
+    hide_empty_five_hour = true, -- leave "5h --" out of the bar text when there is no 5 hour window
+    hide_zero_fable = true,   -- leave the Fable limit ("F 0%") out of the bar text while it is at 0%
     color_window  = "max",    -- window that colours the chip/text: "max", "five_hour", "seven_day", "scoped:<Model>"
 
     -- Popup
