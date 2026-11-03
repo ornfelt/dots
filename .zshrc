@@ -372,6 +372,8 @@ alias .pkg="$HOME/.local/bin/my_scripts/2025/pkg.sh"
 alias .proc="$HOME/.local/bin/my_scripts/2025/proc.sh"
 alias .health_check="$HOME/Documents/my_notes/scripts/health_check.sh"
 # function instead of alias: the script's final cd only affects its own bash process
+# (drop a leftover alias first, else re-sourcing in an old shell alias-expands the name: parse error)
+(( ${+aliases[.wow_wtf_update]} )) && unalias .wow_wtf_update
 .wow_wtf_update() {
   "$HOME/.local/bin/my_scripts/2025/wow_wtf_update.sh" "$@" || return
   case "${1:l}" in help|--help|-h) return ;; esac
