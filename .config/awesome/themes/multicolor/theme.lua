@@ -62,6 +62,8 @@ theme.widget_clock                              = theme.confdir .. "/icons/clock
 --theme.taglist_squares_unsel                     = theme.confdir .. "/icons/square_b.png"
 theme.tasklist_plain_task_name                  = true
 theme.tasklist_disable_icon                     = true
+-- fg_focus is the dark text of the selected tag
+theme.tasklist_fg_focus                         = theme.fg_normal
 theme.useless_gap                               = 10
 theme.layout_txt_tile                           = "[t]"
 theme.layout_txt_tileleft                       = "[l]"
@@ -590,6 +592,16 @@ function toggle_widget_visibility()
   write_config("awsm_bar_toggled", tostring(hide))
 end
 
+-- Shows/hides the window title on every screen (dwm toggletitle)
+local show_title = true
+
+function toggle_title()
+  show_title = not show_title
+  for s in screen do
+    s.mytasklist.visible = show_title
+  end
+end
+
 function check_toggle_widget_visibility()
   local my_config = read_config()
   set_widget_visibility(not (my_config and my_config["awsm_bar_toggled"] == "true"))
@@ -690,8 +702,13 @@ function theme.at_screen_connect(s)
     },
   }
 
-    -- Create a tasklist widget
-    --s.mytasklist = awful.widget.tasklist(s, awful.widget.tasklist.filter.currenttags, awful.util.tasklist_buttons)
+    -- The title of the focused window, after the layout. A screen without the
+    -- focus shows its last focused window, like dwm's m->sel.
+    s.mytasklist = awful.widget.tasklist {
+        screen = s,
+        filter = function (c, scr) return c == awful.client.focus.history.get(scr, 0) end,
+    }
+    s.mytasklist.visible = show_title
 
     -- Create the wibox
     s.mywibox = awful.wibar({ position = "top", screen = s, height = dpi(25), bg = theme.bg_normal, fg = theme.fg_normal })
@@ -708,8 +725,7 @@ function theme.at_screen_connect(s)
             mpdicon,
             theme.mpd.widget,
         },
-        --s.mytasklist, -- Middle widget
-        nil,
+        s.mytasklist, -- Middle widget
         { -- Right widgets
             layout = wibox.layout.fixed.horizontal,
             --wibox.widget.systray(),

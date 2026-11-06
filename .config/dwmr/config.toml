@@ -26,6 +26,7 @@ browsergaps = false   # false means no outer gap when there is only one window a
 snap = 32             # snap pixel
 swallowfloating = false # true means swallow floating windows by default
 showbar = true        # false means no bar
+showtitle = true      # false means no window title in the bar
 topbar = true         # false means bottom bar
 focusonwheel = false  # false allows the user to scroll window without changing focus
 # Propo: the icons are as wide as they are drawn, so one gap after an icon
@@ -293,6 +294,8 @@ keys = [
 	{ mod = "MODKEY|ShiftMask",         key = "p",        func = "togglebars" },
 	# /* bind mod-ctrl-shift-p: togglebar */
 	{ mod = "MODKEY|ControlMask|ShiftMask", key = "p",    func = "togglebar" },
+	# /* bind mod-ctrl-w: toggletitle (window title in the bar) */
+	{ mod = "MODKEY|ControlMask",       key = "w",        func = "toggletitle" },
 	# /* bind mod-ctrl-p: sb-sysinfo toggle (show/hide the net, memory and cpu blocks) */
 	{ mod = "MODKEY|ControlMask",       key = "p",        func = "spawn",           arg = { v = "sysinfocmd" } },
 	# focusmon/tagmon focus/move to the previous or next monitor; tagmonview

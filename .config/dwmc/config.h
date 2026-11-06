@@ -20,6 +20,7 @@ static int swallowfloating      = 0;        /* 1 means swallow floating windows 
 static int smartgaps            = 0;        /* 1 means no outer gap when there is only one window */
 static int browsergaps          = 0;        /* 0 means no outer gap when there is only one window and it is firefox */
 static int showbar              = 1;        /* 0 means no bar */
+static int showtitle            = 1;        /* 0 means no window title in the bar */
 static int topbar               = 1;        /* 0 means bottom bar */
 static const int focusonwheel   = 0;        /* 0 allows the user to scroll window without changing focus */
 /* Propo: the icons are as wide as they are drawn, so one gap after an icon
@@ -278,6 +279,8 @@ static const Key keys[] = {
         { MODKEY|ShiftMask,         XK_p,               togglebars,         {0} },
         /* bind mod-ctrl-shift-p: togglebar */
         { MODKEY|ControlMask|ShiftMask,     XK_p,       togglebar,          {0} },
+        /* bind mod-ctrl-w: toggletitle (window title in the bar) */
+        { MODKEY|ControlMask,       XK_w,               toggletitle,        {0} },
         /* bind mod-ctrl-p: sb-sysinfo toggle (show/hide the net, memory and cpu blocks) */
         { MODKEY|ControlMask,       XK_p,               spawn,              SHCMD("~/.local/bin/statusbar/sb-sysinfo toggle") },
         /* focusmon/tagmon focus/move to the previous or next monitor; tagmonview

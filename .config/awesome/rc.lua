@@ -509,6 +509,10 @@ globalkeys = mytable.join(
     awful.key({ modkey, ctrlkey, "Shift" }, "p", function () toggle_bar(awful.screen.focused()) end,
         {description = "Show/hide wibox (bar) on this screen", group = "awesome"}),
 
+    -- bind mod-ctrl-w: toggle_title
+    awful.key({ modkey, ctrlkey }, "w", function () toggle_title() end,
+        {description = "Show/hide window title", group = "awesome"}),
+
     -- bind mod-a: spawn tmux_attach.sh
     awful.key({ modkey },            "a",     function ()
     spawn("/home/jonas/.local/bin/my_scripts/tmux_attach.sh "..terminal)  end,

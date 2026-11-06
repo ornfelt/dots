@@ -28,6 +28,7 @@ static int swallowfloating      = 0;        /* 1 means swallow floating windows 
 static int smartgaps            = 0;        /* 1 means no outer gap when there is only one window */
 static int browsergaps          = 0;        /* 0 means no outer gap when there is only one window and it is firefox */
 static int showbar              = 1;        /* 0 means no bar */
+static int showtitle            = 1;        /* 0 means no window title in the bar */
 static int topbar               = 1;        /* 0 means bottom bar */
 static const int focusonwheel       = 0;
 /* static char *fonts[]            = { "Linux Libertine Mono:size=12", "Mono:pixelsize=12:antialias=true:autohint=true", "FontAwesome:size=15","FontAwesome5Brands:size=13:antialias:true", "FontAwesome5Free:size=13:antialias:true", "FontAwesome5Free:style=Solid:size=13:antialias:true","JetBrainsMono Nerd Font:size=12:style=bold:antialias=true:autohint=true", "Nerd Font Complete Mono:size=13", "JoyPixels:pixelsize=10:antialias=true:autohint=true", "Inconsolata Nerd Font:size=15", "Nerd Font Complete Mono:size=13" }; */
@@ -280,6 +281,8 @@ static const Key keys[] = {
         { MODKEY|ShiftMask,         XK_p,               togglebars,          {0} },
         /* bind mod-ctrl-shift-p: togglebar */
         { MODKEY|ControlMask|ShiftMask,     XK_p,       togglebar,          {0} },
+        /* bind mod-ctrl-w: toggletitle (window title in the bar) */
+        { MODKEY|ControlMask,       XK_w,               toggletitle,        {0} },
         /* bind mod-ctrl-p: sb-sysinfo toggle (show/hide the net, memory and cpu blocks) */
         { MODKEY|ControlMask,       XK_p,               spawn,              SHCMD("~/.local/bin/statusbar/sb-sysinfo toggle") },
         /* bind mod-h: focusmon -1 (focus left monitor) */
