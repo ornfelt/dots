@@ -602,6 +602,66 @@ function toggle_title()
   end
 end
 
+-- Shortens long window titles (dwm shorttitle); toggle_short_title() flips it
+local short_title = true
+local title_head  = 60
+local title_tail  = 20
+
+-- A title longer than head + tail + 18 characters shortened to its start,
+-- " … " and its end, like dwm's shortentitle(): the start is cut at the
+-- space closest to head characters (within -5..+10), the end starts at an app
+-- name separator (" - ", " – ", " — ", " | ") or else at the space closest
+-- to tail characters from the end (within -5..+5). With no space in range a
+-- part is cut at exactly that many characters. nil if it is short enough.
+local function shorten_title(s, head, tail)
+  if not s or not utf8.len(s) then return nil end
+  -- off[i] is the byte position of character i (from 0), off[n] the end
+  local off, n = {}, 0
+  for p in utf8.codes(s) do
+    off[n] = p
+    n = n + 1
+  end
+  off[n] = #s + 1
+  local hmin, hmax = math.max(head - 5, 1), head + 10
+  local tmin, tmax = math.max(tail - 5, 1), tail + 5
+  if n <= hmax + 3 + tmax then return nil end
+  local function blank(i) local b = s:byte(off[i]) return b == 32 or b == 9 end
+  local function separator(i)
+    local c = s:sub(off[i], off[i + 1] - 1)
+    return c == "-" or c == "|" or c == "–" or c == "—"
+  end
+  local function closer(i, best) return not best or math.abs(n - i - tail) < math.abs(n - best - tail) end
+
+  -- the start, up to the space closest to head
+  local best
+  for i = hmin, hmax do
+    if blank(i) and (not best or math.abs(i - head) < math.abs(best - head)) then best = i end
+  end
+  local h = best or head
+  while h > 0 and blank(h - 1) do h = h - 1 end
+
+  -- the end, from the separator, else the space, closest to tail
+  best = nil
+  for i = n - tmax, n - tmin do
+    if blank(i - 1) and i + 1 < n and blank(i + 1) and separator(i) and closer(i, best) then best = i end
+  end
+  if not best then
+    for i = n - tmax, n - tmin do
+      if blank(i - 1) and closer(i, best) then best = i end
+    end
+  end
+  local t = best or n - tail
+  while t < n and blank(t) do t = t + 1 end
+  return s:sub(1, off[h] - 1) .. " … " .. s:sub(off[t])
+end
+
+function toggle_short_title()
+  short_title = not short_title
+  for s in screen do
+    s.mytasklist._do_tasklist_update()
+  end
+end
+
 function check_toggle_widget_visibility()
   local my_config = read_config()
   set_widget_visibility(not (my_config and my_config["awsm_bar_toggled"] == "true"))
@@ -707,6 +767,20 @@ function theme.at_screen_connect(s)
     s.mytasklist = awful.widget.tasklist {
         screen = s,
         filter = function (c, scr) return c == awful.client.focus.history.get(scr, 0) end,
+        -- the label with the name shortened (short_title)
+        update_function = function (w, buttons, label, data, objects, args)
+            awful.widget.common.list_update(w, buttons, function (c, tb)
+                local text, bg, bg_image, icon, other = label(c, tb)
+                local short = short_title and shorten_title(c.name, title_head, title_tail)
+                if text and short then
+                    local a, b = text:find(gears.string.xml_escape(c.name), 1, true)
+                    if a then
+                        text = text:sub(1, a - 1) .. gears.string.xml_escape(short) .. text:sub(b + 1)
+                    end
+                end
+                return text, bg, bg_image, icon, other
+            end, data, objects, args)
+        end,
     }
     s.mytasklist.visible = show_title
 

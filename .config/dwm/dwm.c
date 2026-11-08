@@ -270,6 +270,7 @@ static void seturgent(Client *c, int urg);
 static void shifttag(const Arg *arg);
 static void shiftview(const Arg *arg);
 static void shiftviewclients(const Arg *arg);
+static int shortentitle(char *dst, const char *src, size_t size, unsigned int head, unsigned int tail);
 static void showhide(Client *c);
 static void sigstatusbar(const Arg *arg);
 static void spawn(const Arg *arg);
@@ -289,6 +290,7 @@ static void togglescratch(const Arg *arg);
 static void togglesticky(const Arg *arg);
 static void togglefullscr(const Arg *arg);
 static void toggletag(const Arg *arg);
+static void toggleshorttitle(const Arg *arg);
 static void toggletitle(const Arg *arg);
 static void toggleview(const Arg *arg);
 static void unfocus(Client *c, int setfocus);
@@ -1116,6 +1118,7 @@ void
 drawbar(Monitor *m)
 {
 	int x, w, tw = 0;
+	char title[264]; /* the selected name shortened, at most a byte longer */
 	unsigned int i, occ = 0, urg = 0;
 	Client *c;
 
@@ -1148,7 +1151,9 @@ drawbar(Monitor *m)
 	if ((w = m->ww - tw - x) > bh) {
 		drw_setscheme(drw, scheme[SchemeNorm]);
 		if (showtitle && m->sel)
-			drw_text(drw, x, 0, w, bh, lrpad / 2, m->sel->name, 0);
+			drw_text(drw, x, 0, w, bh, lrpad / 2, shorttitle
+				&& shortentitle(title, m->sel->name, sizeof title, titlehead, titletail)
+				? title : m->sel->name, 0);
 		else
 			drw_rect(drw, x, 0, w, bh, 1, 1);
 	}
@@ -2334,6 +2339,67 @@ seturgent(Client *c, int urg)
 	XFree(wmh);
 }
 
+#define ISBLANK(C)              ((C) == ' ' || (C) == '\t')
+#define ISSEPARATOR(S)          (*(S) == '-' || *(S) == '|' || !strncmp((S), "\xe2\x80\x93", 3) \
+                                 || !strncmp((S), "\xe2\x80\x94", 3)) /* - | – — */
+#define DIST(A, B)              ((A) > (B) ? (A) - (B) : (B) - (A))
+
+/* Shorten a title of more than head + tail + 18 characters to its start,
+ * " … " and its end (shorttitle). The start is cut at the space closest to
+ * head characters, within head - 5 .. head + 10; the end starts at an app
+ * name separator (" - ", " – ", " — ", " | ") between tail - 5 and tail + 5
+ * characters from the end, else at the space there closest to tail. With no
+ * space in range a part is cut at exactly head / tail characters. Writes the
+ * shortened title to dst (size bytes) and returns 1, or returns 0 when src
+ * is short enough to be shown as it is (or head / tail is not 1..255). */
+int
+shortentitle(char *dst, const char *src, size_t size, unsigned int head, unsigned int tail)
+{
+	size_t off[257] = {0}, n, i, h, t, best, hmin, hmax, tmin, tmax;
+
+	if (head < 1 || head > 255 || tail < 1 || tail > 255)
+		return 0;
+	/* the byte offset of each character, so lengths count characters */
+	for (n = i = 0; src[i]; i++)
+		if ((src[i] & 0xC0) != 0x80) {
+			if (n == LENGTH(off) - 1)
+				return 0;
+			off[n++] = i;
+		}
+	off[n] = i;
+	hmin = head > 5 ? head - 5 : 1;
+	hmax = head + 10;
+	tmin = tail > 5 ? tail - 5 : 1;
+	tmax = tail + 5;
+	if (n <= hmax + 3 + tmax)
+		return 0;
+
+	/* the start, up to the space closest to head */
+	for (best = 0, i = hmin; i <= hmax; i++)
+		if (ISBLANK(src[off[i]]) && (!best || DIST(i, head) < DIST(best, head)))
+			best = i;
+	h = best ? best : head;
+	while (h > 0 && ISBLANK(src[off[h - 1]]))
+		h--;
+
+	/* the end, from the separator, else the space, closest to tail */
+	for (best = 0, i = n - tmax; i <= n - tmin; i++)
+		if (ISBLANK(src[off[i - 1]]) && i + 1 < n && ISBLANK(src[off[i + 1]])
+		&& ISSEPARATOR(src + off[i])
+		&& (!best || DIST(n - i, tail) < DIST(n - best, tail)))
+			best = i;
+	if (!best)
+		for (i = n - tmax; i <= n - tmin; i++)
+			if (ISBLANK(src[off[i - 1]])
+			&& (!best || DIST(n - i, tail) < DIST(n - best, tail)))
+				best = i;
+	t = best ? best : n - tail;
+	while (t < n && ISBLANK(src[off[t]]))
+		t++;
+	snprintf(dst, size, "%.*s \xe2\x80\xa6 %s", (int)off[h], src, src + off[t]);
+	return 1;
+}
+
 void
 showhide(Client *c)
 {
@@ -2666,6 +2732,13 @@ toggletag(const Arg *arg)
 		focus(NULL);
 		arrange(selmon);
 	}
+}
+
+void
+toggleshorttitle(const Arg *arg)
+{
+	shorttitle = !shorttitle;
+	drawbars();
 }
 
 void

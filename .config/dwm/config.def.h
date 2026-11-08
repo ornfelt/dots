@@ -11,6 +11,9 @@ static const unsigned int gappov    = 30;       /* vert outer gap between window
 static       int smartgaps          = 0;        /* 1 means no outer gap when there is only one window */
 static int showbar            = 1;        /* 0 means no bar */
 static int showtitle          = 1;        /* 0 means no window title in the bar */
+static int shorttitle         = 1;        /* 1 means shorten titles longer than titlehead + titletail + 18 characters */
+static unsigned int titlehead = 60;       /* a shortened title's start, in characters (cut at a space within -5..+10) */
+static unsigned int titletail = 20;       /* its end, in characters (cut at a space within -5..+5) */
 static int topbar             = 1;        /* 0 means bottom bar */
 static const int focusonwheel       = 0;
 static char font[]            = "monospace:size=10";
@@ -142,6 +145,7 @@ static const Key keys[] = {
 	{ MODKEY|ShiftMask,             XK_Return, spawn,          {.v = termcmd } },
 	{ MODKEY,                       XK_b,      togglebar,      {0} },
 	{ MODKEY|ControlMask,           XK_w,      toggletitle,    {0} },
+	{ MODKEY|ControlMask|ShiftMask, XK_w,      toggleshorttitle, {0} },
 	STACKKEYS(MODKEY,                          focus)
 	STACKKEYS(MODKEY|ShiftMask,                push)
 	{ MODKEY,                       XK_i,      incnmaster,     {.i = +1 } },

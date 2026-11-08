@@ -27,6 +27,9 @@ snap = 32             # snap pixel
 swallowfloating = false # true means swallow floating windows by default
 showbar = true        # false means no bar
 showtitle = true      # false means no window title in the bar
+shorttitle = true     # true means shorten titles longer than titlehead + titletail + 18 characters
+titlehead = 60        # a shortened title's start, in characters (cut at a space within -5..+10)
+titletail = 20        # its end, in characters (cut at a space within -5..+5)
 topbar = true         # false means bottom bar
 focusonwheel = false  # false allows the user to scroll window without changing focus
 # Propo: the icons are as wide as they are drawn, so one gap after an icon
@@ -296,6 +299,8 @@ keys = [
 	{ mod = "MODKEY|ControlMask|ShiftMask", key = "p",    func = "togglebar" },
 	# /* bind mod-ctrl-w: toggletitle (window title in the bar) */
 	{ mod = "MODKEY|ControlMask",       key = "w",        func = "toggletitle" },
+	# /* bind mod-ctrl-shift-w: toggleshorttitle (shorten long window titles) */
+	{ mod = "MODKEY|ControlMask|ShiftMask", key = "w",    func = "toggleshorttitle" },
 	# /* bind mod-ctrl-p: sb-sysinfo toggle (show/hide the net, memory and cpu blocks) */
 	{ mod = "MODKEY|ControlMask",       key = "p",        func = "spawn",           arg = { v = "sysinfocmd" } },
 	# focusmon/tagmon focus/move to the previous or next monitor; tagmonview
