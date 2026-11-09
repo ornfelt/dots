@@ -32,6 +32,11 @@
 # .cenilla run win
 # .cenilla run size=1280x720
 #
+# Quake 3 movement, from the tree's q3 sibling (build-rel-q3, build-q3, ...; configured and built
+# when missing):
+# .cenilla run q3
+# .cenilla run debug q3 vk
+#
 # any other env var (an upper-case name with an underscore) as it is:
 # .cenilla run WOW_MSAA=4 WOW_FARCLIP=800
 #
@@ -88,6 +93,16 @@ declare -A TREE_CONFIGURE_ARGS=(
     [player]="-DCMAKE_BUILD_TYPE=Debug -DCENILLA_DEV=OFF"
     [clang]="-DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_COMPILER=clang"
 )
+# Quake 3 movement (q3, as benilla.sh takes it) is a CMake option on every file of the library,
+# so a q3 run takes the named tree's q3 sibling - its dir plus Q3_TREE_SUFFIX (build-rel-q3,
+# build-q3, ...), configured with the tree's args plus Q3_CONFIGURE_ARG - and neither tree is
+# rebuilt when q3 comes and goes. A tree=<dir> is used as is (its cache must have the option on).
+Q3_CMAKE_OPTION="CENILLA_Q3_MOVEMENT"
+Q3_TOKENS=(q3 q3_movement)
+CMAKE_ON="ON"
+CMAKE_OFF="OFF"
+Q3_CONFIGURE_ARG="-D$Q3_CMAKE_OPTION=$CMAKE_ON"
+Q3_TREE_SUFFIX="-q3"
 PGO_SCRIPT="tools/pgo.sh"
 CMAKE_CACHE_NAME="CMakeCache.txt"
 # gcc needs its temp files inside the build tree when /tmp is full (docs/RUNNING.md)
@@ -188,6 +203,10 @@ EOF
   tree=<dir>             any other build dir (build-tsan, build-gfxnew, ...), not configured here
   build                  build the tree first (cmake --build: relinks and copies a newer gfx library)
 
+Features (each in a tree of its own, so switching one rebuilds nothing):
+  q3                     Quake 3 movement for a local server: the tree's $Q3_TREE_SUFFIX sibling (${TREE_DIRS[$DEFAULT_TREE]}$Q3_TREE_SUFFIX, ...),
+                         configured with $Q3_CONFIGURE_ARG (also: ${Q3_TOKENS[1]})
+
 gfx backends (WOW_GFX_DEVICE / WOW_GFX_WINDOW; the device unset is the library's first, the
 window $DEFAULT_GFX_WINDOW_INFO unless named as an arg, even over a WOW_GFX_WINDOW in the environment):
   $(join_by ' | ' "${GFX_DEVICES[@]}")   (vulkan = vk, dx11 / dx12 = d3d11 / d3d12)
@@ -234,6 +253,7 @@ Examples:
   $ALIAS_NAME $RUN_COMMAND debug build probe
   $ALIAS_NAME $RUN_COMMAND capture=felwood-night gl4 soft
   $ALIAS_NAME $RUN_COMMAND worldview at=-9460,62 vk
+  $ALIAS_NAME $RUN_COMMAND q3 vk glfw
 
 EOF
     show_manual_run
@@ -247,24 +267,35 @@ show_usage() {
     show_manual_run
 }
 
+tree_dir_of() {
+    # tree_dir_of <name> <q3 true|false> - prints a named tree's dir, its q3 sibling's for a q3 run
+    local suffix=""
+    if $2; then suffix="$Q3_TREE_SUFFIX"; fi
+    printf '%s\n' "${TREE_DIRS[$1]}$suffix"
+}
+
 find_tree() {
-    # Prints the first tree of TREE_AUTO_ORDER that is configured, else DEFAULT_TREE
+    # find_tree <q3 true|false> - prints the first tree of TREE_AUTO_ORDER that is configured,
+    # else DEFAULT_TREE. A q3 run takes the first configured q3 sibling, else the sibling of the
+    # tree a plain run would take.
     local name
     for name in "${TREE_AUTO_ORDER[@]}"; do
-        if [[ -f "$REPO_ROOT/${TREE_DIRS[$name]}/$CMAKE_CACHE_NAME" ]]; then
+        if [[ -f "$REPO_ROOT/$(tree_dir_of "$name" "$1")/$CMAKE_CACHE_NAME" ]]; then
             printf '%s\n' "$name"
             return
         fi
     done
+    if $1; then find_tree false; return; fi
     printf '%s\n' "$DEFAULT_TREE"
 }
 
 show_manual_run() {
     # Prints how to start the default tree's client by hand, without this script
     local tree_name
-    tree_name="$(find_tree)"
+    tree_name="$(find_tree false)"
     write_label "Or run it manually (from $REPO_ROOT, once ${TREE_DIRS[$tree_name]}/ is built):"
     write_extra "export $WOW_DATA_VAR=\"\$wow_classic_dir/$WOW_DATA_SUBDIR\" && ./${TREE_DIRS[$tree_name]}/$EXE_SUBDIR/$CLIENT_EXE_NAME"
+    write_label "  with Quake 3 movement: the same from $(tree_dir_of "$tree_name" true)/ (configured with $Q3_CONFIGURE_ARG; '$ALIAS_NAME $RUN_COMMAND q3' does both)"
 }
 
 read_command() {
@@ -287,7 +318,7 @@ read_options() {
     opt_device=""; opt_window=""; opt_win=false; opt_size=""; opt_panel=false; opt_hud=false; opt_worldview=false; opt_at=""
     opt_host=""; opt_realm=""; opt_char=""; opt_probe=false; opt_nosound=false; opt_unattended=false
     opt_capture=""; opt_out=""; opt_fps=""; opt_exit=""; opt_soft=false; opt_validate=false
-    opt_data=""; opt_data_set=false; opt_env=()
+    opt_data=""; opt_data_set=false; opt_env=(); opt_q3=false
 
     local raw name value
     for raw in "$@"; do
@@ -335,6 +366,7 @@ read_options() {
         elif [[ "$name" == "exit" && -n "$value" ]]; then opt_exit="$value"
         elif [[ "$name" == "soft" ]]; then opt_soft=true
         elif [[ "$name" == "validate" ]]; then opt_validate=true
+        elif in_list "$name" "${Q3_TOKENS[@]}"; then opt_q3=true
         elif [[ "$name" == "data" && -n "$value" ]]; then opt_data="$(realpath -m -- "$value")"; opt_data_set=true
         else
             write_err "Unknown arg: $raw (tree= / size= / at= / host= / realm= / char= / capture= / out= / fps= / exit= need a value) - see '$ALIAS_NAME help'."
@@ -346,10 +378,14 @@ read_options() {
         write_warn "tree=$opt_tree_dir is used - ignoring $opt_tree."
         opt_tree=""
     fi
+    if $opt_q3 && $opt_worldview; then
+        write_warn "q3 is for the client, not the engine viewer - ignoring it."
+        opt_q3=false
+    fi
     if [[ -z "$opt_tree" && -z "$opt_tree_dir" ]]; then
-        opt_tree="$(find_tree)"
+        opt_tree="$(find_tree "$opt_q3")"
         if [[ "$opt_tree" != "$DEFAULT_TREE" ]]; then
-            write_label "No ${TREE_DIRS[$DEFAULT_TREE]}/ - using ${TREE_DIRS[$opt_tree]}/."
+            write_label "No $(tree_dir_of "$DEFAULT_TREE" "$opt_q3")/ - using $(tree_dir_of "$opt_tree" "$opt_q3")/."
         fi
     fi
     if [[ -n "$opt_out" && -z "$opt_capture" ]]; then write_warn "out= is for a capture - ignoring it."; fi
@@ -368,7 +404,7 @@ resolve_tree() {
     if [[ -n "$opt_tree_dir" ]]; then
         if [[ "$opt_tree_dir" == /* ]]; then tree_dir="$opt_tree_dir"; else tree_dir="$REPO_ROOT/$opt_tree_dir"; fi
     else
-        tree_dir="$REPO_ROOT/${TREE_DIRS[$opt_tree]}"
+        tree_dir="$REPO_ROOT/$(tree_dir_of "$opt_tree" "$opt_q3")"
     fi
 
     local exe_name="$CLIENT_EXE_NAME"
@@ -435,6 +471,35 @@ check_gfx_copy() {
     fi
 }
 
+q3_state() {
+    # Prints the tree's cached q3 option (OFF when the cache predates it); what a missing tree
+    # will get
+    local value
+    if [[ ! -f "$cache_path" ]]; then
+        if $opt_q3; then printf '%s' "$CMAKE_ON"; else printf '%s' "$CMAKE_OFF"; fi
+        return
+    fi
+    value="$(cache_value "$Q3_CMAKE_OPTION")"
+    value="${value^^}"
+    printf '%s' "${value:-$CMAKE_OFF}"
+}
+
+check_q3_tree() {
+    # Exits when a q3 run's configured tree (a tree= dir, or a sibling configured by hand) has the
+    # option off; names it when a plain run's tree has it on
+    local state
+    state="$(q3_state)"
+    if $opt_q3 && [[ "$state" != "$CMAKE_ON" ]]; then
+        write_err "q3 needs $Q3_CMAKE_OPTION on, but $tree_dir has it $state - turn it on there, or drop tree= for the $Q3_TREE_SUFFIX sibling:"
+        write_extra "cmake -S $(format_shell_arg "$REPO_ROOT") -B $(format_shell_arg "$tree_dir") $Q3_CONFIGURE_ARG"
+        exit 1
+    fi
+    if ! $opt_q3 && [[ "$state" == "$CMAKE_ON" ]]; then
+        write_label "$tree_dir has $Q3_CMAKE_OPTION on - Quake 3 movement is on in this run."
+    fi
+    return 0
+}
+
 test_sanitized_tree() {
     # True when the tree is a Debug build with CENILLA_SANITIZE on
     [[ "$(cache_value CMAKE_BUILD_TYPE)" == "Debug" && "$(cache_value CENILLA_SANITIZE)" == "ON" ]]
@@ -454,6 +519,7 @@ configure_tree() {
 
     local -a configure_args
     read -r -a configure_args <<<"${TREE_CONFIGURE_ARGS[$opt_tree]}"
+    if $opt_q3; then configure_args+=("$Q3_CONFIGURE_ARG"); fi
     write_warn "No $tree_dir yet - configuring it."
     write_extra "cmake -S $REPO_ROOT -B $tree_dir ${CMAKE_GENERATOR_ARGS[*]} ${configure_args[*]}"
     if ! cmake -S "$REPO_ROOT" -B "$tree_dir" "${CMAKE_GENERATOR_ARGS[@]}" "${configure_args[@]}"; then
@@ -601,8 +667,10 @@ show_launch_command() {
     local -a configure_args
     echo
     write_extra "# $ALIAS_NAME $(format_args "${script_args[@]}")"
+    write_extra "# tree: $tree_dir, $Q3_CMAKE_OPTION: $(q3_state)"
     if [[ ! -f "$cache_path" && -z "$opt_tree_dir" && -n "${TREE_CONFIGURE_ARGS[$opt_tree]:-}" ]]; then
         read -r -a configure_args <<<"${TREE_CONFIGURE_ARGS[$opt_tree]}"
+        if $opt_q3; then configure_args+=("$Q3_CONFIGURE_ARG"); fi
         write_extra "cmake -S $(format_shell_arg "$REPO_ROOT") -B $(format_shell_arg "$tree_dir") ${CMAKE_GENERATOR_ARGS[*]} ${configure_args[*]}"
     fi
     if $opt_build || [[ ! -f "$exe_path" ]]; then
@@ -690,6 +758,7 @@ check_gfx_pair() {
 capture_out=""
 resolve_wow_data
 resolve_tree
+check_q3_tree
 resolve_gfx_library
 get_run_env
 check_gfx_pair
@@ -711,7 +780,7 @@ if [[ ! -f "$exe_path" ]]; then
 fi
 
 write_label "Using: $exe_path"
-write_label "  built $(date -r "$exe_path" +"$BUILD_TIME_FORMAT")"
+write_label "  built $(date -r "$exe_path" +"$BUILD_TIME_FORMAT"), $Q3_CMAKE_OPTION: $(q3_state)"
 check_gfx_copy
 # The env again: a tree configured above now has its cache (the sanitizer check reads it)
 get_run_env

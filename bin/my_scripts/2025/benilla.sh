@@ -1,11 +1,24 @@
 #!/usr/bin/env bash
-# benilla.sh - starts benilla (the Rust WoW 1.12.1 client on trimmed Bevy and the gfx library)
-# from one of its cargo profiles; a profile without the client is built with cargo first.
+# benilla.sh - starts benilla (the Rust WoW 1.12.1 client) from one of its checkouts under
+# Code2/Wow/tools - plain (main), the gfx dll branch or trimmed-bevy, told apart by what is checked
+# out - and one of its cargo profiles; a profile without the client is built with cargo first.
 #
-# Usage examples (nothing runs without `run` as the first arg; the args after it in any order,
-# case insensitive; `.benilla help` lists them all):
-# cd into the repo and print how to run it, through this script and by hand (runs nothing):
+# Usage examples (nothing runs without `run` as the first arg, after an optional checkout; the
+# args after it in any order, case insensitive; `.benilla help` lists them all):
+# cd into a benilla checkout (a menu when there are several, Enter = the last one used) and print
+# how to run it, through this script and by hand (runs nothing):
 # .benilla
+#
+# a checkout by its dir name (with or without benilla-), its branch or its kind (plain / gfxdll /
+# trimmed), as the first arg or dir= (a checkout alone prints how to run it; only a bare
+# .benilla, which the alias sources, cds):
+# .benilla benilla-gfx
+# .benilla trimmed run vk glfw
+# .benilla run dir=benilla-gfx gl4
+#
+# Quake 3 movement (any checkout, --features q3_movement), and a gfx dll checkout without gfx:
+# .benilla run q3
+# .benilla gfxdll run nogfx q3
 #
 # the release build (target/release) on the platform's window (win32 / x11) and the gfx
 # library's default device:
@@ -50,18 +63,59 @@ if [[ -z "${code_root_dir:-}" ]]; then
     write_label "code_root_dir is not set - using $code_root_dir"
 fi
 
-REPO_ROOT="$code_root_dir/Code2/Wow/tools/benilla"
-BUILD_TIME_FORMAT="%Y-%m-%d %H:%M:%S"
+# The first arg of a bash run of this script that prints the checkout's path (see below)
+CHECKOUT_DIR_COMMAND="--checkout-dir"
 
-# A bare call cds into the repo and prints how to run it (show_usage), running nothing. The cd
+# A bare call cds into a checkout and prints how to run it (show_usage), running nothing. The cd
 # only reaches the calling shell when the script is sourced (the .zshrc alias sources it for a
-# bare call), so a sourced script prints through a bash run of itself and returns here, before
-# the bash-only code below
+# bare call), so a sourced script asks a bash run of itself for the checkout (the menu, when
+# there are several), cds there, prints through another bash run and returns here, before the
+# bash-only code below
 if (( $# == 0 )) && (return 0 2>/dev/null); then
-    cd -- "$REPO_ROOT" || return 1
-    bash "${BASH_SOURCE[0]:-$0}"
+    _benilla_bare() {
+        local script="$1" dir
+        dir="$(bash "$script" "$CHECKOUT_DIR_COMMAND")" || return 1
+        cd -- "$dir" || return 1
+        bash "$script" "$dir"
+    }
+    _benilla_bare "${BASH_SOURCE[0]:-$0}" || { unset -f _benilla_bare; return 1; }
+    unset -f _benilla_bare
     return 0
 fi
+
+# The benilla checkouts: every CHECKOUT_PATTERN dir under TOOLS_ROOT holding the client crate
+# (CLIENT_MANIFEST; other benilla-named projects are skipped). The kind comes from what is checked
+# out, not from the dir or branch name: no GFX_CRATE_DIR is plain benilla (main), GFX_CRATE_DIR
+# with a gfx feature on the client is the gfx dll branch (gfx opt-in, --features gfx), and
+# GFX_CRATE_DIR without one is trimmed-bevy (gfx always). The checkout of a run is dir= (or a
+# checkout as the first arg), else $BENILLA_DIR, else the only one, else picked from a menu
+# (Enter = the last one used, kept in LAST_DIR_FILE).
+TOOLS_ROOT="$code_root_dir/Code2/Wow/tools"
+CHECKOUT_PATTERN="benilla*"
+CHECKOUT_PREFIX="benilla-"
+CLIENT_MANIFEST="crates/benilla/Cargo.toml"
+GFX_CRATE_DIR="crates/benilla-gfx"
+GFX_FEATURE="gfx"
+GFX_FEATURE_PATTERN="^[[:space:]]*$GFX_FEATURE[[:space:]]*="
+Q3_FEATURE="q3_movement"
+Q3_TOKENS=(q3 "$Q3_FEATURE")
+KIND_PLAIN="plain"
+KIND_GFX_DLL="gfxdll"
+KIND_TRIMMED="trimmed"
+KIND_NAMES=("$KIND_PLAIN" "$KIND_GFX_DLL" "$KIND_TRIMMED")
+declare -A KIND_INFO=([$KIND_PLAIN]="no gfx" [$KIND_GFX_DLL]="gfx opt-in (--features $GFX_FEATURE)" [$KIND_TRIMMED]="gfx always")
+# What a selector is matched against, in order (the first that matches any checkout wins)
+SELECTOR_ARRAYS=(checkout_names checkout_shorts checkout_branches checkout_kinds)
+DETACHED_PREFIX="detached@"
+UNKNOWN_BRANCH="?"
+DIR_ENV_VAR="BENILLA_DIR"
+LAST_DIR_FILE="${XDG_STATE_HOME:-$HOME/.local/state}/benilla/last-dir"
+# The cargo features a client was built with, in a file beside it (other features rebuild it)
+FEATURES_STAMP_EXT=".features"
+FEATURE_SEPARATOR=","
+NO_FEATURES="none"
+REPO_ROOT=""
+BUILD_TIME_FORMAT="%Y-%m-%d %H:%M:%S"
 
 # The cargo profiles (RUNNING.md), picked by name. The player build has no `dev` feature, so it
 # gets its own target dir instead of replacing target/release's client. The names shared with
@@ -163,13 +217,28 @@ in_list() {
 }
 
 show_help() {
-    local name
-    write_alt "benilla - start benilla from a cargo profile under $REPO_ROOT (built when missing)"
+    local name kind i
+    write_alt "benilla - start benilla from a checkout under $TOOLS_ROOT and a cargo profile (built when missing)"
     cat <<EOF
 
-Usage: $ALIAS_NAME $RUN_COMMAND [options] [VAR_NAME=value...]
-Nothing runs without $RUN_COMMAND as the first arg; a bare $ALIAS_NAME cds into the repo and prints how to run it.
+Usage: $ALIAS_NAME [<checkout>] $RUN_COMMAND [options] [VAR_NAME=value...]
+Nothing runs without $RUN_COMMAND as the first arg (after an optional checkout); a bare $ALIAS_NAME cds into a checkout and prints how to run it.
 Options are case insensitive, in any order, with or without leading dashes.
+
+Checkout (a $CHECKOUT_PATTERN dir holding $CLIENT_MANIFEST; its kind comes from what is checked out, not its name):
+  <checkout> first, or dir=<checkout>   a path, the dir name (with or without $CHECKOUT_PREFIX), the branch or the kind
+  none named             \$$DIR_ENV_VAR, else the only checkout, else a menu (Enter = the last one used)
+EOF
+    for kind in "${KIND_NAMES[@]}"; do
+        printf '  %-22s %s\n' "$kind" "${KIND_INFO[$kind]}"
+    done
+    echo "Found:"
+    list_checkouts "${!checkout_paths[@]}"
+    cat <<EOF
+
+Features (a client built with other features is built again):
+  q3                     Quake 3 movement for a local server (--features $Q3_FEATURE; also: $Q3_FEATURE)
+  nogfx                  a $KIND_GFX_DLL checkout without gfx (no --features $GFX_FEATURE)
 
 Profile (default $DEFAULT_PROFILE):
 EOF
@@ -179,7 +248,7 @@ EOF
     cat <<EOF
   build                  cargo build first (copies a newer gfx library beside the client too)
 
-gfx backends (WOW_GFX_DEVICE / WOW_GFX_WINDOW; the device unset is the library's first, the
+gfx backends ($KIND_GFX_DLL / $KIND_TRIMMED checkouts; WOW_GFX_DEVICE / WOW_GFX_WINDOW; the device unset is the library's first, the
 window $DEFAULT_GFX_WINDOW_INFO unless named as an arg, even over a WOW_GFX_WINDOW in the environment):
   $(join_by ' | ' "${GFX_DEVICES[@]}")   (vulkan = vk, dx11 / dx12 = d3d11 / d3d12)
   $(join_by ' | ' "${GFX_WINDOWS[@]}")
@@ -217,30 +286,216 @@ Other:
   $(join_by ' | ' "${PRINT_TOKENS[@]}")  print the bash line for this run instead of running it
   $(join_by ' | ' "${HELP_TOKENS[@]}") (also -help, --help)  this help
 
-The gfx library must be built first: $GFX_DLL_ROOT/${GFX_DIR_NAMES[0]}/bin/<Release|Debug>_x64/$GFX_LIB_NAME.
+A gfx run needs the gfx library built first: $GFX_DLL_ROOT/${GFX_DIR_NAMES[0]}/bin/<Release|Debug>_x64/$GFX_LIB_NAME.
 
 Examples:
   $ALIAS_NAME $RUN_COMMAND vk sdl panel
   $ALIAS_NAME $RUN_COMMAND play build probe
   $ALIAS_NAME $RUN_COMMAND capture=felwood-night gl4 soft
   $ALIAS_NAME $RUN_COMMAND worldview at=-9460,62 vk
+  $ALIAS_NAME $KIND_TRIMMED $RUN_COMMAND q3 vk glfw
+  $ALIAS_NAME $RUN_COMMAND dir=benilla-gfx nogfx
 
 EOF
-    show_manual_run
+    for i in "${!checkout_paths[@]}"; do show_manual_run "$i"; done
 }
 
 show_usage() {
-    # A bare call: how to run benilla from the repo, through this script and by hand
-    write_alt "benilla - $REPO_ROOT"
+    # A bare call: how to run benilla from the checkout, through this script and by hand
+    local name_arg=""
+    (( ${#checkout_paths[@]} > 1 )) && name_arg="${checkout_names[$checkout]} "
+    write_alt "benilla - $REPO_ROOT (${checkout_branches[$checkout]}, ${checkout_kinds[$checkout]}: ${KIND_INFO[${checkout_kinds[$checkout]}]})"
     write_label "Run it through this script (the options after $RUN_COMMAND; '$ALIAS_NAME help' lists them):"
-    write_extra "$ALIAS_NAME $RUN_COMMAND"
-    show_manual_run
+    write_extra "$ALIAS_NAME $name_arg$RUN_COMMAND"
+    show_manual_run "$checkout"
 }
 
 show_manual_run() {
-    # Prints how to start the default profile's client by hand, without this script
-    write_label "Or run it manually (from $REPO_ROOT):"
-    write_extra "export $WOW_DATA_VAR=\"\$wow_classic_dir/$WOW_DATA_SUBDIR\" && $BUILD_COMMAND run ${PROFILE_BUILD_ARGS[$DEFAULT_PROFILE]} -p $CLIENT_EXE_NAME"
+    # show_manual_run <checkout index> - prints how to start the checkout's default-profile client
+    # by hand, without this script
+    local features=() feature_arg="" cargo_run
+    kind_features "${checkout_kinds[$1]}"
+    features=("${kind_feature_list[@]}")
+    (( ${#features[@]} > 0 )) && feature_arg=" --features $(join_by "$FEATURE_SEPARATOR" "${features[@]}")"
+    cargo_run="$BUILD_COMMAND run ${PROFILE_BUILD_ARGS[$DEFAULT_PROFILE]} -p $CLIENT_EXE_NAME"
+    write_label "Or run it manually (from ${checkout_paths[$1]}, ${checkout_kinds[$1]}):"
+    write_extra "export $WOW_DATA_VAR=\"\$wow_classic_dir/$WOW_DATA_SUBDIR\" && $cargo_run$feature_arg"
+    write_label "  with Quake 3 movement: $cargo_run --features $(join_by "$FEATURE_SEPARATOR" "${features[@]}" "$Q3_FEATURE")"
+}
+
+kind_features() {
+    # kind_features <kind> - sets kind_feature_list: the cargo features a gfx run of a checkout of
+    # that kind builds with
+    kind_feature_list=()
+    if [[ "$1" == "$KIND_GFX_DLL" ]]; then kind_feature_list=("$GFX_FEATURE"); fi
+    return 0
+}
+
+checkout_kind() {
+    # checkout_kind <dir> - prints the kind from what is checked out (see TOOLS_ROOT above)
+    if [[ ! -d "$1/$GFX_CRATE_DIR" ]]; then echo "$KIND_PLAIN"
+    elif grep -qE "$GFX_FEATURE_PATTERN" -- "$1/$CLIENT_MANIFEST"; then echo "$KIND_GFX_DLL"
+    else echo "$KIND_TRIMMED"; fi
+}
+
+checkout_branch() {
+    # checkout_branch <dir> - prints the checked-out branch, detached@<commit> without one
+    local branch
+    branch="$(git -C "$1" branch --show-current 2>/dev/null)"
+    if [[ -z "$branch" ]]; then
+        branch="$(git -C "$1" rev-parse --short HEAD 2>/dev/null)"
+        [[ -n "$branch" ]] && branch="$DETACHED_PREFIX$branch"
+    fi
+    echo "${branch:-$UNKNOWN_BRANCH}"
+}
+
+add_checkout() {
+    # add_checkout <dir> - appends the checkout to the checkout_* arrays
+    local path name
+    path="$(cd -- "$1" && pwd)"
+    name="$(basename -- "$path")"
+    checkout_paths+=("$path")
+    checkout_names+=("$name")
+    checkout_shorts+=("${name#"$CHECKOUT_PREFIX"}")
+    checkout_branches+=("$(checkout_branch "$path")")
+    checkout_kinds+=("$(checkout_kind "$path")")
+}
+
+find_checkouts() {
+    # Fills the checkout_* arrays with every checkout under TOOLS_ROOT, by name
+    local dir
+    checkout_paths=(); checkout_names=(); checkout_shorts=(); checkout_branches=(); checkout_kinds=()
+    for dir in "$TOOLS_ROOT"/$CHECKOUT_PATTERN; do
+        [[ -f "$dir/$CLIENT_MANIFEST" ]] && add_checkout "$dir"
+    done
+    return 0
+}
+
+find_checkout_matches() {
+    # find_checkout_matches <selector> - sets matches (checkout indices): a path to a checkout,
+    # else the SELECTOR_ARRAYS in order (case insensitive), the first that matches any
+    local token="$1" lower i path array
+    matches=()
+    [[ -z "$token" ]] && return 0
+    if [[ -d "$token" && -f "$token/$CLIENT_MANIFEST" ]]; then
+        path="$(cd -- "$token" && pwd)"
+        for i in "${!checkout_paths[@]}"; do
+            if [[ "${checkout_paths[$i]}" == "$path" ]]; then matches=("$i"); return 0; fi
+        done
+        add_checkout "$path"
+        matches=($(( ${#checkout_paths[@]} - 1 )))
+        return 0
+    fi
+    lower="${token,,}"
+    for array in "${SELECTOR_ARRAYS[@]}"; do
+        local -n values="$array"
+        for i in "${!values[@]}"; do
+            [[ "${values[$i],,}" == "$lower" ]] && matches+=("$i")
+        done
+        unset -n values
+        (( ${#matches[@]} > 0 )) && return 0
+    done
+    return 0
+}
+
+format_checkout() {
+    # format_checkout <index> - one line naming a checkout
+    printf '%-22s %-18s %-8s %s' "${checkout_names[$1]}" "${checkout_branches[$1]}" "${checkout_kinds[$1]}" "${KIND_INFO[${checkout_kinds[$1]}]}"
+}
+
+list_checkouts() {
+    # list_checkouts <indices...> - the checkouts, one per line
+    local i
+    if (( $# == 0 )); then write_label "  none under $TOOLS_ROOT"; return; fi
+    for i in "$@"; do write_label "  $(format_checkout "$i")"; done
+}
+
+pick_checkout() {
+    # Several checkouts and none named: sets picked (an index) from a numbered menu, Enter = the
+    # last one used (a number or a selector picks one). The menu goes to stderr and the answer
+    # comes from /dev/tty, so a sourced bare call can read the picked path from stdout
+    local last="" default="" i mark answer prompt count=${#checkout_paths[@]}
+    [[ -f "$LAST_DIR_FILE" ]] && last="$(head -n 1 -- "$LAST_DIR_FILE" 2>/dev/null)"
+    write_alt "benilla checkouts under $TOOLS_ROOT:" >&2
+    for i in "${!checkout_paths[@]}"; do
+        mark=" "
+        if [[ -n "$last" && "${checkout_paths[$i]}" == "$last" ]]; then default="$i"; mark="*"; fi
+        printf '%s %2d) %s\n' "$mark" "$((i + 1))" "$(format_checkout "$i")" >&2
+    done
+    if [[ ! -t 0 ]] || ! { : </dev/tty; } 2>/dev/null; then
+        write_err "Several checkouts and no terminal to pick one - name one first or as dir=<checkout> (or set $DIR_ENV_VAR)." >&2
+        exit 1
+    fi
+
+    prompt="Pick 1-$count"
+    [[ -n "$default" ]] && prompt+=" (Enter = ${checkout_names[$default]})"
+    read -r -p "$prompt: " answer </dev/tty || answer=""
+    answer="${answer//[[:space:]]/}"
+    if [[ -z "$answer" && -n "$default" ]]; then picked="$default"; return 0; fi
+    if [[ "$answer" =~ ^[0-9]+$ ]] && (( 10#$answer >= 1 && 10#$answer <= count )); then picked=$((10#$answer - 1)); return 0; fi
+    find_checkout_matches "$answer"
+    if (( ${#matches[@]} == 1 )); then picked="${matches[0]}"; return 0; fi
+    write_err "No such checkout: $answer" >&2
+    exit 1
+}
+
+resolve_checkout() {
+    # resolve_checkout <selector> - sets checkout (an index) and REPO_ROOT: the selector (dir= or a
+    # checkout as the first arg), else $BENILLA_DIR, else the only one, else the menu; remembered
+    # as the last one used. Its messages go to stderr (see pick_checkout)
+    local selector="$1" source="the args"
+    if [[ -z "$selector" && -n "${!DIR_ENV_VAR:-}" ]]; then selector="${!DIR_ENV_VAR}"; source="\$$DIR_ENV_VAR"; fi
+
+    if [[ -n "$selector" ]]; then
+        find_checkout_matches "$selector"
+        if (( ${#matches[@]} == 0 )); then
+            write_err "No benilla checkout matches $selector (from $source):" >&2
+            list_checkouts "${!checkout_paths[@]}" >&2
+            exit 1
+        fi
+        if (( ${#matches[@]} > 1 )); then
+            write_err "$selector (from $source) matches several checkouts - name one by its dir:" >&2
+            list_checkouts "${matches[@]}" >&2
+            exit 1
+        fi
+        checkout="${matches[0]}"
+    elif (( ${#checkout_paths[@]} == 0 )); then
+        write_err "No benilla checkout (a $CHECKOUT_PATTERN dir holding $CLIENT_MANIFEST) under $TOOLS_ROOT." >&2
+        exit 1
+    elif (( ${#checkout_paths[@]} == 1 )); then
+        checkout=0
+    else
+        pick_checkout
+        checkout="$picked"
+    fi
+
+    REPO_ROOT="${checkout_paths[$checkout]}"
+    { mkdir -p -- "$(dirname -- "$LAST_DIR_FILE")" && printf '%s\n' "$REPO_ROOT" >"$LAST_DIR_FILE"; } 2>/dev/null
+    return 0
+}
+
+apply_checkout_kind() {
+    # What the checkout's kind makes of the options: sets use_gfx, features and wanted_features
+    # (the build's)
+    local kind="${checkout_kinds[$checkout]}" name="${checkout_names[$checkout]}"
+    use_gfx=false
+    if [[ "$kind" == "$KIND_TRIMMED" ]] || { [[ "$kind" == "$KIND_GFX_DLL" ]] && ! $opt_nogfx; }; then use_gfx=true; fi
+    if $opt_nogfx && [[ "$kind" != "$KIND_GFX_DLL" ]]; then
+        write_warn "nogfx is for a $KIND_GFX_DLL checkout ($name is $kind) - ignoring it."
+    fi
+    if ! $use_gfx && [[ -n "$opt_device$opt_window" ]]; then
+        write_warn "$name runs without gfx ($kind) - ignoring the gfx device / window."
+        opt_device=""; opt_window=""
+    fi
+    if $opt_q3 && $opt_worldview; then
+        write_warn "q3 is for the client, not the engine viewer - ignoring it."
+        opt_q3=false
+    fi
+
+    features=()
+    if $use_gfx; then kind_features "$kind"; features+=("${kind_feature_list[@]}"); fi
+    if $opt_q3; then features+=("$Q3_FEATURE"); fi
+    wanted_features="$(join_by "$FEATURE_SEPARATOR" "${features[@]}")"
 }
 
 read_command() {
@@ -252,8 +507,9 @@ read_command() {
         show_help
         exit 0
     fi
-    write_err "Nothing runs without $RUN_COMMAND as the first arg (got: $1)."
-    show_usage
+    write_err "Nothing runs without $RUN_COMMAND as the first arg, after an optional checkout (got: $1)."
+    write_label "The checkouts ('$ALIAS_NAME help' lists the options):"
+    list_checkouts "${!checkout_paths[@]}"
     exit 1
 }
 
@@ -264,6 +520,7 @@ read_options() {
     opt_host=""; opt_realm=""; opt_char=""; opt_probe=false; opt_nosound=false; opt_unattended=false
     opt_capture=""; opt_out=""; opt_fps=""; opt_exit=""; opt_soft=false; opt_validate=false
     opt_data=""; opt_data_set=false; opt_env=()
+    opt_dir=""; opt_q3=false; opt_nogfx=false
 
     local raw name value
     for raw in "$@"; do
@@ -310,9 +567,12 @@ read_options() {
         elif [[ "$name" == "exit" && -n "$value" ]]; then opt_exit="$value"
         elif [[ "$name" == "soft" ]]; then opt_soft=true
         elif [[ "$name" == "validate" ]]; then opt_validate=true
+        elif [[ "$name" == "dir" && -n "$value" ]]; then opt_dir="$value"
+        elif in_list "$name" "${Q3_TOKENS[@]}"; then opt_q3=true
+        elif [[ "$name" == "nogfx" ]]; then opt_nogfx=true
         elif [[ "$name" == "data" && -n "$value" ]]; then opt_data="$(realpath -m -- "$value")"; opt_data_set=true
         else
-            write_err "Unknown arg: $raw (size= / at= / host= / realm= / char= / capture= / out= / fps= / exit= need a value) - see '$ALIAS_NAME help'."
+            write_err "Unknown arg: $raw (dir= / size= / at= / host= / realm= / char= / capture= / out= / fps= / exit= need a value) - see '$ALIAS_NAME help'."
             exit 1
         fi
     done
@@ -387,10 +647,27 @@ check_gfx_copy() {
 }
 
 get_build_args() {
-    # Sets build_args: cargo's args building the binary of the profile
+    # Sets build_args: cargo's args building the binary of the profile, with the run's features
     local -a profile_args
     read -r -a profile_args <<<"${PROFILE_BUILD_ARGS[$opt_profile]}"
     build_args=(build "${profile_args[@]}" -p "$package")
+    if [[ -n "$wanted_features" ]]; then build_args+=(--features "$wanted_features"); fi
+}
+
+built_features() {
+    # Prints the features the binary was built with (its stamp; none without one)
+    local stamp="$exe_path$FEATURES_STAMP_EXT" line=""
+    [[ -f "$stamp" ]] && line="$(head -n 1 -- "$stamp")"
+    printf '%s' "${line%$'\r'}"
+}
+
+features_changed() {
+    # True when the binary exists but was built with other features than this run takes
+    [[ -f "$exe_path" && "$(built_features)" != "$wanted_features" ]]
+}
+
+format_features() {
+    printf '%s' "${1:-$NO_FEATURES}"
 }
 
 build_client() {
@@ -405,6 +682,7 @@ build_client() {
         write_err "Build failed."
         exit 1
     fi
+    printf '%s\n' "$wanted_features" >"$exe_path$FEATURES_STAMP_EXT"
     write_ok "Build done."
 }
 
@@ -464,7 +742,7 @@ get_run_env() {
 
     [[ -n "$opt_device" ]] && run_env+=("WOW_GFX_DEVICE=$opt_device")
     if [[ -n "$opt_window" ]]; then run_env+=("WOW_GFX_WINDOW=$opt_window")
-    elif [[ -n "$DEFAULT_GFX_WINDOW" && " ${opt_env[*]} " != *" WOW_GFX_WINDOW="* ]]; then
+    elif $use_gfx && [[ -n "$DEFAULT_GFX_WINDOW" && " ${opt_env[*]} " != *" WOW_GFX_WINDOW="* ]]; then
         run_env+=("WOW_GFX_WINDOW=$DEFAULT_GFX_WINDOW")
     fi
     if [[ -n "$opt_size" ]]; then run_env+=("WOW_WIN=$opt_size")
@@ -539,7 +817,8 @@ show_launch_command() {
     # Prints the bash line(s) reproducing this run
     echo
     write_extra "# $ALIAS_NAME $(format_args "${script_args[@]}")"
-    if $opt_build || [[ ! -f "$exe_path" ]]; then
+    write_extra "# checkout: ${checkout_names[$checkout]} (${checkout_branches[$checkout]}, ${checkout_kinds[$checkout]}), features: $(format_features "$wanted_features")"
+    if $opt_build || [[ ! -f "$exe_path" ]] || features_changed; then
         get_build_args
         write_extra "(cd $(format_shell_arg "$REPO_ROOT") && $BUILD_COMMAND ${build_args[*]})"
     fi
@@ -566,7 +845,26 @@ start_client() {
 }
 
 script_args=("$@")
+find_checkouts
+if [[ "${1:-}" == "$CHECKOUT_DIR_COMMAND" ]]; then
+    # The sourced bare call's question: the checkout's path, alone on stdout
+    resolve_checkout ""
+    printf '%s\n' "$REPO_ROOT"
+    exit 0
+fi
+
+# A checkout as the first arg (anything but run / help that names one)
+selector=""
+if (( $# > 0 )); then
+    first="${1#"${1%%[!-]*}"}"
+    if [[ "${first,,}" != "$RUN_COMMAND" ]] && ! in_list "${first,,}" "${HELP_TOKENS[@]}"; then
+        find_checkout_matches "$first"
+        if (( ${#matches[@]} > 0 )); then selector="$first"; shift; fi
+    fi
+fi
+
 if (( $# == 0 )); then
+    resolve_checkout "$selector"
     show_usage
     exit 0
 fi
@@ -577,9 +875,12 @@ if $opt_help; then
     show_help
     exit 0
 fi
+if [[ -n "$opt_dir" ]]; then selector="$opt_dir"; fi
+resolve_checkout "$selector"
+apply_checkout_kind
 
-write_alt "benilla..."
-if (( $# == 0 )); then show_manual_run; fi
+write_alt "benilla... ${checkout_names[$checkout]} (${checkout_branches[$checkout]}, ${checkout_kinds[$checkout]}: ${KIND_INFO[${checkout_kinds[$checkout]}]}), features: $(format_features "$wanted_features")"
+if (( $# == 0 )); then show_manual_run "$checkout"; fi
 
 if [[ ! -d "$REPO_ROOT" ]]; then
     write_err "benilla repo not found: $REPO_ROOT"
@@ -618,16 +919,17 @@ resolve_wow_data
 resolve_exe
 resolve_gfx_library
 get_run_env
-check_gfx_pair
+if $use_gfx; then check_gfx_pair; fi
 
 if $opt_print_only; then
     show_launch_command
     exit 0
 fi
 
-check_gfx_library
-if $opt_build || [[ ! -f "$exe_path" ]]; then
-    if [[ ! -f "$exe_path" ]]; then write_warn "No $exe_path yet - building it."; fi
+if $use_gfx; then check_gfx_library; fi
+if $opt_build || [[ ! -f "$exe_path" ]] || features_changed; then
+    if [[ ! -f "$exe_path" ]]; then write_warn "No $exe_path yet - building it."
+    elif features_changed; then write_warn "$exe_path was built with features: $(format_features "$(built_features)"), this run takes: $(format_features "$wanted_features") - building it."; fi
     build_client
 fi
 if [[ ! -f "$exe_path" ]]; then
@@ -636,8 +938,8 @@ if [[ ! -f "$exe_path" ]]; then
 fi
 
 write_label "Using: $exe_path"
-write_label "  built $(date -r "$exe_path" +"$BUILD_TIME_FORMAT")"
-check_gfx_copy
+write_label "  built $(date -r "$exe_path" +"$BUILD_TIME_FORMAT"), features: $(format_features "$(built_features)")"
+if $use_gfx; then check_gfx_copy; fi
 
 echo
 
