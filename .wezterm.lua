@@ -502,6 +502,10 @@ end
 
 -- Whether Claude Code runs in the pane. It is searched for below the foreground process too,
 -- since wrappers (ccs.sh) put a shell in front of it. "claude.exe" is the Windows binary.
+-- On Windows the "foreground" process is the youngest one in the pane, which is a child of
+-- Claude Code (an MCP server, an LSP, a tool shell) once it has spawned one, so its ancestors
+-- are searched as well, up to the terminal itself.
+local CLAUDE_MAX_ANCESTORS = 8
 local function is_claude(pane)
   local function has_claude(process_info)
     if not process_info then
@@ -519,7 +523,24 @@ local function is_claude(pane)
     return false
   end
 
-  return has_claude(pane:get_foreground_process_info())
+  local process_info = pane:get_foreground_process_info()
+  if has_claude(process_info) then
+    return true
+  end
+  for _ = 1, CLAUDE_MAX_ANCESTORS do
+    if not process_info or not process_info.ppid or process_info.ppid == 0 then
+      return false
+    end
+    process_info = wezterm.procinfo.get_info_for_pid(process_info.ppid)
+    local process_name = ((process_info or {}).name or ""):lower()
+    if process_name == "claude" or process_name == "claude.exe" then
+      return true
+    end
+    if process_name:find("wezterm-gui", 1, true) or process_name:find("wecterm-gui", 1, true) then
+      return false
+    end
+  end
+  return false
 end
 
 -- Handle pane split in wezterm, tmux, or vim
