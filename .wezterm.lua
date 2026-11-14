@@ -363,6 +363,7 @@ config.unix_domains = {
 wezterm.on("save_session", function(window) session_manager.save_state(window) end)
 wezterm.on("load_session", function(window) session_manager.load_state(window) end)
 wezterm.on("restore_session", function(window) session_manager.restore_state(window) end)
+wezterm.on("show_session", function(window, pane) session_manager.show_state(window, pane) end)
 
 -- Git status cache
 local git_cache = {} -- { [cwd] = { branch=..., color=..., time=... } }
@@ -1077,6 +1078,19 @@ config.keys = {
   {key = "m", mods = "LEADER", action = wezterm.action{EmitEvent = "save_session"}},
   -- bind leader-.: wezterm.action.EmitEvent restore_session
   {key = ".", mods = "LEADER", action = nvim_server.on_new_pane(wezterm.action{EmitEvent = "restore_session"})},
+  -- bind leader-shift-s: show the saved session (tmux's when tmux runs in the pane)
+  {
+    key = 'S',
+    mods = 'LEADER|SHIFT',
+    action = wezterm.action_callback(function(win, pane)
+      if is_tmux(pane) then
+        -- tmux's prefix + S (see ~/.tmux.conf) shows the tmux-resurrect session
+        win:perform_action(act.Multiple { act.SendKey { key = 'a', mods = 'CTRL' }, act.SendString 'S' }, pane)
+      else
+        wezterm.emit('show_session', win, pane)
+      end
+    end),
+  },
   --{key = "p", mods = "LEADER", action = wezterm.action{EmitEvent = "load_session"}},
 
   -- Disable default
