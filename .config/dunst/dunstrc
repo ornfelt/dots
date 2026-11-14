@@ -27,7 +27,10 @@
     # dynamic width from 0 to 300
     # width = (0, 300)
     # constant width of 300
-    width = 420
+    #width = 420
+    # 420 wide, growing up to 560 for longer lines (fits the save file paths of
+    # tmux_saved_session.py / wezterm's leader+S on one row)
+    width = (420, 560)
 
     # The height of a single notification, excluding the frame.
     # dynamic height from 0 to 300
