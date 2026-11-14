@@ -331,6 +331,8 @@ alias .cenilla="_source_or_run $HOME/.local/bin/my_scripts/2025/cenilla.sh"
 alias .stk="_source_or_run $HOME/.local/bin/my_scripts/2025/stk.sh"
 # .openjk run [mp | sp | jo | ded] [japp] ... (the old .openjk_sp / .openjo_sp / .japp: run sp / run jo / run japp)
 alias .openjk="_source_or_run $HOME/.local/bin/my_scripts/2025/openjk.sh"
+# .openjk_rs run [mp | sp | jo | ded] [japp] ... - the same args for openjk-rs (the Rust port, from its target/dist/release)
+alias .openjk_rs="_source_or_run $HOME/.local/bin/my_scripts/2025/openjk_rs.sh"
 alias .acore='cd $HOME/acore/bin; pwd; ls'
 #alias .acore_update='cd $HOME/Code2/C++/AzerothCore-wotlk-with-NPCBots && git pull && cd modules/mod-eluna && git pull && cd ../..'
 alias .acore_update_old='cd $HOME/Code2/C++/AzerothCore-wotlk-with-NPCBots && git pull && cd modules/mod-eluna && git pull https://github.com/azerothcore/mod-eluna master && cd ../..'
