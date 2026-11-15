@@ -765,7 +765,16 @@ clientmessage(XEvent *e)
                 || cme->data.l[2] == netatom[NetWMSticky])
             setsticky(c, (cme->data.l[0] == 1 || (cme->data.l[0] == 2 && !c->issticky)));
 	} else if (cme->message_type == netatom[NetActiveWindow]) {
-		if (c != selmon->sel && !c->isurgent)
+		/* focusonnetactive: a pager or tool such as xdotool (source indication 2)
+		 * gets the window's tag shown and the window focused, an application
+		 * asking for itself only the urgency hint */
+		for (i = 0; i < LENGTH(tags) && !(c->tags & 1U << i); i++);
+		if (cme->data.l[0] == 2 && (ISVISIBLE(c) || i < LENGTH(tags))) {
+			if (!ISVISIBLE(c))
+				view(&((Arg) { .ui = 1U << i }));
+			focus(c);
+			restack(selmon);
+		} else if (c != selmon->sel && !c->isurgent)
 			seturgent(c, 1);
 	} else if (cme->message_type == netatom[NetWMDesktop]) {
 		/* ewmhtags: move the window to a desktop (tag); every desktop makes it sticky */

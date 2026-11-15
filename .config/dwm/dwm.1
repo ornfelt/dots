@@ -61,6 +61,14 @@ current desktop, dwm also sets
 on every window (its tag mask, bit 0 for tag 1) and
 .B _DWM_VIEWED_TAGS
 on the root window (the tags any screen shows).
+.P
+A
+.B _NET_ACTIVE_WINDOW
+request from a pager or tool (source indication 2, as
+.B xdotool windowactivate
+sends) shows the window's lowest tag if it is hidden and focuses the window
+(focusonnetactive); one from an application asking for its own window only
+marks it urgent.
 .SH OPTIONS
 .TP
 .B \-v
