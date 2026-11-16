@@ -6,7 +6,7 @@
 # EDITOR/VISUAL, git, the my_scripts helpers - comes through here.
 #
 #   system   /usr/local/bin/nvim (else /usr/bin/nvim), the installed nvim
-#   fork     $code_root_dir/Code/c/neovim/build/bin/nvim, the C fork's build
+#   fork     $code_root_dir/Code2/C/neovim/build/bin/nvim, the C fork's build
 #   rim      $code_root_dir/Code2/Rust/rim/target/dist/release/bin/nvim
 #            (or bin/rim), the Rust port
 #
@@ -26,7 +26,7 @@
 # message, so `nvim` never silently does nothing.
 
 ROOT=${code_root_dir:-$HOME}
-FORK_DIR=$ROOT/Code/c/neovim
+FORK_DIR=$ROOT/Code2/C/neovim
 RIM_DIR=$ROOT/Code2/Rust/rim/target/dist/release
 VARIANT_FILE=${XDG_CONFIG_HOME:-$HOME/.config}/nvimswitch/variant
 

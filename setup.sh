@@ -534,13 +534,9 @@ clone_projects() {
     clone_repo_if_missing "my_notes" "https://github.com/archornf/my_notes"
     clone_repo_if_missing "windows_dots" "https://github.com/ornfelt/windows_dots"
 
-    print_and_cd_to_dir "$HOME/Code/c" "Cloning"
-    clone_repo_if_missing "neovim" "https://github.com/neovim/neovim"
-
     print_and_cd_to_dir "$HOME/Code/c++" "Cloning"
 
     clone_repo_if_missing "openmw" "https://github.com/OpenMW/openmw"
-    clone_repo_if_missing "OpenJK" "https://github.com/JACoders/OpenJK"
     clone_repo_if_missing "JediKnightGalaxies" "https://github.com/JKGDevs/JediKnightGalaxies"
     clone_repo_if_missing "jk2mv" "https://github.com/mvdevs/jk2mv"
     clone_repo_if_missing "Unvanquished" "https://github.com/Unvanquished/Unvanquished"
@@ -604,9 +600,11 @@ clone_projects() {
     clone_repo_if_missing "my_c" "https://github.com/ornfelt/my_c"
     clone_repo_if_missing "ioq3" "https://github.com/ornfelt/ioq3"
     clone_repo_if_missing "picom-animations" "https://github.com/ornfelt/picom-animations"
+    clone_repo_if_missing "neovim" "https://github.com/ornfelt/neovim"
 
     print_and_cd_to_dir "$HOME/Code2/C++" "Cloning"
     clone_repo_if_missing "stk-code" "https://github.com/ornfelt/stk-code"
+    clone_repo_if_missing "OpenJK" "https://github.com/ornfelt/OpenJK"
     if [ ! -d "stk-assets" ]; then
         if $justInform; then
             log_warn "stk-assets NOT cloned."
@@ -674,7 +672,7 @@ clone_projects() {
         log_warn "Directory $MODULES_DIR does NOT exist."
     fi
 
-    clone_repo_if_missing "Trinitycore-3.3.5-with-NPCBots" "https://github.com/rewow/Trinitycore-3.3.5-with-NPCBots" "npcbots_3.3.5"
+    clone_repo_if_missing "TrinityCore-3.3.5-with-NPCBots" "https://github.com/rewow/TrinityCore-3.3.5-with-NPCBots" "npcbots_3.3.5"
     clone_repo_if_missing "simc" "https://github.com/ornfelt/simc"
     clone_repo_if_missing "simc_wotlk" "https://github.com/ornfelt/simc_wotlk"
     clone_repo_if_missing "OpenJKDF2" "https://github.com/ornfelt/OpenJKDF2" "linux"
@@ -725,9 +723,9 @@ clone_projects() {
     architecture=$(uname -m)
     #if grep -q -i 'raspbian\|raspberry pi os' /etc/os-release; then
     if [[ "$architecture" == arm* ]] || [[ "$architecture" == aarch64* ]]; then
-        clone_repo_if_missing "WebWoWViewercpp" "https://github.com/ornfelt/WebWoWViewercpp" "linux"
+        clone_repo_if_missing "WebWowViewerCpp" "https://github.com/ornfelt/WebWowViewerCpp" "linux"
     else
-        clone_repo_if_missing "WebWoWViewercpp" "https://github.com/ornfelt/WebWoWViewercpp" "linux"
+        clone_repo_if_missing "WebWowViewerCpp" "https://github.com/ornfelt/WebWowViewerCpp" "linux"
     fi
 }
 
@@ -983,7 +981,7 @@ fix_ownerships() {
 
     directories=(
         "$HOME/Code/c++/openmw"
-        "$HOME/Code/c++/OpenJK"
+        "$HOME/Code2/C++/OpenJK"
         "$HOME/Code/c++/JediKnightGalaxies"
         "$HOME/Code/c++/jk2mv"
         "$HOME/Code/c++/reone"
@@ -1033,25 +1031,6 @@ compile_projects() {
     fi
 
     export CMAKE_POLICY_VERSION_MINIMUM=3.5
-
-    print_and_cd_to_dir "$HOME/Code/c" "Compiling"
-
-    #if grep -q -E "Debian|Raspbian" /etc/os-release; then
-    #    if check_dir "neovim"; then
-    #        cd ..
-    #        if dpkg -l | grep -qw "neovim"; then
-    #            sudo apt remove neovim -y
-    #        fi
-    #        git checkout stable
-    #        #make CMAKE_BUILD_TYPE=RelWithDebInfo
-    #        make CMAKE_BUILD_TYPE=Release
-    #        sudo make install
-    #        cd ..
-    #    fi
-    #else
-    #    OS_ID=$(grep "^ID=" /etc/os-release | cut -d'=' -f2)
-    #    echo "Skipping neovim check (only for Debian or Raspbian architectures). Found os: $OS_ID"
-    #fi
 
     # Note: If the shell has issues with '++', you might need to quote or
     # escape it...
@@ -1105,14 +1084,6 @@ compile_projects() {
         else
             log_warn "MyGUI is not installed or not found."
         fi
-        cd "$HOME/Code/c++"
-    fi
-
-    if check_dir "OpenJK"; then
-        sed -i '/option(BuildJK2SPEngine /s/OFF)/ON)/; /option(BuildJK2SPGame /s/OFF)/ON)/; /option(BuildJK2SPRdVanilla /s/OFF)/ON)/' ../CMakeLists.txt
-        cmake -DCMAKE_INSTALL_PREFIX=$HOME/.local/share/openjk -DCMAKE_BUILD_TYPE=RelWithDebInfo ..
-        make -j$(nproc)
-        sudo make install
         cd "$HOME/Code/c++"
     fi
 
@@ -1298,6 +1269,23 @@ compile_projects() {
 
     print_and_cd_to_dir "$HOME/Code2/C" "Compiling"
 
+    #if grep -q -E "Debian|Raspbian" /etc/os-release; then
+    #    if check_dir "neovim"; then
+    #        cd ..
+    #        if dpkg -l | grep -qw "neovim"; then
+    #            sudo apt remove neovim -y
+    #        fi
+    #        git checkout stable
+    #        #make CMAKE_BUILD_TYPE=RelWithDebInfo
+    #        make CMAKE_BUILD_TYPE=Release
+    #        sudo make install
+    #        cd ..
+    #    fi
+    #else
+    #    OS_ID=$(grep "^ID=" /etc/os-release | cut -d'=' -f2)
+    #    echo "Skipping neovim check (only for Debian or Raspbian architectures). Found os: $OS_ID"
+    #fi
+
     if check_dir "ioq3"; then
         cd ..
         if [[ -f Makefile || -f makefile || -f GNUmakefile ]]; then
@@ -1324,6 +1312,14 @@ compile_projects() {
     #cd "$HOME/Code2/C"
 
     print_and_cd_to_dir "$HOME/Code2/C++" "Compiling"
+
+    if check_dir "OpenJK"; then
+        sed -i '/option(BuildJK2SPEngine /s/OFF)/ON)/; /option(BuildJK2SPGame /s/OFF)/ON)/; /option(BuildJK2SPRdVanilla /s/OFF)/ON)/' ../CMakeLists.txt
+        cmake -DCMAKE_INSTALL_PREFIX=$HOME/.local/share/openjk -DCMAKE_BUILD_TYPE=RelWithDebInfo ..
+        make -j$(nproc)
+        sudo make install
+        cd "$HOME/Code2/C++"
+    fi
 
     if check_dir "stk-code"; then
         cmake .. -DCMAKE_BUILD_TYPE=Release -DNO_SHADERC=on
@@ -1371,7 +1367,7 @@ compile_projects() {
         cd "$HOME/Code2/C++"
     fi
 
-    if check_dir "Trinitycore-3.3.5-with-NPCBots"; then
+    if check_dir "TrinityCore-3.3.5-with-NPCBots"; then
         #cmake ../ -DCMAKE_INSTALL_PREFIX=$HOME/tcore/ -DCMAKE_C_COMPILER=/usr/bin/clang -DCMAKE_CXX_COMPILER=/usr/bin/clang++ -DWITH_WARNINGS=1 -DTOOLS_BUILD=all -DSCRIPTS=static -DMODULES=static -DWITH_COREDEBUG=1 -DCMAKE_BUILD_TYPE=Debug
         cmake ../ -DCMAKE_INSTALL_PREFIX=$HOME/tcore/ -DCMAKE_C_COMPILER=/usr/bin/clang -DCMAKE_CXX_COMPILER=/usr/bin/clang++ -DWITH_WARNINGS=1 -DTOOLS_BUILD=all -DSCRIPTS=static -DMODULES=static -DWITH_COREDEBUG=1 -DCMAKE_BUILD_TYPE=RelWithDebInfo
         #cmake ../ -DCMAKE_INSTALL_PREFIX=$HOME/tcore/ -DCMAKE_C_COMPILER=/usr/bin/clang -DCMAKE_CXX_COMPILER=/usr/bin/clang++ -DWITH_WARNINGS=1 -DTOOLS_BUILD=all -DSCRIPTS=static -DMODULES=static -DWITH_COREDEBUG=0 -DCMAKE_BUILD_TYPE=Release

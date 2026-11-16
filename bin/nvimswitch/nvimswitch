@@ -4,8 +4,8 @@
 # script, ~/.local/bin/nvimswitch/nvim).
 #
 #   system   /usr/local/bin/nvim (else /usr/bin/nvim), the installed nvim
-#   fork     the C fork, $code_root_dir/Code/c/neovim/build/bin
-#            (build it with: make -C $code_root_dir/Code/c/neovim CMAKE_BUILD_TYPE=Release)
+#   fork     the C fork, $code_root_dir/Code2/C/neovim/build/bin
+#            (build it with: make -C $code_root_dir/Code2/C/neovim CMAKE_BUILD_TYPE=Release)
 #   rim      the Rust port, $code_root_dir/Code2/Rust/rim/target/dist/release/bin
 #            (build it with: rim --build --no-run)
 #
@@ -54,7 +54,7 @@ print_info_alt() { printf "${MAGENTA}%s${RESET}\n" "$*"; }
 print_dim()      { printf "${DARKGRAY}%s${RESET}\n" "$*"; }
 
 ROOT=${code_root_dir:-$HOME}
-FORK_DIR=$ROOT/Code/c/neovim
+FORK_DIR=$ROOT/Code2/C/neovim
 RIM_DIR=$ROOT/Code2/Rust/rim/target/dist/release
 WRAPPER=$HOME/.local/bin/nvimswitch/nvim
 VARIANT_DIR=${XDG_CONFIG_HOME:-$HOME/.config}/nvimswitch
@@ -117,7 +117,7 @@ usage() {
     echo
     print_info "Variants:"
     echo "  system    $(system_exe) (installed)"
-    echo "  fork      \$code_root_dir/Code/c/neovim/build/bin/nvim (the C fork)"
+    echo "  fork      \$code_root_dir/Code2/C/neovim/build/bin/nvim (the C fork)"
     echo "  rim       \$code_root_dir/Code2/Rust/rim/target/dist/release/bin/nvim (the Rust port)"
     echo
     print_info "Options:"

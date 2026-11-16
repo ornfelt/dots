@@ -157,8 +157,7 @@ if [[ "$GenerateDiffs" == "true" ]]; then
       commands+=('git commit -m "update diff files"')
   fi
 
-  #if [[ "${repoName%.git}" == "TrinityCore-3.3.5-with-NPCBots" ]]; then
-  if [[ "${repoName%.git}" == "Trinitycore-3.3.5-with-NPCBots" ]]; then
+  if [[ "${repoName%.git}" == "TrinityCore-3.3.5-with-NPCBots" ]]; then
     AddUpstreamIfMissing "https://github.com/trickerer/TrinityCore-3.3.5-with-NPCBots"
     commands+=('git fetch upstream')
     #commands+=('git diff upstream/npcbots_3.3.5...npcbots_3.3.5 -- . ":(exclude)*.conf" ":(exclude)*.patch" ":(exclude)*.diffx" | tee tcore.diffx')
