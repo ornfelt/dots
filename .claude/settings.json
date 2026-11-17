@@ -40,7 +40,9 @@
     "typescript-lsp@claude-plugins-official": true,
     "pyright-lsp@claude-plugins-official": true,
     "lua-lsp@claude-plugins-official": true,
-    "rust-analyzer-lsp@claude-plugins-official": true
+    "rust-analyzer-lsp@claude-plugins-official": true,
+    "csharp-lsp@claude-plugins-official": true,
+    "jdtls-lsp@claude-plugins-official": true
   },
   "modelSettings": {
     "claude-opus-5": {

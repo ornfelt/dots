@@ -21,6 +21,21 @@ end
 local DLL = (ENV and ENV:match("%.dll$") and ENV) or dll_path()
 local DOTNET = "dotnet"
 
+-- Default: dotnet global tool (dotnet tool install --global roslyn-language-server --prerelease)
+local function tool_path()
+  if vim.fn.has("win32")==1 then
+    local tools = (vim.env.USERPROFILE or "C:/Users/jonas") .. "/.dotnet/tools/"
+    for _, name in ipairs({ "roslyn-language-server.exe", "roslyn-language-server.cmd" }) do
+      if exe_exists(tools .. name) then return tools .. name end
+    end
+  else
+    local p = (vim.env.HOME or "/home/jonas") .. "/.dotnet/tools/roslyn-language-server"
+    if exe_exists(p) then return p end
+  end
+end
+
+local TOOL = tool_path()
+
 local ROOT_MARKERS = { "global.json", ".sln", ".csproj", ".vbproj", ".git" }
 
 local function root_dir(bufnr, on_dir)
@@ -43,6 +58,20 @@ end
 -- Build cmd with verbose logs
 local logdir = (vim.fn.stdpath("cache") .. "/roslyn_logs")
 vim.fn.mkdir(logdir, "p")
+
+if TOOL then
+  return {
+    cmd = {
+      TOOL,
+      "--stdio",
+      "--logLevel", "Trace",
+      "--extensionLogDirectory", logdir,
+    },
+    filetypes    = { "cs", "csx", "vb" },
+    root_markers = ROOT_MARKERS,
+    root_dir     = root_dir,
+  }
+end
 
 if file_exists(DLL) and exe_exists(DOTNET) then
   return {
