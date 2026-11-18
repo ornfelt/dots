@@ -1706,7 +1706,12 @@ table.insert(config.keys, {
 --config.default_gui_startup_args = { 'connect', 'unix' }
 if wezterm.target_triple == 'x86_64-pc-windows-msvc' or wezterm.target_triple == 'x86_64-pc-windows-gnu' then
   --config.default_prog = { 'pwsh.exe', '-NoLogo' }
-  config.default_prog = { 'powershell.exe' }
+  -- -NoLogo: without the banner the cursor is still on the first row when
+  -- gui-startup maximizes the window, which sidesteps the rewrap bug that put
+  -- the prompt's first letter at the end of the row above (wezterm #7994,
+  -- fixed by PR #8021). Switch back once every build has that fix.
+  --config.default_prog = { 'powershell.exe' }
+  config.default_prog = { 'powershell.exe', '-NoLogo' }
 
   wezterm.on('gui-startup', function(cmd)
     -- Background worker for the keychron/ahk swap and the nvim server check;
