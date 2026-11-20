@@ -621,7 +621,7 @@ local function resize_pane(key)
       -- Check if there's a pane in either primary dir or opposite
       local opposite_dir = dir == "Left" and "Right" or dir == "Right" and "Left" or dir == "Up" and "Down" or "Up"
       if (tab:get_pane_direction(dir) or tab:get_pane_direction(opposite_dir)) and not is_zoomed then
-        win:perform_action(act.AdjustPaneSize { dir, 5 }, pane)
+        win:perform_action(act.AdjustPaneSize { dir, 1 }, pane)
       else
         -- Send ALT + SHIFT + key to Vim for resizing inside Vim
         -- win:perform_action({ SendKey = { key = key:upper(), mods = "ALT|SHIFT" } }, pane)
@@ -943,13 +943,13 @@ config.keys = {
   -- bind leader-l: act.ActivatePaneDirection Right
   { key = "l", mods = "LEADER", action = act.ActivatePaneDirection("Right") },
   -- bind leader-y: act.AdjustPaneSize Left
-  { key = 'y', mods = 'LEADER', action = act.AdjustPaneSize { 'Left', 5 }, },
+  { key = 'y', mods = 'LEADER', action = act.AdjustPaneSize { 'Left', 1 }, },
   -- bind leader-u: act.AdjustPaneSize Down
-  { key = 'u', mods = 'LEADER', action = act.AdjustPaneSize { 'Down', 5 }, },
+  { key = 'u', mods = 'LEADER', action = act.AdjustPaneSize { 'Down', 1 }, },
   -- bind leader-i: act.AdjustPaneSize Up
-  { key = 'i', mods = 'LEADER', action = act.AdjustPaneSize { 'Up', 5 } },
+  { key = 'i', mods = 'LEADER', action = act.AdjustPaneSize { 'Up', 1 } },
   -- bind leader-o: act.AdjustPaneSize Right
-  { key = 'o', mods = 'LEADER', action = act.AdjustPaneSize { 'Right', 5 }, },
+  { key = 'o', mods = 'LEADER', action = act.AdjustPaneSize { 'Right', 1 }, },
   -- bind leader-q: act.CloseCurrentPane
   { key = "q", mods = "LEADER", action = nvim_server.on_close_pane(act.CloseCurrentPane { confirm = false }) },
   -- bind leader-ctrl-q: act.CloseCurrentPane
