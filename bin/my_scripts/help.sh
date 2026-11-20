@@ -33,19 +33,17 @@ fi
 
 JSON_DATA="$(cat "$JSON_PATH")"
 
-# Helper: command + description
+# Helper: command + description. The description goes on its own line above
+# the command, grayed out like a code comment.
 write_command_with_description() {
   local cmd_text="$1"
   local desc="$2"
   local color="${3:-$CYAN}"
 
-  printf "  "
-  printf "%b%s%b" "$color" "$cmd_text" "$RESET"
   if [[ -n "$desc" ]]; then
-    printf " - %s\n" "$desc"
-  else
-    printf "\n"
+    printf "  %b# %s%b\n" "$DARKGRAY" "$desc" "$RESET"
   fi
+  printf "  %b%s%b\n" "$color" "$cmd_text" "$RESET"
 }
 
 # Helper: code line, with a shell-style comment in gray.
@@ -53,7 +51,8 @@ write_command_with_description() {
 #   - it starts the line, optionally after whitespace, or
 #   - it is preceded by whitespace
 #
-# The greedy regex selects the last whitespace-prefixed #.
+# The greedy regex selects the last whitespace-prefixed #. An inline comment
+# is printed on its own line above the command, at the command's indentation.
 write_code_line() {
   local text="$1"
   local command_color="${2:-$GREEN}"
@@ -71,9 +70,12 @@ write_code_line() {
   elif [[ "$text" =~ ^(.*[^[:space:]])([[:space:]]+#.*)$ ]]; then
     before="${BASH_REMATCH[1]}"
     comment="${BASH_REMATCH[2]}"
+    # Drop the whitespace in front of the #, indent like the command instead
+    comment="${comment#"${comment%%#*}"}"
+    local indent="${before%%[![:space:]]*}"
 
-    printf "%b%s%b" "$command_color" "$before" "$RESET"
-    printf "%b%s%b\n" "$comment_color" "$comment" "$RESET"
+    printf "%b%s%s%b\n" "$comment_color" "$indent" "$comment" "$RESET"
+    printf "%b%s%b\n" "$command_color" "$before" "$RESET"
   else
     printf "%b%s%b\n" "$command_color" "$text" "$RESET"
   fi
