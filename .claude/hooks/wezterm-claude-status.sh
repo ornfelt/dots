@@ -16,13 +16,23 @@
 # therefore named "<instance>-<pane>", where the instance is the pid of the gui
 # process -- the tail of WEZTERM_UNIX_SOCKET (".../gui-sock-<pid>"), which every
 # pane of that instance inherits. "0" when it can't be told.
+#
+# Inside tmux the same events also go to tmux-claude-status.sh next to this
+# script: an icon on the tmux window and a status line message (does nothing
+# while @claude-status is off in ~/.tmux.conf). That works without wezterm too.
 
 set -u
 
 action="${1:-done}"
 
-# Not running inside wezterm: nothing to mark
-[ -n "${WEZTERM_PANE:-}" ] || exit 0
+tmux_status="$(dirname "$0")/tmux-claude-status.sh"
+in_tmux=""
+if [ -n "${TMUX:-}" ] && [ -n "${TMUX_PANE:-}" ] && [ -f "$tmux_status" ]; then
+  in_tmux=1
+fi
+
+# Not running inside wezterm or tmux: nothing to mark
+[ -n "${WEZTERM_PANE:-}" ] || [ -n "$in_tmux" ] || exit 0
 
 UNKNOWN_INSTANCE="0"
 instance="${WEZTERM_UNIX_SOCKET:-}"
@@ -30,13 +40,14 @@ instance="${instance##*gui-sock-}"
 case "$instance" in ''|*[!0-9]*) instance="$UNKNOWN_INSTANCE";; esac
 
 state_dir="${HOME}/.wezterm/claude-status"
-marker_name="${instance}-${WEZTERM_PANE}"
+marker_name="${instance}-${WEZTERM_PANE:-}"
 marker="${state_dir}/${marker_name}.done"
 # Same, while the last turn of this pane ended on an API error
 failed_marker="${state_dir}/${marker_name}.failed"
 
 if [ "$action" = "clear" ]; then
-  rm -f "$marker" "$failed_marker"
+  [ -z "$in_tmux" ] || bash "$tmux_status" clear
+  [ -z "${WEZTERM_PANE:-}" ] || rm -f "$marker" "$failed_marker"
   exit 0
 fi
 
@@ -62,6 +73,12 @@ if [ "$action" = "failed" ]; then
   error_type="$(printf '%s' "$payload" | sed -n 's/.*"error"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' | head -n 1 | tr -s '[:space:]' '_')"
   [ -n "$error_type" ] || error_type="unknown"
 fi
+
+# tmux first: it takes milliseconds, the wezterm cli below up to 5 seconds
+[ -z "$in_tmux" ] || bash "$tmux_status" "$action" "$(basename -- "$cwd")" "$error_type"
+
+# The rest is wezterm's
+[ -n "${WEZTERM_PANE:-}" ] || exit 0
 
 # Window and tab of this pane (1-based, in wezterm's own order), for the other
 # instances: they can't look into this one's mux. `wezterm cli` talks to the
