@@ -89,3 +89,31 @@ vim.api.nvim_create_user_command("VimPackStatus", function()
     print("Try: :packadd <name>")
   end
 end, {})
+
+-- cmd VimPackCleanInactive: delete plugins on disk that are no longer added (asks first)
+vim.api.nvim_create_user_command("VimPackCleanInactive", function()
+  local inactive = vim.iter(vim.pack.get(nil, { info = false }))
+    :filter(function(p) return not p.active end)
+    :map(function(p) return p.spec.name end)
+    :totable()
+  if #inactive == 0 then
+    vim.notify("vim.pack: no inactive plugins")
+    return
+  end
+  local answer = vim.fn.input("Delete inactive plugins: " .. table.concat(inactive, ", ") .. "? [y/N] ")
+  if not vim.tbl_contains({ "y", "yes" }, answer:lower()) then
+    vim.notify("\nvim.pack: nothing deleted")
+    return
+  end
+  vim.pack.del(inactive)
+end, {})
+
+-- cmd VimPackLog: open the log of applied vim.pack updates
+vim.api.nvim_create_user_command("VimPackLog", function()
+  local log = vim.fs.joinpath(vim.fn.stdpath("log"), "nvim-pack.log")
+  if vim.fn.filereadable(log) == 0 then
+    vim.notify("vim.pack: no log at " .. log, vim.log.levels.WARN)
+    return
+  end
+  vim.cmd.edit(vim.fn.fnameescape(log))
+end, {})

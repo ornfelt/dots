@@ -259,6 +259,14 @@ if vim.pack and vim.pack.get and vim.pack.update then
   vim.list_extend(commands, {
     { label = "VimPackGet", cmd = "lua print(vim.inspect(vim.pack.get()))" },
     { label = "VimPackUpdate", cmd = "lua vim.pack.update()" },
+    -- applies the updates right away, skipping the confirmation buffer
+    { label = "VimPackUpdateForce", cmd = "lua vim.pack.update(nil, { force = true })" },
+    -- confirmation buffer for updates already downloaded but not applied (no fetch)
+    { label = "VimPackPending", cmd = "lua vim.pack.update(nil, { offline = true })" },
+    -- move every plugin to the revision in nvim-pack-lock.json (asks to confirm)
+    { label = "VimPackRevertToLockfile", cmd = "lua vim.pack.update(nil, { target = 'lockfile' })" },
+    { label = "VimPackCleanInactive", cmd = "VimPackCleanInactive" },
+    { label = "VimPackLog", cmd = "VimPackLog" },
     { label = "VimPackStatus", cmd = "VimPackStatus" },
   })
 end
