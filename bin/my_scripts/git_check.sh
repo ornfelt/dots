@@ -93,6 +93,7 @@ WOW_REPOS=(
     "$code_root_dir/Code2/Wow/tools/cenilla"
     "$code_root_dir/Code2/C#/mangos-zero-cs"
     "$code_root_dir/Code2/C++/mangoszero_database"
+    "$code_root_dir/Code2/C++/tbc-db"
     "$code_root_dir/Code2/Wow/tools/my_wow_docs"
     "$code_root_dir/Code2/Wow/tools/WebWoWViewer"
     "$code_root_dir/Code2/Wow/tools/WebWowViewerCpp"
