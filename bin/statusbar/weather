@@ -12,6 +12,8 @@ HOT_ABOVE=20
 # the report in a colour for the temperature
 show() {
 	local color=$COLOR_WEATHER
+	# wttr.in gives a temperature that rounds to zero from below as "+-0°"
+	set -- "${1/#+-/+}"
 	if [[ "$1" =~ (-?[0-9]+) ]]; then
 		if (( BASH_REMATCH[1] < COLD_BELOW )); then
 			color=$COLOR_WEATHER_COLD
