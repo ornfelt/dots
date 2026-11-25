@@ -28,6 +28,8 @@
 # Known repos that don't exist (yet) or aren't git repos are skipped with a warning.
 # vmangos (Code2/C++/core) counts as clean when src/shared/Progression.h is its only
 # modified file, and its line says so.
+# Branches in BEHIND_IGNORED (benilla's gfx-dll-backend and trimmed-bevy) aren't
+# reported as behind their remote unless they are checked out.
 # A fetch that takes longer than $GIT_CHECK_TIMEOUT seconds (default 60) is
 # stopped and warned about.
 # Exits with 1 if any repo has something to commit, push or pull, and with 2 on
@@ -111,6 +113,10 @@ WOW_REPOS=(
 # vmangos has this file modified locally; when it's the only modified file the repo counts as clean
 VMANGOS_REPO="$code_root_dir/Code2/C++/core"
 VMANGOS_LOCAL_FILE=src/shared/Progression.h
+# Side branches that are left behind their remote on purpose: not reported as behind unless checked out
+declare -A BEHIND_IGNORED=(
+    ["$code_root_dir/Code2/Wow/tools/benilla"]="gfx-dll-backend trimmed-bevy"
+)
 # 'other' is these plus the repos in OTHER_DIRS that are in no other category
 OTHER_REPOS=(
     "$code_root_dir/Code2/General/utils"
@@ -230,9 +236,18 @@ only_vmangos_local_file() {
         [ "$(git -C "$1" diff --name-only)" = "$VMANGOS_LOCAL_FILE" ]
 }
 
+# Prints the branches of the repo in BEHIND_IGNORED, nothing if it has none
+behind_ignored() {
+    local key real
+    real=$(cd "$1" 2>/dev/null && pwd -P)
+    for key in "${!BEHIND_IGNORED[@]}"; do
+        [ "$real" = "$(cd "$key" 2>/dev/null && pwd -P)" ] && echo "${BEHIND_IGNORED[$key]}"
+    done
+}
+
 # Prints one line per problem in the repo, nothing if it is clean
 check_repo() {
-    local repo=$1 n branch branch_ref upstream upstream_ref ahead behind remote gitdir op
+    local repo=$1 n branch branch_ref upstream upstream_ref ahead behind remote gitdir op ignored current
     local -a out=()
 
     n=$(git -C "$repo" diff --name-only | wc -l)
@@ -252,6 +267,8 @@ check_repo() {
     if [ -z "$(git -C "$repo" remote)" ]; then
         out+=("${RED}no remote, nothing is pushed anywhere${RESET}")
     else
+        ignored=" $(behind_ignored "$repo") "
+        current=$(git -C "$repo" symbolic-ref -q --short HEAD)
         while read -r branch upstream_ref upstream; do
             branch_ref=refs/heads/$branch
             if [ -n "$upstream" ] && git -C "$repo" rev-parse -q --verify "$upstream_ref" >/dev/null; then
@@ -277,6 +294,7 @@ check_repo() {
                     fi
                 done
             fi
+            [[ $ignored == *" $branch "* && $branch != "$current" ]] && behind=0
             ((behind > 0)) && out+=("${MAGENTA}$branch: $behind commit(s) behind $upstream${RESET}")
         done < <(git -C "$repo" for-each-ref refs/heads --format='%(refname:short) %(upstream) %(upstream:short)')
         # commits made on a detached HEAD are on no branch, so the loop above misses them
